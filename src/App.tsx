@@ -23,7 +23,7 @@ import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
-import ToolPanel from "./pages/ToolPanel";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
