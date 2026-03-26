@@ -137,8 +137,8 @@ export default function Psychology() {
           {[
             { label: 'Avg Discipline', value: `${stats.avgDiscipline}/5`, tone: '' },
             { label: 'Avg Focus', value: `${stats.avgFocus}/5`, tone: '' },
-            { label: 'High Disc Win%', value: `${stats.highDiscWinRate}%`, tone: 'text-success' },
-            { label: 'Low Disc Win%', value: `${stats.lowDiscWinRate}%`, tone: 'text-destructive' },
+            { label: 'High Discipline Win%', value: `${stats.highDiscWinRate}%`, tone: 'text-success' },
+            { label: 'Low Discipline Win%', value: `${stats.lowDiscWinRate}%`, tone: 'text-destructive' },
             { label: 'Total Mistakes', value: stats.totalMistakes, tone: stats.totalMistakes > 10 ? 'text-destructive' : '' },
             { label: 'Best Emotion', value: stats.topEmotion, tone: 'text-success' },
           ].map(item => (

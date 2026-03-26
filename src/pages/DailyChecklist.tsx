@@ -197,7 +197,7 @@ export default function DailyChecklist() {
   }, [history]);
 
   return (
-    <div className="p-6 max-w-[1000px] mx-auto">
+    <div className="p-6 max-w-[1600px] mx-auto">
       <PageHeader title="Daily Checklist" subtitle="Complete before trading">
         <ThemeToggle />
       </PageHeader>
@@ -240,86 +240,86 @@ export default function DailyChecklist() {
         <MetricCard label="Avg Score" value={`${stats.avgScore}%`} icon={Shield} trend={stats.avgScore >= 70 ? 'up' : 'down'} />
       </div>
 
-      {/* ─── CHECKLIST ITEMS ─── */}
-      <div className="bg-card border border-border rounded-xl p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            DISCIPLINE CHECKLIST
-          </h3>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setIsAdding(true)}>
-            <Plus className="h-3 w-3" /> Add Item
-          </Button>
-        </div>
+      {/* ─── TWO COLUMN LAYOUT: Checklist + Tools ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* LEFT: CHECKLIST */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              DISCIPLINE CHECKLIST
+            </h3>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setIsAdding(true)}>
+              <Plus className="h-3 w-3" /> Add Item
+            </Button>
+          </div>
 
-        <div className="space-y-2">
-          {checklistItems.map(item => (
-            <div key={item.id} className="flex items-center gap-3 group py-1.5">
-              <Checkbox
-                checked={!!checked[item.id]}
-                onCheckedChange={() => toggle(item.id)}
-                className="h-5 w-5"
-              />
-              {editingId === item.id ? (
-                <div className="flex items-center gap-2 flex-1">
-                  <Input
-                    value={editLabel}
-                    onChange={e => setEditLabel(e.target.value)}
-                    className="h-7 text-sm flex-1"
-                    onKeyDown={e => e.key === 'Enter' && saveEdit()}
-                  />
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={saveEdit}>
-                    <Save className="h-3 w-3 text-success" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditingId(null)}>
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <span className={cn(
-                    'text-sm flex-1 transition-all cursor-pointer',
-                    checked[item.id] ? 'text-muted-foreground line-through' : 'text-foreground'
-                  )} onClick={() => toggle(item.id)}>
-                    {item.label}
-                  </span>
-                  <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => startEdit(item)}>
-                      <Pencil className="h-3 w-3 text-muted-foreground" />
+          <div className="space-y-2">
+            {checklistItems.map(item => (
+              <div key={item.id} className="flex items-center gap-3 group py-1.5">
+                <Checkbox
+                  checked={!!checked[item.id]}
+                  onCheckedChange={() => toggle(item.id)}
+                  className="h-5 w-5"
+                />
+                {editingId === item.id ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={editLabel}
+                      onChange={e => setEditLabel(e.target.value)}
+                      className="h-7 text-sm flex-1"
+                      onKeyDown={e => e.key === 'Enter' && saveEdit()}
+                    />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={saveEdit}>
+                      <Save className="h-3 w-3 text-success" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => deleteItem(item.id)}>
-                      <Trash2 className="h-3 w-3 text-destructive" />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditingId(null)}>
+                      <X className="h-3 w-3" />
                     </Button>
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <>
+                    <span className={cn(
+                      'text-sm flex-1 transition-all cursor-pointer',
+                      checked[item.id] ? 'text-muted-foreground line-through' : 'text-foreground'
+                    )} onClick={() => toggle(item.id)}>
+                      {item.label}
+                    </span>
+                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => startEdit(item)}>
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => deleteItem(item.id)}>
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
 
-          {/* Add new item inline */}
-          {isAdding && (
-            <div className="flex items-center gap-2 pt-2 border-t border-border/30">
-              <Input
-                placeholder="New checklist item..."
-                value={newLabel}
-                onChange={e => setNewLabel(e.target.value)}
-                className="h-8 text-sm flex-1"
-                autoFocus
-                onKeyDown={e => e.key === 'Enter' && addItem()}
-              />
-              <Button size="sm" className="h-8 text-xs gap-1" onClick={addItem}>
-                <Plus className="h-3 w-3" /> Add
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setIsAdding(false); setNewLabel(''); }}>
-                Cancel
-              </Button>
-            </div>
-          )}
+            {isAdding && (
+              <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+                <Input
+                  placeholder="New checklist item..."
+                  value={newLabel}
+                  onChange={e => setNewLabel(e.target.value)}
+                  className="h-8 text-sm flex-1"
+                  autoFocus
+                  onKeyDown={e => e.key === 'Enter' && addItem()}
+                />
+                <Button size="sm" className="h-8 text-xs gap-1" onClick={addItem}>
+                  <Plus className="h-3 w-3" /> Add
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setIsAdding(false); setNewLabel(''); }}>
+                  Cancel
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ─── TOOL QUICK ACTIONS ─── */}
-      {activeTools.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 mb-6">
+        {/* RIGHT: TOOL QUICK ACTIONS */}
+        <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Wrench className="h-4 w-4 text-primary" />
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -327,49 +327,57 @@ export default function DailyChecklist() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {activeTools.map(tool => {
-              const s = getToolStatus(tool);
-              const stats = getToolStats(tool);
-              return (
-                <div key={tool.id} className={cn(
-                  'border rounded-lg p-3 transition-all',
-                  s === 'worked' && 'border-success/40 bg-success/5',
-                  s === 'failed' && 'border-destructive/40 bg-destructive/5',
-                  s === 'pending' && 'border-border bg-muted/20',
-                )}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="text-sm font-semibold">{tool.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{stats.total}d tested · {stats.rate}% accuracy</p>
+          {activeTools.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeTools.map(tool => {
+                const s = getToolStatus(tool);
+                const toolStats = getToolStats(tool);
+                return (
+                  <div key={tool.id} className={cn(
+                    'border rounded-lg p-3 transition-all',
+                    s === 'worked' && 'border-success/40 bg-success/5',
+                    s === 'failed' && 'border-destructive/40 bg-destructive/5',
+                    s === 'pending' && 'border-border bg-muted/20',
+                  )}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-semibold">{tool.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{toolStats.total}d tested · {toolStats.rate}% accuracy</p>
+                      </div>
+                      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded',
+                        tool.status === 'Validated' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
+                      )}>{tool.status}</span>
                     </div>
-                    <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded',
-                      tool.status === 'Validated' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
-                    )}>{tool.status}</span>
-                  </div>
 
-                  {s === 'pending' ? (
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 text-success border-success/30 hover:bg-success/10" onClick={() => markTool(tool.id, true)}>
-                        <CheckCircle className="h-3 w-3" /> Worked
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => markTool(tool.id, false)}>
-                        <X className="h-3 w-3" /> Failed
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className={cn('text-xs font-medium text-center py-1 rounded',
-                      s === 'worked' ? 'text-success' : 'text-destructive'
-                    )}>
-                      {s === 'worked' ? '✔ Worked Today' : '✖ Did Not Work'}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    {s === 'pending' ? (
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 text-success border-success/30 hover:bg-success/10" onClick={() => markTool(tool.id, true)}>
+                          <CheckCircle className="h-3 w-3" /> Worked
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 h-7 text-xs gap-1 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => markTool(tool.id, false)}>
+                          <X className="h-3 w-3" /> Failed
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className={cn('text-xs font-medium text-center py-1 rounded',
+                        s === 'worked' ? 'text-success' : 'text-destructive'
+                      )}>
+                        {s === 'worked' ? '✔ Worked Today' : '✖ Did Not Work'}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground/60">
+              <Wrench className="h-8 w-8 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No active tools yet.</p>
+              <p className="text-xs mt-1">Add tools in the Research Lab to track them here.</p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* ─── INSIGHT ─── */}
       {stats.total >= 3 && (
