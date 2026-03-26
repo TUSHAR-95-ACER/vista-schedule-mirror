@@ -23,7 +23,7 @@ import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
-import ToolPanel from "./pages/ToolPanel";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,7 +55,7 @@ const App = () => (
             <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/daily-checklist" element={<DailyChecklist />} />
-            <Route path="/tool-panel" element={<ToolPanel />} />
+            
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
