@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { CONFLUENCE_OPTIONS, SETUPS, Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan } from '@/types/trading';
 import { supabase } from '@/integrations/supabase/client';
+
+// Cast supabase client to bypass empty generated types (tables created via migration)
+const db = supabase as any;
 import { useAuth } from '@/contexts/AuthContext';
 import {
   tradeToDb, dbToTrade, accountToDb, dbToAccount,
