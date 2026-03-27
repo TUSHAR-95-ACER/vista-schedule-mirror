@@ -62,6 +62,13 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { isPageEnabled } = usePageVisibility();
+
+  const filteredSections = sections.map(section => ({
+    ...section,
+    items: section.items.filter(item => item.path === '/settings' || isPageEnabled(item.path)),
+  })).filter(section => section.items.length > 0);
+
   return (
     <aside className={cn(
       "flex flex-col h-screen bg-card border-r border-border transition-all duration-300",
