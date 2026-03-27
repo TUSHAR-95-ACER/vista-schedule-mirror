@@ -35,40 +35,42 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/trades" element={<Trades />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/psychology" element={<Psychology />} />
-            <Route path="/mistakes" element={<Mistakes />} />
-            <Route path="/weekly-plan" element={<WeeklyPlan />} />
-            <Route path="/daily-plan" element={<DailyPlan />} />
-            <Route path="/notebook" element={<Notebook />} />
-            <Route path="/weekly-review" element={<WeeklyReview />} />
-            <Route path="/setup-playbook" element={<SetupPlaybook />} />
-            <Route path="/behavior-patterns" element={<BehaviorPatterns />} />
-            <Route path="/trade-quality" element={<TradeQuality />} />
-            <Route path="/ai-insights" element={<AIInsights />} />
-            <Route path="/trading-rules" element={<TradingRules />} />
-            <Route path="/bias-analytics" element={<BiasAnalytics />} />
-            <Route path="/control-center" element={<ControlCenter />} />
-            <Route path="/research-lab" element={<ResearchLab />} />
-            <Route path="/daily-checklist" element={<DailyChecklist />} />
-            <Route path="/backtesting-lab" element={<BacktestingLab />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <PageVisibilityProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/trades" element={<Trades />} />
+              <Route path="/accounts" element={<Accounts />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/psychology" element={<Psychology />} />
+              <Route path="/mistakes" element={<Mistakes />} />
+              <Route path="/weekly-plan" element={<WeeklyPlan />} />
+              <Route path="/daily-plan" element={<DailyPlan />} />
+              <Route path="/notebook" element={<Notebook />} />
+              <Route path="/weekly-review" element={<WeeklyReview />} />
+              <Route path="/setup-playbook" element={<SetupPlaybook />} />
+              <Route path="/behavior-patterns" element={<BehaviorPatterns />} />
+              <Route path="/trade-quality" element={<TradeQuality />} />
+              <Route path="/ai-insights" element={<AIInsights />} />
+              <Route path="/trading-rules" element={<TradingRules />} />
+              <Route path="/bias-analytics" element={<BiasAnalytics />} />
+              <Route path="/control-center" element={<ControlCenter />} />
+              <Route path="/research-lab" element={<ResearchLab />} />
+              <Route path="/daily-checklist" element={<DailyChecklist />} />
+              <Route path="/backtesting-lab" element={<BacktestingLab />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </PageVisibilityProvider>
   </QueryClientProvider>
 );
 
