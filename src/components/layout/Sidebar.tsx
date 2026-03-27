@@ -59,7 +59,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { signOut } = useAuth();
   return (
     <aside className={cn(
       "flex flex-col h-screen bg-card border-r border-border transition-all duration-300",
