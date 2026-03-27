@@ -52,6 +52,7 @@ const sections: NavSection[] = [
     items: [
       { path: '/trading-rules', label: 'Trading Rules', icon: Shield },
       { path: '/control-center', label: 'Control Center', icon: Sliders },
+      { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];
