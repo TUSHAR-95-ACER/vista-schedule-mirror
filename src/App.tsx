@@ -27,7 +27,7 @@ import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
 import BacktestingLab from "./pages/BacktestingLab";
 import CalendarPage from "./pages/CalendarPage";
-
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
