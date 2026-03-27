@@ -23,6 +23,7 @@ import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
+import BacktestingLab from "./pages/BacktestingLab";
 
 import NotFound from "./pages/NotFound";
 
@@ -55,7 +56,7 @@ const App = () => (
             <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/daily-checklist" element={<DailyChecklist />} />
-            
+            <Route path="/backtesting-lab" element={<BacktestingLab />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
