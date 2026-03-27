@@ -27,7 +27,7 @@ import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
 import BacktestingLab from "./pages/BacktestingLab";
 import CalendarPage from "./pages/CalendarPage";
-
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +62,7 @@ const App = () => (
             <Route path="/daily-checklist" element={<DailyChecklist />} />
             <Route path="/backtesting-lab" element={<BacktestingLab />} />
             <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

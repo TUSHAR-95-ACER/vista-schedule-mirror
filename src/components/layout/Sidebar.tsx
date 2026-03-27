@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePageVisibility } from '@/contexts/PageVisibilityContext';
 import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   ChevronLeft, ChevronRight, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
@@ -51,6 +52,7 @@ const sections: NavSection[] = [
     items: [
       { path: '/trading-rules', label: 'Trading Rules', icon: Shield },
       { path: '/control-center', label: 'Control Center', icon: Sliders },
+      { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];
@@ -60,6 +62,13 @@ export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { isPageEnabled } = usePageVisibility();
+
+  const filteredSections = sections.map(section => ({
+    ...section,
+    items: section.items.filter(item => item.path === '/settings' || isPageEnabled(item.path)),
+  })).filter(section => section.items.length > 0);
+
   return (
     <aside className={cn(
       "flex flex-col h-screen bg-card border-r border-border transition-all duration-300",
@@ -78,7 +87,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 py-3 overflow-y-auto scrollbar-hide">
-        {sections.map(section => (
+        {filteredSections.map(section => (
           <div key={section.title} className="mb-4">
             {!collapsed && <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-widest text-foreground">{section.title}</p>}
             {collapsed ? (
