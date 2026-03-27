@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Trades from "./pages/Trades";
 import Accounts from "./pages/Accounts";
@@ -24,6 +26,7 @@ import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
 import BacktestingLab from "./pages/BacktestingLab";
+import CalendarPage from "./pages/CalendarPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -36,7 +39,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route element={<AppLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/trades" element={<Trades />} />
             <Route path="/accounts" element={<Accounts />} />
@@ -57,6 +61,7 @@ const App = () => (
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/daily-checklist" element={<DailyChecklist />} />
             <Route path="/backtesting-lab" element={<BacktestingLab />} />
+            <Route path="/calendar" element={<CalendarPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

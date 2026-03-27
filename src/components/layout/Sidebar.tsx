@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   ChevronLeft, ChevronRight, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
@@ -58,7 +59,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { signOut } = useAuth();
   return (
     <aside className={cn(
       "flex flex-col h-screen bg-card border-r border-border transition-all duration-300",
@@ -115,10 +116,18 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <button onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center h-10 border-t border-border text-foreground hover:bg-accent transition-colors shrink-0">
-        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-      </button>
+      {/* Logout + Collapse */}
+      <div className="border-t border-border shrink-0">
+        <button onClick={signOut}
+          className="flex items-center gap-2 w-full px-4 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors">
+          <LogOut className="h-4 w-4" />
+          {!collapsed && <span>Logout</span>}
+        </button>
+        <button onClick={() => setCollapsed(!collapsed)}
+          className="flex items-center justify-center w-full h-10 border-t border-border text-foreground hover:bg-accent transition-colors">
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
     </aside>
   );
 }
