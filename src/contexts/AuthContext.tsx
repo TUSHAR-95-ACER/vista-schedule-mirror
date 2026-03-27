@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable';
 
 interface AuthContextType {
   user: User | null;
@@ -36,16 +35,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-      extraParams: {
-        prompt: 'select_account',
-      },
-    });
-
-    if (result?.error) {
+    try {
+      // Dynamic import to avoid duplicate React instance at module load
+      const { lovable } = await import('@/integrations/lovable');
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: 'select_account' },
+      });
+      if (result?.error) {
+        setLoading(false);
+        throw result.error;
+      }
+    } catch (err) {
       setLoading(false);
-      throw result.error;
+      throw err;
     }
   };
 
