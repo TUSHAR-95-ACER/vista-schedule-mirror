@@ -56,7 +56,7 @@ const App = () => (
             <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/daily-checklist" element={<DailyChecklist />} />
-            
+            <Route path="/backtesting-lab" element={<BacktestingLab />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
