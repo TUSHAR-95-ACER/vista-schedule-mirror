@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePageVisibility } from '@/contexts/PageVisibilityContext';
 import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   ChevronLeft, ChevronRight, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
