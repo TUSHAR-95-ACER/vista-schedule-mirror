@@ -98,13 +98,13 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
 
     Promise.all([
-      supabase.from('trades').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
-      supabase.from('trading_accounts').select('*').eq('user_id', uid),
-      supabase.from('transactions').select('*').eq('user_id', uid),
-      supabase.from('scale_events').select('*').eq('user_id', uid),
-      supabase.from('weekly_plans').select('*').eq('user_id', uid),
-      supabase.from('daily_plans').select('*').eq('user_id', uid),
-      supabase.from('user_settings').select('*').eq('user_id', uid).maybeSingle(),
+      db.from('trades').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+      db.from('trading_accounts').select('*').eq('user_id', uid),
+      db.from('transactions').select('*').eq('user_id', uid),
+      db.from('scale_events').select('*').eq('user_id', uid),
+      db.from('weekly_plans').select('*').eq('user_id', uid),
+      db.from('daily_plans').select('*').eq('user_id', uid),
+      db.from('user_settings').select('*').eq('user_id', uid).maybeSingle(),
     ]).then(([tradesRes, accountsRes, txRes, scaleRes, wpRes, dpRes, settingsRes]) => {
       if (tradesRes.data) setTrades(tradesRes.data.map(dbToTrade));
       if (accountsRes.data) setAccounts(accountsRes.data.map(dbToAccount));
@@ -133,7 +133,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
         setNotebookCategories(parse(s.notebook_categories, DEFAULT_NOTEBOOK_CATS));
       } else if (user) {
         // Create default settings row
-        supabase.from('user_settings').insert({
+        db.from('user_settings').insert({
           user_id: uid,
           custom_setups: [...SETUPS], custom_assets: [], custom_confluences: [...CONFLUENCE_OPTIONS],
           markets: DEFAULT_MARKETS, sessions: DEFAULT_SESSIONS, conditions: DEFAULT_CONDITIONS,
@@ -149,85 +149,85 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   // Helper: save settings to Supabase
   const saveSettings = useCallback((updates: Record<string, any>) => {
     if (!user) return;
-    supabase.from('user_settings').update({ ...updates, updated_at: new Date().toISOString() })
+    db.from('user_settings').update({ ...updates, updated_at: new Date().toISOString() })
       .eq('user_id', user.id).then(() => {});
   }, [user]);
 
   // ── Trades CRUD ──
   const addTrade = useCallback((trade: Trade) => {
     setTrades(s => [trade, ...s]);
-    if (user) supabase.from('trades').insert(tradeToDb(trade, user.id) as any).then(() => {});
+    if (user) db.from('trades').insert(tradeToDb(trade, user.id) as any).then(() => {});
   }, [user]);
 
   const updateTrade = useCallback((trade: Trade) => {
     setTrades(s => s.map(t => t.id === trade.id ? trade : t));
     if (user) {
       const { id, ...rest } = tradeToDb(trade, user.id);
-      supabase.from('trades').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
+      db.from('trades').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
 
   const deleteTrade = useCallback((id: string) => {
     setTrades(s => s.filter(t => t.id !== id));
-    if (user) supabase.from('trades').delete().eq('id', id).eq('user_id', user.id).then(() => {});
+    if (user) db.from('trades').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
   // ── Accounts CRUD ──
   const addAccount = useCallback((account: TradingAccount) => {
     setAccounts(s => [account, ...s]);
-    if (user) supabase.from('trading_accounts').insert(accountToDb(account, user.id) as any).then(() => {});
+    if (user) db.from('trading_accounts').insert(accountToDb(account, user.id) as any).then(() => {});
   }, [user]);
 
   const updateAccount = useCallback((account: TradingAccount) => {
     setAccounts(s => s.map(a => a.id === account.id ? account : a));
     if (user) {
       const { id, ...rest } = accountToDb(account, user.id);
-      supabase.from('trading_accounts').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
+      db.from('trading_accounts').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
 
   const deleteAccount = useCallback((id: string) => {
     setAccounts(s => s.filter(a => a.id !== id));
-    if (user) supabase.from('trading_accounts').delete().eq('id', id).eq('user_id', user.id).then(() => {});
+    if (user) db.from('trading_accounts').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
   // ── Transactions ──
   const addTransaction = useCallback((tx: Transaction) => {
     setTransactions(s => [...s, tx]);
-    if (user) supabase.from('transactions').insert(txToDb(tx, user.id) as any).then(() => {});
+    if (user) db.from('transactions').insert(txToDb(tx, user.id) as any).then(() => {});
   }, [user]);
 
   // ── Scale Events ──
   const addScaleEvent = useCallback((event: ScaleEvent) => {
     setScaleEvents(s => [...s, event]);
-    if (user) supabase.from('scale_events').insert(scaleToDb(event, user.id) as any).then(() => {});
+    if (user) db.from('scale_events').insert(scaleToDb(event, user.id) as any).then(() => {});
   }, [user]);
 
   // ── Weekly Plans ──
   const addWeeklyPlan = useCallback((plan: WeeklyPlan) => {
     setWeeklyPlans(s => [...s, plan]);
-    if (user) supabase.from('weekly_plans').insert(weeklyPlanToDb(plan, user.id) as any).then(() => {});
+    if (user) db.from('weekly_plans').insert(weeklyPlanToDb(plan, user.id) as any).then(() => {});
   }, [user]);
 
   const updateWeeklyPlan = useCallback((plan: WeeklyPlan) => {
     setWeeklyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     if (user) {
       const { id, ...rest } = weeklyPlanToDb(plan, user.id);
-      supabase.from('weekly_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
+      db.from('weekly_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
 
   // ── Daily Plans ──
   const addDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => [...s, plan]);
-    if (user) supabase.from('daily_plans').insert(dailyPlanToDb(plan, user.id) as any).then(() => {});
+    if (user) db.from('daily_plans').insert(dailyPlanToDb(plan, user.id) as any).then(() => {});
   }, [user]);
 
   const updateDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     if (user) {
       const { id, ...rest } = dailyPlanToDb(plan, user.id);
-      supabase.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
+      db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
 
