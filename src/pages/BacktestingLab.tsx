@@ -513,7 +513,7 @@ export default function BacktestingLab() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground flex items-center gap-1"><Star className="h-3 w-3" /> Trade Grade</Label>
-                <Select value={entryForm.grade} onValueChange={v => setEntryForm(f => ({ ...f, grade: v }))}>
+                <Select value={entryForm.grade} onValueChange={(v: string) => setEntryForm(f => ({ ...f, grade: v as typeof f.grade }))}>
                   <SelectTrigger><SelectValue placeholder="Grade" /></SelectTrigger>
                   <SelectContent>{GRADES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
                 </Select>
