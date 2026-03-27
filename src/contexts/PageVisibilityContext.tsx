@@ -35,15 +35,25 @@ interface PageVisibilityContextType {
   disableAllExcept: (paths: string[]) => void;
 }
 
-const PageVisibilityContext = createContext<PageVisibilityContextType | null>(null);
-
 const STORAGE_KEY = 'page-visibility-prefs';
 
 function getDefaults(): Record<string, boolean> {
   const defaults: Record<string, boolean> = {};
-  TOGGLEABLE_PAGES.forEach(p => { defaults[p.path] = true; });
+  TOGGLEABLE_PAGES.forEach((p) => {
+    defaults[p.path] = true;
+  });
   return defaults;
 }
+
+const fallbackContext: PageVisibilityContextType = {
+  isPageEnabled: () => true,
+  togglePage: () => undefined,
+  enabledPages: getDefaults(),
+  enableAll: () => undefined,
+  disableAllExcept: () => undefined,
+};
+
+const PageVisibilityContext = createContext<PageVisibilityContextType>(fallbackContext);
 
 export function PageVisibilityProvider({ children }: { children: ReactNode }) {
   const [enabledPages, setEnabledPages] = useState<Record<string, boolean>>(() => {
@@ -51,10 +61,10 @@ export function PageVisibilityProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Merge with defaults so new pages are enabled
         return { ...getDefaults(), ...parsed };
       }
     } catch {}
+
     return getDefaults();
   });
 
@@ -65,14 +75,16 @@ export function PageVisibilityProvider({ children }: { children: ReactNode }) {
   const isPageEnabled = (path: string) => enabledPages[path] !== false;
 
   const togglePage = (path: string) => {
-    setEnabledPages(prev => ({ ...prev, [path]: !prev[path] }));
+    setEnabledPages((prev) => ({ ...prev, [path]: !prev[path] }));
   };
 
   const enableAll = () => setEnabledPages(getDefaults());
 
   const disableAllExcept = (paths: string[]) => {
     const next: Record<string, boolean> = {};
-    TOGGLEABLE_PAGES.forEach(p => { next[p.path] = paths.includes(p.path); });
+    TOGGLEABLE_PAGES.forEach((p) => {
+      next[p.path] = paths.includes(p.path);
+    });
     setEnabledPages(next);
   };
 
@@ -84,7 +96,5 @@ export function PageVisibilityProvider({ children }: { children: ReactNode }) {
 }
 
 export function usePageVisibility() {
-  const ctx = useContext(PageVisibilityContext);
-  if (!ctx) throw new Error('usePageVisibility must be used within PageVisibilityProvider');
-  return ctx;
+  return useContext(PageVisibilityContext);
 }
