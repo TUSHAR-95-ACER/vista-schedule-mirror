@@ -14,7 +14,462 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_plans: {
+        Row: {
+          analysis_video_url: string | null
+          created_at: string
+          daily_bias: string
+          date: string
+          id: string
+          max_trades: number
+          news_items: Json | null
+          note: string | null
+          pairs: Json | null
+          result_chart_image: string | null
+          result_narrative: string | null
+          reviewed: boolean | null
+          risk_limit: string | null
+          session_focus: string
+          took_trades: boolean | null
+          user_id: string
+        }
+        Insert: {
+          analysis_video_url?: string | null
+          created_at?: string
+          daily_bias?: string
+          date: string
+          id: string
+          max_trades?: number
+          news_items?: Json | null
+          note?: string | null
+          pairs?: Json | null
+          result_chart_image?: string | null
+          result_narrative?: string | null
+          reviewed?: boolean | null
+          risk_limit?: string | null
+          session_focus?: string
+          took_trades?: boolean | null
+          user_id: string
+        }
+        Update: {
+          analysis_video_url?: string | null
+          created_at?: string
+          daily_bias?: string
+          date?: string
+          id?: string
+          max_trades?: number
+          news_items?: Json | null
+          note?: string | null
+          pairs?: Json | null
+          result_chart_image?: string | null
+          result_narrative?: string | null
+          reviewed?: boolean | null
+          risk_limit?: string | null
+          session_focus?: string
+          took_trades?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scale_events: {
+        Row: {
+          account_id: string
+          created_at: string
+          date: string
+          id: string
+          new_size: number
+          note: string | null
+          old_size: number
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          date: string
+          id: string
+          new_size?: number
+          note?: string | null
+          old_size?: number
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          new_size?: number
+          note?: string | null
+          old_size?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          accounts: Json | null
+          actual_rr: number | null
+          asset: string
+          chart_link: string | null
+          confluences: Json | null
+          created_at: string
+          date: string
+          direction: string
+          entry_confluences: Json | null
+          entry_price: number
+          entry_time: string | null
+          execution_image: string | null
+          exit_price: number | null
+          exit_time: string | null
+          fees: number | null
+          grade: string | null
+          id: string
+          management: Json | null
+          market: string
+          market_condition: string
+          mistakes: Json | null
+          notes: string | null
+          pips: number | null
+          planned_rr: number
+          prediction_image: string | null
+          profit_loss: number
+          psychology: Json | null
+          quantity: number
+          result: string
+          session: string
+          setup: string
+          stop_loss: number
+          take_profit: number
+          target_confluences: Json | null
+          user_id: string
+        }
+        Insert: {
+          accounts?: Json | null
+          actual_rr?: number | null
+          asset: string
+          chart_link?: string | null
+          confluences?: Json | null
+          created_at?: string
+          date: string
+          direction: string
+          entry_confluences?: Json | null
+          entry_price?: number
+          entry_time?: string | null
+          execution_image?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          fees?: number | null
+          grade?: string | null
+          id: string
+          management?: Json | null
+          market: string
+          market_condition: string
+          mistakes?: Json | null
+          notes?: string | null
+          pips?: number | null
+          planned_rr?: number
+          prediction_image?: string | null
+          profit_loss?: number
+          psychology?: Json | null
+          quantity?: number
+          result: string
+          session: string
+          setup: string
+          stop_loss?: number
+          take_profit?: number
+          target_confluences?: Json | null
+          user_id: string
+        }
+        Update: {
+          accounts?: Json | null
+          actual_rr?: number | null
+          asset?: string
+          chart_link?: string | null
+          confluences?: Json | null
+          created_at?: string
+          date?: string
+          direction?: string
+          entry_confluences?: Json | null
+          entry_price?: number
+          entry_time?: string | null
+          execution_image?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          fees?: number | null
+          grade?: string | null
+          id?: string
+          management?: Json | null
+          market?: string
+          market_condition?: string
+          mistakes?: Json | null
+          notes?: string | null
+          pips?: number | null
+          planned_rr?: number
+          prediction_image?: string | null
+          profit_loss?: number
+          psychology?: Json | null
+          quantity?: number
+          result?: string
+          session?: string
+          setup?: string
+          stop_loss?: number
+          take_profit?: number
+          target_confluences?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trading_accounts: {
+        Row: {
+          broker: string
+          created_at: string
+          currency: string
+          current_size: number
+          daily_drawdown_limit: number | null
+          daily_drawdown_percent: number | null
+          id: string
+          initial_size: number
+          max_drawdown_limit: number | null
+          max_drawdown_percent: number | null
+          name: string
+          payouts: Json | null
+          phase1_target: number | null
+          phase1_target_percent: number | null
+          phase2_target: number | null
+          phase2_target_percent: number | null
+          phase3_target: number | null
+          phase3_target_percent: number | null
+          stage: string | null
+          starting_balance: number
+          status: string | null
+          steps: number | null
+          target_balance: number | null
+          target_percent: number | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          broker?: string
+          created_at?: string
+          currency?: string
+          current_size?: number
+          daily_drawdown_limit?: number | null
+          daily_drawdown_percent?: number | null
+          id: string
+          initial_size?: number
+          max_drawdown_limit?: number | null
+          max_drawdown_percent?: number | null
+          name: string
+          payouts?: Json | null
+          phase1_target?: number | null
+          phase1_target_percent?: number | null
+          phase2_target?: number | null
+          phase2_target_percent?: number | null
+          phase3_target?: number | null
+          phase3_target_percent?: number | null
+          stage?: string | null
+          starting_balance?: number
+          status?: string | null
+          steps?: number | null
+          target_balance?: number | null
+          target_percent?: number | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          broker?: string
+          created_at?: string
+          currency?: string
+          current_size?: number
+          daily_drawdown_limit?: number | null
+          daily_drawdown_percent?: number | null
+          id?: string
+          initial_size?: number
+          max_drawdown_limit?: number | null
+          max_drawdown_percent?: number | null
+          name?: string
+          payouts?: Json | null
+          phase1_target?: number | null
+          phase1_target_percent?: number | null
+          phase2_target?: number | null
+          phase2_target_percent?: number | null
+          phase3_target?: number | null
+          phase3_target_percent?: number | null
+          stage?: string | null
+          starting_balance?: number
+          status?: string | null
+          steps?: number | null
+          target_balance?: number | null
+          target_percent?: number | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount?: number
+          created_at?: string
+          date: string
+          id: string
+          note?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          custom_assets: Json | null
+          custom_confluences: Json | null
+          custom_setups: Json | null
+          grades_list: Json | null
+          id: string
+          management_options: Json | null
+          markets: Json | null
+          notebook_categories: Json | null
+          psych_tags: Json | null
+          sessions: Json | null
+          updated_at: string
+          user_id: string
+          violations: Json | null
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          custom_assets?: Json | null
+          custom_confluences?: Json | null
+          custom_setups?: Json | null
+          grades_list?: Json | null
+          id?: string
+          management_options?: Json | null
+          markets?: Json | null
+          notebook_categories?: Json | null
+          psych_tags?: Json | null
+          sessions?: Json | null
+          updated_at?: string
+          user_id: string
+          violations?: Json | null
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          custom_assets?: Json | null
+          custom_confluences?: Json | null
+          custom_setups?: Json | null
+          grades_list?: Json | null
+          id?: string
+          management_options?: Json | null
+          markets?: Json | null
+          notebook_categories?: Json | null
+          psych_tags?: Json | null
+          sessions?: Json | null
+          updated_at?: string
+          user_id?: string
+          violations?: Json | null
+        }
+        Relationships: []
+      }
+      weekly_plans: {
+        Row: {
+          analysis_video_url: string | null
+          bias: string
+          created_at: string
+          goals: string | null
+          id: string
+          levels: string | null
+          markets: Json | null
+          news_items: Json | null
+          news_result: string | null
+          pair_analyses: Json | null
+          reviewed: boolean | null
+          risk: string | null
+          setups: Json | null
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          analysis_video_url?: string | null
+          bias?: string
+          created_at?: string
+          goals?: string | null
+          id: string
+          levels?: string | null
+          markets?: Json | null
+          news_items?: Json | null
+          news_result?: string | null
+          pair_analyses?: Json | null
+          reviewed?: boolean | null
+          risk?: string | null
+          setups?: Json | null
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          analysis_video_url?: string | null
+          bias?: string
+          created_at?: string
+          goals?: string | null
+          id?: string
+          levels?: string | null
+          markets?: Json | null
+          news_items?: Json | null
+          news_result?: string | null
+          pair_analyses?: Json | null
+          reviewed?: boolean | null
+          risk?: string | null
+          setups?: Json | null
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
