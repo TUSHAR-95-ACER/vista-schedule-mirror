@@ -23,6 +23,7 @@ import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
 import DailyChecklist from "./pages/DailyChecklist";
+import BacktestingLab from "./pages/BacktestingLab";
 
 import NotFound from "./pages/NotFound";
 
