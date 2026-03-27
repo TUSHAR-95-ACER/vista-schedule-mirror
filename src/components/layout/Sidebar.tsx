@@ -87,7 +87,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 py-3 overflow-y-auto scrollbar-hide">
-        {sections.map(section => (
+        {filteredSections.map(section => (
           <div key={section.title} className="mb-4">
             {!collapsed && <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-widest text-foreground">{section.title}</p>}
             {collapsed ? (
