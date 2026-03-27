@@ -118,7 +118,7 @@ export function Sidebar() {
 
       {/* Logout + Collapse */}
       <div className="border-t border-border shrink-0">
-        <button onClick={() => { const { signOut } = useAuth(); signOut(); }}
+        <button onClick={signOut}
           className="flex items-center gap-2 w-full px-4 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors">
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Logout</span>}
