@@ -200,11 +200,12 @@ export default function BacktestingLab() {
     const e = session.entries;
     const taken = e.filter(x => x.type === 'taken').length;
     const missed = e.filter(x => x.type === 'missed').length;
+    const untriggered = e.filter(x => x.type === 'untriggered').length;
     const valid = e.filter(x => x.type === 'valid').length;
     const wins = e.filter(x => x.result === 'Win').length;
     const losses = e.filter(x => x.result === 'Loss').length;
     const be = e.filter(x => x.result === 'BE').length;
-    const totalSetups = valid + taken + missed;
+    const totalSetups = valid + taken + missed + untriggered;
     const rrs = e.filter(x => x.rr !== undefined).map(x => x.rr!);
     const avgRR = rrs.length ? (rrs.reduce((a, b) => a + b, 0) / rrs.length).toFixed(2) : '—';
     const bestRR = rrs.length ? Math.max(...rrs).toFixed(1) : '—';
