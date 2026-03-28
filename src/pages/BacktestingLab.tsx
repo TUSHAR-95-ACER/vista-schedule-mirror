@@ -28,7 +28,7 @@ type TradeGrade = 'A+' | 'A' | 'B' | 'C';
 
 interface BacktestEntry {
   id: string;
-  type: 'valid' | 'taken' | 'missed';
+  type: 'valid' | 'taken' | 'missed' | 'untriggered';
   day: string;
   setupType?: string;
   bias?: 'Bullish' | 'Bearish';
@@ -44,6 +44,8 @@ interface BacktestEntry {
   session?: string;
   emotionBefore?: string;
   confluenceCount?: number;
+  entryConfluences?: string[];
+  targetConfluences?: string[];
 }
 
 interface BacktestSession {
