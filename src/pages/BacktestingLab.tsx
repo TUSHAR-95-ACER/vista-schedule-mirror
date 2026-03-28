@@ -595,62 +595,46 @@ export default function BacktestingLab() {
               </Select>
             </div>
 
-            {/* Entry Confluences - custom tags */}
+            {/* Entry Confluences - selectable from Technical Points */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Entry Confluences</Label>
-              <div className="flex flex-wrap gap-1.5 mb-1.5">
-                {entryForm.entryConfluences.map((c, i) => (
-                  <Badge key={i} variant="secondary" className="gap-1 text-xs">
-                    {c}
-                    <button onClick={() => setEntryForm(f => ({ ...f, entryConfluences: f.entryConfluences.filter((_, idx) => idx !== i) }))}
-                      className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
-                  </Badge>
-                ))}
+              <div className="flex flex-wrap gap-1.5">
+                {customConfluences.map(c => {
+                  const selected = entryForm.entryConfluences.includes(c);
+                  return (
+                    <Badge key={c} variant={selected ? "default" : "outline"}
+                      className={`cursor-pointer text-xs transition-colors ${selected ? '' : 'hover:bg-accent'}`}
+                      onClick={() => setEntryForm(f => ({
+                        ...f,
+                        entryConfluences: selected ? f.entryConfluences.filter(x => x !== c) : [...f.entryConfluences, c]
+                      }))}>
+                      {c}
+                    </Badge>
+                  );
+                })}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="Add entry point..." value={entryForm.newEntryConf}
-                  onChange={e => setEntryForm(f => ({ ...f, newEntryConf: e.target.value }))}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && entryForm.newEntryConf.trim()) {
-                      e.preventDefault();
-                      setEntryForm(f => ({ ...f, entryConfluences: [...f.entryConfluences, f.newEntryConf.trim()], newEntryConf: '' }));
-                    }
-                  }} />
-                <Button type="button" size="sm" variant="outline" onClick={() => {
-                  if (entryForm.newEntryConf.trim()) {
-                    setEntryForm(f => ({ ...f, entryConfluences: [...f.entryConfluences, f.newEntryConf.trim()], newEntryConf: '' }));
-                  }
-                }}><Plus className="h-3 w-3" /></Button>
-              </div>
+              {customConfluences.length === 0 && <p className="text-[10px] text-muted-foreground">Add technical points in Control Center first.</p>}
             </div>
 
-            {/* Target Confluences - custom tags */}
+            {/* Target Confluences - selectable from Technical Points */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Target Confluences</Label>
-              <div className="flex flex-wrap gap-1.5 mb-1.5">
-                {entryForm.targetConfluences.map((c, i) => (
-                  <Badge key={i} variant="secondary" className="gap-1 text-xs">
-                    {c}
-                    <button onClick={() => setEntryForm(f => ({ ...f, targetConfluences: f.targetConfluences.filter((_, idx) => idx !== i) }))}
-                      className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
-                  </Badge>
-                ))}
+              <div className="flex flex-wrap gap-1.5">
+                {customConfluences.map(c => {
+                  const selected = entryForm.targetConfluences.includes(c);
+                  return (
+                    <Badge key={c} variant={selected ? "default" : "outline"}
+                      className={`cursor-pointer text-xs transition-colors ${selected ? '' : 'hover:bg-accent'}`}
+                      onClick={() => setEntryForm(f => ({
+                        ...f,
+                        targetConfluences: selected ? f.targetConfluences.filter(x => x !== c) : [...f.targetConfluences, c]
+                      }))}>
+                      {c}
+                    </Badge>
+                  );
+                })}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="Add target point..." value={entryForm.newTargetConf}
-                  onChange={e => setEntryForm(f => ({ ...f, newTargetConf: e.target.value }))}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && entryForm.newTargetConf.trim()) {
-                      e.preventDefault();
-                      setEntryForm(f => ({ ...f, targetConfluences: [...f.targetConfluences, f.newTargetConf.trim()], newTargetConf: '' }));
-                    }
-                  }} />
-                <Button type="button" size="sm" variant="outline" onClick={() => {
-                  if (entryForm.newTargetConf.trim()) {
-                    setEntryForm(f => ({ ...f, targetConfluences: [...f.targetConfluences, f.newTargetConf.trim()], newTargetConf: '' }));
-                  }
-                }}><Plus className="h-3 w-3" /></Button>
-              </div>
+              {customConfluences.length === 0 && <p className="text-[10px] text-muted-foreground">Add technical points in Control Center first.</p>}
             </div>
 
             {entryForm.newsPresent && entryForm.newsPresent !== 'None' && (
