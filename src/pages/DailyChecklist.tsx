@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, CheckCircle, AlertTriangle, Clock, Plus, Pencil, Trash2, X, Save, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 
 // ─── CHECKLIST STORAGE ───
 const CHECKLIST_KEY = 'ef_daily_checklist';
@@ -32,25 +34,6 @@ const DEFAULT_ITEMS: ChecklistItem[] = [
   { id: 'no_emotional', label: 'No emotional trading' },
 ];
 
-function loadItems(): ChecklistItem[] {
-  try {
-    const stored = localStorage.getItem(CUSTOM_ITEMS_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_ITEMS;
-  } catch { return DEFAULT_ITEMS; }
-}
-
-function saveItems(items: ChecklistItem[]) {
-  localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify(items));
-}
-
-function loadHistory(): ChecklistDay[] {
-  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || '[]'); } catch { return []; }
-}
-
-function saveHistory(h: ChecklistDay[]) {
-  localStorage.setItem(CHECKLIST_KEY, JSON.stringify(h));
-}
-
 // ─── TOOL HELPERS ───
 interface ToolEntry {
   id: string; name: string; category: string; description: string;
@@ -58,32 +41,13 @@ interface ToolEntry {
   bestSession: string; bestCondition: string;
 }
 
-function loadTools(): ToolEntry[] {
-  try { return JSON.parse(localStorage.getItem('ef_tool_testing') || '[]'); } catch { return []; }
-}
-
-function saveTools(tools: ToolEntry[]) {
-  localStorage.setItem('ef_tool_testing', JSON.stringify(tools));
-}
-
-// ─── EXPORTS ───
-export function getDailyChecklistScore(): { score: number; completed: boolean; date: string } {
-  const today = new Date().toISOString().split('T')[0];
-  const history = loadHistory();
-  const todayEntry = history.find(h => h.date === today);
-  return { score: todayEntry?.score || 0, completed: !!todayEntry && todayEntry.score > 0, date: today };
-}
-
-export function isChecklistPassed(): boolean {
-  return getDailyChecklistScore().score >= 60;
-}
-
 export default function DailyChecklist() {
+  const { user } = useAuth();
   const today = new Date().toISOString().split('T')[0];
 
   // Checklist items (customizable)
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(loadItems);
-  const [history, setHistory] = useState<ChecklistDay[]>(loadHistory);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(DEFAULT_ITEMS);
+  const [history, setHistory] = useState<ChecklistDay[]>([]);
   const todayEntry = useMemo(() => history.find(h => h.date === today), [history, today]);
   const [checked, setChecked] = useState<Record<string, boolean>>(() => todayEntry?.items || {});
 
@@ -94,7 +58,27 @@ export default function DailyChecklist() {
   const [editLabel, setEditLabel] = useState('');
 
   // Tools
-  const [tools, setTools] = useState<ToolEntry[]>(loadTools);
+  const [tools, setTools] = useState<ToolEntry[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setChecklistItems(DEFAULT_ITEMS);
+      setHistory([]);
+      setChecked({});
+      setTools([]);
+      return;
+    }
+
+    const loadedItems = loadUserStorage<ChecklistItem[]>(CUSTOM_ITEMS_KEY, user.id, DEFAULT_ITEMS);
+    const loadedHistory = loadUserStorage<ChecklistDay[]>(CHECKLIST_KEY, user.id, []);
+    const loadedTools = loadUserStorage<ToolEntry[]>('ef_tool_testing', user.id, []);
+    const loadedToday = loadedHistory.find(h => h.date === today);
+
+    setChecklistItems(loadedItems);
+    setHistory(loadedHistory);
+    setChecked(loadedToday?.items || {});
+    setTools(loadedTools);
+  }, [today, user]);
 
   // ─── CHECKLIST LOGIC ───
   const score = useMemo(() => {
@@ -106,12 +90,13 @@ export default function DailyChecklist() {
   const status = score >= 80 ? 'green' : score >= 50 ? 'yellow' : 'red';
 
   const persistChecklist = (updatedChecked: Record<string, boolean>) => {
+    if (!user) return;
     const done = checklistItems.filter(i => updatedChecked[i.id]).length;
     const newScore = checklistItems.length > 0 ? Math.round((done / checklistItems.length) * 100) : 0;
     const newHistory = history.filter(h => h.date !== today);
     newHistory.push({ date: today, items: updatedChecked, score: newScore });
     setHistory(newHistory);
-    saveHistory(newHistory);
+    saveUserStorage(CHECKLIST_KEY, user.id, newHistory);
   };
 
   const toggle = (id: string) => {
@@ -126,7 +111,7 @@ export default function DailyChecklist() {
     const id = `custom_${Date.now()}`;
     const updated = [...checklistItems, { id, label: newLabel.trim() }];
     setChecklistItems(updated);
-    saveItems(updated);
+    if (user) saveUserStorage(CUSTOM_ITEMS_KEY, user.id, updated);
     setNewLabel('');
     setIsAdding(false);
   };
@@ -134,7 +119,7 @@ export default function DailyChecklist() {
   const deleteItem = (id: string) => {
     const updated = checklistItems.filter(i => i.id !== id);
     setChecklistItems(updated);
-    saveItems(updated);
+    if (user) saveUserStorage(CUSTOM_ITEMS_KEY, user.id, updated);
     const newChecked = { ...checked };
     delete newChecked[id];
     setChecked(newChecked);
@@ -150,7 +135,7 @@ export default function DailyChecklist() {
     if (!editLabel.trim() || !editingId) return;
     const updated = checklistItems.map(i => i.id === editingId ? { ...i, label: editLabel.trim() } : i);
     setChecklistItems(updated);
-    saveItems(updated);
+    if (user) saveUserStorage(CUSTOM_ITEMS_KEY, user.id, updated);
     setEditingId(null);
     setEditLabel('');
   };
@@ -166,7 +151,7 @@ export default function DailyChecklist() {
       return { ...t, dailyChecks: checks };
     });
     setTools(updated);
-    saveTools(updated);
+    if (user) saveUserStorage('ef_tool_testing', user.id, updated);
   };
 
   const getToolStatus = (tool: ToolEntry) => {

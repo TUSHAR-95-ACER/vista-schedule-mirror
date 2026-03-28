@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, BookOpen, Tag, ImagePlus, X, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 
 interface NotebookEntry {
   id: string;
@@ -24,31 +26,10 @@ interface NotebookEntry {
 
 const STORAGE_KEY = 'ef_notebook_entries';
 
-function loadEntries(): NotebookEntry[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-
-function getSampleEntries(categories: string[]): NotebookEntry[] {
-  const samples: NotebookEntry[] = [
-    { id: crypto.randomUUID(), date: '2026-03-19', pair: 'XAUUSD', category: 'Pattern', bias: 'Bullish', keyLevels: '2340 support, 2365 resistance', notes: 'Double bottom forming at 2340 with bullish divergence on RSI. Expecting push to 2365.', createdAt: new Date().toISOString() },
-    { id: crypto.randomUUID(), date: '2026-03-18', pair: 'EURUSD', category: 'Missed Trade', bias: 'Bearish', keyLevels: '1.0850 - 1.0920', notes: 'Clear bearish OB rejection at 1.0920 but was away during London session. Would have been a clean short.', createdAt: new Date().toISOString() },
-    { id: crypto.randomUUID(), date: '2026-03-17', pair: 'GBPUSD', category: 'Opportunity Not Taken', bias: 'Bullish', keyLevels: '1.2650 support', notes: 'Liquidity sweep below 1.2650 followed by bullish engulfing. Hesitated and missed 80 pip move.', createdAt: new Date().toISOString() },
-    { id: crypto.randomUUID(), date: '2026-03-14', pair: 'NAS100', category: 'Observation', bias: 'Neutral', keyLevels: '18500 - 18800 range', notes: 'NAS100 consolidating in tight range. Waiting for breakout above 18800 or breakdown below 18500 for directional bias.', createdAt: new Date().toISOString() },
-    { id: crypto.randomUUID(), date: '2026-03-13', pair: 'XAUUSD', category: 'News Reaction', bias: 'Bullish', keyLevels: '2320 - 2350', notes: 'CPI came in hot, gold spiked to 2350 then pulled back. Initial reaction was bullish but follow-through was weak.', createdAt: new Date().toISOString() },
-    { id: crypto.randomUUID(), date: '2026-03-12', pair: 'USDJPY', category: 'Pattern', bias: 'Bearish', keyLevels: '152.00 resistance', notes: 'Triple top at 152.00 with bearish divergence. Expecting pullback to 150.50 area.', createdAt: new Date().toISOString() },
-  ];
-  return samples;
-}
-
 export default function Notebook() {
+  const { user } = useAuth();
   const { notebookCategories } = useTrading();
-  const [entries, setEntries] = useState<NotebookEntry[]>(() => {
-    const loaded = loadEntries();
-    if (loaded.length > 0) return loaded;
-    const samples = getSampleEntries(notebookCategories);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(samples));
-    return samples;
-  });
+  const [entries, setEntries] = useState<NotebookEntry[]>([]);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -57,7 +38,19 @@ export default function Notebook() {
   const [filterCat, setFilterCat] = useState('all');
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
 
-  const save = (updated: NotebookEntry[]) => { setEntries(updated); localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); };
+  useEffect(() => {
+    if (!user) {
+      setEntries([]);
+      return;
+    }
+
+    setEntries(loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []));
+  }, [user]);
+
+  const save = (updated: NotebookEntry[]) => {
+    setEntries(updated);
+    if (user) saveUserStorage(STORAGE_KEY, user.id, updated);
+  };
 
   const handleAdd = () => {
     if (!form.pair || !form.category) return;

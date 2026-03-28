@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, FlaskConical, CheckCircle, XCircle, Clock, Wrench, Pencil, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 
 // ─── STRATEGY TESTING ───
 interface Research {
@@ -48,49 +50,10 @@ interface ToolEntry {
 const STRATEGY_KEY = 'ef_research_lab';
 const TOOL_KEY = 'ef_tool_testing';
 
-function loadStrategies(): Research[] {
-  try { return JSON.parse(localStorage.getItem(STRATEGY_KEY) || '[]'); } catch { return []; }
-}
-
-function loadTools(): ToolEntry[] {
-  try { return JSON.parse(localStorage.getItem(TOOL_KEY) || '[]'); } catch { return []; }
-}
-
-function getDefaultTools(): ToolEntry[] {
-  const today = new Date();
-  const makeDays = (pattern: boolean[]) => {
-    return pattern.map((worked, i) => {
-      const d = new Date(today);
-      d.setDate(d.getDate() - (pattern.length - 1 - i));
-      return { date: d.toISOString().split('T')[0], worked, note: '' };
-    });
-  };
-  return [
-    { id: crypto.randomUUID(), name: 'Order Block', category: 'Price Action', description: 'Institutional order flow zones where price reacts strongly', status: 'Validated', dailyChecks: makeDays([true,true,false,true,true,false,true,true,true,false,true,true,false,true]), bestSession: 'London', bestCondition: 'Trending' },
-    { id: crypto.randomUUID(), name: 'Breaker Block', category: 'Price Action', description: 'Failed order blocks that flip into support/resistance zones', status: 'Testing', dailyChecks: makeDays([true,false,true,false,true,true,false,true]), bestSession: 'New York', bestCondition: 'Volatile' },
-    { id: crypto.randomUUID(), name: 'Fair Value Gap', category: 'Price Action', description: 'Imbalance zones where price tends to return to fill', status: 'Validated', dailyChecks: makeDays([true,true,true,false,true,true,true,false,true,true,true,true]), bestSession: 'London', bestCondition: 'Trending' },
-    { id: crypto.randomUUID(), name: 'Liquidity Sweep', category: 'Liquidity', description: 'Price takes out obvious highs/lows before reversing', status: 'Testing', dailyChecks: makeDays([false,true,true,false,true,false,true]), bestSession: 'New York Kill Zone', bestCondition: 'Volatile' },
-  ];
-}
-
-function getSampleStrategies(): Research[] {
-  return [
-    { id: crypto.randomUUID(), name: 'London Open Breakout', market: 'Forex', date: '2026-02-26', conditions: 'Trending market with clear Asia range', rules: 'Wait for Asia range formation. Enter on break above/below with OB confirmation. SL below range, TP at 2R.', outcome: 'Worked', status: 'Approved', notes: 'Works well on EURUSD and GBPUSD during trending weeks.', winRate: 65, avgRR: 2.1, daysTested: 12, consistency: 75 },
-    { id: crypto.randomUUID(), name: 'Gold Liquidity Sweep', market: 'Commodities', date: '2026-03-05', conditions: 'Volatile, near key daily levels', rules: 'Wait for liquidity sweep of previous day high/low. Enter on displacement candle.', outcome: 'Worked', status: 'Testing', notes: 'Promising results but need more data.', winRate: 58, avgRR: 1.8, daysTested: 6, consistency: 60 },
-    { id: crypto.randomUUID(), name: 'Crypto Weekend Gap', market: 'Crypto', date: '2026-03-10', conditions: 'Weekend gap on BTC', rules: 'Trade gap fill on Monday open.', outcome: 'Failed', status: 'Rejected', notes: 'Gaps dont consistently fill in crypto.', winRate: 30, avgRR: 0.8, daysTested: 10, consistency: 25 },
-    { id: crypto.randomUUID(), name: 'SMT Divergence Entry', market: 'Forex', date: '2026-03-15', conditions: 'Correlated pairs showing divergence', rules: 'When EURUSD makes new high but GBPUSD doesnt, look for reversal.', outcome: '', status: 'Testing', notes: 'Early testing phase.', winRate: 50, avgRR: 1.5, daysTested: 4, consistency: 50 },
-  ];
-}
-
 // ─── TOOL TESTING TAB ───
 function ToolTestingTab() {
-  const [tools, setTools] = useState<ToolEntry[]>(() => {
-    const loaded = loadTools();
-    if (loaded.length > 0) return loaded;
-    const defaults = getDefaultTools();
-    localStorage.setItem(TOOL_KEY, JSON.stringify(defaults));
-    return defaults;
-  });
+  const { user } = useAuth();
+  const [tools, setTools] = useState<ToolEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', category: 'Price Action' as ToolEntry['category'], description: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -98,7 +61,19 @@ function ToolTestingTab() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [checkNote, setCheckNote] = useState('');
 
-  const save = (updated: ToolEntry[]) => { setTools(updated); localStorage.setItem(TOOL_KEY, JSON.stringify(updated)); };
+  useEffect(() => {
+    if (!user) {
+      setTools([]);
+      return;
+    }
+
+    setTools(loadUserStorage<ToolEntry[]>(TOOL_KEY, user.id, []));
+  }, [user]);
+
+  const save = (updated: ToolEntry[]) => {
+    setTools(updated);
+    if (user) saveUserStorage(TOOL_KEY, user.id, updated);
+  };
 
   const handleAdd = () => {
     if (!form.name.trim()) return;
@@ -368,17 +343,24 @@ function ToolTestingTab() {
 
 // ─── STRATEGY TESTING TAB ───
 function StrategyTestingTab() {
-  const [items, setItems] = useState<Research[]>(() => {
-    const loaded = loadStrategies();
-    if (loaded.length > 0) return loaded;
-    const samples = getSampleStrategies();
-    localStorage.setItem(STRATEGY_KEY, JSON.stringify(samples));
-    return samples;
-  });
+  const { user } = useAuth();
+  const [items, setItems] = useState<Research[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<Partial<Research>>({ name: '', market: '', date: new Date().toISOString().split('T')[0], conditions: '', rules: '', outcome: '', status: 'Testing', notes: '' });
 
-  const save = (updated: Research[]) => { setItems(updated); localStorage.setItem(STRATEGY_KEY, JSON.stringify(updated)); };
+  useEffect(() => {
+    if (!user) {
+      setItems([]);
+      return;
+    }
+
+    setItems(loadUserStorage<Research[]>(STRATEGY_KEY, user.id, []));
+  }, [user]);
+
+  const save = (updated: Research[]) => {
+    setItems(updated);
+    if (user) saveUserStorage(STRATEGY_KEY, user.id, updated);
+  };
 
   const handleAdd = () => {
     if (!form.name) return;

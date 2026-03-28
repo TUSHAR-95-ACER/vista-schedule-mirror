@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useTrading } from '@/contexts/TradingContext';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Shield, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 
 interface TradingRule {
   id: string;
@@ -19,29 +20,25 @@ interface TradingRule {
 
 const STORAGE_KEY = 'ef_trading_rules';
 
-function loadRules(): TradingRule[] {
-  try {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    if (data.length > 0) return data;
-  } catch {}
-  return [
-    { id: '1', category: 'Entry', rule: 'Wait for 2+ confluences before entry', description: 'Minimum 2 technical confluences required', active: true },
-    { id: '2', category: 'Risk', rule: 'Max 1% risk per trade', description: 'Never risk more than 1% of account per trade', active: true },
-    { id: '3', category: 'Risk', rule: 'Max 3 trades per day', description: 'Prevent overtrading by limiting daily entries', active: true },
-    { id: '4', category: 'Exit', rule: 'Move SL to BE after 1R', description: 'Protect capital once trade moves 1R in favor', active: true },
-    { id: '5', category: 'Psychology', rule: 'No trading after 2 consecutive losses', description: 'Stop trading for the day after back-to-back losses', active: true },
-  ];
-}
-
 const CATEGORIES = ['Entry', 'Exit', 'Risk', 'Psychology', 'Timing', 'Position Sizing'];
 
 export default function TradingRules() {
-  const [rules, setRules] = useState<TradingRule[]>(loadRules);
+  const { user } = useAuth();
+  const [rules, setRules] = useState<TradingRule[]>([]);
   const [form, setForm] = useState({ category: 'Entry', rule: '', description: '' });
+
+  useEffect(() => {
+    if (!user) {
+      setRules([]);
+      return;
+    }
+
+    setRules(loadUserStorage<TradingRule[]>(STORAGE_KEY, user.id, []));
+  }, [user]);
 
   const save = (updated: TradingRule[]) => {
     setRules(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    if (user) saveUserStorage(STORAGE_KEY, user.id, updated);
   };
 
   const handleAdd = () => {
