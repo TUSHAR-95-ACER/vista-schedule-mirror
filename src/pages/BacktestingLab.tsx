@@ -760,6 +760,7 @@ export default function BacktestingLab() {
                 { label: 'Total Setups', value: ss.totalSetups },
                 { label: 'Trades Taken', value: `${ss.taken} (${ss.takenPct}%)` },
                 { label: 'Missed Trades', value: `${ss.missed} (${ss.missedPct}%)` },
+                { label: 'Untriggered Setups', value: summarySession ? summarySession.entries.filter(e => e.type === 'untriggered').length : 0 },
                 { label: 'Win Rate', value: `${ss.winRate}%` },
                 { label: 'Avg RR', value: ss.avgRR },
                 { label: 'W / L / BE', value: `${ss.wins} / ${ss.losses} / ${ss.be}` },
