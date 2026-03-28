@@ -92,7 +92,6 @@ export default function BacktestingLab() {
     newsPresent: '' as '' | string, newsDetails: '',
     session: '', emotionBefore: '', confluenceCount: '',
     entryConfluences: [] as string[], targetConfluences: [] as string[],
-    newEntryConf: '', newTargetConf: '',
   });
 
   const [expandedEntry, setExpandedEntry] = useState<BacktestEntry | null>(null);
