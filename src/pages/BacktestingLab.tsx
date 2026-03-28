@@ -407,8 +407,8 @@ export default function BacktestingLab() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Quick Log</p>
-          <div className="grid grid-cols-3 gap-3">
-            {(['valid', 'taken', 'missed'] as const).map(type => {
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {(['valid', 'taken', 'missed', 'untriggered'] as const).map(type => {
               const cfg = typeConfig[type];
               const Icon = cfg.icon;
               return (
