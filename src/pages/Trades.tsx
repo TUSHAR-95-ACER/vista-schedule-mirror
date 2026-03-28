@@ -67,7 +67,7 @@ export default function Trades() {
       Win: 'bg-success/15 text-success border border-success/30',
       Loss: 'bg-destructive/15 text-destructive border border-destructive/30',
       Breakeven: 'bg-muted text-muted-foreground border border-border',
-      Missed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25',
+      'Untriggered Setup': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25',
       Cancelled: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/25',
     };
     return <span className={cn('px-2 py-0.5 rounded text-xs font-medium', styles[result])}>{result}</span>;
