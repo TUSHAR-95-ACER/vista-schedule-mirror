@@ -479,7 +479,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Auto" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="auto">Auto Calculate</SelectItem>
-                      <SelectItem value="Missed">Missed</SelectItem>
+                      <SelectItem value="Untriggered Setup">Untriggered Setup</SelectItem>
                       <SelectItem value="Cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>

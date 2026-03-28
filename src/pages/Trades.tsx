@@ -106,7 +106,7 @@ export default function Trades() {
               <SelectItem value="Win">Win</SelectItem>
               <SelectItem value="Loss">Loss</SelectItem>
               <SelectItem value="Breakeven">Breakeven</SelectItem>
-              <SelectItem value="Missed">Missed</SelectItem>
+              <SelectItem value="Untriggered Setup">Untriggered Setup</SelectItem>
               <SelectItem value="Cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
