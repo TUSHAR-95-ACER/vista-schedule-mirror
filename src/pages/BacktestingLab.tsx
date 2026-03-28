@@ -383,7 +383,7 @@ export default function BacktestingLab() {
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-8 gap-3">
         {[
           { label: 'Total', value: stats.total, icon: BarChart3, cls: 'text-foreground' },
           { label: 'Valid', value: stats.valid, icon: CheckCircle2, cls: 'text-primary' },
