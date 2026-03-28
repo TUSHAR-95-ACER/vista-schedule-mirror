@@ -123,7 +123,6 @@ export default function BacktestingLab() {
       entryTimeframe: '', grade: '', newsPresent: '', newsDetails: '',
       session: '', emotionBefore: '', confluenceCount: '',
       entryConfluences: [], targetConfluences: [],
-      newEntryConf: '', newTargetConf: '',
     });
     setDetailOpen(true);
   };
