@@ -188,11 +188,12 @@ export default function BacktestingLab() {
     const valid = entries.filter(e => e.type === 'valid').length;
     const taken = entries.filter(e => e.type === 'taken').length;
     const missed = entries.filter(e => e.type === 'missed').length;
+    const untriggered = entries.filter(e => e.type === 'untriggered').length;
     const wins = entries.filter(e => e.result === 'Win').length;
     const losses = entries.filter(e => e.result === 'Loss').length;
     const be = entries.filter(e => e.result === 'BE').length;
     const total = entries.length;
-    return { valid, taken, missed, wins, losses, be, total };
+    return { valid, taken, missed, untriggered, wins, losses, be, total };
   }, [activeSession?.entries]);
 
   const computeSessionStats = (session: BacktestSession) => {
