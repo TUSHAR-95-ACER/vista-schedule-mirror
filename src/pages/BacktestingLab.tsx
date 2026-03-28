@@ -383,12 +383,13 @@ export default function BacktestingLab() {
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-3 sm:grid-cols-8 gap-3">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
         {[
           { label: 'Total', value: stats.total, icon: BarChart3, cls: 'text-foreground' },
           { label: 'Valid', value: stats.valid, icon: CheckCircle2, cls: 'text-primary' },
           { label: 'Taken', value: stats.taken, icon: TrendingUp, cls: 'text-[hsl(var(--success))]' },
-          { label: 'Untriggered Setup', value: stats.missed, icon: EyeOff, cls: 'text-[hsl(var(--warning))]' },
+          { label: 'Missed', value: stats.missed, icon: EyeOff, cls: 'text-[hsl(var(--warning))]' },
+          { label: 'Untriggered', value: stats.untriggered, icon: AlertTriangle, cls: 'text-muted-foreground' },
           { label: 'Wins', value: stats.wins, icon: TrendingUp, cls: 'text-[hsl(var(--success))]' },
           { label: 'Losses', value: stats.losses, icon: TrendingDown, cls: 'text-destructive' },
           { label: 'BE', value: stats.be, icon: Clock, cls: 'text-muted-foreground' },
