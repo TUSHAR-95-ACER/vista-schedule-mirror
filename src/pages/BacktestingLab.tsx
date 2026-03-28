@@ -90,7 +90,9 @@ export default function BacktestingLab() {
     result: '' as '' | 'Win' | 'Loss' | 'BE', rr: '', notes: '', image: '',
     entryTimeframe: '', grade: '' as '' | TradeGrade,
     newsPresent: '' as '' | string, newsDetails: '',
-    session: '', emotionBefore: '', confluenceCount: ''
+    session: '', emotionBefore: '', confluenceCount: '',
+    entryConfluences: [] as string[], targetConfluences: [] as string[],
+    newEntryConf: '', newTargetConf: '',
   });
 
   const [expandedEntry, setExpandedEntry] = useState<BacktestEntry | null>(null);
