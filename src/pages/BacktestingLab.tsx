@@ -546,22 +546,26 @@ export default function BacktestingLab() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Result</Label>
-                <Select value={entryForm.result} onValueChange={v => setEntryForm(f => ({ ...f, result: v as any }))}>
-                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Win">Win</SelectItem>
-                    <SelectItem value="Loss">Loss</SelectItem>
-                    <SelectItem value="BE">BE</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">RR</Label>
-                <Input type="number" step="0.1" placeholder="e.g. 2.5" value={entryForm.rr}
-                  onChange={e => setEntryForm(f => ({ ...f, rr: e.target.value }))} />
-              </div>
+              {pendingType !== 'untriggered' && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Result</Label>
+                  <Select value={entryForm.result} onValueChange={v => setEntryForm(f => ({ ...f, result: v as any }))}>
+                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Win">Win</SelectItem>
+                      <SelectItem value="Loss">Loss</SelectItem>
+                      <SelectItem value="BE">BE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {pendingType !== 'untriggered' && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">RR</Label>
+                  <Input type="number" step="0.1" placeholder="e.g. 2.5" value={entryForm.rr}
+                    onChange={e => setEntryForm(f => ({ ...f, rr: e.target.value }))} />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
