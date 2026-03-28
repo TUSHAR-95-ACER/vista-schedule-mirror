@@ -149,7 +149,14 @@ export default function BacktestingLab() {
       session: entryForm.session || undefined,
       emotionBefore: entryForm.emotionBefore || undefined,
       confluenceCount: entryForm.confluenceCount ? parseInt(entryForm.confluenceCount) : undefined,
+      entryConfluences: entryForm.entryConfluences.length > 0 ? entryForm.entryConfluences : undefined,
+      targetConfluences: entryForm.targetConfluences.length > 0 ? entryForm.targetConfluences : undefined,
     };
+    // For untriggered entries, clear result and RR since trade was never activated
+    if (pendingType === 'untriggered') {
+      entry.result = undefined;
+      entry.rr = undefined;
+    }
     setActiveSession(prev => prev ? { ...prev, entries: [...prev.entries, entry] } : prev);
     setDetailOpen(false);
   };
