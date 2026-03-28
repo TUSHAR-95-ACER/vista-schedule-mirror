@@ -91,9 +91,35 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   const [notebookCategories, setNotebookCategories] = useState<string[]>(DEFAULT_NOTEBOOK_CATS);
   const [loading, setLoading] = useState(true);
 
+  const resetState = useCallback(() => {
+    setTrades([]);
+    setAccounts([]);
+    setTransactions([]);
+    setScaleEvents([]);
+    setWeeklyPlans([]);
+    setDailyPlans([]);
+    setCustomSetups([...SETUPS]);
+    setCustomAssets([]);
+    setCustomConfluences([...CONFLUENCE_OPTIONS]);
+    setMarkets(DEFAULT_MARKETS);
+    setSessions(DEFAULT_SESSIONS);
+    setConditions(DEFAULT_CONDITIONS);
+    setGradesList(DEFAULT_GRADES);
+    setManagementOptions(DEFAULT_MANAGEMENT);
+    setPsychTags(DEFAULT_PSYCH);
+    setViolations(DEFAULT_VIOLATIONS);
+    setNotebookCategories(DEFAULT_NOTEBOOK_CATS);
+  }, []);
+
   // Load all data from Supabase when user changes
   useEffect(() => {
-    if (!user) { setLoading(false); return; }
+    resetState();
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     const uid = user.id;
     setLoading(true);
 
@@ -144,7 +170,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
     });
-  }, [user]);
+  }, [user, resetState]);
 
   // Helper: save settings to Supabase
   const saveSettings = useCallback((updates: Record<string, any>) => {
