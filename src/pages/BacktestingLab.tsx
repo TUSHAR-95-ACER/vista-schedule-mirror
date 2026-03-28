@@ -122,7 +122,9 @@ export default function BacktestingLab() {
       day: format(new Date(), 'yyyy-MM-dd'), setupType: '', bias: '',
       result: '', rr: '', notes: '', image: '',
       entryTimeframe: '', grade: '', newsPresent: '', newsDetails: '',
-      session: '', emotionBefore: '', confluenceCount: ''
+      session: '', emotionBefore: '', confluenceCount: '',
+      entryConfluences: [], targetConfluences: [],
+      newEntryConf: '', newTargetConf: '',
     });
     setDetailOpen(true);
   };
