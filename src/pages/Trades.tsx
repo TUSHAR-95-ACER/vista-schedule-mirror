@@ -186,9 +186,9 @@ export default function Trades() {
                       <td className="px-3 py-1.5 font-mono text-xs">{trade.quantity ?? '-'}</td>
                       <td className="px-3 py-1.5 font-mono text-xs">{trade.actualRR?.toFixed(2) ?? '-'}</td>
                       <td className={cn('px-3 py-1.5 font-mono text-xs font-medium',
-                        trade.result === 'Missed' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
+                        trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
                         trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
-                        {trade.result === 'Missed' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                        {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
                       </td>
                       <td className="px-3 py-1.5">{resultBadge(trade.result)}</td>
                       <td className="px-3 py-1.5">

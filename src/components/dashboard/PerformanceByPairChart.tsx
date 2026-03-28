@@ -20,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function PerformanceByPairChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
-    const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const map = new Map<string, { wins: number; total: number; pl: number }>();
     valid.forEach(t => {
       const m = map.get(t.asset) || { wins: 0, total: 0, pl: 0 };

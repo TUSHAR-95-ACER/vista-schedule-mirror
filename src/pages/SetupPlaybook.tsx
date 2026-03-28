@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export default function SetupPlaybook() {
   const { trades, customSetups, addCustomSetup, updateCustomSetup, deleteCustomSetup } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const setupData = useMemo(() => {
     const allSetups = [...new Set(valid.map(t => t.setup))];

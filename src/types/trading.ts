@@ -6,7 +6,7 @@ export type MarketCondition = 'Trending' | 'Ranging' | 'Volatile';
 
 export type TradeDirection = 'Long' | 'Short';
 
-export type TradeResult = 'Win' | 'Loss' | 'Breakeven' | 'Missed' | 'Cancelled';
+export type TradeResult = 'Win' | 'Loss' | 'Breakeven' | 'Untriggered Setup' | 'Cancelled';
 
 export type AccountType = 'Personal' | 'Prop Firm' | 'Funded' | 'Demo';
 
@@ -176,7 +176,7 @@ export interface PairAnalysis {
   resultChartImage?: string;
   resultNarrative?: string;
   actualDirection?: 'Bullish' | 'Bearish' | 'Neutral' | '';
-  actualResult?: 'Win' | 'Loss' | 'Missed' | '';
+  actualResult?: 'Win' | 'Loss' | 'Untriggered Setup' | '';
   note?: string;
 }
 

@@ -18,7 +18,7 @@ export function WeekdayChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const map = new Map(days.map(d => [d, { wins: 0, total: 0, pl: 0 }]));
-    const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     valid.forEach(t => {
       const dayIndex = new Date(t.date).getDay();
       const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];

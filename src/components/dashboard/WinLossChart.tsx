@@ -11,13 +11,13 @@ export function WinLossChart({ trades }: WinLossChartProps) {
     const wins = trades.filter(t => t.result === 'Win').length;
     const losses = trades.filter(t => t.result === 'Loss').length;
     const be = trades.filter(t => t.result === 'Breakeven').length;
-    const missed = trades.filter(t => t.result === 'Missed').length;
+    const missed = trades.filter(t => t.result === 'Untriggered Setup').length;
     const cancelled = trades.filter(t => t.result === 'Cancelled').length;
     return [
       { name: 'Wins', value: wins },
       { name: 'Losses', value: losses },
       { name: 'Break Even', value: be },
-      { name: 'Missed', value: missed },
+      { name: 'Untriggered Setup', value: missed },
       { name: 'Cancelled', value: cancelled },
     ].filter(d => d.value > 0);
   }, [trades]);
@@ -34,7 +34,7 @@ export function WinLossChart({ trades }: WinLossChartProps) {
     'Wins': COLORS[0],
     'Losses': COLORS[1],
     'Break Even': COLORS[2],
-    'Missed': COLORS[3],
+    'Untriggered Setup': COLORS[3],
     'Cancelled': COLORS[4],
   };
 

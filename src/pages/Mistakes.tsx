@@ -31,7 +31,7 @@ const Tip = ({ active, payload, label }: any) => {
 
 export default function Mistakes() {
   const { trades } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const mistakeData = useMemo(() => {
     return ALL_MISTAKES.map(m => {

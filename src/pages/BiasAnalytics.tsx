@@ -44,7 +44,7 @@ export default function BiasAnalytics() {
 
     // Session accuracy from trades
     trades.forEach(t => {
-      if (t.result === 'Missed' || t.result === 'Cancelled') return;
+      if (t.result === 'Untriggered Setup' || t.result === 'Cancelled') return;
       const e = sessionMap.get(t.session) || { total: 0, correct: 0 };
       e.total++;
       if (t.result === 'Win') e.correct++;
@@ -134,7 +134,7 @@ export default function BiasAnalytics() {
   // Market condition vs bias accuracy (from trades)
   const conditionAccuracy = useMemo(() => {
     const condMap = new Map<string, { total: number; wins: number }>();
-    trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled').forEach(t => {
+    trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled').forEach(t => {
       const e = condMap.get(t.marketCondition) || { total: 0, wins: 0 };
       e.total++;
       if (t.result === 'Win') e.wins++;

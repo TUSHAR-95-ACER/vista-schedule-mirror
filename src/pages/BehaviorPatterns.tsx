@@ -19,7 +19,7 @@ const Tip = ({ active, payload, label }: any) => {
 
 export default function BehaviorPatterns() {
   const { trades } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const dailyTradeCount = useMemo(() => {
     const map = new Map<string, number>();
