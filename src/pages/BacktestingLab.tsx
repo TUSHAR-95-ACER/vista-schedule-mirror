@@ -28,7 +28,7 @@ type TradeGrade = 'A+' | 'A' | 'B' | 'C';
 
 interface BacktestEntry {
   id: string;
-  type: 'valid' | 'taken' | 'missed';
+  type: 'valid' | 'taken' | 'missed' | 'untriggered';
   day: string;
   setupType?: string;
   bias?: 'Bullish' | 'Bearish';
@@ -44,6 +44,8 @@ interface BacktestEntry {
   session?: string;
   emotionBefore?: string;
   confluenceCount?: number;
+  entryConfluences?: string[];
+  targetConfluences?: string[];
 }
 
 interface BacktestSession {
@@ -88,7 +90,9 @@ export default function BacktestingLab() {
     result: '' as '' | 'Win' | 'Loss' | 'BE', rr: '', notes: '', image: '',
     entryTimeframe: '', grade: '' as '' | TradeGrade,
     newsPresent: '' as '' | string, newsDetails: '',
-    session: '', emotionBefore: '', confluenceCount: ''
+    session: '', emotionBefore: '', confluenceCount: '',
+    entryConfluences: [] as string[], targetConfluences: [] as string[],
+    newEntryConf: '', newTargetConf: '',
   });
 
   const [expandedEntry, setExpandedEntry] = useState<BacktestEntry | null>(null);
@@ -118,7 +122,9 @@ export default function BacktestingLab() {
       day: format(new Date(), 'yyyy-MM-dd'), setupType: '', bias: '',
       result: '', rr: '', notes: '', image: '',
       entryTimeframe: '', grade: '', newsPresent: '', newsDetails: '',
-      session: '', emotionBefore: '', confluenceCount: ''
+      session: '', emotionBefore: '', confluenceCount: '',
+      entryConfluences: [], targetConfluences: [],
+      newEntryConf: '', newTargetConf: '',
     });
     setDetailOpen(true);
   };
@@ -143,7 +149,14 @@ export default function BacktestingLab() {
       session: entryForm.session || undefined,
       emotionBefore: entryForm.emotionBefore || undefined,
       confluenceCount: entryForm.confluenceCount ? parseInt(entryForm.confluenceCount) : undefined,
+      entryConfluences: entryForm.entryConfluences.length > 0 ? entryForm.entryConfluences : undefined,
+      targetConfluences: entryForm.targetConfluences.length > 0 ? entryForm.targetConfluences : undefined,
     };
+    // For untriggered entries, clear result and RR since trade was never activated
+    if (pendingType === 'untriggered') {
+      entry.result = undefined;
+      entry.rr = undefined;
+    }
     setActiveSession(prev => prev ? { ...prev, entries: [...prev.entries, entry] } : prev);
     setDetailOpen(false);
   };
@@ -175,22 +188,24 @@ export default function BacktestingLab() {
     const valid = entries.filter(e => e.type === 'valid').length;
     const taken = entries.filter(e => e.type === 'taken').length;
     const missed = entries.filter(e => e.type === 'missed').length;
+    const untriggered = entries.filter(e => e.type === 'untriggered').length;
     const wins = entries.filter(e => e.result === 'Win').length;
     const losses = entries.filter(e => e.result === 'Loss').length;
     const be = entries.filter(e => e.result === 'BE').length;
     const total = entries.length;
-    return { valid, taken, missed, wins, losses, be, total };
+    return { valid, taken, missed, untriggered, wins, losses, be, total };
   }, [activeSession?.entries]);
 
   const computeSessionStats = (session: BacktestSession) => {
     const e = session.entries;
     const taken = e.filter(x => x.type === 'taken').length;
     const missed = e.filter(x => x.type === 'missed').length;
+    const untriggered = e.filter(x => x.type === 'untriggered').length;
     const valid = e.filter(x => x.type === 'valid').length;
     const wins = e.filter(x => x.result === 'Win').length;
     const losses = e.filter(x => x.result === 'Loss').length;
     const be = e.filter(x => x.result === 'BE').length;
-    const totalSetups = valid + taken + missed;
+    const totalSetups = valid + taken + missed + untriggered;
     const rrs = e.filter(x => x.rr !== undefined).map(x => x.rr!);
     const avgRR = rrs.length ? (rrs.reduce((a, b) => a + b, 0) / rrs.length).toFixed(2) : '—';
     const bestRR = rrs.length ? Math.max(...rrs).toFixed(1) : '—';
@@ -255,10 +270,11 @@ export default function BacktestingLab() {
     return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
   }, [activeSession?.entries]);
 
-  const typeConfig = {
+  const typeConfig: Record<string, { label: string; color: string; icon: any }> = {
     valid: { label: 'Valid Setup', color: 'bg-primary text-primary-foreground', icon: CheckCircle2 },
     taken: { label: 'Trade Taken', color: 'bg-[hsl(var(--success))] text-[hsl(var(--success-foreground,0_0%_100%))]', icon: TrendingUp },
     missed: { label: 'Missed Trade', color: 'bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground,0_0%_0%))]', icon: EyeOff },
+    untriggered: { label: 'Untriggered Setup', color: 'bg-muted text-muted-foreground', icon: AlertTriangle },
   };
 
   const resultColor = (r?: string) => {
@@ -368,12 +384,13 @@ export default function BacktestingLab() {
       </div>
 
       {/* Live counters */}
-      <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
         {[
           { label: 'Total', value: stats.total, icon: BarChart3, cls: 'text-foreground' },
           { label: 'Valid', value: stats.valid, icon: CheckCircle2, cls: 'text-primary' },
           { label: 'Taken', value: stats.taken, icon: TrendingUp, cls: 'text-[hsl(var(--success))]' },
-          { label: 'Untriggered Setup', value: stats.missed, icon: EyeOff, cls: 'text-[hsl(var(--warning))]' },
+          { label: 'Missed', value: stats.missed, icon: EyeOff, cls: 'text-[hsl(var(--warning))]' },
+          { label: 'Untriggered', value: stats.untriggered, icon: AlertTriangle, cls: 'text-muted-foreground' },
           { label: 'Wins', value: stats.wins, icon: TrendingUp, cls: 'text-[hsl(var(--success))]' },
           { label: 'Losses', value: stats.losses, icon: TrendingDown, cls: 'text-destructive' },
           { label: 'BE', value: stats.be, icon: Clock, cls: 'text-muted-foreground' },
@@ -392,8 +409,8 @@ export default function BacktestingLab() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Quick Log</p>
-          <div className="grid grid-cols-3 gap-3">
-            {(['valid', 'taken', 'missed'] as const).map(type => {
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {(['valid', 'taken', 'missed', 'untriggered'] as const).map(type => {
               const cfg = typeConfig[type];
               const Icon = cfg.icon;
               return (
@@ -531,22 +548,26 @@ export default function BacktestingLab() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Result</Label>
-                <Select value={entryForm.result} onValueChange={v => setEntryForm(f => ({ ...f, result: v as any }))}>
-                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Win">Win</SelectItem>
-                    <SelectItem value="Loss">Loss</SelectItem>
-                    <SelectItem value="BE">BE</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">RR</Label>
-                <Input type="number" step="0.1" placeholder="e.g. 2.5" value={entryForm.rr}
-                  onChange={e => setEntryForm(f => ({ ...f, rr: e.target.value }))} />
-              </div>
+              {pendingType !== 'untriggered' && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Result</Label>
+                  <Select value={entryForm.result} onValueChange={v => setEntryForm(f => ({ ...f, result: v as any }))}>
+                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Win">Win</SelectItem>
+                      <SelectItem value="Loss">Loss</SelectItem>
+                      <SelectItem value="BE">BE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {pendingType !== 'untriggered' && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">RR</Label>
+                  <Input type="number" step="0.1" placeholder="e.g. 2.5" value={entryForm.rr}
+                    onChange={e => setEntryForm(f => ({ ...f, rr: e.target.value }))} />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -566,18 +587,69 @@ export default function BacktestingLab() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground flex items-center gap-1"><Newspaper className="h-3 w-3" /> News Present</Label>
-                <Select value={entryForm.newsPresent} onValueChange={(v: string) => setEntryForm(f => ({ ...f, newsPresent: v as typeof f.newsPresent }))}>
-                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>{NEWS_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-                </Select>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1"><Newspaper className="h-3 w-3" /> News Present</Label>
+              <Select value={entryForm.newsPresent} onValueChange={(v: string) => setEntryForm(f => ({ ...f, newsPresent: v as typeof f.newsPresent }))}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>{NEWS_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            {/* Entry Confluences - custom tags */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Entry Confluences</Label>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {entryForm.entryConfluences.map((c, i) => (
+                  <Badge key={i} variant="secondary" className="gap-1 text-xs">
+                    {c}
+                    <button onClick={() => setEntryForm(f => ({ ...f, entryConfluences: f.entryConfluences.filter((_, idx) => idx !== i) }))}
+                      className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
+                  </Badge>
+                ))}
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Confluences</Label>
-                <Input type="number" placeholder="Count" value={entryForm.confluenceCount}
-                  onChange={e => setEntryForm(f => ({ ...f, confluenceCount: e.target.value }))} />
+              <div className="flex gap-2">
+                <Input placeholder="Add entry point..." value={entryForm.newEntryConf}
+                  onChange={e => setEntryForm(f => ({ ...f, newEntryConf: e.target.value }))}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && entryForm.newEntryConf.trim()) {
+                      e.preventDefault();
+                      setEntryForm(f => ({ ...f, entryConfluences: [...f.entryConfluences, f.newEntryConf.trim()], newEntryConf: '' }));
+                    }
+                  }} />
+                <Button type="button" size="sm" variant="outline" onClick={() => {
+                  if (entryForm.newEntryConf.trim()) {
+                    setEntryForm(f => ({ ...f, entryConfluences: [...f.entryConfluences, f.newEntryConf.trim()], newEntryConf: '' }));
+                  }
+                }}><Plus className="h-3 w-3" /></Button>
+              </div>
+            </div>
+
+            {/* Target Confluences - custom tags */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Target Confluences</Label>
+              <div className="flex flex-wrap gap-1.5 mb-1.5">
+                {entryForm.targetConfluences.map((c, i) => (
+                  <Badge key={i} variant="secondary" className="gap-1 text-xs">
+                    {c}
+                    <button onClick={() => setEntryForm(f => ({ ...f, targetConfluences: f.targetConfluences.filter((_, idx) => idx !== i) }))}
+                      className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="Add target point..." value={entryForm.newTargetConf}
+                  onChange={e => setEntryForm(f => ({ ...f, newTargetConf: e.target.value }))}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && entryForm.newTargetConf.trim()) {
+                      e.preventDefault();
+                      setEntryForm(f => ({ ...f, targetConfluences: [...f.targetConfluences, f.newTargetConf.trim()], newTargetConf: '' }));
+                    }
+                  }} />
+                <Button type="button" size="sm" variant="outline" onClick={() => {
+                  if (entryForm.newTargetConf.trim()) {
+                    setEntryForm(f => ({ ...f, targetConfluences: [...f.targetConfluences, f.newTargetConf.trim()], newTargetConf: '' }));
+                  }
+                }}><Plus className="h-3 w-3" /></Button>
               </div>
             </div>
 
@@ -645,8 +717,15 @@ export default function BacktestingLab() {
                 {expandedEntry.newsPresent && expandedEntry.newsPresent !== 'None' && (
                   <div><span className="text-muted-foreground text-xs">News</span><p className="font-medium text-foreground">{expandedEntry.newsPresent}</p></div>
                 )}
-                {expandedEntry.confluenceCount !== undefined && (
-                  <div><span className="text-muted-foreground text-xs">Confluences</span><p className="font-medium font-mono text-foreground">{expandedEntry.confluenceCount}</p></div>
+                {expandedEntry.entryConfluences && expandedEntry.entryConfluences.length > 0 && (
+                  <div className="col-span-2"><span className="text-muted-foreground text-xs">Entry Confluences</span>
+                    <div className="flex flex-wrap gap-1 mt-1">{expandedEntry.entryConfluences.map((c, i) => <Badge key={i} variant="secondary" className="text-[10px]">{c}</Badge>)}</div>
+                  </div>
+                )}
+                {expandedEntry.targetConfluences && expandedEntry.targetConfluences.length > 0 && (
+                  <div className="col-span-2"><span className="text-muted-foreground text-xs">Target Confluences</span>
+                    <div className="flex flex-wrap gap-1 mt-1">{expandedEntry.targetConfluences.map((c, i) => <Badge key={i} variant="secondary" className="text-[10px]">{c}</Badge>)}</div>
+                  </div>
                 )}
               </div>
               {expandedEntry.newsDetails && (
