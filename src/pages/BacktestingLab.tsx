@@ -73,7 +73,7 @@ for (let year = 2020; year <= 2030; year++) {
 }
 
 export default function BacktestingLab() {
-  const { customSetups } = useTrading();
+  const { customSetups, customConfluences } = useTrading();
   const [sessions, setSessions] = useState<BacktestSession[]>([]);
   const [activeSession, setActiveSession] = useState<BacktestSession | null>(null);
   const [showEndConfirm, setShowEndConfirm] = useState(false);
