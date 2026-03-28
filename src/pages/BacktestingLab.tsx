@@ -586,6 +586,14 @@ export default function BacktestingLab() {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground flex items-center gap-1"><Newspaper className="h-3 w-3" /> News Present</Label>
+              <Select value={entryForm.newsPresent} onValueChange={(v: string) => setEntryForm(f => ({ ...f, newsPresent: v as typeof f.newsPresent }))}>
+                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>{NEWS_OPTIONS.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
             {/* Entry Confluences - custom tags */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Entry Confluences</Label>
