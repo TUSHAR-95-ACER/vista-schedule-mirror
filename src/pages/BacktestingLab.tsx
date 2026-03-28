@@ -269,10 +269,11 @@ export default function BacktestingLab() {
     return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
   }, [activeSession?.entries]);
 
-  const typeConfig = {
+  const typeConfig: Record<string, { label: string; color: string; icon: any }> = {
     valid: { label: 'Valid Setup', color: 'bg-primary text-primary-foreground', icon: CheckCircle2 },
     taken: { label: 'Trade Taken', color: 'bg-[hsl(var(--success))] text-[hsl(var(--success-foreground,0_0%_100%))]', icon: TrendingUp },
     missed: { label: 'Missed Trade', color: 'bg-[hsl(var(--warning))] text-[hsl(var(--warning-foreground,0_0%_0%))]', icon: EyeOff },
+    untriggered: { label: 'Untriggered Setup', color: 'bg-muted text-muted-foreground', icon: AlertTriangle },
   };
 
   const resultColor = (r?: string) => {
