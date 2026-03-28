@@ -32,7 +32,7 @@ export default function Dashboard() {
   const { trades } = useTrading();
 
   const validTrades = useMemo(
-    () => trades.filter((trade) => trade.result !== 'Missed' && trade.result !== 'Cancelled'),
+    () => trades.filter((trade) => trade.result !== 'Untriggered Setup' && trade.result !== 'Cancelled'),
     [trades]
   );
 

@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function Psychology() {
   const { trades } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.psychology && t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.psychology && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   // Emotion breakdown
   const emotionData = useMemo(() => {

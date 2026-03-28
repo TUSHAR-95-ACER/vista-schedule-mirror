@@ -85,8 +85,8 @@ const getTone = (day: DayStats, maxAbs: number, mode: 'calendar' | 'heatmap') =>
   }
 
   // Check if ALL trades are missed or cancelled
-  const allMissedOrCancelled = trades.every(t => t.result === 'Missed' || t.result === 'Cancelled');
-  const hasMissed = trades.some(t => t.result === 'Missed');
+  const allMissedOrCancelled = trades.every(t => t.result === 'Untriggered Setup' || t.result === 'Cancelled');
+  const hasMissed = trades.some(t => t.result === 'Untriggered Setup');
   const hasCancelled = trades.some(t => t.result === 'Cancelled');
 
   if (allMissedOrCancelled) {
@@ -96,7 +96,7 @@ const getTone = (day: DayStats, maxAbs: number, mode: 'calendar' | 'heatmap') =>
   }
 
   // P/L-based coloring for trades with actual results
-  const plTrades = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+  const plTrades = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   const plValue = plTrades.reduce((s, t) => s + t.profitLoss, 0);
   const intensity = Math.abs(plValue) / Math.max(maxAbs, 1);
 
@@ -180,7 +180,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
           tradeCount: aggregate?.tradeCount ?? 0,
           averageRR: aggregate && aggregate.rrCount > 0 ? aggregate.rrTotal / aggregate.rrCount : null,
           trades: aggregate?.trades ?? [],
-          hasMissed: aggregate?.trades.some(t => t.result === 'Missed') ?? false,
+          hasMissed: aggregate?.trades.some(t => t.result === 'Untriggered Setup') ?? false,
           hasCancelled: aggregate?.trades.some(t => t.result === 'Cancelled') ?? false,
         } satisfies DayStats,
       };

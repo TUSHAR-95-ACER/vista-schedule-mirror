@@ -89,9 +89,9 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-sm text-foreground">{trade.asset}</span>
                     <span className={cn('text-xs font-mono font-medium',
-                      trade.result === 'Missed' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
+                      trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
                       trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
-                      {trade.result === 'Missed' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                      {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

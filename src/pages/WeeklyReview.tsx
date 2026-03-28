@@ -39,7 +39,7 @@ function calcExecutionScore(t: any): number {
 
 export default function WeeklyReview() {
   const { trades, weeklyPlans } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const weeklyData = useMemo(() => {
     const weeks = new Map<string, typeof valid>();

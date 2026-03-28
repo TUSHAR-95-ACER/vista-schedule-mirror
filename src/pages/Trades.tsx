@@ -67,7 +67,7 @@ export default function Trades() {
       Win: 'bg-success/15 text-success border border-success/30',
       Loss: 'bg-destructive/15 text-destructive border border-destructive/30',
       Breakeven: 'bg-muted text-muted-foreground border border-border',
-      Missed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25',
+      'Untriggered Setup': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25',
       Cancelled: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/25',
     };
     return <span className={cn('px-2 py-0.5 rounded text-xs font-medium', styles[result])}>{result}</span>;
@@ -106,7 +106,7 @@ export default function Trades() {
               <SelectItem value="Win">Win</SelectItem>
               <SelectItem value="Loss">Loss</SelectItem>
               <SelectItem value="Breakeven">Breakeven</SelectItem>
-              <SelectItem value="Missed">Missed</SelectItem>
+              <SelectItem value="Untriggered Setup">Untriggered Setup</SelectItem>
               <SelectItem value="Cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -186,9 +186,9 @@ export default function Trades() {
                       <td className="px-3 py-1.5 font-mono text-xs">{trade.quantity ?? '-'}</td>
                       <td className="px-3 py-1.5 font-mono text-xs">{trade.actualRR?.toFixed(2) ?? '-'}</td>
                       <td className={cn('px-3 py-1.5 font-mono text-xs font-medium',
-                        trade.result === 'Missed' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
+                        trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
                         trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
-                        {trade.result === 'Missed' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                        {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
                       </td>
                       <td className="px-3 py-1.5">{resultBadge(trade.result)}</td>
                       <td className="px-3 py-1.5">

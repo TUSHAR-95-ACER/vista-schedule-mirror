@@ -25,7 +25,7 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
     const currentYear = now.getFullYear();
 
     const valid = trades.filter(t => {
-      if (t.result === 'Missed' || t.result === 'Cancelled') return false;
+      if (t.result === 'Untriggered Setup' || t.result === 'Cancelled') return false;
       const d = new Date(t.date);
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });

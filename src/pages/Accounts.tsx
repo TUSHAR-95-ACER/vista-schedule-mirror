@@ -268,7 +268,7 @@ export default function Accounts() {
     return trades.filter(t => t.accounts.some(a => a.accountId === selectedAccountId));
   }, [trades, selectedAccountId]);
 
-  const validActiveTrades = useMemo(() => activeTrades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [activeTrades]);
+  const validActiveTrades = useMemo(() => activeTrades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [activeTrades]);
 
   const activeMetrics = useMemo(() => ({
     total: activeTrades.length,

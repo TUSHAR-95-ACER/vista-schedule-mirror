@@ -21,7 +21,7 @@ const Tip = ({ active, payload, label }: any) => {
 
 export default function AIInsights() {
   const { trades } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   // Generate insights
   const insights = useMemo(() => {

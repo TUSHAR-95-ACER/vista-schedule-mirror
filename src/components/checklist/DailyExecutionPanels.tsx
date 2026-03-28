@@ -74,7 +74,7 @@ export function DailyExecutionPanels() {
   const { trades, dailyPlans } = useTrading();
 
   const validTrades = useMemo(
-    () => trades.filter((t) => t.result !== 'Missed' && t.result !== 'Cancelled'),
+    () => trades.filter((t) => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'),
     [trades]
   );
 

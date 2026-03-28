@@ -19,7 +19,7 @@ export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const validTrades = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const validTrades = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   // Monthly calendar data
   const calendarData = useMemo(() => {

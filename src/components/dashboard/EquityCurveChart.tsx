@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function EquityCurveChart({ trades }: EquityCurveChartProps) {
   const equityData = useMemo(() => {
-    const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const sorted = [...valid].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     let cumulative = 0;
     return sorted.map(t => {

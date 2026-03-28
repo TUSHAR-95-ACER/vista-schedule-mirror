@@ -298,7 +298,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const numericTarget = parseFloat(form.takeProfit);
   const numericQuantity = parseFloat(form.quantity) || 0;
   const fees = parseFloat(form.fees) || 0;
-  const isMissedOrCancelled = form.result === 'Missed' || form.result === 'Cancelled';
+  const isMissedOrCancelled = form.result === 'Untriggered Setup' || form.result === 'Cancelled';
 
   const previewGrossPL = !isMissedOrCancelled && !Number.isNaN(numericEntry) && numericExit !== undefined && !Number.isNaN(numericExit) && numericQuantity > 0
     ? calcProfitLoss(numericEntry, numericExit, form.direction, numericQuantity, form.asset, form.market)
@@ -479,7 +479,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Auto" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="auto">Auto Calculate</SelectItem>
-                      <SelectItem value="Missed">Missed</SelectItem>
+                      <SelectItem value="Untriggered Setup">Untriggered Setup</SelectItem>
                       <SelectItem value="Cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>

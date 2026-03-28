@@ -100,7 +100,7 @@ export default function Analytics() {
   const [drillLabel, setDrillLabel] = useState('');
 
   const valid = useMemo(() => {
-    let v = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    let v = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     if (filterPair) v = v.filter(t => t.asset === filterPair);
     if (filterSetup) v = v.filter(t => t.setup === filterSetup);
     if (filterSession) v = v.filter(t => t.session === filterSession);
@@ -150,13 +150,13 @@ export default function Analytics() {
     const w = valid.filter(t => t.result === 'Win').length;
     const l = valid.filter(t => t.result === 'Loss').length;
     const b = valid.filter(t => t.result === 'Breakeven').length;
-    const m = trades.filter(t => t.result === 'Missed').length;
+    const m = trades.filter(t => t.result === 'Untriggered Setup').length;
     const c = trades.filter(t => t.result === 'Cancelled').length;
     return [
       { name: 'Wins', value: w, color: 'hsl(142,71%,45%)' },
       { name: 'Losses', value: l, color: 'hsl(0,84%,60%)' },
       { name: 'Breakeven', value: b, color: 'hsl(215,20%,65%)' },
-      { name: 'Missed', value: m, color: 'hsl(210,100%,50%)' },
+      { name: 'Untriggered Setup', value: m, color: 'hsl(210,100%,50%)' },
       { name: 'Cancelled', value: c, color: 'hsl(48,96%,53%)' },
     ].filter(d => d.value > 0);
   }, [valid, trades]);

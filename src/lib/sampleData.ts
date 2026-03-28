@@ -110,7 +110,7 @@ function genTrade(dateStr: string, index: number, kind: TradeKind): Trade {
       entryPrice: Math.round(entry * 100000) / 100000,
       stopLoss: Math.round(sl * 100000) / 100000,
       takeProfit: Math.round(tp * 100000) / 100000,
-      result: kind === 'missed' ? 'Missed' : 'Cancelled',
+      result: kind === 'missed' ? 'Untriggered Setup' : 'Cancelled',
       plannedRR,
       profitLoss: 0,
       notes: kind === 'missed' ? 'Missed this setup - was away from desk' : 'Cancelled - conditions changed before entry',

@@ -85,14 +85,14 @@ export const calcPL = (entry: number, exit: number, direction: 'Long' | 'Short',
 };
 
 export const calcWinRate = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   const wins = valid.filter(t => t.result === 'Win').length;
   return Math.round((wins / valid.length) * 100 * 10) / 10;
 };
 
 export const calcProfitFactor = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   const grossProfit = valid.filter(t => t.profitLoss > 0).reduce((s, t) => s + t.profitLoss, 0);
   const grossLoss = Math.abs(valid.filter(t => t.profitLoss < 0).reduce((s, t) => s + t.profitLoss, 0));
   if (grossLoss === 0) return grossProfit > 0 ? Infinity : 0;
@@ -100,7 +100,7 @@ export const calcProfitFactor = (trades: Trade[]): number => {
 };
 
 export const calcExpectancy = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   return Math.round((valid.reduce((s, t) => s + t.profitLoss, 0) / valid.length) * 100) / 100;
 };
@@ -125,7 +125,7 @@ export const calcEdgeScore = (winRate: number, avgRR: number, tradeCount: number
 };
 
 export const calcAvgRR = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.actualRR !== undefined && t.result !== 'Missed' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => t.actualRR !== undefined && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   return Math.round((valid.reduce((s, t) => s + (t.actualRR || 0), 0) / valid.length) * 100) / 100;
 };

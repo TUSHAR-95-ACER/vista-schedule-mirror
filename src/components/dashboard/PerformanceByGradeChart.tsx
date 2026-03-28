@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
-    const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
 
     return TRADE_GRADES.map(grade => {
       const gradeTrades = valid.filter(t => t.grade === grade);

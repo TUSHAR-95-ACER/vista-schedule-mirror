@@ -14,7 +14,7 @@ interface AccountPerformanceProps {
 }
 
 export function AccountPerformance({ account, trades, accounts, transactions, scaleEvents = [] }: AccountPerformanceProps) {
-  const validTrades = useMemo(() => trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled'), [trades]);
+  const validTrades = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
   const totalPL = useMemo(() => validTrades.reduce((s, t) => s + t.profitLoss, 0), [validTrades]);
 
   const totalPayouts = useMemo(() => {

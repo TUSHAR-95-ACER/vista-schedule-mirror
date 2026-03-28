@@ -23,7 +23,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export function PerformanceByMarketChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
-    const valid = trades.filter(t => t.result !== 'Missed' && t.result !== 'Cancelled');
+    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const map = new Map<string, number>();
     valid.forEach(t => map.set(t.market, (map.get(t.market) || 0) + 1));
     return Array.from(map.entries()).map(([name, trades]) => ({ name, trades }));
