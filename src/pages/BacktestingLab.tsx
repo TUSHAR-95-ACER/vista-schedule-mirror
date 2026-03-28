@@ -716,8 +716,15 @@ export default function BacktestingLab() {
                 {expandedEntry.newsPresent && expandedEntry.newsPresent !== 'None' && (
                   <div><span className="text-muted-foreground text-xs">News</span><p className="font-medium text-foreground">{expandedEntry.newsPresent}</p></div>
                 )}
-                {expandedEntry.confluenceCount !== undefined && (
-                  <div><span className="text-muted-foreground text-xs">Confluences</span><p className="font-medium font-mono text-foreground">{expandedEntry.confluenceCount}</p></div>
+                {expandedEntry.entryConfluences && expandedEntry.entryConfluences.length > 0 && (
+                  <div className="col-span-2"><span className="text-muted-foreground text-xs">Entry Confluences</span>
+                    <div className="flex flex-wrap gap-1 mt-1">{expandedEntry.entryConfluences.map((c, i) => <Badge key={i} variant="secondary" className="text-[10px]">{c}</Badge>)}</div>
+                  </div>
+                )}
+                {expandedEntry.targetConfluences && expandedEntry.targetConfluences.length > 0 && (
+                  <div className="col-span-2"><span className="text-muted-foreground text-xs">Target Confluences</span>
+                    <div className="flex flex-wrap gap-1 mt-1">{expandedEntry.targetConfluences.map((c, i) => <Badge key={i} variant="secondary" className="text-[10px]">{c}</Badge>)}</div>
+                  </div>
                 )}
               </div>
               {expandedEntry.newsDetails && (
