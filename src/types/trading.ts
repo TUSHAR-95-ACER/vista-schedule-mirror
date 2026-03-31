@@ -103,6 +103,8 @@ export interface Trade {
   result: TradeResult;
   plannedRR: number;
   actualRR?: number;
+  maxRRReached?: number;
+  maxAdverseMove?: number;
   pips?: number;
   profitLoss: number;
   fees?: number;
