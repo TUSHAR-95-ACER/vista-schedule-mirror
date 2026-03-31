@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, Video, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye } from 'lucide-react';
-import { WeeklyPlan, PairAnalysis, PAIR_REASONS, ALL_ASSETS, PairReason } from '@/types/trading';
+import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save } from 'lucide-react';
+import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { PlanSection } from '@/components/plans/PlanSection';
 import { PlanImageUpload } from '@/components/plans/PlanImageUpload';
+import { PlanVideoUpload } from '@/components/plans/PlanVideoUpload';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
+import { toast } from '@/hooks/use-toast';
 
 const emptyPairAnalysis = (): PairAnalysis => ({
   id: crypto.randomUUID(),
@@ -47,6 +48,7 @@ function BiasChip({ bias }: { bias: string }) {
 export default function WeeklyPlanPage() {
   const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
 
   const startNew = () => {
     const plan: WeeklyPlan = {
@@ -65,43 +67,44 @@ export default function WeeklyPlanPage() {
     };
     addWeeklyPlan(plan);
     setActiveId(plan.id);
+    setLocalPlan(plan);
   };
 
-  const activePlan = weeklyPlans.find(p => p.id === activeId);
+  const openPlan = (id: string) => {
+    const plan = weeklyPlans.find(p => p.id === id);
+    if (plan) {
+      setActiveId(id);
+      setLocalPlan({ ...plan, pairAnalyses: plan.pairAnalyses.map(pa => ({ ...pa })) });
+    }
+  };
 
   const update = (updates: Partial<WeeklyPlan>) => {
-    if (!activePlan) return;
-    updateWeeklyPlan({ ...activePlan, ...updates });
+    if (!localPlan) return;
+    setLocalPlan({ ...localPlan, ...updates });
   };
 
   const updatePair = (pairId: string, updates: Partial<PairAnalysis>) => {
-    if (!activePlan) return;
-    updateWeeklyPlan({
-      ...activePlan,
-      pairAnalyses: activePlan.pairAnalyses.map(p => p.id === pairId ? { ...p, ...updates } : p),
-    });
-  };
-
-  const toggleReason = (pairId: string, reason: PairReason) => {
-    if (!activePlan) return;
-    updateWeeklyPlan({
-      ...activePlan,
-      pairAnalyses: activePlan.pairAnalyses.map(p => {
-        if (p.id !== pairId) return p;
-        const reasons = p.reasons.includes(reason) ? p.reasons.filter(r => r !== reason) : [...p.reasons, reason];
-        return { ...p, reasons };
-      }),
+    if (!localPlan) return;
+    setLocalPlan({
+      ...localPlan,
+      pairAnalyses: localPlan.pairAnalyses.map(p => p.id === pairId ? { ...p, ...updates } : p),
     });
   };
 
   const addPair = () => {
-    if (!activePlan) return;
-    update({ pairAnalyses: [...activePlan.pairAnalyses, emptyPairAnalysis()] });
+    if (!localPlan) return;
+    update({ pairAnalyses: [...localPlan.pairAnalyses, emptyPairAnalysis()] });
   };
 
   const removePair = (id: string) => {
-    if (!activePlan) return;
-    update({ pairAnalyses: activePlan.pairAnalyses.filter(p => p.id !== id) });
+    if (!localPlan) return;
+    update({ pairAnalyses: localPlan.pairAnalyses.filter(p => p.id !== id) });
+  };
+
+  const handleSave = () => {
+    if (!localPlan) return;
+    updateWeeklyPlan(localPlan);
+    toast({ title: 'Saved!', description: 'Weekly plan saved successfully.' });
   };
 
   // Plan list
@@ -122,7 +125,7 @@ export default function WeeklyPlanPage() {
             {[...weeklyPlans].reverse().map(plan => (
               <PlanListItem
                 key={plan.id}
-                onClick={() => setActiveId(plan.id)}
+                onClick={() => openPlan(plan.id)}
                 title={formatWeekLabel(plan.weekStart)}
                 subtitle={plan.markets.length > 0 ? plan.markets.slice(0, 4).join(' · ') : undefined}
                 meta={`${plan.pairAnalyses.length} pairs`}
@@ -135,17 +138,17 @@ export default function WeeklyPlanPage() {
     );
   }
 
-  if (!activePlan) return null;
+  if (!localPlan) return null;
 
   return (
     <div className="p-6 max-w-[820px] mx-auto space-y-8 pb-24">
-      <PlanDetailHeader onBack={() => setActiveId(null)} backLabel="All weeks" />
+      <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All weeks" />
 
       {/* Week title banner */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/15 p-6">
         <p className="text-xs font-mono font-semibold uppercase tracking-widest text-primary mb-1">Weekly Plan</p>
         <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
-          {formatWeekLabel(activePlan.weekStart)}
+          {formatWeekLabel(localPlan.weekStart)}
         </h1>
       </div>
 
@@ -154,36 +157,36 @@ export default function WeeklyPlanPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Week Starting</Label>
-            <Input type="date" value={activePlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg" />
+            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Markets Focus</Label>
-            <Input value={activePlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg" />
+            <Input value={localPlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg" />
           </div>
         </div>
         <div className="space-y-2">
           <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Risk Plan</Label>
-          <Textarea value={activePlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[70px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
+          <Textarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[70px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
         </div>
       </PlanSection>
 
       {/* ECONOMIC CALENDAR */}
       <PlanSection title="Economic Calendar" icon={<Calendar className="h-4 w-4" />} accent="warning" badge="News">
         <PlanImageUpload
-          value={(activePlan.newsItems?.[0]?.image) || ''}
+          value={(localPlan.newsItems?.[0]?.image) || ''}
           onChange={v => {
-            const items = activePlan.newsItems && activePlan.newsItems.length > 0
-              ? [{ ...activePlan.newsItems[0], image: v }]
+            const items = localPlan.newsItems && localPlan.newsItems.length > 0
+              ? [{ ...localPlan.newsItems[0], image: v }]
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, image: v }];
             update({ newsItems: items });
           }}
           label="Forex Factory / Economic Calendar"
         />
         <Textarea
-          value={(activePlan.newsItems?.[0]?.notes) || ''}
+          value={(localPlan.newsItems?.[0]?.notes) || ''}
           onChange={e => {
-            const items = activePlan.newsItems && activePlan.newsItems.length > 0
-              ? [{ ...activePlan.newsItems[0], notes: e.target.value }]
+            const items = localPlan.newsItems && localPlan.newsItems.length > 0
+              ? [{ ...localPlan.newsItems[0], notes: e.target.value }]
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, notes: e.target.value }];
             update({ newsItems: items });
           }}
@@ -193,7 +196,7 @@ export default function WeeklyPlanPage() {
       </PlanSection>
 
       {/* PAIR ANALYSES */}
-      {activePlan.pairAnalyses.map((pa, idx) => (
+      {localPlan.pairAnalyses.map((pa, idx) => (
         <div key={pa.id} className="space-y-6">
           {/* Pair header */}
           <div className="flex items-center gap-4">
@@ -209,7 +212,7 @@ export default function WeeklyPlanPage() {
               {pa.bias !== 'Neutral' && <BiasChip bias={pa.bias} />}
             </div>
             <div className="h-px flex-1 bg-border/50" />
-            {activePlan.pairAnalyses.length > 1 && (
+            {localPlan.pairAnalyses.length > 1 && (
               <Button variant="ghost" size="icon" onClick={() => removePair(pa.id)} className="shrink-0 h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -234,21 +237,14 @@ export default function WeeklyPlanPage() {
             </Select>
           </PlanSection>
 
-          {/* Reasons */}
+          {/* Reasons - free text */}
           <PlanSection title="Reasons" icon={<FileText className="h-4 w-4" />}>
-            <div className="flex flex-wrap gap-2">
-              {PAIR_REASONS.map(r => (
-                <label key={r} className={cn(
-                  'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer transition-all duration-200',
-                  pa.reasons.includes(r)
-                    ? 'border-primary/40 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-border/50 hover:border-primary/20 hover:bg-primary/[0.03]'
-                )}>
-                  <Checkbox checked={pa.reasons.includes(r)} onCheckedChange={() => toggleReason(pa.id, r)} className="h-3.5 w-3.5 rounded" />
-                  <span className="font-medium">{r}</span>
-                </label>
-              ))}
-            </div>
+            <Textarea
+              value={(pa.reasons as any).__freeText || (typeof pa.reasons === 'string' ? pa.reasons : pa.reasons?.join?.(', ') || '')}
+              onChange={e => updatePair(pa.id, { reasons: e.target.value as any })}
+              placeholder="Type your technical reasons for this bias..."
+              className="min-h-[80px] text-sm rounded-lg"
+            />
           </PlanSection>
 
           {/* Key Levels */}
@@ -300,7 +296,7 @@ export default function WeeklyPlanPage() {
       {/* CALENDAR RESULT */}
       <PlanSection title="Calendar Result" icon={<Calendar className="h-4 w-4" />} accent="warning" badge="Post-Week">
         <Textarea
-          value={activePlan.newsResult || ''}
+          value={localPlan.newsResult || ''}
           onChange={e => update({ newsResult: e.target.value })}
           placeholder="Which economic events impacted market this week? Was the reaction expected?"
           className="min-h-[80px] text-sm rounded-lg"
@@ -308,16 +304,14 @@ export default function WeeklyPlanPage() {
       </PlanSection>
 
       {/* ANALYSIS VIDEO */}
-      <PlanSection title="Analysis Video" icon={<Video className="h-4 w-4" />}>
-        <Input value={activePlan.analysisVideoUrl || ''} onChange={e => update({ analysisVideoUrl: e.target.value })} placeholder="Paste YouTube / Loom URL..." className="text-sm rounded-lg" />
-        {activePlan.analysisVideoUrl && activePlan.analysisVideoUrl.includes('youtu') && (
-          <iframe
-            src={activePlan.analysisVideoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-            className="w-full aspect-video rounded-xl border border-border/30"
-            allowFullScreen
-          />
-        )}
+      <PlanSection title="Analysis Video" icon={<Save className="h-4 w-4" />}>
+        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload or link analysis video" />
       </PlanSection>
+
+      {/* SAVE BUTTON */}
+      <Button onClick={handleSave} className="w-full h-12 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm gap-2">
+        <Save className="h-4 w-4" /> Save Weekly Plan
+      </Button>
     </div>
   );
 }

@@ -103,6 +103,8 @@ export interface Trade {
   result: TradeResult;
   plannedRR: number;
   actualRR?: number;
+  maxRRReached?: number;
+  maxAdverseMove?: number;
   pips?: number;
   profitLoss: number;
   fees?: number;
@@ -242,7 +244,20 @@ export const CRYPTO_PAIRS = ['BTCUSD', 'ETHUSD', 'SOLUSD', 'BNBUSD'];
 
 export const INDICES = ['US30', 'NAS100', 'SPX500', 'UK100', 'GER40'];
 
-export const ALL_ASSETS = [...FOREX_PAIRS, ...METALS, ...CRYPTO_PAIRS, ...INDICES];
+export const ANALYSIS_ONLY_ASSETS = ['DXY'];
+
+export const ALL_ASSETS = [...FOREX_PAIRS, ...METALS, ...CRYPTO_PAIRS, ...INDICES, ...ANALYSIS_ONLY_ASSETS];
+
+export const DEFAULT_PLAN_PAIRS = ['EURUSD', 'GBPUSD', 'XAUUSD'];
+
+export const MARKET_ASSETS: Record<Market, string[]> = {
+  Forex: FOREX_PAIRS,
+  Crypto: CRYPTO_PAIRS,
+  Commodities: METALS,
+  Indices: INDICES,
+  Stocks: [],
+  Futures: [],
+};
 
 export const SETUPS = [
   'Breakout', 'Pullback', 'No Bos', 'Volume Candle',

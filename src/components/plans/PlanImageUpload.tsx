@@ -1,5 +1,9 @@
-import { ImagePlus, X } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 interface PlanImageUploadProps {
   value?: string;
@@ -8,28 +12,44 @@ interface PlanImageUploadProps {
 }
 
 export function PlanImageUpload({ value, onChange, label }: PlanImageUploadProps) {
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  const readFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => onChange(reader.result as string);
     reader.readAsDataURL(file);
   };
 
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) readFile(file);
+  };
+
   const handlePaste = (e: React.ClipboardEvent) => {
-    const items = e.clipboardData.items;
-    for (const item of items) {
+    for (const item of e.clipboardData.items) {
       if (item.type.startsWith('image/')) {
         const file = item.getAsFile();
-        if (!file) continue;
-        const reader = new FileReader();
-        reader.onload = () => onChange(reader.result as string);
-        reader.readAsDataURL(file);
-        e.preventDefault();
-        break;
+        if (file) { readFile(file); e.preventDefault(); break; }
       }
     }
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) readFile(file);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => setDragging(false), []);
 
   return (
     <div className="space-y-2">
@@ -39,39 +59,86 @@ export function PlanImageUpload({ value, onChange, label }: PlanImageUploadProps
           <img
             src={value}
             alt={label}
-            className="w-full max-h-[420px] object-contain bg-muted/10"
+            className="w-full max-h-[420px] object-contain bg-muted/10 cursor-pointer"
+            onClick={() => { setZoom(1); setViewerOpen(true); }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <button
-            onClick={() => onChange('')}
-            className="absolute top-3 right-3 h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
+            <button
+              onClick={() => { setZoom(1); setViewerOpen(true); }}
+              className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-primary/10 hover:border-primary/30"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onChange('')}
+              className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       ) : (
         <div
           onPaste={handlePaste}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
           tabIndex={0}
-          className="relative border-2 border-dashed border-border/50 rounded-xl p-10 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-primary/[0.02] group/upload"
+          className={cn(
+            'relative border-2 border-dashed rounded-xl p-10 text-center transition-all duration-300 focus:outline-none focus:border-primary/50 focus:bg-primary/[0.02] group/upload',
+            dragging
+              ? 'border-primary bg-primary/10 scale-[1.01]'
+              : 'border-border/50 hover:border-primary/40 hover:bg-primary/[0.02]'
+          )}
         >
           <div className="flex flex-col items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 transition-colors">
               <ImagePlus className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Drop, paste, or click to upload</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {dragging ? 'Drop here!' : 'Drag & drop or paste image'}
+              </p>
               <p className="text-[11px] text-muted-foreground/60 mt-1">PNG, JPG up to 10MB</p>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg text-xs font-semibold gap-1.5"
+              onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+            >
+              <Upload className="h-3.5 w-3.5" /> Choose File
+            </Button>
           </div>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            className="absolute inset-0 opacity-0 cursor-pointer"
-          />
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
         </div>
       )}
+
+      {/* Full-screen image viewer */}
+      <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 sm:p-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setZoom(z => Math.max(0.25, z - 0.25))}>
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <span className="text-xs font-mono text-muted-foreground min-w-[3rem] text-center">{Math.round(zoom * 100)}%</span>
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setZoom(z => Math.min(5, z + 0.25))}>
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={() => setZoom(1)}>Reset</Button>
+          </div>
+          <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
+            <img
+              src={value}
+              alt={label}
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+              className="max-w-full transition-transform duration-200"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

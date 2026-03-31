@@ -432,7 +432,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
                           {cell.day.tradeCount} trade{cell.day.tradeCount > 1 ? 's' : ''}
                         </p>
                         {typeof cell.day.averageRR === 'number' && (
-                          <p className="hidden sm:block truncate text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                          <p className="hidden sm:block truncate text-[9px] uppercase tracking-[0.08em] text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                             RR {cell.day.averageRR.toFixed(2)}
                           </p>
                         )}

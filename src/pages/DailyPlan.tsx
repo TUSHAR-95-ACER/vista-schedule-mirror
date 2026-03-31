@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, Video, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3 } from 'lucide-react';
-import { DailyPlan, DailyPairPlan, PAIR_REASONS, ALL_ASSETS, Session, PairReason } from '@/types/trading';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save } from 'lucide-react';
+import { DailyPlan, DailyPairPlan, ALL_ASSETS, Session } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { PlanSection } from '@/components/plans/PlanSection';
 import { PlanImageUpload } from '@/components/plans/PlanImageUpload';
+import { PlanVideoUpload } from '@/components/plans/PlanVideoUpload';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
+import { toast } from '@/hooks/use-toast';
 
 const SESSIONS: Session[] = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
 
@@ -43,6 +44,7 @@ function BiasChip({ bias }: { bias: string }) {
 export default function DailyPlanPage() {
   const { dailyPlans, addDailyPlan, updateDailyPlan, trades } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
 
   const startNew = () => {
     const plan: DailyPlan = {
@@ -59,49 +61,50 @@ export default function DailyPlanPage() {
     };
     addDailyPlan(plan);
     setActiveId(plan.id);
+    setLocalPlan(plan);
   };
 
-  const activePlan = dailyPlans.find(p => p.id === activeId);
+  const openPlan = (id: string) => {
+    const plan = dailyPlans.find(p => p.id === id);
+    if (plan) {
+      setActiveId(id);
+      setLocalPlan({ ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) });
+    }
+  };
 
   const update = (updates: Partial<DailyPlan>) => {
-    if (!activePlan) return;
-    updateDailyPlan({ ...activePlan, ...updates });
+    if (!localPlan) return;
+    setLocalPlan({ ...localPlan, ...updates });
   };
 
   const updatePair = (pairId: string, updates: Partial<DailyPairPlan>) => {
-    if (!activePlan) return;
-    updateDailyPlan({
-      ...activePlan,
-      pairs: activePlan.pairs.map(p => p.id === pairId ? { ...p, ...updates } : p),
-    });
-  };
-
-  const toggleReason = (pairId: string, reason: PairReason) => {
-    if (!activePlan) return;
-    updateDailyPlan({
-      ...activePlan,
-      pairs: activePlan.pairs.map(p => {
-        if (p.id !== pairId) return p;
-        const reasons = p.reasons.includes(reason) ? p.reasons.filter(r => r !== reason) : [...p.reasons, reason];
-        return { ...p, reasons };
-      }),
+    if (!localPlan) return;
+    setLocalPlan({
+      ...localPlan,
+      pairs: localPlan.pairs.map(p => p.id === pairId ? { ...p, ...updates } : p),
     });
   };
 
   const addPair = () => {
-    if (!activePlan) return;
-    update({ pairs: [...activePlan.pairs, emptyPairPlan()] });
+    if (!localPlan) return;
+    update({ pairs: [...localPlan.pairs, emptyPairPlan()] });
   };
 
   const removePair = (id: string) => {
-    if (!activePlan) return;
-    update({ pairs: activePlan.pairs.filter(p => p.id !== id) });
+    if (!localPlan) return;
+    update({ pairs: localPlan.pairs.filter(p => p.id !== id) });
+  };
+
+  const handleSave = () => {
+    if (!localPlan) return;
+    updateDailyPlan(localPlan);
+    toast({ title: 'Saved!', description: 'Daily plan saved successfully.' });
   };
 
   const dayTrades = useMemo(() => {
-    if (!activePlan) return [];
-    return trades.filter(t => t.date === activePlan.date);
-  }, [activePlan?.date, trades]);
+    if (!localPlan) return [];
+    return trades.filter(t => t.date === localPlan.date);
+  }, [localPlan?.date, trades]);
 
   // List view
   if (!activeId) {
@@ -121,7 +124,7 @@ export default function DailyPlanPage() {
             {[...dailyPlans].reverse().map(plan => (
               <PlanListItem
                 key={plan.id}
-                onClick={() => setActiveId(plan.id)}
+                onClick={() => openPlan(plan.id)}
                 title={formatDayLabel(plan.date)}
                 subtitle={plan.sessionFocus}
                 meta={`${plan.pairs.length} pairs`}
@@ -134,17 +137,17 @@ export default function DailyPlanPage() {
     );
   }
 
-  if (!activePlan) return null;
+  if (!localPlan) return null;
 
   return (
     <div className="p-6 max-w-[820px] mx-auto space-y-8 pb-24">
-      <PlanDetailHeader onBack={() => setActiveId(null)} backLabel="All days" />
+      <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All days" />
 
       {/* Day title banner */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/15 p-6">
         <p className="text-xs font-mono font-semibold uppercase tracking-widest text-primary mb-1">Daily Plan</p>
         <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
-          {formatDayLabel(activePlan.date)}
+          {formatDayLabel(localPlan.date)}
         </h1>
       </div>
 
@@ -153,22 +156,22 @@ export default function DailyPlanPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Date</Label>
-            <Input type="date" value={activePlan.date} onChange={e => update({ date: e.target.value })} className="rounded-lg" />
+            <Input type="date" value={localPlan.date} onChange={e => update({ date: e.target.value })} className="rounded-lg" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Session Focus</Label>
-            <Select value={activePlan.sessionFocus} onValueChange={v => update({ sessionFocus: v as Session })}>
+            <Select value={localPlan.sessionFocus} onValueChange={v => update({ sessionFocus: v as Session })}>
               <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
               <SelectContent>{SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Max Trades</Label>
-            <Input type="number" min={1} max={20} value={activePlan.maxTrades} onChange={e => update({ maxTrades: parseInt(e.target.value) || 3 })} className="rounded-lg" />
+            <Input type="number" min={1} max={20} value={localPlan.maxTrades} onChange={e => update({ maxTrades: parseInt(e.target.value) || 3 })} className="rounded-lg" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Risk Limit</Label>
-            <Input value={activePlan.riskLimit} onChange={e => update({ riskLimit: e.target.value })} placeholder="Max 2% per trade" className="rounded-lg" />
+            <Input value={localPlan.riskLimit} onChange={e => update({ riskLimit: e.target.value })} placeholder="Max 2% per trade" className="rounded-lg" />
           </div>
         </div>
       </PlanSection>
@@ -176,20 +179,20 @@ export default function DailyPlanPage() {
       {/* GLOBAL NEWS */}
       <PlanSection title="Global News" icon={<Calendar className="h-4 w-4" />} accent="warning" badge="News">
         <PlanImageUpload
-          value={(activePlan.newsItems?.[0]?.image) || ''}
+          value={(localPlan.newsItems?.[0]?.image) || ''}
           onChange={v => {
-            const items = activePlan.newsItems && activePlan.newsItems.length > 0
-              ? [{ ...activePlan.newsItems[0], image: v }]
+            const items = localPlan.newsItems && localPlan.newsItems.length > 0
+              ? [{ ...localPlan.newsItems[0], image: v }]
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, image: v }];
             update({ newsItems: items });
           }}
           label="News Screenshot"
         />
         <Textarea
-          value={(activePlan.newsItems?.[0]?.notes) || ''}
+          value={(localPlan.newsItems?.[0]?.notes) || ''}
           onChange={e => {
-            const items = activePlan.newsItems && activePlan.newsItems.length > 0
-              ? [{ ...activePlan.newsItems[0], notes: e.target.value }]
+            const items = localPlan.newsItems && localPlan.newsItems.length > 0
+              ? [{ ...localPlan.newsItems[0], notes: e.target.value }]
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, notes: e.target.value }];
             update({ newsItems: items });
           }}
@@ -199,7 +202,7 @@ export default function DailyPlanPage() {
       </PlanSection>
 
       {/* PAIR EXECUTION PLANS */}
-      {activePlan.pairs.map((pp, idx) => (
+      {localPlan.pairs.map((pp, idx) => (
         <div key={pp.id} className="space-y-6">
           {/* Pair header */}
           <div className="flex items-center gap-4">
@@ -215,7 +218,7 @@ export default function DailyPlanPage() {
               {pp.bias !== 'Neutral' && <BiasChip bias={pp.bias} />}
             </div>
             <div className="h-px flex-1 bg-border/50" />
-            {activePlan.pairs.length > 1 && (
+            {localPlan.pairs.length > 1 && (
               <Button variant="ghost" size="icon" onClick={() => removePair(pp.id)} className="shrink-0 h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -240,21 +243,14 @@ export default function DailyPlanPage() {
             <Textarea value={pp.narrative || ''} onChange={e => updatePair(pp.id, { narrative: e.target.value })} placeholder="Expected price movement and why..." className="min-h-[70px] text-sm rounded-lg" />
           </PlanSection>
 
-          {/* Reasons */}
+          {/* Reasons - free text */}
           <PlanSection title="Reasons" icon={<FileText className="h-4 w-4" />}>
-            <div className="flex flex-wrap gap-2">
-              {PAIR_REASONS.map(r => (
-                <label key={r} className={cn(
-                  'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer transition-all duration-200',
-                  pp.reasons.includes(r)
-                    ? 'border-primary/40 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-border/50 hover:border-primary/20 hover:bg-primary/[0.03]'
-                )}>
-                  <Checkbox checked={pp.reasons.includes(r)} onCheckedChange={() => toggleReason(pp.id, r)} className="h-3.5 w-3.5 rounded" />
-                  <span className="font-medium">{r}</span>
-                </label>
-              ))}
-            </div>
+            <Textarea
+              value={typeof pp.reasons === 'string' ? pp.reasons : pp.reasons?.join?.(', ') || ''}
+              onChange={e => updatePair(pp.id, { reasons: e.target.value as any })}
+              placeholder="Type your technical reasons for this bias..."
+              className="min-h-[80px] text-sm rounded-lg"
+            />
           </PlanSection>
 
           {/* Execution Plan */}
@@ -298,12 +294,12 @@ export default function DailyPlanPage() {
           <div className="flex items-center gap-4">
             <Label className="text-sm font-medium">Did you take any trade?</Label>
             <div className="flex gap-2">
-              <Button size="sm" variant={activePlan.tookTrades === true ? 'default' : 'outline'} onClick={() => update({ tookTrades: true })} className="rounded-lg font-semibold">Yes</Button>
-              <Button size="sm" variant={activePlan.tookTrades === false ? 'default' : 'outline'} onClick={() => update({ tookTrades: false })} className="rounded-lg font-semibold">No</Button>
+              <Button size="sm" variant={localPlan.tookTrades === true ? 'default' : 'outline'} onClick={() => update({ tookTrades: true })} className="rounded-lg font-semibold">Yes</Button>
+              <Button size="sm" variant={localPlan.tookTrades === false ? 'default' : 'outline'} onClick={() => update({ tookTrades: false })} className="rounded-lg font-semibold">No</Button>
             </div>
           </div>
 
-          {activePlan.tookTrades === true && (
+          {localPlan.tookTrades === true && (
             dayTrades.length > 0 ? (
               <div className="space-y-3">
                 {dayTrades.map(t => (
@@ -328,11 +324,11 @@ export default function DailyPlanPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No trades found for {activePlan.date}. Log trades in the Trades page.</p>
+              <p className="text-sm text-muted-foreground">No trades found for {localPlan.date}. Log trades in the Trades page.</p>
             )
           )}
 
-          {activePlan.tookTrades === false && (
+          {localPlan.tookTrades === false && (
             <p className="text-sm text-muted-foreground italic">No trades taken.</p>
           )}
         </div>
@@ -340,25 +336,23 @@ export default function DailyPlanPage() {
 
       {/* RESULT */}
       <PlanSection title="Result" icon={<BarChart3 className="h-4 w-4" />} accent="success" badge="Post-Day">
-        <Textarea value={activePlan.resultNarrative || ''} onChange={e => update({ resultNarrative: e.target.value })} placeholder="What happened in the market today..." className="min-h-[80px] text-sm rounded-lg" />
+        <Textarea value={localPlan.resultNarrative || ''} onChange={e => update({ resultNarrative: e.target.value })} placeholder="What happened in the market today..." className="min-h-[80px] text-sm rounded-lg" />
       </PlanSection>
 
       {/* NOTE */}
       <PlanSection title="Note" icon={<StickyNote className="h-4 w-4" />}>
-        <Textarea value={activePlan.note || ''} onChange={e => update({ note: e.target.value })} placeholder="Final thoughts for the day..." className="min-h-[80px] text-sm rounded-lg" />
+        <Textarea value={localPlan.note || ''} onChange={e => update({ note: e.target.value })} placeholder="Final thoughts for the day..." className="min-h-[80px] text-sm rounded-lg" />
       </PlanSection>
 
       {/* ANALYSIS VIDEO */}
-      <PlanSection title="Analysis Video" icon={<Video className="h-4 w-4" />}>
-        <Input value={activePlan.analysisVideoUrl || ''} onChange={e => update({ analysisVideoUrl: e.target.value })} placeholder="Paste YouTube / Loom URL..." className="text-sm rounded-lg" />
-        {activePlan.analysisVideoUrl && activePlan.analysisVideoUrl.includes('youtu') && (
-          <iframe
-            src={activePlan.analysisVideoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-            className="w-full aspect-video rounded-xl border border-border/30"
-            allowFullScreen
-          />
-        )}
+      <PlanSection title="Analysis Video" icon={<Save className="h-4 w-4" />}>
+        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload or link analysis video" />
       </PlanSection>
+
+      {/* SAVE BUTTON */}
+      <Button onClick={handleSave} className="w-full h-12 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm gap-2">
+        <Save className="h-4 w-4" /> Save Daily Plan
+      </Button>
     </div>
   );
 }
