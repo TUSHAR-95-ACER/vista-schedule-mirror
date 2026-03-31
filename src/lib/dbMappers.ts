@@ -32,6 +32,8 @@ export function dbToTrade(row: any): Trade {
     exitPrice: row.exit_price != null ? Number(row.exit_price) : undefined,
     result: row.result, plannedRR: Number(row.planned_rr),
     actualRR: row.actual_rr != null ? Number(row.actual_rr) : undefined,
+    maxRRReached: row.max_rr_reached != null ? Number(row.max_rr_reached) : undefined,
+    maxAdverseMove: row.max_adverse_move != null ? Number(row.max_adverse_move) : undefined,
     pips: row.pips != null ? Number(row.pips) : undefined,
     profitLoss: Number(row.profit_loss), fees: row.fees != null ? Number(row.fees) : undefined,
     notes: row.notes || '', accounts: typeof row.accounts === 'string' ? JSON.parse(row.accounts) : (row.accounts || []),
