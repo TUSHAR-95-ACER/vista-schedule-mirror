@@ -9,6 +9,7 @@ export function tradeToDb(t: Trade, userId: string) {
     setup: t.setup, quantity: t.quantity, entry_price: t.entryPrice,
     stop_loss: t.stopLoss, take_profit: t.takeProfit, exit_price: t.exitPrice ?? null,
     result: t.result, planned_rr: t.plannedRR, actual_rr: t.actualRR ?? null,
+    max_rr_reached: t.maxRRReached ?? null, max_adverse_move: t.maxAdverseMove ?? null,
     pips: t.pips ?? null, profit_loss: t.profitLoss, fees: t.fees ?? null,
     notes: t.notes, accounts: JSON.stringify(t.accounts),
     management: JSON.stringify(t.management), confluences: JSON.stringify(t.confluences),
