@@ -191,6 +191,9 @@ export default function Trades() {
                         trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
                         {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
                       </td>
+                      <td className="px-3 py-1.5 text-xs text-muted-foreground font-mono">
+                        {(trade.tradeJourney?.length || 0) + 1}
+                      </td>
                       <td className="px-3 py-1.5">{resultBadge(trade.result)}</td>
                       <td className="px-3 py-1.5">
                         <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
