@@ -406,8 +406,8 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
                     type="button"
                     onClick={() => cell.day.tradeCount > 0 && setSelectedDate(cell.day.dateStr)}
                     className={cn(
-                       'flex flex-col justify-between rounded-2xl border p-1.5 sm:p-2.5 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                       'h-14 sm:h-24 lg:h-28',
+                       'flex flex-col justify-between rounded-2xl border p-1 sm:p-2.5 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                       'h-[52px] sm:h-24 lg:h-28 min-w-0 overflow-hidden',
                       cell.day.tradeCount > 0 ? 'hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98]' : 'cursor-default',
                       getTone(cell.day, monthData.maxAbsPl, 'calendar'),
                     )}
