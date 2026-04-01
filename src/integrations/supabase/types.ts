@@ -166,6 +166,7 @@ export type Database = {
           stop_loss: number
           take_profit: number
           target_confluences: Json | null
+          trade_journey: Json | null
           user_id: string
         }
         Insert: {
@@ -205,6 +206,7 @@ export type Database = {
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
+          trade_journey?: Json | null
           user_id: string
         }
         Update: {
@@ -244,6 +246,7 @@ export type Database = {
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
+          trade_journey?: Json | null
           user_id?: string
         }
         Relationships: []
