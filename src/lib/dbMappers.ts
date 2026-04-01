@@ -1,4 +1,4 @@
-import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan } from '@/types/trading';
+import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
 
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
@@ -19,6 +19,7 @@ export function tradeToDb(t: Trade, userId: string) {
     execution_image: t.executionImage || null,
     psychology: t.psychology ? JSON.stringify(t.psychology) : null,
     mistakes: JSON.stringify(t.mistakes), grade: t.grade || null,
+    trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
   };
 }
 
@@ -46,6 +47,7 @@ export function dbToTrade(row: any): Trade {
     psychology: row.psychology ? (typeof row.psychology === 'string' ? JSON.parse(row.psychology) : row.psychology) : undefined,
     mistakes: typeof row.mistakes === 'string' ? JSON.parse(row.mistakes) : (row.mistakes || []),
     grade: row.grade || undefined,
+    tradeJourney: row.trade_journey ? (typeof row.trade_journey === 'string' ? JSON.parse(row.trade_journey) : row.trade_journey) : undefined,
   };
 }
 

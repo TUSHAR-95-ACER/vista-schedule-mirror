@@ -120,7 +120,25 @@ export interface Trade {
   psychology?: TradePsychology;
   mistakes: Mistake[];
   grade?: TradeGrade;
+  tradeJourney?: TradeJourneyStep[];
 }
+
+export interface TradeJourneyStep {
+  id: string;
+  type: string;
+  time: string;
+  note?: string;
+}
+
+export const JOURNEY_EVENT_TYPES = [
+  'SL moved to BE',
+  'Partial Close',
+  'Trailing SL',
+  'TP Hit',
+  'SL Hit',
+  'Manual Exit',
+  'Custom Event',
+] as const;
 
 export interface TradePsychology {
   emotion: Emotion;

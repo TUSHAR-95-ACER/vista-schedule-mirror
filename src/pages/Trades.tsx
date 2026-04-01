@@ -157,6 +157,7 @@ export default function Trades() {
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground font-mono cursor-pointer" onClick={() => toggleSort('profitLoss')}>
                     <span className="flex items-center gap-1">P/L <SortIcon field="profitLoss" /></span>
                   </th>
+                  <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Steps</th>
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Result</th>
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Actions</th>
                 </tr>
@@ -164,7 +165,7 @@ export default function Trades() {
               <tbody>
                 {sorted.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-12 text-center text-muted-foreground">
+                    <td colSpan={12} className="px-3 py-12 text-center text-muted-foreground">
                       No trades logged yet. Click "Log Trade" to get started.
                     </td>
                   </tr>
@@ -189,6 +190,9 @@ export default function Trades() {
                         trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
                         trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
                         {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                      </td>
+                      <td className="px-3 py-1.5 text-xs text-muted-foreground font-mono">
+                        {(trade.tradeJourney?.length || 0) + 1}
                       </td>
                       <td className="px-3 py-1.5">{resultBadge(trade.result)}</td>
                       <td className="px-3 py-1.5">
