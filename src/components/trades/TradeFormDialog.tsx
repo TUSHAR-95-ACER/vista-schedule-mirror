@@ -199,7 +199,13 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     setConfluencesOpen(false);
   }, [editTrade, open]);
 
-  const set = (key: string, val: any) => setForm(f => ({ ...f, [key]: val }));
+  const set = (key: string, val: any) => {
+    if (key === 'market') {
+      setForm(f => ({ ...f, market: val, asset: '' }));
+    } else {
+      setForm(f => ({ ...f, [key]: val }));
+    }
+  };
 
   const syncConfluenceName = (source: string[], previous: string, next: string) => {
     const mapped = source.map(item => item === previous ? next : item);
