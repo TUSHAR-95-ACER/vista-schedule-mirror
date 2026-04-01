@@ -550,19 +550,39 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                 />
               </div>
 
-              {/* Max RR & Adverse Move */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="space-y-1">
-                  <FieldLabel>Max RR Reached</FieldLabel>
-                  <Input type="number" step="0.01" value={form.maxRRReached} onChange={e => set('maxRRReached', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. 1.5" />
-                  <p className="text-[9px] text-muted-foreground/60">Highest positive RR before exit</p>
+              {/* RR Behavior Tracking — result-based */}
+              {!isMissedOrCancelled && (
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1">
+                    <FieldLabel>Max Profit Before SL (RR)</FieldLabel>
+                    <Input
+                      type="number" step="0.01" min="0"
+                      value={form.maxRRReached}
+                      onChange={e => setForm(f => ({ ...f, maxRRReached: e.target.value, maxAdverseMove: '' }))}
+                      disabled={previewResult === 'Win'}
+                      className={cn('h-9 text-xs font-mono rounded-lg', previewResult === 'Win' && 'opacity-40 cursor-not-allowed')}
+                      placeholder="e.g. 1.5"
+                    />
+                    <p className="text-[9px] text-muted-foreground/60">
+                      {previewResult === 'Win' ? 'Only for losing trades (SL hit)' : 'Highest +RR before SL was hit'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <FieldLabel>Max Drawdown Before TP (RR)</FieldLabel>
+                    <Input
+                      type="number" step="0.01" min="0"
+                      value={form.maxAdverseMove}
+                      onChange={e => setForm(f => ({ ...f, maxAdverseMove: e.target.value, maxRRReached: '' }))}
+                      disabled={previewResult === 'Loss'}
+                      className={cn('h-9 text-xs font-mono rounded-lg', previewResult === 'Loss' && 'opacity-40 cursor-not-allowed')}
+                      placeholder="e.g. 0.4"
+                    />
+                    <p className="text-[9px] text-muted-foreground/60">
+                      {previewResult === 'Loss' ? 'Only for winning trades (TP hit)' : 'Max adverse move before TP hit'}
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <FieldLabel>Max Adverse Move (RR)</FieldLabel>
-                  <Input type="number" step="0.01" value={form.maxAdverseMove} onChange={e => set('maxAdverseMove', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. -0.4" />
-                  <p className="text-[9px] text-muted-foreground/60">Max move against your position in RR</p>
-                </div>
-              </div>
+              )}
             </FormSection>
 
             {/* ── TECHNICAL POINTS ──────────────────────────────── */}
