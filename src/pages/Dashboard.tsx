@@ -27,6 +27,7 @@ import { SessionChart } from '@/components/dashboard/SessionChart';
 import { WeeklyPerformanceChart } from '@/components/dashboard/WeeklyPerformanceChart';
 import { PerformanceByGradeChart } from '@/components/dashboard/PerformanceByGradeChart';
 import { DashboardCalendar } from '@/components/dashboard/DashboardCalendar';
+import { RRDistributionChart } from '@/components/dashboard/RRDistributionChart';
 
 export default function Dashboard() {
   const { trades } = useTrading();
@@ -49,16 +50,6 @@ export default function Dashboard() {
     [trades, validTrades]
   );
 
-  // RR behavior analytics
-  const rrBehavior = useMemo(() => {
-    const slTrades = validTrades.filter(t => t.result === 'Loss' && t.maxRRReached != null);
-    const tpTrades = validTrades.filter(t => t.result === 'Win' && t.maxAdverseMove != null);
-    const avgProfitBeforeSL = slTrades.length > 0
-      ? slTrades.reduce((s, t) => s + (t.maxRRReached ?? 0), 0) / slTrades.length : null;
-    const avgDrawdownBeforeTP = tpTrades.length > 0
-      ? tpTrades.reduce((s, t) => s + (t.maxAdverseMove ?? 0), 0) / tpTrades.length : null;
-    return { avgProfitBeforeSL, avgDrawdownBeforeTP, slCount: slTrades.length, tpCount: tpTrades.length };
-  }, [validTrades]);
 
   const avgDuration = useMemo(() => {
     const tradesWithTimes = validTrades.filter((t) => t.entryTime && t.exitTime);
@@ -85,7 +76,7 @@ export default function Dashboard() {
         </div>
       </PageHeader>
 
-      {/* Metrics Grid - responsive */}
+      {/* Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-6">
         <MetricCard label="Total Trades" value={metrics.total} icon={BarChart3} />
         <MetricCard label="Win Rate" value={formatPercent(metrics.winRate)} icon={Target} trend={metrics.winRate >= 50 ? 'up' : 'down'} />
@@ -96,35 +87,8 @@ export default function Dashboard() {
         <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} />
       </div>
 
-      {/* RR Behavior Analytics */}
-      {(rrBehavior.avgProfitBeforeSL !== null || rrBehavior.avgDrawdownBeforeTP !== null) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Avg Profit Before SL (RR)</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-mono font-bold text-success">
-                {rrBehavior.avgProfitBeforeSL !== null ? rrBehavior.avgProfitBeforeSL.toFixed(2) : '—'}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                from {rrBehavior.slCount} losing trade{rrBehavior.slCount !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <p className="text-[10px] text-muted-foreground/70 mt-1">How much profit trades reached before hitting SL</p>
-          </div>
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Avg Drawdown Before TP (RR)</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-mono font-bold text-destructive">
-                {rrBehavior.avgDrawdownBeforeTP !== null ? rrBehavior.avgDrawdownBeforeTP.toFixed(2) : '—'}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                from {rrBehavior.tpCount} winning trade{rrBehavior.tpCount !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <p className="text-[10px] text-muted-foreground/70 mt-1">How much drawdown winners endured before hitting TP</p>
-          </div>
-        </div>
-      )}
+      {/* RR Distribution Analytics */}
+      <RRDistributionChart trades={trades} />
 
       {/* Equity Curve + Win/Loss */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
