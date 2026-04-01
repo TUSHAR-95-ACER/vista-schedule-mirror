@@ -146,7 +146,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const predictionInputRef = useRef<HTMLInputElement | null>(null);
   const executionInputRef = useRef<HTMLInputElement | null>(null);
 
-  const allAssets = [...ALL_ASSETS, ...customAssets];
+  const marketAssets = MARKET_ASSETS[form.market] || [];
+  const allAssets = [...new Set([...marketAssets, ...customAssets])].filter(a => !ANALYSIS_ONLY_ASSETS.includes(a));
   const allSetups = [...new Set([...customSetups, form.setup].filter((value): value is string => Boolean(value)))];
   const allConfluences = [...new Set([
     ...customConfluences,
