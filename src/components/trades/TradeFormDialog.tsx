@@ -581,7 +581,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                       {previewResult === 'Loss' ? 'Only for winning trades (TP hit)' : 'Max adverse move before TP hit'}
                     </p>
                   </div>
-              </div>
+                </div>
+              )}
             </FormSection>
 
             {/* ── TECHNICAL POINTS ──────────────────────────────── */}
