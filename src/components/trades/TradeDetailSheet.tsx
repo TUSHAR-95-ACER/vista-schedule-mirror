@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trade } from '@/types/trading';
+import { Trade, TradeJourneyStep } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Download, ZoomIn, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
+import { TradeJourneyTimeline } from './TradeJourneyTimeline';
+import { useTrading } from '@/contexts/TradingContext';
 
 interface Props {
   trade: Trade | null;
@@ -15,8 +17,13 @@ interface Props {
 
 export function TradeDetailSheet({ trade, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const { updateTrade } = useTrading();
 
   if (!trade) return null;
+
+  const handleJourneyUpdate = (journey: TradeJourneyStep[]) => {
+    updateTrade({ ...trade, tradeJourney: journey });
+  };
 
   const Row = ({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) => (
     <div className="flex justify-between items-center py-1.5 border-b border-border/30">
@@ -74,6 +81,8 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
               <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Metrics</h4>
               <Row label="Planned RR" value={trade.plannedRR.toFixed(2)} mono />
               {trade.actualRR !== undefined && <Row label="Actual RR" value={trade.actualRR.toFixed(2)} mono />}
+              {trade.maxRRReached !== undefined && <Row label="Max RR Reached" value={trade.maxRRReached.toFixed(2)} mono />}
+              {trade.maxAdverseMove !== undefined && <Row label="Max Adverse Move" value={trade.maxAdverseMove.toFixed(2)} mono />}
               {trade.pips !== undefined && <Row label="Pips" value={trade.pips.toFixed(1)} mono />}
               {trade.fees !== undefined && <Row label="Fees" value={trade.fees.toFixed(2)} mono />}
               <Row label="P/L" value={
@@ -184,6 +193,16 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
                 </div>
               </div>
             )}
+
+            {/* Trade Journey Timeline */}
+            <div className="border-t border-border pt-4">
+              <TradeJourneyTimeline
+                tradeDate={trade.date}
+                entryTime={trade.entryTime}
+                journey={trade.tradeJourney || []}
+                onUpdate={handleJourneyUpdate}
+              />
+            </div>
           </div>
         </SheetContent>
       </Sheet>
