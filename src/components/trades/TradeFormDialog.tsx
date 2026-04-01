@@ -129,6 +129,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     checklist: { followPlan: false, noFomo: false, noRevenge: false, waitedConfirmation: false, riskRespected: false },
     mistakes: [] as Mistake[],
     grade: '' as TradeGrade | '',
+    maxRRReached: '',
+    maxAdverseMove: '',
   };
 
   const [form, setForm] = useState(defaultForm);
