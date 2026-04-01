@@ -165,7 +165,7 @@ export default function Trades() {
               <tbody>
                 {sorted.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="px-3 py-12 text-center text-muted-foreground">
+                    <td colSpan={12} className="px-3 py-12 text-center text-muted-foreground">
                       No trades logged yet. Click "Log Trade" to get started.
                     </td>
                   </tr>
