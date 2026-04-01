@@ -189,6 +189,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         checklist: editTrade.psychology?.checklist || defaultForm.checklist,
         mistakes: editTrade.mistakes,
         grade: editTrade.grade || '',
+        maxRRReached: editTrade.maxRRReached !== undefined ? String(editTrade.maxRRReached) : '',
+        maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
       });
     } else {
       setForm(defaultForm);
