@@ -1,4 +1,4 @@
-import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan } from '@/types/trading';
+import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
 
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
