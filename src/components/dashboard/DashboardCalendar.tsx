@@ -406,23 +406,23 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
                     type="button"
                     onClick={() => cell.day.tradeCount > 0 && setSelectedDate(cell.day.dateStr)}
                     className={cn(
-                       'flex flex-col justify-between rounded-2xl border p-1.5 sm:p-2.5 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                       'h-14 sm:h-24 lg:h-28',
+                       'flex flex-col justify-between rounded-2xl border p-1 sm:p-2.5 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                       'h-[52px] sm:h-24 lg:h-28 min-w-0 overflow-hidden',
                       cell.day.tradeCount > 0 ? 'hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98]' : 'cursor-default',
                       getTone(cell.day, monthData.maxAbsPl, 'calendar'),
                     )}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-xs font-semibold text-muted-foreground">{cell.day.dayNumber}</span>
-                      {cell.day.tradeCount > 0 && <span className="rounded-full bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{cell.day.tradeCount}T</span>}
+                    <div className="flex items-start justify-between gap-0.5 min-w-0">
+                      <span className="text-[10px] sm:text-xs font-semibold text-muted-foreground">{cell.day.dayNumber}</span>
+                      {cell.day.tradeCount > 0 && <span className="hidden sm:inline rounded-full bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">{cell.day.tradeCount}T</span>}
                     </div>
 
                     {cell.day.tradeCount > 0 && (
-                      <div className="min-w-0 space-y-0.5 sm:space-y-1">
-                        {/* Mobile: dot indicator only */}
-                        <div className="sm:hidden flex items-center gap-1">
-                          <span className={`h-2 w-2 rounded-full ${cell.day.totalPl >= 0 ? 'bg-success' : 'bg-destructive'}`} />
-                          <span className="text-[9px] font-mono font-bold truncate">{formatCompact(cell.day.totalPl)}</span>
+                      <div className="min-w-0 overflow-hidden">
+                        {/* Mobile: compact */}
+                        <div className="sm:hidden flex items-center gap-0.5 min-w-0">
+                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${cell.day.totalPl >= 0 ? 'bg-success' : 'bg-destructive'}`} />
+                          <span className="text-[8px] font-mono font-bold truncate">{formatCompact(cell.day.totalPl)}</span>
                         </div>
                         {/* Desktop: full info */}
                         <p className={cn('hidden sm:block truncate font-heading text-lg font-bold leading-none tracking-tight', cell.day.totalPl >= 0 ? 'text-success' : 'text-destructive')}>
@@ -432,7 +432,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
                           {cell.day.tradeCount} trade{cell.day.tradeCount > 1 ? 's' : ''}
                         </p>
                         {typeof cell.day.averageRR === 'number' && (
-                          <p className="hidden sm:block truncate text-[9px] uppercase tracking-[0.08em] text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
+                          <p className="hidden sm:block text-[9px] uppercase tracking-[0.08em] text-muted-foreground truncate">
                             RR {cell.day.averageRR.toFixed(2)}
                           </p>
                         )}

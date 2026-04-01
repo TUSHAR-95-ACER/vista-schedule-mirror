@@ -11,7 +11,7 @@ import { useTrading } from '@/contexts/TradingContext';
 import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
   TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES,
-  ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS,
+  ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -129,6 +129,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     checklist: { followPlan: false, noFomo: false, noRevenge: false, waitedConfirmation: false, riskRespected: false },
     mistakes: [] as Mistake[],
     grade: '' as TradeGrade | '',
+    maxRRReached: '',
+    maxAdverseMove: '',
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -144,7 +146,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const predictionInputRef = useRef<HTMLInputElement | null>(null);
   const executionInputRef = useRef<HTMLInputElement | null>(null);
 
-  const allAssets = [...ALL_ASSETS, ...customAssets];
+  const marketAssets = MARKET_ASSETS[form.market] || [];
+  const allAssets = [...new Set([...marketAssets, ...customAssets])].filter(a => !ANALYSIS_ONLY_ASSETS.includes(a));
   const allSetups = [...new Set([...customSetups, form.setup].filter((value): value is string => Boolean(value)))];
   const allConfluences = [...new Set([
     ...customConfluences,
@@ -186,6 +189,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         checklist: editTrade.psychology?.checklist || defaultForm.checklist,
         mistakes: editTrade.mistakes,
         grade: editTrade.grade || '',
+        maxRRReached: editTrade.maxRRReached !== undefined ? String(editTrade.maxRRReached) : '',
+        maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
       });
     } else {
       setForm(defaultForm);
@@ -194,7 +199,13 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     setConfluencesOpen(false);
   }, [editTrade, open]);
 
-  const set = (key: string, val: any) => setForm(f => ({ ...f, [key]: val }));
+  const set = (key: string, val: any) => {
+    if (key === 'market') {
+      setForm(f => ({ ...f, market: val, asset: '' }));
+    } else {
+      setForm(f => ({ ...f, [key]: val }));
+    }
+  };
 
   const syncConfluenceName = (source: string[], previous: string, next: string) => {
     const mapped = source.map(item => item === previous ? next : item);
@@ -369,6 +380,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       },
       mistakes: form.mistakes,
       grade: (form.grade as TradeGrade) || undefined,
+      maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
+      maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
     };
 
     if (editTrade) updateTrade(trade);
@@ -536,6 +549,20 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   color={previewNetPL >= 0 ? 'text-success' : 'text-destructive'}
                 />
               </div>
+
+              {/* Max RR & Adverse Move */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="space-y-1">
+                  <FieldLabel>Max RR Reached</FieldLabel>
+                  <Input type="number" step="0.01" value={form.maxRRReached} onChange={e => set('maxRRReached', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. 1.5" />
+                  <p className="text-[9px] text-muted-foreground/60">Highest positive RR before exit</p>
+                </div>
+                <div className="space-y-1">
+                  <FieldLabel>Max Adverse Move (RR)</FieldLabel>
+                  <Input type="number" step="0.01" value={form.maxAdverseMove} onChange={e => set('maxAdverseMove', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. -0.4" />
+                  <p className="text-[9px] text-muted-foreground/60">Max move against your position in RR</p>
+                </div>
+              </div>
             </FormSection>
 
             {/* ── TECHNICAL POINTS ──────────────────────────────── */}
@@ -657,7 +684,12 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <div key={imageField.key} className="space-y-1.5">
                     <FieldLabel>{imageField.title}</FieldLabel>
                     <input ref={imageField.ref} type="file" accept="image/*" className="hidden" onChange={e => void handleImageFile(imageField.key, e.target.files?.[0])} />
-                    <div onPaste={e => void handlePasteImage(e, imageField.key)} className="rounded-xl border-2 border-dashed border-border/50 bg-muted/10 overflow-hidden">
+                    <div
+                      onPaste={e => void handlePasteImage(e, imageField.key)}
+                      onDrop={e => { e.preventDefault(); e.stopPropagation(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) handleImageFile(imageField.key, f); }}
+                      onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                      className="rounded-xl border-2 border-dashed border-border/50 bg-muted/10 overflow-hidden hover:border-primary/40 transition-colors"
+                    >
                       {imageField.value ? (
                         <div className="space-y-2 p-3">
                           <div className="relative group rounded-lg overflow-hidden">
@@ -674,14 +706,17 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 p-4 text-center group/upload cursor-pointer" onClick={() => imageField.ref.current?.click()}>
-                          <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 transition-colors">
-                            <ImagePlus className="h-4 w-4 text-muted-foreground group-hover/upload:text-primary transition-colors" />
+                        <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 p-4 text-center">
+                          <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center">
+                            <ImagePlus className="h-4 w-4 text-muted-foreground" />
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground">Paste or upload</p>
+                            <p className="text-xs font-medium text-muted-foreground">Drag & drop or paste image</p>
                             <p className="text-[10px] text-muted-foreground/50">Ctrl/Cmd + V supported</p>
                           </div>
+                          <Button type="button" variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-1.5" onClick={(e) => { e.stopPropagation(); imageField.ref.current?.click(); }}>
+                            <Upload className="h-3.5 w-3.5" /> Choose File
+                          </Button>
                         </div>
                       )}
                     </div>

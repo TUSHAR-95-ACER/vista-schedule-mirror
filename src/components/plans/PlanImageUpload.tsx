@@ -39,6 +39,7 @@ export function PlanImageUpload({ value, onChange, label }: PlanImageUploadProps
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragging(false);
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) readFile(file);
@@ -46,10 +47,15 @@ export function PlanImageUpload({ value, onChange, label }: PlanImageUploadProps
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragging(true);
   }, []);
 
-  const handleDragLeave = useCallback(() => setDragging(false), []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  }, []);
 
   return (
     <div className="space-y-2">
