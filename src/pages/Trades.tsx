@@ -157,6 +157,7 @@ export default function Trades() {
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground font-mono cursor-pointer" onClick={() => toggleSort('profitLoss')}>
                     <span className="flex items-center gap-1">P/L <SortIcon field="profitLoss" /></span>
                   </th>
+                  <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Steps</th>
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Result</th>
                   <th className="px-3 py-2 text-xs font-medium text-muted-foreground">Actions</th>
                 </tr>
