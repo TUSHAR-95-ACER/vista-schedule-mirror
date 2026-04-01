@@ -5,10 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save, Video, Newspaper, Layers } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
-import { PlanSection } from '@/components/plans/PlanSection';
 import { PlanImageUpload } from '@/components/plans/PlanImageUpload';
 import { PlanVideoUpload } from '@/components/plans/PlanVideoUpload';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
@@ -38,11 +37,79 @@ function formatWeekLabel(weekStart: string): string {
   return `Week ${weekNum} ${month}`;
 }
 
-function BiasChip({ bias }: { bias: string }) {
-  const color = bias === 'Bullish' ? 'bg-success/15 text-success border-success/30'
-    : bias === 'Bearish' ? 'bg-destructive/15 text-destructive border-destructive/30'
-    : 'bg-muted text-muted-foreground border-border';
-  return <span className={cn('text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border', color)}>{bias}</span>;
+function formatWeekRange(weekStart: string): string {
+  const start = new Date(weekStart);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}, ${start.getFullYear()}`;
+}
+
+function BiasTag({ bias }: { bias: string }) {
+  return (
+    <span className={cn(
+      'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
+      bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
+      bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
+      bias === 'Neutral' && 'bg-muted text-muted-foreground border-border',
+    )}>
+      <span className={cn(
+        'h-1.5 w-1.5 rounded-full',
+        bias === 'Bullish' && 'bg-success',
+        bias === 'Bearish' && 'bg-destructive',
+        bias === 'Neutral' && 'bg-muted-foreground',
+      )} />
+      {bias}
+    </span>
+  );
+}
+
+function SectionCard({ title, icon, accent = 'primary', badge, children, className }: {
+  title: string; icon?: React.ReactNode; accent?: 'primary' | 'success' | 'warning' | 'destructive';
+  badge?: string; children: React.ReactNode; className?: string;
+}) {
+  const accentColors = {
+    primary: 'border-l-primary',
+    success: 'border-l-success',
+    warning: 'border-l-warning',
+    destructive: 'border-l-destructive',
+  };
+  const iconColors = {
+    primary: 'text-primary bg-primary/10',
+    success: 'text-success bg-success/10',
+    warning: 'text-warning bg-warning/10',
+    destructive: 'text-destructive bg-destructive/10',
+  };
+
+  return (
+    <div className={cn(
+      'rounded-xl border border-border/60 bg-card overflow-hidden border-l-[3px]',
+      accentColors[accent],
+      'shadow-[var(--shadow-card)]',
+      className
+    )}>
+      <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {icon && (
+              <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center', iconColors[accent])}>
+                {icon}
+              </div>
+            )}
+            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">{title}</h3>
+          </div>
+          {badge && (
+            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70 bg-muted/50 px-2 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="p-5 space-y-4">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 export default function WeeklyPlanPage() {
@@ -104,13 +171,13 @@ export default function WeeklyPlanPage() {
   const handleSave = () => {
     if (!localPlan) return;
     updateWeeklyPlan(localPlan);
-    toast({ title: 'Saved!', description: 'Weekly plan saved successfully.' });
+    toast({ title: '✅ Saved!', description: 'Weekly plan saved successfully.' });
   };
 
-  // Plan list
+  // List view
   if (!activeId) {
     return (
-      <div className="p-6 max-w-[820px] mx-auto space-y-8 pb-20">
+      <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-6 pb-20">
         <PlanListHeader title="Weekly Plans" subtitle="Strategic market analysis & bias journal" onNew={startNew} newLabel="New Week" />
 
         {weeklyPlans.length === 0 ? (
@@ -121,7 +188,7 @@ export default function WeeklyPlanPage() {
             icon={<Calendar className="h-7 w-7 text-muted-foreground/60" />}
           />
         ) : (
-          <div className="space-y-2">
+          <div className="grid gap-2">
             {[...weeklyPlans].reverse().map(plan => (
               <PlanListItem
                 key={plan.id}
@@ -141,37 +208,48 @@ export default function WeeklyPlanPage() {
   if (!localPlan) return null;
 
   return (
-    <div className="p-6 max-w-[820px] mx-auto space-y-8 pb-24">
+    <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-5 pb-28">
       <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All weeks" />
 
-      {/* Week title banner */}
-      <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/15 p-6">
-        <p className="text-xs font-mono font-semibold uppercase tracking-widest text-primary mb-1">Weekly Plan</p>
-        <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
-          {formatWeekLabel(localPlan.weekStart)}
-        </h1>
+      {/* Hero Banner */}
+      <div className="relative rounded-2xl overflow-hidden border border-primary/20">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent" />
+        <div className="relative px-6 py-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-widest text-primary">Weekly Plan</span>
+          </div>
+          <h1 className="font-heading text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+            {formatWeekLabel(localPlan.weekStart)}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{formatWeekRange(localPlan.weekStart)}</p>
+        </div>
       </div>
 
-      {/* SETUP */}
-      <PlanSection title="Setup" icon={<Shield className="h-4 w-4" />} badge="Config">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Week Starting</Label>
-            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg" />
+      {/* Config */}
+      <SectionCard title="Week Config" icon={<Shield className="h-3.5 w-3.5" />} badge="Setup">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Week Starting</Label>
+            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg h-9 text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Markets Focus</Label>
-            <Input value={localPlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg" />
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Markets Focus</Label>
+            <Input value={localPlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg h-9 text-sm" />
           </div>
         </div>
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Risk Plan</Label>
-          <Textarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[70px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Risk Plan</Label>
+          <Textarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
         </div>
-      </PlanSection>
+        <div className="space-y-1.5">
+          <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Weekly Goals</Label>
+          <Textarea value={localPlan.goals} onChange={e => update({ goals: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Focus on A+ setups only, max 3 trades per day..." />
+        </div>
+      </SectionCard>
 
-      {/* ECONOMIC CALENDAR */}
-      <PlanSection title="Economic Calendar" icon={<Calendar className="h-4 w-4" />} accent="warning" badge="News">
+      {/* Economic Calendar */}
+      <SectionCard title="Economic Calendar" icon={<Newspaper className="h-3.5 w-3.5" />} accent="warning" badge="News">
         <PlanImageUpload
           value={(localPlan.newsItems?.[0]?.image) || ''}
           onChange={v => {
@@ -190,90 +268,91 @@ export default function WeeklyPlanPage() {
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, notes: e.target.value }];
             update({ newsItems: items });
           }}
-          placeholder="Notes about key events this week..."
-          className="min-h-[70px] text-sm rounded-lg"
+          placeholder="Key events and expected impact this week..."
+          className="min-h-[60px] text-sm rounded-lg"
         />
-      </PlanSection>
+      </SectionCard>
 
       {/* PAIR ANALYSES */}
       {localPlan.pairAnalyses.map((pa, idx) => (
-        <div key={pa.id} className="space-y-6">
-          {/* Pair header */}
-          <div className="flex items-center gap-4">
-            <div className="h-px flex-1 bg-border/50" />
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-xs font-bold text-muted-foreground/50">#{idx + 1}</span>
+        <div key={pa.id} className="space-y-4">
+          {/* Pair Divider */}
+          <div className="flex items-center gap-3 pt-2">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div className="flex items-center gap-2.5 bg-muted/50 rounded-full px-4 py-2 border border-border/50">
+              <span className="font-mono text-[10px] font-bold text-muted-foreground/50">#{idx + 1}</span>
               <Select value={pa.pair || 'none'} onValueChange={v => updatePair(pa.id, { pair: v === 'none' ? '' : v })}>
-                <SelectTrigger className="w-[180px] text-lg font-heading font-extrabold border-none shadow-none p-0 h-auto bg-transparent">
-                  <SelectValue placeholder="Select Pair..." />
+                <SelectTrigger className="w-[150px] text-sm font-heading font-extrabold border-none shadow-none p-0 h-auto bg-transparent">
+                  <SelectValue placeholder="Select Pair" />
                 </SelectTrigger>
                 <SelectContent>{ALL_ASSETS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
               </Select>
-              {pa.bias !== 'Neutral' && <BiasChip bias={pa.bias} />}
+              {pa.bias !== 'Neutral' && <BiasTag bias={pa.bias} />}
             </div>
-            <div className="h-px flex-1 bg-border/50" />
+            <div className="h-px flex-1 bg-gradient-to-r from-border via-transparent to-transparent" />
             {localPlan.pairAnalyses.length > 1 && (
-              <Button variant="ghost" size="icon" onClick={() => removePair(pa.id)} className="shrink-0 h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive">
-                <Trash2 className="h-3.5 w-3.5" />
+              <Button variant="ghost" size="icon" onClick={() => removePair(pa.id)} className="shrink-0 h-7 w-7 rounded-lg hover:bg-destructive/10 hover:text-destructive">
+                <Trash2 className="h-3 w-3" />
               </Button>
             )}
           </div>
 
           {/* Primary View */}
-          <PlanSection title="Primary View" icon={<Eye className="h-4 w-4" />} accent="primary">
+          <SectionCard title="Chart Analysis" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
             <PlanImageUpload value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
-            <Textarea value={pa.narrative || ''} onChange={e => updatePair(pa.id, { narrative: e.target.value })} placeholder="Liquidity above highs → expect sweep then bearish move..." className="min-h-[80px] text-sm rounded-lg" />
-          </PlanSection>
+            <Textarea value={pa.narrative || ''} onChange={e => updatePair(pa.id, { narrative: e.target.value })} placeholder="Liquidity zones, order flow expectations..." className="min-h-[70px] text-sm rounded-lg" />
+          </SectionCard>
 
-          {/* Bias */}
-          <PlanSection title="Bias" icon={<TrendingUp className="h-4 w-4" />}>
-            <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as any })}>
-              <SelectTrigger className="w-48 rounded-lg"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Bullish">Bullish</SelectItem>
-                <SelectItem value="Bearish">Bearish</SelectItem>
-                <SelectItem value="Neutral">Neutral</SelectItem>
-              </SelectContent>
-            </Select>
-          </PlanSection>
+          {/* Bias & Reasons side-by-side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+              <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as any })}>
+                <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Bullish">Bullish</SelectItem>
+                  <SelectItem value="Bearish">Bearish</SelectItem>
+                  <SelectItem value="Neutral">Neutral</SelectItem>
+                </SelectContent>
+              </Select>
+            </SectionCard>
 
-          {/* Reasons - free text */}
-          <PlanSection title="Reasons" icon={<FileText className="h-4 w-4" />}>
-            <Textarea
-              value={(pa.reasons as any).__freeText || (typeof pa.reasons === 'string' ? pa.reasons : pa.reasons?.join?.(', ') || '')}
-              onChange={e => updatePair(pa.id, { reasons: e.target.value as any })}
-              placeholder="Type your technical reasons for this bias..."
-              className="min-h-[80px] text-sm rounded-lg"
-            />
-          </PlanSection>
+            <SectionCard title="Reasons" icon={<FileText className="h-3.5 w-3.5" />}>
+              <Textarea
+                value={(pa.reasons as any).__freeText || (typeof pa.reasons === 'string' ? pa.reasons : pa.reasons?.join?.(', ') || '')}
+                onChange={e => updatePair(pa.id, { reasons: e.target.value as any })}
+                placeholder="Technical reasons for this bias..."
+                className="min-h-[60px] text-sm rounded-lg"
+              />
+            </SectionCard>
+          </div>
 
           {/* Key Levels */}
-          <PlanSection title="Key Levels" icon={<Target className="h-4 w-4" />} accent="warning">
-            <Textarea value={pa.keyLevels} onChange={e => updatePair(pa.id, { keyLevels: e.target.value })} placeholder="1.08500 - major resistance&#10;1.08200 - support zone&#10;..." className="min-h-[80px] text-sm font-mono rounded-lg" />
-          </PlanSection>
+          <SectionCard title="Key Levels" icon={<Target className="h-3.5 w-3.5" />} accent="warning">
+            <Textarea value={pa.keyLevels} onChange={e => updatePair(pa.id, { keyLevels: e.target.value })} placeholder="1.08500 - major resistance&#10;1.08200 - support zone" className="min-h-[70px] text-sm font-mono rounded-lg" />
+          </SectionCard>
 
           {/* Scenarios */}
-          <PlanSection title="Scenarios" badge="If / Then">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <SectionCard title="Scenarios" icon={<Layers className="h-3.5 w-3.5" />} badge="If / Then">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-3 p-4 rounded-xl bg-success/[0.04] border border-success/15">
-                <Label className="text-xs font-bold text-success uppercase tracking-wide">Bullish Scenario</Label>
-                <Textarea placeholder="Condition: If price sweeps lows and reclaims..." className="min-h-[60px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
-                <Textarea placeholder="Reaction: Look for buy entries at OB..." className="min-h-[60px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
+                <Label className="text-[10px] font-bold text-success uppercase tracking-wider">Bullish Scenario</Label>
+                <Textarea placeholder="Condition: If price sweeps lows..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
+                <Textarea placeholder="Reaction: Buy entries at OB..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
               </div>
               <div className="space-y-3 p-4 rounded-xl bg-destructive/[0.04] border border-destructive/15">
-                <Label className="text-xs font-bold text-destructive uppercase tracking-wide">Bearish Scenario</Label>
-                <Textarea placeholder="Condition: If price fails to break above..." className="min-h-[60px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
-                <Textarea placeholder="Reaction: Short from FVG with SL above highs..." className="min-h-[60px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
+                <Label className="text-[10px] font-bold text-destructive uppercase tracking-wider">Bearish Scenario</Label>
+                <Textarea placeholder="Condition: If price fails to break..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
+                <Textarea placeholder="Reaction: Short from FVG..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
               </div>
             </div>
-          </PlanSection>
+          </SectionCard>
 
           {/* Result */}
-          <PlanSection title="Result" icon={<BarChart3 className="h-4 w-4" />} accent="success" badge="Post-Week">
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Actual Bias</Label>
+          <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Direction</Label>
               <Select value={pa.actualDirection || 'none'} onValueChange={v => updatePair(pa.id, { actualDirection: v === 'none' ? '' : v as any })}>
-                <SelectTrigger className="w-48 rounded-lg"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-48 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
                   <SelectItem value="Bullish">Bullish</SelectItem>
@@ -283,35 +362,42 @@ export default function WeeklyPlanPage() {
               </Select>
             </div>
             <PlanImageUpload value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened..." className="min-h-[70px] text-sm rounded-lg" />
-          </PlanSection>
+            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened..." className="min-h-[60px] text-sm rounded-lg" />
+          </SectionCard>
         </div>
       ))}
 
-      {/* Add Pair Button */}
-      <Button variant="outline" onClick={addPair} className="w-full gap-2 rounded-xl h-12 border-dashed border-2 hover:border-primary/40 hover:bg-primary/[0.03] font-semibold">
+      {/* Add Pair */}
+      <button
+        onClick={addPair}
+        className="w-full py-3.5 rounded-xl border-2 border-dashed border-border/60 hover:border-primary/40 hover:bg-primary/[0.03] transition-all flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary"
+      >
         <Plus className="h-4 w-4" /> Add Pair Analysis
-      </Button>
+      </button>
 
-      {/* CALENDAR RESULT */}
-      <PlanSection title="Calendar Result" icon={<Calendar className="h-4 w-4" />} accent="warning" badge="Post-Week">
+      {/* Calendar Result */}
+      <SectionCard title="Calendar Result" icon={<Calendar className="h-3.5 w-3.5" />} accent="warning" badge="Post-Week">
         <Textarea
           value={localPlan.newsResult || ''}
           onChange={e => update({ newsResult: e.target.value })}
-          placeholder="Which economic events impacted market this week? Was the reaction expected?"
-          className="min-h-[80px] text-sm rounded-lg"
+          placeholder="Which events impacted the market? Was the reaction expected?"
+          className="min-h-[70px] text-sm rounded-lg"
         />
-      </PlanSection>
+      </SectionCard>
 
-      {/* ANALYSIS VIDEO */}
-      <PlanSection title="Analysis Video" icon={<Save className="h-4 w-4" />}>
-        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload or link analysis video" />
-      </PlanSection>
+      {/* Video */}
+      <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
+        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
+      </SectionCard>
 
-      {/* SAVE BUTTON */}
-      <Button onClick={handleSave} className="w-full h-12 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm gap-2">
-        <Save className="h-4 w-4" /> Save Weekly Plan
-      </Button>
+      {/* Sticky Save */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-background/80 backdrop-blur-lg border-t border-border/50">
+        <div className="max-w-[900px] mx-auto">
+          <Button onClick={handleSave} className="w-full h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wider shadow-lg gap-2">
+            <Save className="h-4 w-4" /> Save Weekly Plan
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
