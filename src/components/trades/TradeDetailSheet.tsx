@@ -81,8 +81,8 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
               <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Metrics</h4>
               <Row label="Planned RR" value={trade.plannedRR.toFixed(2)} mono />
               {trade.actualRR !== undefined && <Row label="Actual RR" value={trade.actualRR.toFixed(2)} mono />}
-              {trade.maxRRReached !== undefined && <Row label="Max RR Reached" value={trade.maxRRReached.toFixed(2)} mono />}
-              {trade.maxAdverseMove !== undefined && <Row label="Max Adverse Move" value={trade.maxAdverseMove.toFixed(2)} mono />}
+              {trade.maxRRReached !== undefined && <Row label="Max Profit Before SL (RR)" value={trade.maxRRReached.toFixed(2)} mono />}
+              {trade.maxAdverseMove !== undefined && <Row label="Max Drawdown Before TP (RR)" value={trade.maxAdverseMove.toFixed(2)} mono />}
               {trade.pips !== undefined && <Row label="Pips" value={trade.pips.toFixed(1)} mono />}
               {trade.fees !== undefined && <Row label="Fees" value={trade.fees.toFixed(2)} mono />}
               <Row label="P/L" value={

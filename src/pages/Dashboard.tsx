@@ -49,6 +49,17 @@ export default function Dashboard() {
     [trades, validTrades]
   );
 
+  // RR behavior analytics
+  const rrBehavior = useMemo(() => {
+    const slTrades = validTrades.filter(t => t.result === 'Loss' && t.maxRRReached != null);
+    const tpTrades = validTrades.filter(t => t.result === 'Win' && t.maxAdverseMove != null);
+    const avgProfitBeforeSL = slTrades.length > 0
+      ? slTrades.reduce((s, t) => s + (t.maxRRReached ?? 0), 0) / slTrades.length : null;
+    const avgDrawdownBeforeTP = tpTrades.length > 0
+      ? tpTrades.reduce((s, t) => s + (t.maxAdverseMove ?? 0), 0) / tpTrades.length : null;
+    return { avgProfitBeforeSL, avgDrawdownBeforeTP, slCount: slTrades.length, tpCount: tpTrades.length };
+  }, [validTrades]);
+
   const avgDuration = useMemo(() => {
     const tradesWithTimes = validTrades.filter((t) => t.entryTime && t.exitTime);
     if (tradesWithTimes.length === 0) return 'N/A';
@@ -84,6 +95,36 @@ export default function Dashboard() {
         <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down" />
         <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} />
       </div>
+
+      {/* RR Behavior Analytics */}
+      {(rrBehavior.avgProfitBeforeSL !== null || rrBehavior.avgDrawdownBeforeTP !== null) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Avg Profit Before SL (RR)</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-mono font-bold text-success">
+                {rrBehavior.avgProfitBeforeSL !== null ? rrBehavior.avgProfitBeforeSL.toFixed(2) : '—'}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                from {rrBehavior.slCount} losing trade{rrBehavior.slCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">How much profit trades reached before hitting SL</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Avg Drawdown Before TP (RR)</h3>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-mono font-bold text-destructive">
+                {rrBehavior.avgDrawdownBeforeTP !== null ? rrBehavior.avgDrawdownBeforeTP.toFixed(2) : '—'}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                from {rrBehavior.tpCount} winning trade{rrBehavior.tpCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 mt-1">How much drawdown winners endured before hitting TP</p>
+          </div>
+        </div>
+      )}
 
       {/* Equity Curve + Win/Loss */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
