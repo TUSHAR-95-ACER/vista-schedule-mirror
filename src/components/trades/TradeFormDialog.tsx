@@ -543,6 +543,20 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   color={previewNetPL >= 0 ? 'text-success' : 'text-destructive'}
                 />
               </div>
+
+              {/* Max RR & Adverse Move */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="space-y-1">
+                  <FieldLabel>Max RR Reached</FieldLabel>
+                  <Input type="number" step="0.01" value={form.maxRRReached} onChange={e => set('maxRRReached', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. 1.5" />
+                  <p className="text-[9px] text-muted-foreground/60">Highest positive RR before exit</p>
+                </div>
+                <div className="space-y-1">
+                  <FieldLabel>Max Adverse Move (RR)</FieldLabel>
+                  <Input type="number" step="0.01" value={form.maxAdverseMove} onChange={e => set('maxAdverseMove', e.target.value)} className="h-9 text-xs font-mono rounded-lg" placeholder="e.g. -0.4" />
+                  <p className="text-[9px] text-muted-foreground/60">Max move against your position in RR</p>
+                </div>
+              </div>
             </FormSection>
 
             {/* ── TECHNICAL POINTS ──────────────────────────────── */}

@@ -35,8 +35,8 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
     }
   }, [onChange]);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragging(true); }, []);
-  const handleDragLeave = useCallback(() => setDragging(false), []);
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setDragging(true); }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setDragging(false); }, []);
 
   const isBlob = value?.startsWith('blob:');
   const isYouTube = value?.includes('youtu');
