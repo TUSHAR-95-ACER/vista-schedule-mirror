@@ -19,6 +19,7 @@ export function tradeToDb(t: Trade, userId: string) {
     execution_image: t.executionImage || null,
     psychology: t.psychology ? JSON.stringify(t.psychology) : null,
     mistakes: JSON.stringify(t.mistakes), grade: t.grade || null,
+    trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
   };
 }
 
