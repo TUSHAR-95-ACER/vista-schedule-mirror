@@ -678,7 +678,12 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <div key={imageField.key} className="space-y-1.5">
                     <FieldLabel>{imageField.title}</FieldLabel>
                     <input ref={imageField.ref} type="file" accept="image/*" className="hidden" onChange={e => void handleImageFile(imageField.key, e.target.files?.[0])} />
-                    <div onPaste={e => void handlePasteImage(e, imageField.key)} className="rounded-xl border-2 border-dashed border-border/50 bg-muted/10 overflow-hidden">
+                    <div
+                      onPaste={e => void handlePasteImage(e, imageField.key)}
+                      onDrop={e => { e.preventDefault(); e.stopPropagation(); const f = e.dataTransfer.files[0]; if (f && f.type.startsWith('image/')) handleImageFile(imageField.key, f); }}
+                      onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                      className="rounded-xl border-2 border-dashed border-border/50 bg-muted/10 overflow-hidden hover:border-primary/40 transition-colors"
+                    >
                       {imageField.value ? (
                         <div className="space-y-2 p-3">
                           <div className="relative group rounded-lg overflow-hidden">
@@ -695,14 +700,17 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 p-4 text-center group/upload cursor-pointer" onClick={() => imageField.ref.current?.click()}>
-                          <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 transition-colors">
-                            <ImagePlus className="h-4 w-4 text-muted-foreground group-hover/upload:text-primary transition-colors" />
+                        <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 p-4 text-center">
+                          <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center">
+                            <ImagePlus className="h-4 w-4 text-muted-foreground" />
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground">Paste or upload</p>
+                            <p className="text-xs font-medium text-muted-foreground">Drag & drop or paste image</p>
                             <p className="text-[10px] text-muted-foreground/50">Ctrl/Cmd + V supported</p>
                           </div>
+                          <Button type="button" variant="outline" size="sm" className="rounded-lg text-xs font-semibold gap-1.5" onClick={(e) => { e.stopPropagation(); imageField.ref.current?.click(); }}>
+                            <Upload className="h-3.5 w-3.5" /> Choose File
+                          </Button>
                         </div>
                       )}
                     </div>
