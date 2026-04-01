@@ -26,10 +26,14 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === 'video/mp4' || file.type === 'video/webm')) readFile(file);
-  }, []);
+    if (file && (file.type.startsWith('video/') || file.type === 'video/mp4' || file.type === 'video/webm')) {
+      const url = URL.createObjectURL(file);
+      onChange(url);
+    }
+  }, [onChange]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragging(true); }, []);
   const handleDragLeave = useCallback(() => setDragging(false), []);
