@@ -11,7 +11,7 @@ import { useTrading } from '@/contexts/TradingContext';
 import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
   TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES,
-  ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS,
+  ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
