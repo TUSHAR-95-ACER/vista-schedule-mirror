@@ -106,15 +106,15 @@ export default function Dashboard() {
       {/* By Pair / Session / Week */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Pair</h3>
+          <ChartHeader title="By Pair" tooltip="P/L breakdown by each trading pair to see which instruments work best for you" />
           <div className="h-[200px] sm:h-[240px]"><PerformanceByPairChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Session</h3>
+          <ChartHeader title="By Session" tooltip="Performance grouped by trading session (London, NY, etc.)" />
           <div className="h-[200px] sm:h-[240px]"><SessionChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Week</h3>
+          <ChartHeader title="By Week" tooltip="Weekly P/L to track consistency across calendar weeks" />
           <div className="h-[200px] sm:h-[240px]"><WeeklyPerformanceChart trades={trades} /></div>
         </div>
       </div>
