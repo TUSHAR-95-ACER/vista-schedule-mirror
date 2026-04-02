@@ -16,7 +16,7 @@ const TABLES = [
   "user_settings",
 ];
 
-async function fetchAllUserData(supabase: any) {
+async function fetchAllUserData(supabase: any, userId: string) {
   const context: Record<string, any> = {};
 
   const results = await Promise.all(
@@ -24,6 +24,7 @@ async function fetchAllUserData(supabase: any) {
       const { data, error } = await supabase
         .from(table)
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(200);
       return { table, data: data || [], error };
