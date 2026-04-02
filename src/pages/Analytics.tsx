@@ -333,12 +333,12 @@ export default function Analytics() {
 
       {/* ─── KPI Row ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KPI label="Total Trades" value={String(kpis.total)} trend={kpis.total > 0 ? 'up' : 'neutral'} />
-        <KPI label="Win Rate" value={formatPercent(kpis.wr)} trend={kpis.wr >= 50 ? 'up' : 'down'} color={kpis.wr >= 50 ? 'text-success' : 'text-destructive'} />
-        <KPI label="Net P/L" value={kpis.netPL.toFixed(2)} trend={kpis.netPL >= 0 ? 'up' : 'down'} color={kpis.netPL >= 0 ? 'text-success' : 'text-destructive'} />
-        <KPI label="Avg RR" value={kpis.avgRR.toFixed(2)} trend={kpis.avgRR >= 1 ? 'up' : 'down'} />
-        <KPI label="Best Pair" value={kpis.best} sub="Highest P/L" color="text-success" />
-        <KPI label="Worst Pair" value={kpis.worst} sub="Lowest P/L" color="text-destructive" />
+        <KPI label="Total Trades" value={String(kpis.total)} trend={kpis.total > 0 ? 'up' : 'neutral'} tooltip="Total filtered trades matching current filter criteria" />
+        <KPI label="Win Rate" value={formatPercent(kpis.wr)} trend={kpis.wr >= 50 ? 'up' : 'down'} color={kpis.wr >= 50 ? 'text-success' : 'text-destructive'} tooltip="Percentage of winning trades out of all filtered trades" />
+        <KPI label="Net P/L" value={kpis.netPL.toFixed(2)} trend={kpis.netPL >= 0 ? 'up' : 'down'} color={kpis.netPL >= 0 ? 'text-success' : 'text-destructive'} tooltip="Total profit minus total losses across filtered trades" />
+        <KPI label="Avg RR" value={kpis.avgRR.toFixed(2)} trend={kpis.avgRR >= 1 ? 'up' : 'down'} tooltip="Average risk-reward ratio achieved on filtered trades" />
+        <KPI label="Best Pair" value={kpis.best} sub="Highest P/L" color="text-success" tooltip="The trading pair with the highest total profit" />
+        <KPI label="Worst Pair" value={kpis.worst} sub="Lowest P/L" color="text-destructive" tooltip="The trading pair with the lowest total profit" />
       </div>
 
       {/* ─── Row 1: Equity + Win/Loss ────────────────────────────── */}
