@@ -35,13 +35,16 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 };
 
 // ─── KPI Card ───────────────────────────────────────────────────────
-function KPI({ label, value, sub, trend, color }: {
+function KPI({ label, value, sub, trend, color, tooltip }: {
   label: string; value: string; sub?: string;
-  trend?: 'up' | 'down' | 'neutral'; color?: string;
+  trend?: 'up' | 'down' | 'neutral'; color?: string; tooltip?: string;
 }) {
   return (
     <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1 hover:shadow-elevated transition-shadow">
-      <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
+        {tooltip && <InfoTooltip text={tooltip} />}
+      </div>
       <div className="flex items-end gap-2">
         <span className={cn("font-mono text-xl font-bold", color)}>{value}</span>
         {trend && trend !== 'neutral' && (
