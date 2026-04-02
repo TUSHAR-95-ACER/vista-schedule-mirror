@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
@@ -265,29 +266,22 @@ export default function DailyPlanPage() {
 
       {/* News */}
       <SectionCard title="News & Events" icon={<Newspaper className="h-3.5 w-3.5" />} accent="warning" badge="Macro">
-        <UnifiedMediaBox
-          value={(localPlan.newsItems?.[0]?.image) || ''}
-          onChange={v => {
+        <MultiMediaBox
+          values={(() => {
+            const img = localPlan.newsItems?.[0]?.image;
+            if (!img) return [];
+            return img.includes('|||') ? img.split('|||').filter(Boolean) : [img];
+          })()}
+          onChange={vals => {
+            const joined = vals.filter(Boolean).join('|||');
             const items = localPlan.newsItems && localPlan.newsItems.length > 0
-              ? [{ ...localPlan.newsItems[0], image: v }]
-              : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, image: v }];
+              ? [{ ...localPlan.newsItems[0], image: joined }]
+              : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, image: joined }];
             update({ newsItems: items });
           }}
-          label="Economic Calendar Screenshot"
+          label="Economic Calendar / News Screenshots"
+          maxItems={5}
         />
-        <Textarea
-          value={(localPlan.newsItems?.[0]?.notes) || ''}
-          onChange={e => {
-            const items = localPlan.newsItems && localPlan.newsItems.length > 0
-              ? [{ ...localPlan.newsItems[0], notes: e.target.value }]
-              : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, notes: e.target.value }];
-            update({ newsItems: items });
-            detectNoteUrls(e.target.value);
-          }}
-          placeholder="Key events and expected impact... Paste URLs for auto-preview"
-          className="min-h-[60px] text-sm rounded-lg"
-        />
-        <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
       </SectionCard>
 
       {/* PAIR CARDS */}
