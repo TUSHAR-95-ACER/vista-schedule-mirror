@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { MetricCard, PageHeader } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import {
   calcWinRate,
