@@ -165,7 +165,7 @@ export default function Mistakes() {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="lg:col-span-2 bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistake Frequency</h3>
+          <ChartHeader title="Mistake Frequency" tooltip="Bar chart showing how often each type of mistake occurs" />
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mistakeData}>
