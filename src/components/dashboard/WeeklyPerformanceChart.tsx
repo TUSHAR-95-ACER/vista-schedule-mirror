@@ -20,18 +20,35 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const NEW_YORK_TIMEZONE = 'America/New_York';
 
-    // Parse date string safely without timezone shift
-    const parseDateParts = (dateStr: string) => {
-      const parts = dateStr.split('-').map(Number);
-      return { year: parts[0], month: parts[1] - 1, day: parts[2] };
+    const getDateParts = (value: string) => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split('-').map(Number);
+        return { year, month: month - 1, day };
+      }
+
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: NEW_YORK_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+
+      const parts = formatter.formatToParts(new Date(value));
+      const year = Number(parts.find(part => part.type === 'year')?.value ?? 0);
+      const month = Number(parts.find(part => part.type === 'month')?.value ?? 1) - 1;
+      const day = Number(parts.find(part => part.type === 'day')?.value ?? 1);
+
+      return { year, month, day };
     };
 
+    const currentParts = getDateParts(new Date().toISOString());
+    const currentMonth = currentParts.month;
+    const currentYear = currentParts.year;
+
     const valid = trades.filter(t => {
-      const { year, month } = parseDateParts(t.date);
+      const { year, month } = getDateParts(t.date);
       return month === currentMonth && year === currentYear;
     });
 
@@ -44,7 +61,7 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
     ];
 
     valid.forEach(t => {
-      const { day } = parseDateParts(t.date);
+      const { day } = getDateParts(t.date);
       for (const week of weeks) {
         if (day >= week.range[0] && day <= week.range[1]) {
           week.pl += t.profitLoss;
