@@ -385,7 +385,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         checklist: form.checklist,
       },
       mistakes: form.mistakes,
-      grade: (form.grade as TradeGrade) || undefined,
+      grade: form.grade as TradeGrade,
       maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
