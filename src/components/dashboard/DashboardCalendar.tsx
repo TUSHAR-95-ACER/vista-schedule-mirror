@@ -47,9 +47,14 @@ interface HeatCell {
   tradeCount: number;
 }
 
+interface HeatmapMonth {
+  label: string;
+  columns: HeatCell[][];
+}
+
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const HEATMAP_ROW_LABELS = ['Sun', '', 'Tue', '', 'Thu', '', 'Sat'];
+const HEATMAP_WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const formatCompact = (value: number) => {
   const absValue = Math.abs(value);
@@ -207,61 +212,54 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
   }, [month, tradeMap, year]);
 
   const heatmapData = useMemo(() => {
-    const yearStart = new Date(year, 0, 1);
-    const yearEnd = new Date(year, 11, 31);
-    const gridStart = new Date(yearStart);
-    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
-    const gridEnd = new Date(yearEnd);
-    gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
-
-    const cursor = new Date(gridStart);
-    const weeks: Array<{ label: string; days: HeatCell[] }> = [];
     let maxAbsPl = 1;
 
-    while (cursor <= gridEnd) {
-      const weekDays: HeatCell[] = [];
+    const months: HeatmapMonth[] = MONTHS.map((monthLabel, monthIndex) => {
+      const firstDayOfMonth = new Date(year, monthIndex, 1);
+      const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+      const leadingEmptyDays = firstDayOfMonth.getDay();
+      const totalCells = leadingEmptyDays + daysInMonth;
+      const totalColumns = Math.ceil(totalCells / 7);
+      const columns = Array.from({ length: totalColumns }, () => Array<HeatCell>(7));
 
-      for (let index = 0; index < 7; index += 1) {
-        const dateStr = toDateString(cursor);
+      for (let weekdayIndex = 0; weekdayIndex < 7; weekdayIndex += 1) {
+        for (let columnIndex = 0; columnIndex < totalColumns; columnIndex += 1) {
+          columns[columnIndex][weekdayIndex] = {
+            dateStr: '',
+            inYear: false,
+            totalPl: 0,
+            tradeCount: 0,
+          };
+        }
+      }
+
+      for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber += 1) {
+        const date = new Date(year, monthIndex, dayNumber);
+        const weekdayIndex = date.getDay();
+        const offset = leadingEmptyDays + dayNumber - 1;
+        const columnIndex = Math.floor(offset / 7);
+        const dateStr = toDateString(date);
         const aggregate = tradeMap.get(dateStr);
         const totalPl = aggregate?.totalPl ?? 0;
         const tradeCount = aggregate?.tradeCount ?? 0;
 
         if (tradeCount > 0) maxAbsPl = Math.max(maxAbsPl, Math.abs(totalPl));
 
-        weekDays.push({
+        columns[columnIndex][weekdayIndex] = {
           dateStr,
-          inYear: cursor.getFullYear() === year,
+          inYear: true,
           totalPl,
           tradeCount,
-        });
-
-        cursor.setDate(cursor.getDate() + 1);
+        };
       }
 
-      // Place month label on the week that contains the 1st of the month
-      const firstOfMonthDay = weekDays.find((day) => {
-        if (!day.inYear) return false;
-        const d = new Date(`${day.dateStr}T00:00:00`);
-        return d.getDate() === 1;
-      });
-      let label = '';
-      if (firstOfMonthDay) {
-        const monthIndex = new Date(`${firstOfMonthDay.dateStr}T00:00:00`).getMonth();
-        label = MONTHS[monthIndex].slice(0, 3).toUpperCase();
-      } else if (weeks.length === 0) {
-        // First week of the year - label it with Jan if it has in-year days
-        const firstInYearDay = weekDays.find((day) => day.inYear);
-        if (firstInYearDay) {
-          const monthIndex = new Date(`${firstInYearDay.dateStr}T00:00:00`).getMonth();
-          if (monthIndex === 0) label = MONTHS[0].slice(0, 3).toUpperCase();
-        }
-      }
+      return {
+        label: monthLabel.slice(0, 3).toUpperCase(),
+        columns,
+      };
+    });
 
-      weeks.push({ label, days: weekDays });
-    }
-
-    return { weeks, maxAbsPl };
+    return { months, maxAbsPl };
   }, [tradeMap, year]);
 
   const selectedTrades = useMemo(() => {
@@ -496,40 +494,54 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
               </div>
             </div>
 
-            <div className="overflow-x-auto pb-1">
-              <div className="inline-flex min-w-max gap-2">
-                <div className="grid pt-6 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {HEATMAP_ROW_LABELS.map((label, index) => <div key={`${label}-${index}`} className="flex h-4 items-center pr-1">{label}</div>)}
+            <div className="overflow-x-auto pb-2">
+              <div className="inline-flex min-w-max items-start gap-3">
+                <div className="grid gap-1 pt-6 pr-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  {HEATMAP_WEEKDAYS.map((label) => (
+                    <div key={label} className="flex h-4 items-center justify-end whitespace-nowrap">
+                      {label}
+                    </div>
+                  ))}
                 </div>
 
-                <div className="inline-flex gap-1.5">
-                  {heatmapData.weeks.map((week, weekIndex) => (
-                    <div key={`${week.label}-${weekIndex}`} className="space-y-1">
-                      <div className="h-4 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{week.label}</div>
-                      <div className="grid gap-1">
-                        {week.days.map((day) => (
-                          <Tooltip key={day.dateStr}>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={() => day.inYear && day.tradeCount > 0 && setSelectedDate(day.dateStr)}
-                                className={cn(
-                                  'h-4 w-4 rounded-[4px] border transition-transform duration-200',
-                                  day.inYear && day.tradeCount > 0 ? 'hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-95' : 'cursor-default',
-                                  day.inYear ? getTone({ dateStr: day.dateStr, dayNumber: 0, totalPl: day.totalPl, tradeCount: day.tradeCount, averageRR: null, trades: tradeMap.get(day.dateStr)?.trades ?? [], hasMissed: false, hasCancelled: false }, heatmapData.maxAbsPl, 'heatmap') : 'border-transparent bg-transparent opacity-0',
+                <div className="inline-flex items-start gap-3">
+                  {heatmapData.months.map((monthBlock) => (
+                    <div key={monthBlock.label} className="flex flex-col gap-1">
+                      <div className="h-4 pl-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {monthBlock.label}
+                      </div>
+                      <div className="inline-flex gap-1">
+                        {monthBlock.columns.map((column, columnIndex) => (
+                          <div key={`${monthBlock.label}-${columnIndex}`} className="grid gap-1">
+                            {column.map((day, rowIndex) => (
+                              <Tooltip key={day.dateStr || `${monthBlock.label}-${columnIndex}-${rowIndex}`}>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => day.inYear && day.tradeCount > 0 && setSelectedDate(day.dateStr)}
+                                    className={cn(
+                                      'h-4 w-4 rounded-[4px] border transition-transform duration-200',
+                                      day.inYear && day.tradeCount > 0 ? 'hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-95' : 'cursor-default',
+                                      day.inYear
+                                        ? getTone({ dateStr: day.dateStr, dayNumber: 0, totalPl: day.totalPl, tradeCount: day.tradeCount, averageRR: null, trades: tradeMap.get(day.dateStr)?.trades ?? [], hasMissed: false, hasCancelled: false }, heatmapData.maxAbsPl, 'heatmap')
+                                        : 'border-transparent bg-transparent opacity-0',
+                                    )}
+                                  />
+                                </TooltipTrigger>
+                                {day.inYear && (
+                                  <TooltipContent className="rounded-xl border-border bg-popover px-3 py-2 text-xs shadow-md">
+                                    <div className="space-y-1">
+                                      <p className="font-semibold text-foreground">{formatDisplayDate(day.dateStr)}</p>
+                                      <p className="text-muted-foreground">Trades: {day.tradeCount}</p>
+                                      <p className={cn('font-medium', day.totalPl >= 0 ? 'text-success' : 'text-destructive')}>
+                                        P/L: {formatCompact(day.totalPl)}
+                                      </p>
+                                    </div>
+                                  </TooltipContent>
                                 )}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent className="rounded-xl border-border bg-popover px-3 py-2 text-xs shadow-md">
-                              <div className="space-y-1">
-                                <p className="font-semibold text-foreground">{formatDisplayDate(day.dateStr)}</p>
-                                <p className="text-muted-foreground">Trades: {day.tradeCount}</p>
-                                <p className={cn('font-medium', day.totalPl >= 0 ? 'text-success' : 'text-destructive')}>
-                                  P/L: {formatCompact(day.totalPl)}
-                                </p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                              </Tooltip>
+                            ))}
+                          </div>
                         ))}
                       </div>
                     </div>
