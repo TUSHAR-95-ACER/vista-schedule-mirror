@@ -20,38 +20,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
-    const NEW_YORK_TIMEZONE = 'America/New_York';
-
-    const getDateParts = (value: string) => {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        const [year, month, day] = value.split('-').map(Number);
-        return { year, month: month - 1, day };
-      }
-
-      const formatter = new Intl.DateTimeFormat('en-CA', {
-        timeZone: NEW_YORK_TIMEZONE,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-
-      const parts = formatter.formatToParts(new Date(value));
-      const year = Number(parts.find(part => part.type === 'year')?.value ?? 0);
-      const month = Number(parts.find(part => part.type === 'month')?.value ?? 1) - 1;
-      const day = Number(parts.find(part => part.type === 'day')?.value ?? 1);
-
-      return { year, month, day };
-    };
-
-    const currentParts = getDateParts(new Date().toISOString());
-    const currentMonth = currentParts.month;
-    const currentYear = currentParts.year;
-
-    const valid = trades.filter(t => {
-      const { year, month } = getDateParts(t.date);
-      return month === currentMonth && year === currentYear;
-    });
-
     const weeks = [
       { name: 'Week 1', range: [1, 7], pl: 0, trades: 0 },
       { name: 'Week 2', range: [8, 14], pl: 0, trades: 0 },
@@ -60,8 +28,8 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
       { name: 'Week 5', range: [29, 31], pl: 0, trades: 0 },
     ];
 
-    valid.forEach(t => {
-      const { day } = getDateParts(t.date);
+    trades.forEach(t => {
+      const day = parseInt(t.date.split('-')[2], 10);
       for (const week of weeks) {
         if (day >= week.range[0] && day <= week.range[1]) {
           week.pl += t.profitLoss;
@@ -79,7 +47,7 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
   }, [trades]);
 
   if (data.every(d => d.trades === 0)) {
-    return <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No trades this month</div>;
+    return <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No trades logged</div>;
   }
 
   return (
