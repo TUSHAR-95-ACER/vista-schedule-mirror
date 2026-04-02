@@ -22,13 +22,7 @@ import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, Trendi
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const SESSIONS: Session[] = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
-const MARKETS: Market[] = ['Forex', 'Crypto', 'Commodities', 'Indices', 'Stocks', 'Futures'];
-const CONDITIONS: MarketCondition[] = ['Trending', 'Ranging', 'Volatile'];
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
-const MGMT_OPTIONS: TradeManagement[] = ['Moved SL to Breakeven', 'Partial TP', 'Trailing Stop', 'Closed Early', 'Held Full Position', 'Scaled In', 'Scaled Out'];
-const EMOTIONS: Emotion[] = ['Confident', 'Fearful', 'Greedy', 'Neutral', 'Anxious', 'Calm'];
-const MISTAKES_OPTIONS: Mistake[] = ['FOMO', 'Early Entry', 'Overtrading', 'Emotional', 'Ignored SL'];
 
 const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
   const reader = new FileReader();
