@@ -130,6 +130,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     grade: '' as TradeGrade | '',
     maxRRReached: '',
     maxAdverseMove: '',
+    timeframe: '',
   };
 
   const [form, setForm] = useState(defaultForm);
