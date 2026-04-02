@@ -77,15 +77,11 @@ export function useMacroNews() {
     const upper = pair.toUpperCase().replace(/[^A-Z]/g, '');
     if (upper.length < 6) return;
     const formatted = upper.substring(0, 6);
-    setPairs(prev => {
+    setPairsState(prev => {
       if (prev.includes(formatted)) return prev;
       const next = [...prev, formatted];
       savePairs(next);
       return next;
-    });
-    setPairsState(prev => {
-      if (prev.includes(formatted)) return prev;
-      return [...prev, formatted];
     });
   }, []);
 
