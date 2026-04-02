@@ -40,7 +40,10 @@ export function MetricCard({ label, value, icon: Icon, subtitle, trend, classNam
       className
     )}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+        <div className="flex items-center gap-1 min-w-0">
+          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         {Icon && <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0 ml-1" />}
       </div>
       <div className={cn(
