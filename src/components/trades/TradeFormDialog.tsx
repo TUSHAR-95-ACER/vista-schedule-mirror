@@ -696,7 +696,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
               <div className="space-y-1">
                 <FieldLabel>Notes</FieldLabel>
-                <Textarea value={form.notes} onChange={e => set('notes', e.target.value)} className="text-xs min-h-[60px] rounded-lg" placeholder="Trade notes..." />
+                <Textarea value={form.notes} onChange={e => { set('notes', e.target.value); detectNotesUrls(e.target.value); }} className="text-xs min-h-[60px] rounded-lg" placeholder="Trade notes... Paste URLs for auto-preview" />
+                <LinkPreviewList previews={notesPreviews} loading={notesLoading} onRemove={removeNotesPreview} />
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
