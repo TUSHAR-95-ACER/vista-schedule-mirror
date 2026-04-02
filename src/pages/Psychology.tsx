@@ -254,7 +254,7 @@ export default function Psychology() {
 
       {/* Emotion Win Rate Table */}
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Emotion Performance Breakdown</h3>
+        <ChartHeader title="Emotion Performance Breakdown" tooltip="Detailed table showing win rate and P/L for each emotional state" />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
