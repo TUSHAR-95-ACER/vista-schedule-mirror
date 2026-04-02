@@ -147,6 +147,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const [confluencesOpen, setConfluencesOpen] = useState(false);
   const predictionInputRef = useRef<HTMLInputElement | null>(null);
   const executionInputRef = useRef<HTMLInputElement | null>(null);
+  const { previews: notesPreviews, loading: notesLoading, detectAndFetch: detectNotesUrls, removePreview: removeNotesPreview } = useUrlPreview();
 
   const marketAssets = MARKET_ASSETS[form.market] || [];
   const allAssets = [...new Set([...marketAssets, ...customAssets])].filter(a => !ANALYSIS_ONLY_ASSETS.includes(a));
