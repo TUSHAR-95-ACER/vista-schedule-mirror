@@ -78,13 +78,13 @@ export default function Dashboard() {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <MetricCard label="Total Trades" value={metrics.total} icon={BarChart3} />
-        <MetricCard label="Win Rate" value={formatPercent(metrics.winRate)} icon={Target} trend={metrics.winRate >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Total P/L" value={formatCurrency(metrics.totalProfit)} icon={metrics.totalProfit >= 0 ? TrendingUp : TrendingDown} trend={metrics.totalProfit >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Profit Factor" value={metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2)} icon={Activity} trend={metrics.profitFactor >= 1.5 ? 'up' : 'down'} />
-        <MetricCard label="Expectancy" value={formatCurrency(metrics.expectancy)} trend={metrics.expectancy >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down" />
-        <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} />
+        <MetricCard label="Total Trades" value={metrics.total} icon={BarChart3} tooltip="Total number of trades you have logged in the journal" />
+        <MetricCard label="Win Rate" value={formatPercent(metrics.winRate)} icon={Target} trend={metrics.winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of trades that ended in profit (wins ÷ total trades)" />
+        <MetricCard label="Total P/L" value={formatCurrency(metrics.totalProfit)} icon={metrics.totalProfit >= 0 ? TrendingUp : TrendingDown} trend={metrics.totalProfit >= 0 ? 'up' : 'down'} tooltip="Sum of all profits and losses from your trades" />
+        <MetricCard label="Profit Factor" value={metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2)} icon={Activity} trend={metrics.profitFactor >= 1.5 ? 'up' : 'down'} tooltip="Gross profit ÷ gross loss. Above 1.5 is strong, below 1.0 means losing money" />
+        <MetricCard label="Expectancy" value={formatCurrency(metrics.expectancy)} trend={metrics.expectancy >= 0 ? 'up' : 'down'} tooltip="Average amount you can expect to win or lose per trade over time" />
+        <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down" tooltip="Largest peak-to-trough decline in your account equity" />
+        <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} tooltip="Average time you hold a trade from entry to exit" />
       </div>
 
 
