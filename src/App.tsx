@@ -67,6 +67,7 @@ const App = () => (
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/system-analytics" element={<SystemAnalytics />} />
+              <Route path="/macro-news" element={<MacroNews />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
