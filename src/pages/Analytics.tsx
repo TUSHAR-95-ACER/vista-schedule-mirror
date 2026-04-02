@@ -226,7 +226,8 @@ export default function Analytics() {
   // ─── Trade Quality ────────────────────────────────────────────────
   const qualityData = useMemo(() => {
     const gradeMap = new Map<string, Trade[]>();
-    valid.forEach(t => {
+    // Include ALL trades (including Untriggered/Cancelled) for grade analytics
+    trades.forEach(t => {
       const g = t.grade || 'Ungraded';
       const a = gradeMap.get(g) || []; a.push(t); gradeMap.set(g, a);
     });
@@ -235,7 +236,7 @@ export default function Analytics() {
       const ts = gradeMap.get(g) || [];
       return { grade: g, count: ts.length, winRate: calcWinRate(ts), avgPL: ts.length ? ts.reduce((s, t) => s + t.profitLoss, 0) / ts.length : 0 };
     });
-  }, [valid, gradesList]);
+  }, [trades, gradesList]);
 
   // ─── Week of month / weekday / condition ──────────────────────────
   const conditionData = useMemo(() => {
