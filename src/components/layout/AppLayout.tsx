@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { NewsStrip } from '@/components/news/NewsStrip';
-import { NewsAlertPopup } from '@/components/news/NewsAlertPopup';
 
 export function AppLayout() {
   return (
@@ -13,7 +12,6 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
-      <NewsAlertPopup />
     </div>
   );
 }

@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
-export type NewsPair = 'EURUSD' | 'GBPUSD' | 'XAUUSD';
 export type DateFilter = 'today' | 'tomorrow' | 'custom';
 
 export interface CalendarEvent {
@@ -24,39 +23,77 @@ export interface NewsArticle {
   url: string;
   publishedAt: string;
   imageUrl: string | null;
+  impact: 'high' | 'medium';
 }
 
-export interface NewsAlert {
-  id: string;
-  title: string;
-  source: string;
-  seen: boolean;
-  publishedAt: string;
-}
+// Default pairs
+const DEFAULT_PAIRS = ['EURUSD', 'GBPUSD', 'XAUUSD'];
+const PAIRS_STORAGE_KEY = 'macro-news-pairs';
 
-const SEEN_KEY = 'macro-news-seen';
-
-function getSeenIds(): Set<string> {
+function loadPairs(): string[] {
   try {
-    return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'));
-  } catch { return new Set(); }
+    const stored = localStorage.getItem(PAIRS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : DEFAULT_PAIRS;
+  } catch { return DEFAULT_PAIRS; }
 }
 
-function markSeen(id: string) {
-  const seen = getSeenIds();
-  seen.add(id);
-  localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]));
+function savePairs(pairs: string[]) {
+  localStorage.setItem(PAIRS_STORAGE_KEY, JSON.stringify(pairs));
+}
+
+// Client-side cache
+const clientCache: Record<string, { data: any; ts: number }> = {};
+const CLIENT_CACHE_TTL = 3 * 60 * 1000;
+
+function getCached(key: string) {
+  const e = clientCache[key];
+  if (e && Date.now() - e.ts < CLIENT_CACHE_TTL) return e.data;
+  return null;
+}
+function setClientCache(key: string, data: any) {
+  clientCache[key] = { data, ts: Date.now() };
 }
 
 export function useMacroNews() {
-  const [pair, setPair] = useState<NewsPair>('XAUUSD');
+  const [pairs, setPairsState] = useState<string[]>(loadPairs);
+  const [activePair, setActivePair] = useState<string>(() => loadPairs()[0] || 'XAUUSD');
   const [dateFilter, setDateFilter] = useState<DateFilter>('today');
   const [customDate, setCustomDate] = useState<Date>(new Date());
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [news, setNews] = useState<NewsArticle[]>([]);
-  const [alerts, setAlerts] = useState<NewsAlert[]>([]);
   const [loading, setLoading] = useState(false);
   const [newsLoading, setNewsLoading] = useState(false);
+  const fetchingRef = useRef(false);
+
+  const setPairs = useCallback((newPairs: string[]) => {
+    setPairsState(newPairs);
+    savePairs(newPairs);
+    if (!newPairs.includes(activePair) && newPairs.length > 0) {
+      setActivePair(newPairs[0]);
+    }
+  }, [activePair]);
+
+  const addPair = useCallback((pair: string) => {
+    const upper = pair.toUpperCase().replace(/[^A-Z]/g, '');
+    if (upper.length < 6) return;
+    const formatted = upper.substring(0, 6);
+    setPairsState(prev => {
+      if (prev.includes(formatted)) return prev;
+      const next = [...prev, formatted];
+      savePairs(next);
+      return next;
+    });
+  }, []);
+
+  const removePair = useCallback((pair: string) => {
+    setPairsState(prev => {
+      const next = prev.filter(p => p !== pair);
+      if (next.length === 0) return prev; // don't allow empty
+      savePairs(next);
+      if (activePair === pair) setActivePair(next[0]);
+      return next;
+    });
+  }, [activePair]);
 
   const getDateString = useCallback(() => {
     if (dateFilter === 'today') return format(new Date(), 'yyyy-MM-dd');
@@ -69,69 +106,55 @@ export function useMacroNews() {
   }, [dateFilter, customDate]);
 
   const fetchCalendar = useCallback(async () => {
+    const dateStr = getDateString();
+    const cacheKey = `cal-${activePair}-${dateStr}`;
+    const cached = getCached(cacheKey);
+    if (cached) { setCalendarEvents(cached); return; }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('macro-news', {
-        body: { pair, date: getDateString(), source: 'calendar' },
+        body: { pair: activePair, date: dateStr, source: 'calendar' },
       });
       if (error) throw error;
       if (data?.success) {
         setCalendarEvents(data.data || []);
+        setClientCache(cacheKey, data.data || []);
       }
     } catch (err) {
       console.error('Failed to fetch calendar:', err);
     } finally {
       setLoading(false);
     }
-  }, [pair, getDateString]);
+  }, [activePair, getDateString]);
 
   const fetchNews = useCallback(async () => {
+    const cacheKey = `news-${activePair}`;
+    const cached = getCached(cacheKey);
+    if (cached) { setNews(cached); return; }
+
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     setNewsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('macro-news', {
-        body: { pair, date: getDateString(), source: 'news' },
+        body: { pair: activePair, source: 'news' },
       });
       if (error) throw error;
       if (data?.success) {
         const articles: NewsArticle[] = data.data || [];
         setNews(articles);
-
-        // Build alerts from new unseen articles
-        const seen = getSeenIds();
-        const newAlerts: NewsAlert[] = articles
-          .filter(a => !seen.has(a.id))
-          .slice(0, 5)
-          .map(a => ({
-            id: a.id,
-            title: a.title,
-            source: a.source,
-            seen: false,
-            publishedAt: a.publishedAt,
-          }));
-        setAlerts(prev => {
-          const existingIds = new Set(prev.map(a => a.id));
-          const fresh = newAlerts.filter(a => !existingIds.has(a.id));
-          return [...fresh, ...prev];
-        });
+        setClientCache(cacheKey, articles);
       }
     } catch (err) {
       console.error('Failed to fetch news:', err);
     } finally {
       setNewsLoading(false);
+      fetchingRef.current = false;
     }
-  }, [pair, getDateString]);
+  }, [activePair]);
 
-  const markAlertSeen = useCallback((id: string) => {
-    markSeen(id);
-    setAlerts(prev => prev.filter(a => a.id !== id));
-  }, []);
-
-  const markAllSeen = useCallback(() => {
-    alerts.forEach(a => markSeen(a.id));
-    setAlerts([]);
-  }, [alerts]);
-
-  // Fetch on mount and when filters change
+  // Fetch on filter change
   useEffect(() => {
     fetchCalendar();
     fetchNews();
@@ -140,6 +163,8 @@ export function useMacroNews() {
   // Auto-refresh every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
+      // Clear cache to force fresh fetch
+      Object.keys(clientCache).forEach(k => delete clientCache[k]);
       fetchCalendar();
       fetchNews();
     }, 5 * 60 * 1000);
@@ -147,12 +172,16 @@ export function useMacroNews() {
   }, [fetchCalendar, fetchNews]);
 
   return {
-    pair, setPair,
+    pairs, activePair, setActivePair,
+    addPair, removePair,
     dateFilter, setDateFilter,
     customDate, setCustomDate,
     calendarEvents, news,
-    alerts, markAlertSeen, markAllSeen,
     loading, newsLoading,
-    refresh: () => { fetchCalendar(); fetchNews(); },
+    refresh: () => {
+      Object.keys(clientCache).forEach(k => delete clientCache[k]);
+      fetchCalendar();
+      fetchNews();
+    },
   };
 }

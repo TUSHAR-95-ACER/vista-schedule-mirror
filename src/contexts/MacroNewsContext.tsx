@@ -1,18 +1,18 @@
 import React, { createContext, useContext } from 'react';
-import { useMacroNews, NewsPair, DateFilter, CalendarEvent, NewsArticle, NewsAlert } from '@/hooks/useMacroNews';
+import { useMacroNews, DateFilter, CalendarEvent, NewsArticle } from '@/hooks/useMacroNews';
 
 interface MacroNewsContextType {
-  pair: NewsPair;
-  setPair: (p: NewsPair) => void;
+  pairs: string[];
+  activePair: string;
+  setActivePair: (p: string) => void;
+  addPair: (p: string) => void;
+  removePair: (p: string) => void;
   dateFilter: DateFilter;
   setDateFilter: (d: DateFilter) => void;
   customDate: Date;
   setCustomDate: (d: Date) => void;
   calendarEvents: CalendarEvent[];
   news: NewsArticle[];
-  alerts: NewsAlert[];
-  markAlertSeen: (id: string) => void;
-  markAllSeen: () => void;
   loading: boolean;
   newsLoading: boolean;
   refresh: () => void;
