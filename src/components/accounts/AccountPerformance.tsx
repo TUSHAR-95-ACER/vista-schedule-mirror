@@ -88,7 +88,7 @@ export function AccountPerformance({ account, trades, accounts, transactions, sc
       )}
 
       <div className="bg-card border border-border rounded-lg p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Equity Curve</h3>
+        <ChartHeader title="Equity Curve" tooltip="Visual representation of your account balance over time" />
         <div className="h-[300px]">
           <EquityCurveChart trades={trades} />
         </div>
