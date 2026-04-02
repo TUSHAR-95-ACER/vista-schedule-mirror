@@ -563,18 +563,18 @@ export default function Accounts() {
 
         <TabsContent value="overview">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <MetricCard label="Trades" value={activeMetrics.total} icon={BarChart3} />
-            <MetricCard label="Win Rate" value={formatPercent(activeMetrics.winRate)} trend={activeMetrics.winRate >= 50 ? 'up' : 'down'} />
-            <MetricCard label="Total P/L" value={formatCurrency(activeMetrics.totalPL)} trend={activeMetrics.totalPL >= 0 ? 'up' : 'down'} />
-            <MetricCard label="Total RR" value={activeMetrics.totalRR.toFixed(1)} />
-            <MetricCard label="Profit Factor" value={activeMetrics.profitFactor === Infinity ? '∞' : activeMetrics.profitFactor.toFixed(2)} />
-            <MetricCard label="Max Drawdown" value={formatCurrency(activeMetrics.maxDrawdown)} trend="down" />
+            <MetricCard label="Trades" value={activeMetrics.total} icon={BarChart3} tooltip="Total trades taken on this account" />
+            <MetricCard label="Win Rate" value={formatPercent(activeMetrics.winRate)} trend={activeMetrics.winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of winning trades on this account" />
+            <MetricCard label="Total P/L" value={formatCurrency(activeMetrics.totalPL)} trend={activeMetrics.totalPL >= 0 ? 'up' : 'down'} tooltip="Net profit or loss across all trades on this account" />
+            <MetricCard label="Total RR" value={activeMetrics.totalRR.toFixed(1)} tooltip="Sum of all risk-reward ratios achieved on this account" />
+            <MetricCard label="Profit Factor" value={activeMetrics.profitFactor === Infinity ? '∞' : activeMetrics.profitFactor.toFixed(2)} tooltip="Gross profits ÷ gross losses. Above 1.5 is considered strong" />
+            <MetricCard label="Max Drawdown" value={formatCurrency(activeMetrics.maxDrawdown)} trend="down" tooltip="Largest drop from a peak in your equity curve" />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-            <MetricCard label="Total Scale-Ups" value={totalScaleUps} icon={TrendingUp} />
-            <MetricCard label="Latest Scale" value={latestScale ? `${formatCurrency(latestScale.oldSize)} → ${formatCurrency(latestScale.newSize)}` : 'N/A'} />
-            <MetricCard label="Growth %" value={`${growthPercent.toFixed(1)}%`} trend={growthPercent > 0 ? 'up' : growthPercent < 0 ? 'down' : undefined} />
+            <MetricCard label="Total Scale-Ups" value={totalScaleUps} icon={TrendingUp} tooltip="Number of times your account size was increased" />
+            <MetricCard label="Latest Scale" value={latestScale ? `${formatCurrency(latestScale.oldSize)} → ${formatCurrency(latestScale.newSize)}` : 'N/A'} tooltip="Most recent account size upgrade" />
+            <MetricCard label="Growth %" value={`${growthPercent.toFixed(1)}%`} trend={growthPercent > 0 ? 'up' : growthPercent < 0 ? 'down' : undefined} tooltip="Percentage growth from initial to current account size" />
           </div>
 
           <div className="bg-card border border-border rounded-lg p-4 mb-6">

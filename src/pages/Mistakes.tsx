@@ -236,7 +236,7 @@ export default function Mistakes() {
       {/* Weekly Trend */}
       {trendData.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistake Trend (Weekly)</h3>
+          <ChartHeader title="Mistake Trend (Weekly)" tooltip="How your mistake count is changing week over week" />
           <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>

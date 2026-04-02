@@ -155,7 +155,7 @@ export default function TradeQuality() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Execution Score vs Profit</h3>
+          <ChartHeader title="Execution Score vs Profit" tooltip="Scatter plot showing if higher execution scores lead to better profits" />
           <div className="h-[240px]">
             {execVsProfit.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
