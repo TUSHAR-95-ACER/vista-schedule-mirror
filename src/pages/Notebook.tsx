@@ -39,6 +39,8 @@ export default function Notebook() {
   });
   const [filterCat, setFilterCat] = useState('all');
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
+  const { previews: formPreviews, loading: formLoading, detectAndFetch: detectFormUrls, removePreview: removeFormPreview } = useUrlPreview();
+  const { previews: entryPreviews, loading: entryLoading, detectAndFetch: detectEntryUrls } = useUrlPreview();
 
   useEffect(() => {
     if (!user) {
