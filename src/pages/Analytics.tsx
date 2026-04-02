@@ -247,7 +247,10 @@ export default function Analytics() {
 
   const weekOfMonthData = useMemo(() => {
     return [1, 2, 3, 4, 5].map(w => {
-      const wt = valid.filter(t => Math.ceil(new Date(t.date).getDate() / 7) === w);
+      const wt = valid.filter(t => {
+        const day = new Date(`${t.date}T00:00:00`).getDate();
+        return Math.ceil(day / 7) === w;
+      });
       return { name: `Week ${w}`, trades: wt.length, pl: wt.reduce((a, t) => a + t.profitLoss, 0), winRate: calcWinRate(wt) };
     }).filter(w => w.trades > 0);
   }, [valid]);
