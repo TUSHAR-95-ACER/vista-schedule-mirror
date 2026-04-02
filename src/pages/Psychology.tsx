@@ -225,7 +225,7 @@ export default function Psychology() {
 
         {/* Mistake Frequency */}
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistake Frequency</h3>
+          <ChartHeader title="Mistake Frequency" tooltip="How often each type of mistake occurs in your trades" />
           {mistakeData.length > 0 ? (
             <div className="space-y-3">
               {mistakeData.map(m => {
