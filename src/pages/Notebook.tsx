@@ -3,6 +3,7 @@ import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { LinkPreviewList } from '@/components/shared/LinkPreview';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
