@@ -149,7 +149,7 @@ export default function WeeklyReview() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Weekly P/L Trend</h3>
+              <ChartHeader title="Weekly P/L Trend" tooltip="How your weekly profit/loss has been trending over time" />
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={plTrend}>
