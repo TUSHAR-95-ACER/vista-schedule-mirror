@@ -38,24 +38,57 @@ async function fetchAllUserData(supabase: any, userId: string) {
   return context;
 }
 
+// Strip base64 images and large binary data from records
+function stripBinaryData(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === "string") {
+    if (obj.startsWith("data:image/") || obj.length > 500) return "[image_data]";
+    return obj;
+  }
+  if (Array.isArray(obj)) return obj.map(stripBinaryData);
+  if (typeof obj === "object") {
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip known image/binary fields entirely
+      if (["prediction_image", "execution_image", "result_chart_image", "chartImage", "analysis_video_url"].includes(key)) {
+        continue;
+      }
+      cleaned[key] = stripBinaryData(value);
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
 function summarizeIfLarge(context: Record<string, any>): string {
-  const json = JSON.stringify(context);
-  if (json.length < 60000) return json;
+  // First strip all binary/image data
+  const cleaned = stripBinaryData(context);
 
   const summarized: Record<string, any> = {};
-  for (const [table, data] of Object.entries(context)) {
+  for (const [table, data] of Object.entries(cleaned)) {
     if (!Array.isArray(data)) { summarized[table] = data; continue; }
     if (table === "trades") {
-      summarized[table] = data.slice(0, 50);
+      summarized[table] = data.slice(0, 30);
       summarized[`${table}_total_count`] = data.length;
     } else if (table === "weekly_plans" || table === "daily_plans") {
-      summarized[table] = data.slice(0, 10);
+      summarized[table] = data.slice(0, 5);
       summarized[`${table}_total_count`] = data.length;
     } else {
       summarized[table] = data;
     }
   }
-  return JSON.stringify(summarized);
+
+  let json = JSON.stringify(summarized);
+  // If still too large, further reduce
+  if (json.length > 30000) {
+    for (const [table, data] of Object.entries(summarized)) {
+      if (Array.isArray(data) && data.length > 10) {
+        summarized[table] = data.slice(0, 10);
+      }
+    }
+    json = JSON.stringify(summarized);
+  }
+  return json;
 }
 
 serve(async (req) => {
