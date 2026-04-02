@@ -234,7 +234,7 @@ export default function BehaviorPatterns() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Discipline vs Profit</h3>
+          <ChartHeader title="Discipline vs Profit" tooltip="Scatter plot — does higher discipline score lead to better profits?" />
           <div className="h-[250px]">
             {behaviorVsPnl.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
