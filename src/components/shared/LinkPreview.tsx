@@ -82,9 +82,7 @@ export function LinkPreview({ metadata, loading, onRemove, compact }: LinkPrevie
     <a href={url} target="_blank" rel="noopener noreferrer" className="group block">
       <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:shadow-sm transition-all">
         <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-          {type === 'video' ? <Play className="h-3.5 w-3.5 text-muted-foreground" /> :
-           type === 'image' ? <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" /> :
-           <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
+        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">{title || url}</p>
