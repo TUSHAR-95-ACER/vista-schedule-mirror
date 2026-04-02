@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
-import { LinkPreviewList } from '@/components/shared/LinkPreview';
+import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
