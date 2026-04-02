@@ -118,6 +118,7 @@ export default function WeeklyPlanPage() {
   const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
+  const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
 
   const startNew = () => {
     const plan: WeeklyPlan = {
