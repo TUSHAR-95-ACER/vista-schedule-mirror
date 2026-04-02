@@ -121,6 +121,7 @@ export interface Trade {
   mistakes: Mistake[];
   grade?: TradeGrade;
   timeframe?: string;
+  trend?: string;
   tradeJourney?: TradeJourneyStep[];
 }
 

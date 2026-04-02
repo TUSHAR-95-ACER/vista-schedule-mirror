@@ -131,6 +131,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     maxRRReached: '',
     maxAdverseMove: '',
     timeframe: '',
+    trend: '',
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -193,6 +194,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         maxRRReached: editTrade.maxRRReached !== undefined ? String(editTrade.maxRRReached) : '',
         maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
         timeframe: editTrade.timeframe || '',
+        trend: editTrade.trend || '',
       });
     } else {
       setForm(defaultForm);
@@ -328,6 +330,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       toast({ title: 'Grade required', description: 'Please select a grade before saving.', variant: 'destructive' });
       return;
     }
+    if (!form.trend) {
+      toast({ title: 'Trend required', description: 'Please select a market trend before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
@@ -389,6 +395,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
+      trend: form.trend || undefined,
     };
 
     if (editTrade) updateTrade(trade);
@@ -483,7 +490,18 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <FieldLabel>Timeframe</FieldLabel>
+                  <FieldLabel>Trend <span className="text-destructive">*</span></FieldLabel>
+                  <Select value={form.trend || 'none'} onValueChange={v => set('trend', v === 'none' ? '' : v)}>
+                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {['Bullish', 'Bearish', 'Sideways'].map(tr => (
+                        <SelectItem key={tr} value={tr}>{tr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
                   <Select value={form.timeframe || 'none'} onValueChange={v => set('timeframe', v === 'none' ? '' : v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
                     <SelectContent>

@@ -20,6 +20,7 @@ export function tradeToDb(t: Trade, userId: string) {
     psychology: t.psychology ? JSON.stringify(t.psychology) : null,
     mistakes: JSON.stringify(t.mistakes), grade: t.grade || null,
     timeframe: t.timeframe || null,
+    trend: t.trend || null,
     trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
   };
 }
@@ -49,6 +50,7 @@ export function dbToTrade(row: any): Trade {
     mistakes: typeof row.mistakes === 'string' ? JSON.parse(row.mistakes) : (row.mistakes || []),
     grade: row.grade || undefined,
     timeframe: row.timeframe || undefined,
+    trend: row.trend || undefined,
     tradeJourney: row.trade_journey ? (typeof row.trade_journey === 'string' ? JSON.parse(row.trade_journey) : row.trade_journey) : undefined,
   };
 }
