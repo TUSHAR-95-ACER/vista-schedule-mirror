@@ -27,7 +27,7 @@ import { SessionChart } from '@/components/dashboard/SessionChart';
 import { WeeklyPerformanceChart } from '@/components/dashboard/WeeklyPerformanceChart';
 import { PerformanceByGradeChart } from '@/components/dashboard/PerformanceByGradeChart';
 import { DashboardCalendar } from '@/components/dashboard/DashboardCalendar';
-import { RRDistributionChart } from '@/components/dashboard/RRDistributionChart';
+
 
 export default function Dashboard() {
   const { trades } = useTrading();
