@@ -127,12 +127,12 @@ export default function TradeQuality() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} trend={avgExecScore >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Entry Precision" value={`${entryPrecision}%`} trend={entryPrecision >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Hold Quality" value={`${holdQuality}%`} subtitle="Held to TP" trend={holdQuality >= 60 ? 'up' : 'down'} />
-        <MetricCard label="Exit Discipline" value={`${exitDiscipline}%`} subtitle="Reached 80% TP" trend={exitDiscipline >= 60 ? 'up' : 'down'} />
-        <MetricCard label="RR Discipline" value={`${rrDiscipline}%`} subtitle="Actual ≥ Planned" trend={rrDiscipline >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Total Graded" value={valid.length} />
+        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} trend={avgExecScore >= 70 ? 'up' : 'down'} tooltip="Average quality score across all graded trades (0-100)" />
+        <MetricCard label="Entry Precision" value={`${entryPrecision}%`} trend={entryPrecision >= 50 ? 'up' : 'down'} tooltip="How often your entry price was close to the ideal level" />
+        <MetricCard label="Hold Quality" value={`${holdQuality}%`} subtitle="Held to TP" trend={holdQuality >= 60 ? 'up' : 'down'} tooltip="Percentage of trades where you held the position until take profit was hit" />
+        <MetricCard label="Exit Discipline" value={`${exitDiscipline}%`} subtitle="Reached 80% TP" trend={exitDiscipline >= 60 ? 'up' : 'down'} tooltip="Trades where you captured at least 80% of your planned take profit" />
+        <MetricCard label="RR Discipline" value={`${rrDiscipline}%`} subtitle="Actual ≥ Planned" trend={rrDiscipline >= 50 ? 'up' : 'down'} tooltip="Percentage of trades where actual RR met or exceeded your planned RR" />
+        <MetricCard label="Total Graded" value={valid.length} tooltip="Number of trades that have been quality-graded" />
       </div>
 
       {/* Charts */}
