@@ -447,7 +447,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Market</FieldLabel>
                   <Select value={form.market} onValueChange={v => set('market', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{MARKETS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxMarkets.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
