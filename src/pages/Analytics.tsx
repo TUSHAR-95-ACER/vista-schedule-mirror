@@ -179,12 +179,12 @@ export default function Analytics() {
 
   // ─── Session Performance ──────────────────────────────────────────
   const sessionData = useMemo(() => {
-    const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
-    return sessions.map(s => {
+    const allSessions = [...new Set([...ctxSessions, ...valid.map(t => t.session)])];
+    return allSessions.map(s => {
       const st = valid.filter(t => t.session === s);
-      return { name: s.replace('New York Kill Zone', 'NYKZ').replace('London Close', 'LDN Close'), trades: st.length, winRate: calcWinRate(st), pl: st.reduce((a, t) => a + t.profitLoss, 0) };
+      return { name: s.length > 15 ? s.slice(0, 12) + '…' : s, fullName: s, trades: st.length, winRate: calcWinRate(st), pl: st.reduce((a, t) => a + t.profitLoss, 0) };
     }).filter(d => d.trades > 0);
-  }, [valid]);
+  }, [valid, ctxSessions]);
 
   // ─── Setup Performance ────────────────────────────────────────────
   const setupData = useMemo(() => {
