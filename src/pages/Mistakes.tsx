@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
@@ -164,7 +165,7 @@ export default function Mistakes() {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="lg:col-span-2 bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistake Frequency</h3>
+          <ChartHeader title="Mistake Frequency" tooltip="Bar chart showing how often each type of mistake occurs" />
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mistakeData}>
@@ -179,7 +180,7 @@ export default function Mistakes() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Distribution</h3>
+          <ChartHeader title="Distribution" tooltip="Pie chart showing the proportion of each mistake type" />
           <div className="h-[240px]">
             {distribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -198,7 +199,7 @@ export default function Mistakes() {
       {/* Charts Row 2: By Session & By Setup */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistakes by Session</h3>
+          <ChartHeader title="Mistakes by Session" tooltip="Which trading session has the most mistakes" />
           <div className="h-[200px]">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -215,7 +216,7 @@ export default function Mistakes() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistakes by Setup</h3>
+          <ChartHeader title="Mistakes by Setup" tooltip="Which trade setup type leads to the most mistakes" />
           <div className="h-[200px]">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -235,7 +236,7 @@ export default function Mistakes() {
       {/* Weekly Trend */}
       {trendData.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistake Trend (Weekly)</h3>
+          <ChartHeader title="Mistake Trend (Weekly)" tooltip="How your mistake count is changing week over week" />
           <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>

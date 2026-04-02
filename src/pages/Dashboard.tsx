@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { MetricCard, PageHeader } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import {
   calcWinRate,
@@ -78,24 +79,24 @@ export default function Dashboard() {
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <MetricCard label="Total Trades" value={metrics.total} icon={BarChart3} />
-        <MetricCard label="Win Rate" value={formatPercent(metrics.winRate)} icon={Target} trend={metrics.winRate >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Total P/L" value={formatCurrency(metrics.totalProfit)} icon={metrics.totalProfit >= 0 ? TrendingUp : TrendingDown} trend={metrics.totalProfit >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Profit Factor" value={metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2)} icon={Activity} trend={metrics.profitFactor >= 1.5 ? 'up' : 'down'} />
-        <MetricCard label="Expectancy" value={formatCurrency(metrics.expectancy)} trend={metrics.expectancy >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down" />
-        <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} />
+        <MetricCard label="Total Trades" value={metrics.total} icon={BarChart3} tooltip="Total number of trades you have logged in the journal" />
+        <MetricCard label="Win Rate" value={formatPercent(metrics.winRate)} icon={Target} trend={metrics.winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of trades that ended in profit (wins ÷ total trades)" />
+        <MetricCard label="Total P/L" value={formatCurrency(metrics.totalProfit)} icon={metrics.totalProfit >= 0 ? TrendingUp : TrendingDown} trend={metrics.totalProfit >= 0 ? 'up' : 'down'} tooltip="Sum of all profits and losses from your trades" />
+        <MetricCard label="Profit Factor" value={metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2)} icon={Activity} trend={metrics.profitFactor >= 1.5 ? 'up' : 'down'} tooltip="Gross profit ÷ gross loss. Above 1.5 is strong, below 1.0 means losing money" />
+        <MetricCard label="Expectancy" value={formatCurrency(metrics.expectancy)} trend={metrics.expectancy >= 0 ? 'up' : 'down'} tooltip="Average amount you can expect to win or lose per trade over time" />
+        <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down" tooltip="Largest peak-to-trough decline in your account equity" />
+        <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} tooltip="Average time you hold a trade from entry to exit" />
       </div>
 
 
       {/* Equity Curve + Win/Loss */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">Equity Curve</h3>
+          <ChartHeader title="Equity Curve" tooltip="Shows how your total account value has changed over time based on cumulative P/L" />
           <div className="h-[220px] sm:h-[280px]"><EquityCurveChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">Win / Loss</h3>
+          <ChartHeader title="Win / Loss" tooltip="Visual breakdown of your winning vs losing trades" />
           <div className="h-[220px] sm:h-[280px]"><WinLossChart trades={trades} /></div>
         </div>
       </div>
@@ -106,15 +107,15 @@ export default function Dashboard() {
       {/* By Pair / Session / Week */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Pair</h3>
+          <ChartHeader title="By Pair" tooltip="P/L breakdown by each trading pair to see which instruments work best for you" />
           <div className="h-[200px] sm:h-[240px]"><PerformanceByPairChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Session</h3>
+          <ChartHeader title="By Session" tooltip="Performance grouped by trading session (London, NY, etc.)" />
           <div className="h-[200px] sm:h-[240px]"><SessionChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Week</h3>
+          <ChartHeader title="By Week" tooltip="Weekly P/L to track consistency across calendar weeks" />
           <div className="h-[200px] sm:h-[240px]"><WeeklyPerformanceChart trades={trades} /></div>
         </div>
       </div>
@@ -122,11 +123,11 @@ export default function Dashboard() {
       {/* By Grade */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Grade</h3>
+          <ChartHeader title="By Grade" tooltip="Performance grouped by the quality grade you assigned to each trade" />
           <PerformanceByGradeChart trades={trades} />
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Day (P/L)</h3>
+          <ChartHeader title="By Day (P/L)" tooltip="P/L broken down by day of the week to find your best trading days" />
           <div className="h-[200px] sm:h-[240px]"><WeekdayChart trades={trades} /></div>
         </div>
       </div>

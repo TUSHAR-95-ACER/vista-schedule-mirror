@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
@@ -138,17 +139,17 @@ export default function WeeklyReview() {
       {latest ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <MetricCard label="Latest Week" value={latest.weekName} />
-            <MetricCard label="Trades" value={latest.trades} />
-            <MetricCard label="Win Rate" value={`${latest.winRate}%`} trend={latest.winRate >= 50 ? 'up' : 'down'} />
-            <MetricCard label="P/L" value={formatCurrency(latest.pl)} trend={latest.pl >= 0 ? 'up' : 'down'} />
-            <MetricCard label="Execution Score" value={`${latest.avgExec}%`} trend={latest.avgExec >= 70 ? 'up' : 'down'} />
-            <MetricCard label="Bias Accuracy" value={`${latest.biasAccuracy}%`} trend={latest.biasAccuracy >= 50 ? 'up' : 'down'} />
+            <MetricCard label="Latest Week" value={latest.weekName} tooltip="The most recent calendar week with trading activity" />
+            <MetricCard label="Trades" value={latest.trades} tooltip="Number of trades taken in the latest week" />
+            <MetricCard label="Win Rate" value={`${latest.winRate}%`} trend={latest.winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of winning trades for the latest week" />
+            <MetricCard label="P/L" value={formatCurrency(latest.pl)} trend={latest.pl >= 0 ? 'up' : 'down'} tooltip="Total profit or loss for the latest week" />
+            <MetricCard label="Execution Score" value={`${latest.avgExec}%`} trend={latest.avgExec >= 70 ? 'up' : 'down'} tooltip="Average trade execution quality for the week (0-100%)" />
+            <MetricCard label="Bias Accuracy" value={`${latest.biasAccuracy}%`} trend={latest.biasAccuracy >= 50 ? 'up' : 'down'} tooltip="How often your market bias prediction was correct this week" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Weekly P/L Trend</h3>
+              <ChartHeader title="Weekly P/L Trend" tooltip="How your weekly profit/loss has been trending over time" />
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={plTrend}>
@@ -168,7 +169,7 @@ export default function WeeklyReview() {
               </div>
             </div>
             <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Win Rate by Week</h3>
+              <ChartHeader title="Win Rate by Week" tooltip="Weekly win rate comparison to find your most consistent weeks" />
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyData.map(w => ({ name: w.weekName, winRate: w.winRate }))}>

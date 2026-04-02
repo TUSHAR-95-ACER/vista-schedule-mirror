@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Lightbulb } from 'lucide-react';
@@ -170,12 +171,12 @@ export default function BehaviorPatterns() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard label="Discipline Score" value={`${disciplineScore}/100`} trend={disciplineScore >= 60 ? 'up' : 'down'} />
-        <MetricCard label="Emotional Stability" value={`${emotionalStability}%`} trend={emotionalStability >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Rule Adherence" value={`${ruleAdherence}%`} trend={ruleAdherence >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Revenge Index" value={revengePatterns} subtitle="2+ consec losses/day" trend={revengePatterns > 0 ? 'down' : 'up'} />
-        <MetricCard label="Overtrade Index" value={`${overtradingIndex}%`} subtitle=">3 trades/day" trend={overtradingIndex > 10 ? 'down' : 'up'} />
-        <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} />
+        <MetricCard label="Discipline Score" value={`${disciplineScore}/100`} trend={disciplineScore >= 60 ? 'up' : 'down'} tooltip="Overall score based on checklist compliance and emotional control" />
+        <MetricCard label="Emotional Stability" value={`${emotionalStability}%`} trend={emotionalStability >= 70 ? 'up' : 'down'} tooltip="How consistent your emotional state is across trades" />
+        <MetricCard label="Rule Adherence" value={`${ruleAdherence}%`} trend={ruleAdherence >= 70 ? 'up' : 'down'} tooltip="How often you follow your trading rules and checklist" />
+        <MetricCard label="Revenge Index" value={revengePatterns} subtitle="2+ consec losses/day" trend={revengePatterns > 0 ? 'down' : 'up'} tooltip="Days where 2+ consecutive losses suggest revenge trading behavior" />
+        <MetricCard label="Overtrade Index" value={`${overtradingIndex}%`} subtitle=">3 trades/day" trend={overtradingIndex > 10 ? 'down' : 'up'} tooltip="Percentage of trading days where you took more than 3 trades" />
+        <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} tooltip="Trades closed early due to fear emotions that resulted in losses" />
       </div>
 
       {/* Insights */}
@@ -193,7 +194,7 @@ export default function BehaviorPatterns() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Trades Per Day</h3>
+          <ChartHeader title="Trades Per Day" tooltip="Daily trade count — red bars highlight days with more than 3 trades (potential overtrading)" />
           <div className="h-[220px]">
             {dailyTradeCount.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -214,7 +215,7 @@ export default function BehaviorPatterns() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistakes by Session</h3>
+          <ChartHeader title="Mistakes by Session" tooltip="Which trading session has the highest mistake count" />
           <div className="h-[220px]">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -233,7 +234,7 @@ export default function BehaviorPatterns() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Discipline vs Profit</h3>
+          <ChartHeader title="Discipline vs Profit" tooltip="Scatter plot — does higher discipline score lead to better profits?" />
           <div className="h-[250px]">
             {behaviorVsPnl.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -251,7 +252,7 @@ export default function BehaviorPatterns() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Checklist Compliance</h3>
+          <ChartHeader title="Checklist Compliance" tooltip="How well you follow each item on your pre-trade checklist" />
           <div className="h-[250px]">
             {checklistStats.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -270,7 +271,7 @@ export default function BehaviorPatterns() {
 
       {disciplineTrend.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Discipline Trend (Weekly)</h3>
+          <ChartHeader title="Discipline Trend (Weekly)" tooltip="Your weekly discipline score trend — is your trading discipline improving?" />
           <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={disciplineTrend}>

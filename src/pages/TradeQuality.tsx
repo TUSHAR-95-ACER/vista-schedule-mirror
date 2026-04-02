@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ScatterChart, Scatter, ZAxis } from 'recharts';
 import { cn } from '@/lib/utils';
@@ -126,18 +127,18 @@ export default function TradeQuality() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} trend={avgExecScore >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Entry Precision" value={`${entryPrecision}%`} trend={entryPrecision >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Hold Quality" value={`${holdQuality}%`} subtitle="Held to TP" trend={holdQuality >= 60 ? 'up' : 'down'} />
-        <MetricCard label="Exit Discipline" value={`${exitDiscipline}%`} subtitle="Reached 80% TP" trend={exitDiscipline >= 60 ? 'up' : 'down'} />
-        <MetricCard label="RR Discipline" value={`${rrDiscipline}%`} subtitle="Actual ≥ Planned" trend={rrDiscipline >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Total Graded" value={valid.length} />
+        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} trend={avgExecScore >= 70 ? 'up' : 'down'} tooltip="Average quality score across all graded trades (0-100)" />
+        <MetricCard label="Entry Precision" value={`${entryPrecision}%`} trend={entryPrecision >= 50 ? 'up' : 'down'} tooltip="How often your entry price was close to the ideal level" />
+        <MetricCard label="Hold Quality" value={`${holdQuality}%`} subtitle="Held to TP" trend={holdQuality >= 60 ? 'up' : 'down'} tooltip="Percentage of trades where you held the position until take profit was hit" />
+        <MetricCard label="Exit Discipline" value={`${exitDiscipline}%`} subtitle="Reached 80% TP" trend={exitDiscipline >= 60 ? 'up' : 'down'} tooltip="Trades where you captured at least 80% of your planned take profit" />
+        <MetricCard label="RR Discipline" value={`${rrDiscipline}%`} subtitle="Actual ≥ Planned" trend={rrDiscipline >= 50 ? 'up' : 'down'} tooltip="Percentage of trades where actual RR met or exceeded your planned RR" />
+        <MetricCard label="Total Graded" value={valid.length} tooltip="Number of trades that have been quality-graded" />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Grade vs Profit</h3>
+          <ChartHeader title="Grade vs Profit" tooltip="Shows total P/L for each quality grade — higher grades should ideally produce more profit" />
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={gradeData}>
@@ -154,7 +155,7 @@ export default function TradeQuality() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Execution Score vs Profit</h3>
+          <ChartHeader title="Execution Score vs Profit" tooltip="Scatter plot showing if higher execution scores lead to better profits" />
           <div className="h-[240px]">
             {execVsProfit.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">

@@ -3,13 +3,15 @@ import { useTrading } from '@/contexts/TradingContext';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { Lightbulb, TrendingUp, TrendingDown, Target, Activity, BarChart3, Crosshair, Clock, AlertTriangle, Zap, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { cn } from '@/lib/utils';
 
-function StatCard({ label, value, subtitle, trend, icon: Icon, accent }: {
+function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }: {
   label: string; value: string; subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   icon?: React.ElementType;
   accent?: 'primary' | 'success' | 'warning' | 'destructive';
+  tooltip?: string;
 }) {
   const accentBg = {
     primary: 'bg-primary/10 text-primary',
@@ -21,7 +23,10 @@ function StatCard({ label, value, subtitle, trend, icon: Icon, accent }: {
   return (
     <div className="bg-card border border-border/60 rounded-xl p-4 flex flex-col justify-between min-h-[110px] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-shadow">
       <div className="flex items-start justify-between mb-auto">
-        <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight">{label}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight">{label}</span>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         {Icon && (
           <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center shrink-0', accent ? accentBg[accent] : 'bg-muted text-muted-foreground')}>
             <Icon className="h-3.5 w-3.5" />
@@ -294,18 +299,18 @@ export default function BiasAnalytics() {
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" />
-        <StatCard label="Missed Opportunities" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} />
-        <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} />
-        <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} />
+        <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" tooltip="How often your weekly analysis leads to an actual trade" />
+        <StatCard label="Missed Opportunities" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} tooltip="Times you predicted direction correctly but didn't take the trade" />
+        <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} tooltip="How often you stick with your bias vs changing it frequently" />
+        <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} tooltip="Percentage of strong directional bias calls that turned out wrong" />
       </div>
 
       {/* Best/Worst */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Best Pair" value={biasStats.bestPair?.pair || '—'} subtitle={biasStats.bestPair ? `${biasStats.bestPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingUp} accent="success" />
-        <StatCard label="Worst Pair" value={biasStats.worstPair?.pair || '—'} subtitle={biasStats.worstPair ? `${biasStats.worstPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingDown} accent="destructive" />
-        <StatCard label="Best Session" value={biasStats.bestSession?.session || '—'} subtitle={biasStats.bestSession ? `${biasStats.bestSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="success" />
-        <StatCard label="Worst Session" value={biasStats.worstSession?.session || '—'} subtitle={biasStats.worstSession ? `${biasStats.worstSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="destructive" />
+        <StatCard label="Best Pair" value={biasStats.bestPair?.pair || '—'} subtitle={biasStats.bestPair ? `${biasStats.bestPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingUp} accent="success" tooltip="The pair where your directional prediction is most accurate" />
+        <StatCard label="Worst Pair" value={biasStats.worstPair?.pair || '—'} subtitle={biasStats.worstPair ? `${biasStats.worstPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingDown} accent="destructive" tooltip="The pair where your directional prediction is least accurate" />
+        <StatCard label="Best Session" value={biasStats.bestSession?.session || '—'} subtitle={biasStats.bestSession ? `${biasStats.bestSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="success" tooltip="The trading session where you have the highest win rate" />
+        <StatCard label="Worst Session" value={biasStats.worstSession?.session || '—'} subtitle={biasStats.worstSession ? `${biasStats.worstSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="destructive" tooltip="The trading session where you have the lowest win rate" />
       </div>
 
       {/* Detailed breakdowns */}

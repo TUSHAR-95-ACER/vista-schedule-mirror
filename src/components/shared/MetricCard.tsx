@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
+import { InfoTooltip } from './InfoTooltip';
 
 /** Format large numbers compactly: 10000 → 10K, 1000000 → 1M */
 export function formatCompactNumber(value: string | number): string {
@@ -27,9 +28,10 @@ interface MetricCardProps {
   subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   className?: string;
+  tooltip?: string;
 }
 
-export function MetricCard({ label, value, icon: Icon, subtitle, trend, className }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, subtitle, trend, className, tooltip }: MetricCardProps) {
   const displayValue = formatCompactNumber(value);
 
   return (
@@ -38,7 +40,10 @@ export function MetricCard({ label, value, icon: Icon, subtitle, trend, classNam
       className
     )}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+        <div className="flex items-center gap-1 min-w-0">
+          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         {Icon && <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0 ml-1" />}
       </div>
       <div className={cn(
