@@ -494,40 +494,54 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
               </div>
             </div>
 
-            <div className="overflow-x-auto pb-1">
-              <div className="inline-flex min-w-max gap-2">
-                <div className="grid pt-6 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                  {HEATMAP_ROW_LABELS.map((label, index) => <div key={`${label}-${index}`} className="flex h-4 items-center pr-1">{label}</div>)}
+            <div className="overflow-x-auto pb-2">
+              <div className="inline-flex min-w-max items-start gap-3">
+                <div className="grid gap-1 pt-6 pr-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  {HEATMAP_WEEKDAYS.map((label) => (
+                    <div key={label} className="flex h-4 items-center justify-end whitespace-nowrap">
+                      {label}
+                    </div>
+                  ))}
                 </div>
 
-                <div className="inline-flex gap-1.5">
-                  {heatmapData.weeks.map((week, weekIndex) => (
-                    <div key={`${week.label}-${weekIndex}`} className="space-y-1">
-                      <div className="h-4 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{week.label}</div>
-                      <div className="grid gap-1">
-                        {week.days.map((day) => (
-                          <Tooltip key={day.dateStr}>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={() => day.inYear && day.tradeCount > 0 && setSelectedDate(day.dateStr)}
-                                className={cn(
-                                  'h-4 w-4 rounded-[4px] border transition-transform duration-200',
-                                  day.inYear && day.tradeCount > 0 ? 'hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-95' : 'cursor-default',
-                                  day.inYear ? getTone({ dateStr: day.dateStr, dayNumber: 0, totalPl: day.totalPl, tradeCount: day.tradeCount, averageRR: null, trades: tradeMap.get(day.dateStr)?.trades ?? [], hasMissed: false, hasCancelled: false }, heatmapData.maxAbsPl, 'heatmap') : 'border-transparent bg-transparent opacity-0',
+                <div className="inline-flex items-start gap-3">
+                  {heatmapData.months.map((monthBlock) => (
+                    <div key={monthBlock.label} className="flex flex-col gap-1">
+                      <div className="h-4 pl-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        {monthBlock.label}
+                      </div>
+                      <div className="inline-flex gap-1">
+                        {monthBlock.columns.map((column, columnIndex) => (
+                          <div key={`${monthBlock.label}-${columnIndex}`} className="grid gap-1">
+                            {column.map((day, rowIndex) => (
+                              <Tooltip key={day.dateStr || `${monthBlock.label}-${columnIndex}-${rowIndex}`}>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => day.inYear && day.tradeCount > 0 && setSelectedDate(day.dateStr)}
+                                    className={cn(
+                                      'h-4 w-4 rounded-[4px] border transition-transform duration-200',
+                                      day.inYear && day.tradeCount > 0 ? 'hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-95' : 'cursor-default',
+                                      day.inYear
+                                        ? getTone({ dateStr: day.dateStr, dayNumber: 0, totalPl: day.totalPl, tradeCount: day.tradeCount, averageRR: null, trades: tradeMap.get(day.dateStr)?.trades ?? [], hasMissed: false, hasCancelled: false }, heatmapData.maxAbsPl, 'heatmap')
+                                        : 'border-transparent bg-transparent opacity-0',
+                                    )}
+                                  />
+                                </TooltipTrigger>
+                                {day.inYear && (
+                                  <TooltipContent className="rounded-xl border-border bg-popover px-3 py-2 text-xs shadow-md">
+                                    <div className="space-y-1">
+                                      <p className="font-semibold text-foreground">{formatDisplayDate(day.dateStr)}</p>
+                                      <p className="text-muted-foreground">Trades: {day.tradeCount}</p>
+                                      <p className={cn('font-medium', day.totalPl >= 0 ? 'text-success' : 'text-destructive')}>
+                                        P/L: {formatCompact(day.totalPl)}
+                                      </p>
+                                    </div>
+                                  </TooltipContent>
                                 )}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent className="rounded-xl border-border bg-popover px-3 py-2 text-xs shadow-md">
-                              <div className="space-y-1">
-                                <p className="font-semibold text-foreground">{formatDisplayDate(day.dateStr)}</p>
-                                <p className="text-muted-foreground">Trades: {day.tradeCount}</p>
-                                <p className={cn('font-medium', day.totalPl >= 0 ? 'text-success' : 'text-destructive')}>
-                                  P/L: {formatCompact(day.totalPl)}
-                                </p>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                              </Tooltip>
+                            ))}
+                          </div>
                         ))}
                       </div>
                     </div>
