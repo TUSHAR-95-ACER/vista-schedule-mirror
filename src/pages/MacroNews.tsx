@@ -1,30 +1,44 @@
+import { useState } from 'react';
 import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import { CalendarIcon, RefreshCw, ExternalLink, Clock, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { CalendarIcon, RefreshCw, ExternalLink, Clock, Loader2, Plus, X, Settings2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { NewsPair, DateFilter } from '@/hooks/useMacroNews';
+import type { DateFilter } from '@/hooks/useMacroNews';
 
 export default function MacroNews() {
   const {
-    pair, setPair, dateFilter, setDateFilter,
+    pairs, activePair, setActivePair,
+    addPair, removePair,
+    dateFilter, setDateFilter,
     customDate, setCustomDate,
     calendarEvents, news,
     loading, newsLoading, refresh,
   } = useMacroNewsContext();
 
+  const [newPairInput, setNewPairInput] = useState('');
+  const [managePairsOpen, setManagePairsOpen] = useState(false);
+
+  const handleAddPair = () => {
+    if (newPairInput.length >= 6) {
+      addPair(newPairInput);
+      setNewPairInput('');
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">Macro News & Alerts</h1>
-          <p className="text-sm text-muted-foreground">High-impact economic events & breaking news for your pairs</p>
+          <h1 className="text-2xl font-heading font-bold text-foreground">Macro News & Calendar</h1>
+          <p className="text-sm text-muted-foreground">High-impact economic events & tradable macro news</p>
         </div>
         <Button variant="outline" size="sm" onClick={refresh} disabled={loading || newsLoading}>
           <RefreshCw className={cn("h-4 w-4 mr-1", (loading || newsLoading) && "animate-spin")} />
@@ -39,23 +53,69 @@ export default function MacroNews() {
             {/* Pair Selector */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">Pair:</span>
-              <div className="flex gap-1">
-                {(['EURUSD', 'GBPUSD', 'XAUUSD'] as NewsPair[]).map(p => (
-                  <Button key={p} size="sm" variant={pair === p ? 'default' : 'outline'} className="text-xs h-8" onClick={() => setPair(p)}>
+              <div className="flex gap-1 flex-wrap">
+                {pairs.map(p => (
+                  <Button key={p} size="sm" variant={activePair === p ? 'default' : 'outline'} className="text-xs h-8" onClick={() => setActivePair(p)}>
                     {p}
                   </Button>
                 ))}
+                {/* Manage Pairs */}
+                <Dialog open={managePairsOpen} onOpenChange={setManagePairsOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="ghost" className="text-xs h-8 px-2">
+                      <Settings2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Manage Pairs</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {/* Current pairs */}
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground font-medium">Active Pairs</p>
+                        <div className="flex flex-wrap gap-2">
+                          {pairs.map(p => (
+                            <Badge key={p} variant="secondary" className="gap-1 pr-1">
+                              {p}
+                              {pairs.length > 1 && (
+                                <button onClick={() => removePair(p)} className="ml-1 hover:text-destructive transition-colors">
+                                  <X className="h-3 w-3" />
+                                </button>
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Add new */}
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground font-medium">Add New Pair</p>
+                        <div className="flex gap-2">
+                          <Input
+                            value={newPairInput}
+                            onChange={e => setNewPairInput(e.target.value.toUpperCase())}
+                            placeholder="e.g. USDJPY"
+                            className="h-8 text-xs"
+                            maxLength={6}
+                            onKeyDown={e => e.key === 'Enter' && handleAddPair()}
+                          />
+                          <Button size="sm" className="h-8" onClick={handleAddPair} disabled={newPairInput.length < 6}>
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          System auto-maps currencies. E.g. USDJPY → USD + JPY news.
+                        </p>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 
             <div className="h-6 w-px bg-border" />
 
-            {/* Impact */}
-            <div className="flex items-center gap-2">
-              <Badge variant="destructive" className="text-[10px] gap-1">
-                🔴 High Impact Only
-              </Badge>
-            </div>
+            <Badge variant="destructive" className="text-[10px] gap-1">🔴 High Impact Only</Badge>
 
             <div className="h-6 w-px bg-border" />
 
@@ -91,7 +151,7 @@ export default function MacroNews() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               📅 Economic Calendar
-              <InfoTooltip text="Scheduled high-impact economic events from Forex Factory. Shows only red-folder (high impact) events for your selected pair." />
+              <InfoTooltip text="Scheduled high-impact (red folder) economic events sorted by time. Auto-refreshes every 5 minutes." />
               {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </CardTitle>
           </CardHeader>
@@ -133,25 +193,29 @@ export default function MacroNews() {
           </CardContent>
         </Card>
 
-        {/* Breaking News */}
+        {/* Macro News */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              🚨 Breaking News
-              <InfoTooltip text="Latest macro/financial headlines from trusted sources (Reuters, Bloomberg, FT, etc.) filtered for your selected pair." />
+              🚨 Macro News
+              <InfoTooltip text="Only tradable, high-impact macro headlines from Reuters, Bloomberg, FT, WSJ, Investing.com. Filtered to show only news affecting USD, Gold, or your pair's currencies." />
               {newsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {news.length === 0 && !newsLoading && (
-              <p className="text-sm text-muted-foreground text-center py-8">No breaking news found for this pair</p>
+              <p className="text-sm text-muted-foreground text-center py-8">No macro news found for this pair</p>
             )}
             {news.map(article => (
               <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer"
-                className="block border border-border rounded-lg p-3 hover:bg-accent/50 transition-colors group">
+                className={cn(
+                  "block border rounded-lg p-3 hover:bg-accent/50 transition-colors group",
+                  article.impact === 'high' ? 'border-destructive/30 bg-destructive/5' : 'border-border'
+                )}>
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
+                      {article.impact === 'high' && <Badge variant="destructive" className="text-[10px]">HIGH</Badge>}
                       <Badge variant="secondary" className="text-[10px]">{article.source}</Badge>
                       <span className="text-[10px] text-muted-foreground">
                         {article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, HH:mm') : ''}
