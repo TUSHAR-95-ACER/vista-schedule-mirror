@@ -192,8 +192,8 @@ export default function Analytics() {
     valid.forEach(t => { const a = map.get(t.setup) || []; a.push(t); map.set(t.setup, a); });
     return [...map.entries()].map(([name, st]) => {
       const wr = calcWinRate(st); const rr = calcAvgRR(st); const dd = calcMaxDrawdown(st);
-      return { name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: calcProfitFactor(st), maxDrawdown: dd, edgeScore: calcEdgeScore(wr, rr, st.length, dd) };
-    }).sort((a, b) => b.edgeScore - a.edgeScore);
+      return { name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: calcProfitFactor(st), maxDrawdown: dd, setupRating: calcEdgeScore(wr, rr, st.length, dd) };
+    }).sort((a, b) => b.setupRating - a.setupRating);
   }, [valid]);
 
   // ─── Behavior: Overtrading ────────────────────────────────────────
@@ -424,7 +424,7 @@ export default function Analytics() {
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(215,20%,65%)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(215,20%,65%)' }} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="edgeScore" name="Edge Score" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="setupRating" name="Setup Rating" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -563,7 +563,7 @@ export default function Analytics() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Edge Score'].map(h => (
+                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Setup Rating'].map(h => (
                     <th key={h} className="px-3 py-2 text-xs font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
@@ -577,7 +577,7 @@ export default function Analytics() {
                     <td className="px-3 py-1.5 font-mono text-xs">{s.avgRR.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs">{s.profitFactor.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs text-destructive">{s.maxDrawdown.toFixed(2)}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">{s.edgeScore.toFixed(2)}</td>
+                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">{s.setupRating.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
