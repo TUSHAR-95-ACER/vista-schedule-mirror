@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
