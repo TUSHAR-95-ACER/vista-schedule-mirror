@@ -254,8 +254,8 @@ export default function Analytics() {
 
   // Available filter options
   const pairs = useMemo(() => [...new Set(trades.map(t => t.asset))].sort(), [trades]);
-  const setups = useMemo(() => [...new Set(trades.map(t => t.setup))].sort(), [trades]);
-  const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
+  const setups = useMemo(() => [...new Set([...ctxSetups, ...trades.map(t => t.setup)])].sort(), [trades, ctxSetups]);
+  const filterSessions = useMemo(() => [...new Set([...ctxSessions, ...trades.map(t => t.session)])].sort(), [trades, ctxSessions]);
 
   function handleDrill(label: string, filterFn: (t: Trade) => boolean) {
     setDrillTrades(valid.filter(filterFn));
