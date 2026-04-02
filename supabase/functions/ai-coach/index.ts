@@ -108,7 +108,7 @@ serve(async (req) => {
     }
 
     // Fetch all user data
-    const userData = await fetchAllUserData(supabase);
+    const userData = await fetchAllUserData(supabase, userId);
     const dataContext = summarizeIfLarge(userData);
 
     const systemPrompt = `You are an advanced trading performance coach and AI mentor.
