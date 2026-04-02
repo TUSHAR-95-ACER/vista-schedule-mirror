@@ -31,6 +31,8 @@ import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SystemAnalytics from "./pages/SystemAnalytics";
+import MacroNews from "./pages/MacroNews";
+import { MacroNewsProvider } from "./contexts/MacroNewsContext";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><MacroNewsProvider><AppLayout /></MacroNewsProvider></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/trades" element={<Trades />} />
               <Route path="/accounts" element={<Accounts />} />
@@ -67,6 +69,7 @@ const App = () => (
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/system-analytics" element={<SystemAnalytics />} />
+              <Route path="/macro-news" element={<MacroNews />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
