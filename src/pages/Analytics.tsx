@@ -85,7 +85,7 @@ function getTradeGrade(t: Trade): string {
 
 // ─── Main Component ─────────────────────────────────────────────────
 export default function Analytics() {
-  const { trades, sessions: ctxSessions, conditions: ctxConditions, customSetups: ctxSetups } = useTrading();
+  const { trades, sessions: ctxSessions, conditions: ctxConditions, customSetups: ctxSetups, gradesList } = useTrading();
 
   // Filters
   const [filterPair, setFilterPair] = useState<string>('');
@@ -227,14 +227,15 @@ export default function Analytics() {
   const qualityData = useMemo(() => {
     const gradeMap = new Map<string, Trade[]>();
     valid.forEach(t => {
-      const g = getTradeGrade(t);
+      const g = t.grade || 'Ungraded';
       const a = gradeMap.get(g) || []; a.push(t); gradeMap.set(g, a);
     });
-    return ['A+', 'A', 'B', 'C'].map(g => {
+    const allGrades = [...new Set([...gradesList, ...gradeMap.keys()])];
+    return allGrades.map(g => {
       const ts = gradeMap.get(g) || [];
       return { grade: g, count: ts.length, winRate: calcWinRate(ts), avgPL: ts.length ? ts.reduce((s, t) => s + t.profitLoss, 0) / ts.length : 0 };
     });
-  }, [valid]);
+  }, [valid, gradesList]);
 
   // ─── Week of month / weekday / condition ──────────────────────────
   const conditionData = useMemo(() => {
