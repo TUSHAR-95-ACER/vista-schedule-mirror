@@ -171,12 +171,12 @@ export default function BehaviorPatterns() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard label="Discipline Score" value={`${disciplineScore}/100`} trend={disciplineScore >= 60 ? 'up' : 'down'} />
-        <MetricCard label="Emotional Stability" value={`${emotionalStability}%`} trend={emotionalStability >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Rule Adherence" value={`${ruleAdherence}%`} trend={ruleAdherence >= 70 ? 'up' : 'down'} />
-        <MetricCard label="Revenge Index" value={revengePatterns} subtitle="2+ consec losses/day" trend={revengePatterns > 0 ? 'down' : 'up'} />
-        <MetricCard label="Overtrade Index" value={`${overtradingIndex}%`} subtitle=">3 trades/day" trend={overtradingIndex > 10 ? 'down' : 'up'} />
-        <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} />
+        <MetricCard label="Discipline Score" value={`${disciplineScore}/100`} trend={disciplineScore >= 60 ? 'up' : 'down'} tooltip="Overall score based on checklist compliance and emotional control" />
+        <MetricCard label="Emotional Stability" value={`${emotionalStability}%`} trend={emotionalStability >= 70 ? 'up' : 'down'} tooltip="How consistent your emotional state is across trades" />
+        <MetricCard label="Rule Adherence" value={`${ruleAdherence}%`} trend={ruleAdherence >= 70 ? 'up' : 'down'} tooltip="How often you follow your trading rules and checklist" />
+        <MetricCard label="Revenge Index" value={revengePatterns} subtitle="2+ consec losses/day" trend={revengePatterns > 0 ? 'down' : 'up'} tooltip="Days where 2+ consecutive losses suggest revenge trading behavior" />
+        <MetricCard label="Overtrade Index" value={`${overtradingIndex}%`} subtitle=">3 trades/day" trend={overtradingIndex > 10 ? 'down' : 'up'} tooltip="Percentage of trading days where you took more than 3 trades" />
+        <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} tooltip="Trades closed early due to fear emotions that resulted in losses" />
       </div>
 
       {/* Insights */}
