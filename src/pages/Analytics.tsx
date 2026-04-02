@@ -424,7 +424,7 @@ export default function Analytics() {
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(215,20%,65%)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(215,20%,65%)' }} />
               <Tooltip content={<ChartTooltip />} />
-              <Bar dataKey="edgeScore" name="Edge Score" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="setupRating" name="Setup Rating" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
