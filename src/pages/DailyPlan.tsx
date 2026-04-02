@@ -191,6 +191,7 @@ export default function DailyPlanPage() {
               <PlanListItem
                 key={plan.id}
                 onClick={() => openPlan(plan.id)}
+                onDelete={() => deleteDailyPlan(plan.id)}
                 title={formatDayLabel(plan.date)}
                 subtitle={plan.sessionFocus}
                 meta={`${plan.pairs.length} pairs`}

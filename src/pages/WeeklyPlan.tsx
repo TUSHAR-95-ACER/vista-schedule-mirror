@@ -195,6 +195,7 @@ export default function WeeklyPlanPage() {
               <PlanListItem
                 key={plan.id}
                 onClick={() => openPlan(plan.id)}
+                onDelete={() => deleteWeeklyPlan(plan.id)}
                 title={formatWeekLabel(plan.weekStart)}
                 subtitle={plan.markets.length > 0 ? plan.markets.slice(0, 4).join(' · ') : undefined}
                 meta={`${plan.pairAnalyses.length} pairs`}
