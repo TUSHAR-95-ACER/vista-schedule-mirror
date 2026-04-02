@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,8 @@ export default function Notebook() {
   });
   const [filterCat, setFilterCat] = useState('all');
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
+  const { previews: formPreviews, loading: formLoading, detectAndFetch: detectFormUrls, removePreview: removeFormPreview } = useUrlPreview();
+  const { previews: entryPreviews, loading: entryLoading, detectAndFetch: detectEntryUrls } = useUrlPreview();
 
   useEffect(() => {
     if (!user) {
@@ -143,7 +147,8 @@ export default function Notebook() {
           </div>
           <div>
             <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="text-xs min-h-[80px] mt-1.5 rounded-xl" placeholder="Observations, context..." />
+            <Textarea value={form.notes} onChange={e => { setForm(f => ({ ...f, notes: e.target.value })); detectFormUrls(e.target.value); }} className="text-xs min-h-[80px] mt-1.5 rounded-xl" placeholder="Observations, context... Paste URLs for auto-preview" />
+            <LinkPreviewList previews={formPreviews} loading={formLoading} onRemove={removeFormPreview} />
           </div>
 
           {/* Image Upload */}

@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,6 +111,7 @@ export default function DailyPlanPage() {
   const { dailyPlans, addDailyPlan, updateDailyPlan, trades } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
+  const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
 
   const startNew = () => {
     const plan: DailyPlan = {
@@ -423,7 +426,8 @@ export default function DailyPlanPage() {
 
       {/* Note */}
       <SectionCard title="Notes" icon={<StickyNote className="h-3.5 w-3.5" />}>
-        <Textarea value={localPlan.note || ''} onChange={e => update({ note: e.target.value })} placeholder="Final thoughts..." className="min-h-[70px] text-sm rounded-lg" />
+        <Textarea value={localPlan.note || ''} onChange={e => { update({ note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="Final thoughts... Paste URLs for auto-preview" className="min-h-[70px] text-sm rounded-lg" />
+        <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
       </SectionCard>
 
       {/* Video */}

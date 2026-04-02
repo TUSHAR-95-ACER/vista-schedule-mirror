@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -116,6 +118,7 @@ export default function WeeklyPlanPage() {
   const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
+  const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
 
   const startNew = () => {
     const plan: WeeklyPlan = {
@@ -362,7 +365,8 @@ export default function WeeklyPlanPage() {
               </Select>
             </div>
             <PlanImageUpload value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened..." className="min-h-[60px] text-sm rounded-lg" />
+            <Textarea value={pa.note || ''} onChange={e => { updatePair(pa.id, { note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="What actually happened... Paste URLs for auto-preview" className="min-h-[60px] text-sm rounded-lg" />
+            <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
           </SectionCard>
         </div>
       ))}
