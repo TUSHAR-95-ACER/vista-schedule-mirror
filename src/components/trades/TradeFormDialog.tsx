@@ -324,6 +324,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const previewResult = isMissedOrCancelled ? form.result : calcResult(previewNetPL);
 
   const handleSubmit = () => {
+    if (!form.grade) {
+      toast({ title: 'Grade required', description: 'Please select a grade before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
