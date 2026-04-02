@@ -299,10 +299,10 @@ export default function BiasAnalytics() {
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" />
-        <StatCard label="Missed Opportunities" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} />
-        <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} />
-        <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} />
+        <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" tooltip="How often your weekly analysis leads to an actual trade" />
+        <StatCard label="Missed Opportunities" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} tooltip="Times you predicted direction correctly but didn't take the trade" />
+        <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} tooltip="How often you stick with your bias vs changing it frequently" />
+        <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} tooltip="Percentage of strong directional bias calls that turned out wrong" />
       </div>
 
       {/* Best/Worst */}
