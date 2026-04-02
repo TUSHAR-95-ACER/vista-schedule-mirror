@@ -169,7 +169,7 @@ export default function WeeklyReview() {
               </div>
             </div>
             <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Win Rate by Week</h3>
+              <ChartHeader title="Win Rate by Week" tooltip="Weekly win rate comparison to find your most consistent weeks" />
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={weeklyData.map(w => ({ name: w.weekName, winRate: w.winRate }))}>

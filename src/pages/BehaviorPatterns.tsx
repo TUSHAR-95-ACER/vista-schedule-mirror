@@ -271,7 +271,7 @@ export default function BehaviorPatterns() {
 
       {disciplineTrend.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Discipline Trend (Weekly)</h3>
+          <ChartHeader title="Discipline Trend (Weekly)" tooltip="Your weekly discipline score trend — is your trading discipline improving?" />
           <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={disciplineTrend}>
