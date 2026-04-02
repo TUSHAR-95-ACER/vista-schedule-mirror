@@ -465,7 +465,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Session</FieldLabel>
                   <Select value={form.session} onValueChange={v => set('session', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxSessions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
