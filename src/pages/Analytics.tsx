@@ -16,6 +16,7 @@ import {
   Filter, X, ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { format, parseISO } from 'date-fns';
 
 // ─── Tooltip ────────────────────────────────────────────────────────
