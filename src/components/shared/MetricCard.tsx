@@ -28,9 +28,10 @@ interface MetricCardProps {
   subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   className?: string;
+  tooltip?: string;
 }
 
-export function MetricCard({ label, value, icon: Icon, subtitle, trend, className }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, subtitle, trend, className, tooltip }: MetricCardProps) {
   const displayValue = formatCompactNumber(value);
 
   return (
