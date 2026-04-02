@@ -192,8 +192,8 @@ export default function WeeklyPlanPage() {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Weeks</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-mono font-bold text-primary">{weeklyPlans.reduce((s, p) => s + p.pairAnalyses.length, 0)}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Pairs Analyzed</p>
+              <p className="text-2xl font-mono font-bold text-primary">{weeklyPlans.filter(p => p.bias === 'Bullish').length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Bullish Weeks</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-mono font-bold text-success">{weeklyPlans.filter(p => p.reviewed).length}</p>
