@@ -21,6 +21,7 @@ import SetupPlaybook from "./pages/SetupPlaybook";
 import BehaviorPatterns from "./pages/BehaviorPatterns";
 import TradeQuality from "./pages/TradeQuality";
 import AIInsights from "./pages/AIInsights";
+import AICoach from "./pages/AICoach";
 import TradingRules from "./pages/TradingRules";
 import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
