@@ -20,6 +20,7 @@ export function tradeToDb(t: Trade, userId: string) {
     psychology: t.psychology ? JSON.stringify(t.psychology) : null,
     mistakes: JSON.stringify(t.mistakes), grade: t.grade || null,
     timeframe: t.timeframe || null,
+    trend: t.trend || null,
     trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
   };
 }
