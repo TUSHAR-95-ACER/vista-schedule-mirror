@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, ChevronDown, Newspaper, Video } from 'lucide-react';
 import { DailyPlan, DailyPairPlan, ALL_ASSETS, Session } from '@/types/trading';
 import { cn } from '@/lib/utils';
-import { PlanImageUpload } from '@/components/plans/PlanImageUpload';
-import { PlanVideoUpload } from '@/components/plans/PlanVideoUpload';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
