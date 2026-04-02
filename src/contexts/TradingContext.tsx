@@ -40,8 +40,10 @@ interface TradingContextType {
   addScaleEvent: (event: ScaleEvent) => void;
   addWeeklyPlan: (plan: WeeklyPlan) => void;
   updateWeeklyPlan: (plan: WeeklyPlan) => void;
+  deleteWeeklyPlan: (id: string) => void;
   addDailyPlan: (plan: DailyPlan) => void;
   updateDailyPlan: (plan: DailyPlan) => void;
+  deleteDailyPlan: (id: string) => void;
   addCustomSetup: (setup: string) => void;
   updateCustomSetup: (previous: string, next: string) => void;
   deleteCustomSetup: (setup: string) => void;
@@ -243,6 +245,11 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  const deleteWeeklyPlan = useCallback((id: string) => {
+    setWeeklyPlans(s => s.filter(p => p.id !== id));
+    if (user) db.from('weekly_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
+  }, [user]);
+
   // ── Daily Plans ──
   const addDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => [...s, plan]);
@@ -255,6 +262,11 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       const { id, ...rest } = dailyPlanToDb(plan, user.id);
       db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
+  }, [user]);
+
+  const deleteDailyPlan = useCallback((id: string) => {
+    setDailyPlans(s => s.filter(p => p.id !== id));
+    if (user) db.from('daily_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
   // ── Settings list CRUD factory ──
@@ -311,8 +323,8 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       addTrade, updateTrade, deleteTrade,
       addAccount, updateAccount, deleteAccount,
       addTransaction, addScaleEvent,
-      addWeeklyPlan, updateWeeklyPlan,
-      addDailyPlan, updateDailyPlan,
+      addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan,
+      addDailyPlan, updateDailyPlan, deleteDailyPlan,
       addCustomSetup: setupsCRUD.add, updateCustomSetup: setupsCRUD.update, deleteCustomSetup: setupsCRUD.remove,
       addCustomAsset: assetsCRUD.add,
       addCustomConfluence: confluencesCRUD.add, updateCustomConfluence: confluencesCRUD.update, deleteCustomConfluence: confluencesCRUD.remove,
