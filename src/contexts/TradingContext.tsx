@@ -245,6 +245,11 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  const deleteWeeklyPlan = useCallback((id: string) => {
+    setWeeklyPlans(s => s.filter(p => p.id !== id));
+    if (user) db.from('weekly_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
+  }, [user]);
+
   // ── Daily Plans ──
   const addDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => [...s, plan]);
@@ -257,6 +262,11 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       const { id, ...rest } = dailyPlanToDb(plan, user.id);
       db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
+  }, [user]);
+
+  const deleteDailyPlan = useCallback((id: string) => {
+    setDailyPlans(s => s.filter(p => p.id !== id));
+    if (user) db.from('daily_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
   // ── Settings list CRUD factory ──
