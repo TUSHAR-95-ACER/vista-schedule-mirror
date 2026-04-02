@@ -147,7 +147,8 @@ export default function Notebook() {
           </div>
           <div>
             <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="text-xs min-h-[80px] mt-1.5 rounded-xl" placeholder="Observations, context..." />
+            <Textarea value={form.notes} onChange={e => { setForm(f => ({ ...f, notes: e.target.value })); detectFormUrls(e.target.value); }} className="text-xs min-h-[80px] mt-1.5 rounded-xl" placeholder="Observations, context... Paste URLs for auto-preview" />
+            <LinkPreviewList previews={formPreviews} loading={formLoading} onRemove={removeFormPreview} />
           </div>
 
           {/* Image Upload */}
