@@ -563,7 +563,7 @@ export default function Analytics() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Edge Score'].map(h => (
+                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Setup Rating'].map(h => (
                     <th key={h} className="px-3 py-2 text-xs font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
