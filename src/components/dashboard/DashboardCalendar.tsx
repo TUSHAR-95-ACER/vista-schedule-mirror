@@ -217,7 +217,6 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     const cursor = new Date(gridStart);
     const weeks: Array<{ label: string; days: HeatCell[] }> = [];
     let maxAbsPl = 1;
-    let labeledMonth = -1;
 
     while (cursor <= gridEnd) {
       const weekDays: HeatCell[] = [];
