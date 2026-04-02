@@ -423,7 +423,7 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Setup Performance</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Setup Performance</h3><InfoTooltip text="How each trade setup performs — click to see individual trades" /></div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={setupData.slice(0, 8)} onClick={(e: any) => { if (e?.activeLabel) handleDrill(`Setup: ${e.activeLabel}`, t => t.setup === e.activeLabel); }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -473,7 +473,7 @@ export default function Analytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Mistake Frequency</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Mistake Frequency</h3><InfoTooltip text="How often each type of mistake occurs" /></div>
           {mistakeData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={mistakeData} layout="vertical">
@@ -535,7 +535,7 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Performance by Grade</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Performance by Grade</h3><InfoTooltip text="Win rate and average P/L for each quality grade" /></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
