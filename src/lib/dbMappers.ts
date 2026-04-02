@@ -48,6 +48,7 @@ export function dbToTrade(row: any): Trade {
     psychology: row.psychology ? (typeof row.psychology === 'string' ? JSON.parse(row.psychology) : row.psychology) : undefined,
     mistakes: typeof row.mistakes === 'string' ? JSON.parse(row.mistakes) : (row.mistakes || []),
     grade: row.grade || undefined,
+    timeframe: row.timeframe || undefined,
     tradeJourney: row.trade_journey ? (typeof row.trade_journey === 'string' ? JSON.parse(row.trade_journey) : row.trade_journey) : undefined,
   };
 }
