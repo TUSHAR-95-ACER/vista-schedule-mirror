@@ -720,7 +720,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Emotion</FieldLabel>
                   <Select value={form.emotion} onValueChange={v => set('emotion', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{EMOTIONS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+                    <SelectContent>{psychTags.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
