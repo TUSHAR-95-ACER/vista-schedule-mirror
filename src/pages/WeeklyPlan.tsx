@@ -270,10 +270,12 @@ export default function WeeklyPlanPage() {
               ? [{ ...localPlan.newsItems[0], notes: e.target.value }]
               : [{ id: crypto.randomUUID(), date: '', event: '', currency: '', impact: 'High' as const, notes: e.target.value }];
             update({ newsItems: items });
+            detectNoteUrls(e.target.value);
           }}
-          placeholder="Key events and expected impact this week..."
+          placeholder="Key events and expected impact this week... Paste URLs for auto-preview"
           className="min-h-[60px] text-sm rounded-lg"
         />
+        <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
       </SectionCard>
 
       {/* PAIR ANALYSES */}
