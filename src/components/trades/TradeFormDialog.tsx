@@ -641,7 +641,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             <FormSection title="Trade Management" icon={<Settings2 className="h-3.5 w-3.5" />}>
               <div className="flex flex-wrap gap-1.5">
                 {managementOptions.map(m => (
-                  <ChipToggle key={m} label={m} checked={form.management.includes(m)} onChange={() => toggleArrayItem('management', m)} />
+                  <ChipToggle key={m} label={m} checked={form.management.includes(m as any)} onChange={() => toggleArrayItem('management', m as any)} />
                 ))}
               </div>
             </FormSection>
