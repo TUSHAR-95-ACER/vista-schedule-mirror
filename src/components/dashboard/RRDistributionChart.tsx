@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Trade } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { Lightbulb } from 'lucide-react';
+import { InfoTooltip } from '@/components/shared/InfoTooltip';
 
 interface RRDistributionChartProps {
   trades: Trade[];
