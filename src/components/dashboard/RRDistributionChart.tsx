@@ -121,9 +121,10 @@ export function RRDistributionChart({ trades }: RRDistributionChartProps) {
 
       {/* Profit Before SL */}
       <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Profit Before SL
-        </h3>
+        <div className="flex items-center gap-1.5 mb-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Profit Before SL</h3>
+          <InfoTooltip text="How much profit (in RR) your losing trades reached before hitting stop loss" />
+        </div>
         {profitBuckets.length > 0 ? (
           <>
             <div className="space-y-2">
