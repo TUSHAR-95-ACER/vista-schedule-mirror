@@ -748,7 +748,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             <FormSection title="Mistakes" icon={<AlertTriangle className="h-3.5 w-3.5" />} accent="destructive">
               <div className="flex flex-wrap gap-1.5">
                 {violations.map(m => (
-                  <ChipToggle key={m} label={m} checked={form.mistakes.includes(m)} onChange={() => toggleArrayItem('mistakes', m)} />
+                  <ChipToggle key={m} label={m} checked={form.mistakes.includes(m as any)} onChange={() => toggleArrayItem('mistakes', m as any)} />
                 ))}
               </div>
             </FormSection>
