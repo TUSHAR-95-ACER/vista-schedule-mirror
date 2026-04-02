@@ -166,6 +166,7 @@ export type Database = {
           stop_loss: number
           take_profit: number
           target_confluences: Json | null
+          timeframe: string | null
           trade_journey: Json | null
           user_id: string
         }
@@ -206,6 +207,7 @@ export type Database = {
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
+          timeframe?: string | null
           trade_journey?: Json | null
           user_id: string
         }
@@ -246,6 +248,7 @@ export type Database = {
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
+          timeframe?: string | null
           trade_journey?: Json | null
           user_id?: string
         }

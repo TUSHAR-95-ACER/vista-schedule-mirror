@@ -120,6 +120,7 @@ export interface Trade {
   psychology?: TradePsychology;
   mistakes: Mistake[];
   grade?: TradeGrade;
+  timeframe?: string;
   tradeJourney?: TradeJourneyStep[];
 }
 
