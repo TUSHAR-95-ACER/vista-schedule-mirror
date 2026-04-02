@@ -490,7 +490,18 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <FieldLabel>Timeframe</FieldLabel>
+                  <FieldLabel>Trend <span className="text-destructive">*</span></FieldLabel>
+                  <Select value={form.trend || 'none'} onValueChange={v => set('trend', v === 'none' ? '' : v)}>
+                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {['Bullish', 'Bearish', 'Sideways'].map(tr => (
+                        <SelectItem key={tr} value={tr}>{tr}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
                   <Select value={form.timeframe || 'none'} onValueChange={v => set('timeframe', v === 'none' ? '' : v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
                     <SelectContent>
