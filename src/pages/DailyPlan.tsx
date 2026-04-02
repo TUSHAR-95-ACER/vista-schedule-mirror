@@ -429,7 +429,6 @@ export default function DailyPlanPage() {
         <Textarea value={localPlan.note || ''} onChange={e => { update({ note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="Final thoughts... Paste URLs for auto-preview" className="min-h-[70px] text-sm rounded-lg" />
         <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
       </SectionCard>
-      </SectionCard>
 
       {/* Video */}
       <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
