@@ -192,6 +192,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         grade: editTrade.grade || '',
         maxRRReached: editTrade.maxRRReached !== undefined ? String(editTrade.maxRRReached) : '',
         maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
+        timeframe: editTrade.timeframe || '',
       });
     } else {
       setForm(defaultForm);
