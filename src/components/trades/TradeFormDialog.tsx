@@ -22,13 +22,7 @@ import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, Trendi
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const SESSIONS: Session[] = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
-const MARKETS: Market[] = ['Forex', 'Crypto', 'Commodities', 'Indices', 'Stocks', 'Futures'];
-const CONDITIONS: MarketCondition[] = ['Trending', 'Ranging', 'Volatile'];
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
-const MGMT_OPTIONS: TradeManagement[] = ['Moved SL to Breakeven', 'Partial TP', 'Trailing Stop', 'Closed Early', 'Held Full Position', 'Scaled In', 'Scaled Out'];
-const EMOTIONS: Emotion[] = ['Confident', 'Fearful', 'Greedy', 'Neutral', 'Anxious', 'Calm'];
-const MISTAKES_OPTIONS: Mistake[] = ['FOMO', 'Early Entry', 'Overtrading', 'Emotional', 'Ignored SL'];
 
 const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
   const reader = new FileReader();
@@ -105,6 +99,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     customSetups, customAssets, customConfluences,
     addCustomSetup, updateCustomSetup, deleteCustomSetup,
     addCustomAsset, addCustomConfluence, updateCustomConfluence, deleteCustomConfluence,
+    markets: ctxMarkets, sessions: ctxSessions, conditions: ctxConditions,
+    gradesList, managementOptions, psychTags, violations,
   } = useTrading();
 
   const defaultForm = {
@@ -451,7 +447,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Market</FieldLabel>
                   <Select value={form.market} onValueChange={v => set('market', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{MARKETS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxMarkets.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
@@ -469,14 +465,14 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Session</FieldLabel>
                   <Select value={form.session} onValueChange={v => set('session', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxSessions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
                   <FieldLabel>Condition</FieldLabel>
                   <Select value={form.marketCondition} onValueChange={v => set('marketCondition', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxConditions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
@@ -507,7 +503,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select grade" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No grade</SelectItem>
-                      {TRADE_GRADES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                      {gradesList.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -644,8 +640,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             {/* ── TRADE MANAGEMENT ──────────────────────────────── */}
             <FormSection title="Trade Management" icon={<Settings2 className="h-3.5 w-3.5" />}>
               <div className="flex flex-wrap gap-1.5">
-                {MGMT_OPTIONS.map(m => (
-                  <ChipToggle key={m} label={m} checked={form.management.includes(m)} onChange={() => toggleArrayItem('management', m)} />
+                {managementOptions.map(m => (
+                  <ChipToggle key={m} label={m} checked={form.management.includes(m as any)} onChange={() => toggleArrayItem('management', m as any)} />
                 ))}
               </div>
             </FormSection>
@@ -724,7 +720,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Emotion</FieldLabel>
                   <Select value={form.emotion} onValueChange={v => set('emotion', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{EMOTIONS.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
+                    <SelectContent>{psychTags.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
@@ -751,8 +747,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             {/* ── MISTAKES ───────────────────────────────────────── */}
             <FormSection title="Mistakes" icon={<AlertTriangle className="h-3.5 w-3.5" />} accent="destructive">
               <div className="flex flex-wrap gap-1.5">
-                {MISTAKES_OPTIONS.map(m => (
-                  <ChipToggle key={m} label={m} checked={form.mistakes.includes(m)} onChange={() => toggleArrayItem('mistakes', m)} />
+                {violations.map(m => (
+                  <ChipToggle key={m} label={m} checked={form.mistakes.includes(m as any)} onChange={() => toggleArrayItem('mistakes', m as any)} />
                 ))}
               </div>
             </FormSection>
