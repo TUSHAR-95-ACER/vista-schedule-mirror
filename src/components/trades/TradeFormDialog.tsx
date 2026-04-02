@@ -640,7 +640,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             {/* ── TRADE MANAGEMENT ──────────────────────────────── */}
             <FormSection title="Trade Management" icon={<Settings2 className="h-3.5 w-3.5" />}>
               <div className="flex flex-wrap gap-1.5">
-                {MGMT_OPTIONS.map(m => (
+                {managementOptions.map(m => (
                   <ChipToggle key={m} label={m} checked={form.management.includes(m)} onChange={() => toggleArrayItem('management', m)} />
                 ))}
               </div>
