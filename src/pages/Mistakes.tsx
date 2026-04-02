@@ -180,7 +180,7 @@ export default function Mistakes() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Distribution</h3>
+          <ChartHeader title="Distribution" tooltip="Pie chart showing the proportion of each mistake type" />
           <div className="h-[240px]">
             {distribution.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
