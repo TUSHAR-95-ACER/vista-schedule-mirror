@@ -192,8 +192,8 @@ export default function Analytics() {
     valid.forEach(t => { const a = map.get(t.setup) || []; a.push(t); map.set(t.setup, a); });
     return [...map.entries()].map(([name, st]) => {
       const wr = calcWinRate(st); const rr = calcAvgRR(st); const dd = calcMaxDrawdown(st);
-      return { name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: calcProfitFactor(st), maxDrawdown: dd, edgeScore: calcEdgeScore(wr, rr, st.length, dd) };
-    }).sort((a, b) => b.edgeScore - a.edgeScore);
+      return { name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: calcProfitFactor(st), maxDrawdown: dd, setupRating: calcEdgeScore(wr, rr, st.length, dd) };
+    }).sort((a, b) => b.setupRating - a.setupRating);
   }, [valid]);
 
   // ─── Behavior: Overtrading ────────────────────────────────────────
