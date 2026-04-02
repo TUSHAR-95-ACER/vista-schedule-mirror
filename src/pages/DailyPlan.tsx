@@ -206,8 +206,8 @@ export default function DailyPlanPage() {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Trading Days</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-mono font-bold text-primary">{dailyPlans.reduce((s, p) => s + p.pairs.length, 0)}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Pairs Analyzed</p>
+              <p className="text-2xl font-mono font-bold text-warning">{dailyPlans.filter(p => !p.tookTrades && p.tookTrades !== undefined).length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">No-Trade Days</p>
             </div>
           </div>
         )}
