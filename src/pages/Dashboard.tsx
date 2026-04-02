@@ -91,11 +91,11 @@ export default function Dashboard() {
       {/* Equity Curve + Win/Loss */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">Equity Curve</h3>
+          <ChartHeader title="Equity Curve" tooltip="Shows how your total account value has changed over time based on cumulative P/L" />
           <div className="h-[220px] sm:h-[280px]"><EquityCurveChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">Win / Loss</h3>
+          <ChartHeader title="Win / Loss" tooltip="Visual breakdown of your winning vs losing trades" />
           <div className="h-[220px] sm:h-[280px]"><WinLossChart trades={trades} /></div>
         </div>
       </div>
