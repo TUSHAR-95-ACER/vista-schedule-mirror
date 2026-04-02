@@ -49,7 +49,7 @@ interface HeatCell {
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const HEATMAP_ROW_LABELS = ['Sun', '', 'Tue', '', 'Thu', '', 'Sat'];
+const HEATMAP_WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const formatCompact = (value: number) => {
   const absValue = Math.abs(value);
