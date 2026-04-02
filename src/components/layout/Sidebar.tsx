@@ -45,6 +45,7 @@ const sections: NavSection[] = [
       { path: '/ai-insights', label: 'AI Insights', icon: Sparkles },
       { path: '/research-lab', label: 'Research Lab', icon: Beaker },
       { path: '/backtesting-lab', label: 'Backtest Lab', icon: FlaskConical },
+      { path: '/ai-coach', label: 'AI Coach', icon: MessageCircle },
     ],
   },
   {

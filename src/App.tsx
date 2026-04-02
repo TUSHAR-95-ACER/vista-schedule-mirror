@@ -71,6 +71,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/system-analytics" element={<SystemAnalytics />} />
               <Route path="/macro-news" element={<MacroNews />} />
+              <Route path="/ai-coach" element={<AICoach />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
