@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Trade } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { Lightbulb } from 'lucide-react';
+import { InfoTooltip } from '@/components/shared/InfoTooltip';
 
 interface RRDistributionChartProps {
   trades: Trade[];
@@ -83,9 +84,10 @@ export function RRDistributionChart({ trades }: RRDistributionChartProps) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
       {/* Drawdown Before TP */}
       <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Drawdown Before TP
-        </h3>
+        <div className="flex items-center gap-1.5 mb-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Drawdown Before TP</h3>
+          <InfoTooltip text="How much drawdown (as % of stop loss) your winning trades experience before hitting take profit" />
+        </div>
         {drawdownBuckets.length > 0 ? (
           <>
             <div className="space-y-2">
@@ -119,9 +121,10 @@ export function RRDistributionChart({ trades }: RRDistributionChartProps) {
 
       {/* Profit Before SL */}
       <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Profit Before SL
-        </h3>
+        <div className="flex items-center gap-1.5 mb-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Profit Before SL</h3>
+          <InfoTooltip text="How much profit (in RR) your losing trades reached before hitting stop loss" />
+        </div>
         {profitBuckets.length > 0 ? (
           <>
             <div className="space-y-2">
