@@ -47,6 +47,11 @@ interface HeatCell {
   tradeCount: number;
 }
 
+interface HeatmapMonth {
+  label: string;
+  columns: HeatCell[][];
+}
+
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HEATMAP_WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
