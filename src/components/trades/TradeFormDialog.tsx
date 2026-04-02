@@ -503,7 +503,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select grade" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No grade</SelectItem>
-                      {TRADE_GRADES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                      {gradesList.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
