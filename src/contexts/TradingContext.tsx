@@ -40,8 +40,10 @@ interface TradingContextType {
   addScaleEvent: (event: ScaleEvent) => void;
   addWeeklyPlan: (plan: WeeklyPlan) => void;
   updateWeeklyPlan: (plan: WeeklyPlan) => void;
+  deleteWeeklyPlan: (id: string) => void;
   addDailyPlan: (plan: DailyPlan) => void;
   updateDailyPlan: (plan: DailyPlan) => void;
+  deleteDailyPlan: (id: string) => void;
   addCustomSetup: (setup: string) => void;
   updateCustomSetup: (previous: string, next: string) => void;
   deleteCustomSetup: (setup: string) => void;
