@@ -3,6 +3,7 @@ import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { LinkPreviewList } from '@/components/shared/LinkPreview';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -151,31 +152,13 @@ export default function Notebook() {
             <LinkPreviewList previews={formPreviews} loading={formLoading} onRemove={removeFormPreview} />
           </div>
 
-          {/* Image Upload */}
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Chart Screenshot</Label>
-            {form.image ? (
-              <div className="relative mt-1.5 rounded-xl overflow-hidden border border-border group">
-                <img src={form.image} alt="Chart" className="w-full max-h-[200px] object-contain bg-muted/10" />
-                <button
-                  onClick={() => setForm(f => ({ ...f, image: '' }))}
-                  className="absolute top-2 right-2 h-7 w-7 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-destructive-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="relative mt-1.5 border-2 border-dashed border-border/50 rounded-xl p-6 text-center cursor-pointer hover:border-primary/40 hover:bg-primary/[0.02] transition-all group/upload">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 transition-colors">
-                    <ImagePlus className="h-4 w-4 text-muted-foreground group-hover/upload:text-primary transition-colors" />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">Drop, paste, or click to upload</p>
-                </div>
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
-              </div>
-            )}
-          </div>
+          {/* Media Upload */}
+          <UnifiedMediaBox
+            value={form.image}
+            onChange={v => setForm(f => ({ ...f, image: v }))}
+            label="Chart / Media"
+            maxPreviewHeight="200px"
+          />
 
           <Button onClick={handleAdd} className="w-full gap-1.5 rounded-xl h-10"><Plus className="h-4 w-4" /> Save Entry</Button>
         </div>

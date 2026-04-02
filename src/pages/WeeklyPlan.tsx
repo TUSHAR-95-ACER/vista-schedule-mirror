@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save, Video, Newspaper, Layers } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
-import { PlanImageUpload } from '@/components/plans/PlanImageUpload';
-import { PlanVideoUpload } from '@/components/plans/PlanVideoUpload';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
@@ -253,7 +252,7 @@ export default function WeeklyPlanPage() {
 
       {/* Economic Calendar */}
       <SectionCard title="Economic Calendar" icon={<Newspaper className="h-3.5 w-3.5" />} accent="warning" badge="News">
-        <PlanImageUpload
+        <UnifiedMediaBox
           value={(localPlan.newsItems?.[0]?.image) || ''}
           onChange={v => {
             const items = localPlan.newsItems && localPlan.newsItems.length > 0
@@ -304,7 +303,7 @@ export default function WeeklyPlanPage() {
 
           {/* Primary View */}
           <SectionCard title="Chart Analysis" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
-            <PlanImageUpload value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
+            <UnifiedMediaBox value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
             <Textarea value={pa.narrative || ''} onChange={e => updatePair(pa.id, { narrative: e.target.value })} placeholder="Liquidity zones, order flow expectations..." className="min-h-[70px] text-sm rounded-lg" />
           </SectionCard>
 
@@ -366,7 +365,7 @@ export default function WeeklyPlanPage() {
                 </SelectContent>
               </Select>
             </div>
-            <PlanImageUpload value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
+            <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
             <Textarea value={pa.note || ''} onChange={e => { updatePair(pa.id, { note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="What actually happened... Paste URLs for auto-preview" className="min-h-[60px] text-sm rounded-lg" />
             <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
           </SectionCard>
@@ -393,7 +392,7 @@ export default function WeeklyPlanPage() {
 
       {/* Video */}
       <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
+        <UnifiedMediaBox accept={["video", "url"]} value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
       </SectionCard>
 
       {/* Sticky Save */}
