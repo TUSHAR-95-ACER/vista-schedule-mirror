@@ -264,7 +264,7 @@ export default function DailyPlanPage() {
 
       {/* News */}
       <SectionCard title="News & Events" icon={<Newspaper className="h-3.5 w-3.5" />} accent="warning" badge="Macro">
-        <PlanImageUpload
+        <UnifiedMediaBox
           value={(localPlan.newsItems?.[0]?.image) || ''}
           onChange={v => {
             const items = localPlan.newsItems && localPlan.newsItems.length > 0
@@ -338,7 +338,7 @@ export default function DailyPlanPage() {
 
           {/* Prediction Chart */}
           <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
-            <PlanImageUpload value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
+            <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
             <Textarea value={pp.narrative || ''} onChange={e => updatePair(pp.id, { narrative: e.target.value })} placeholder="Expected price movement..." className="min-h-[60px] text-sm rounded-lg" />
           </SectionCard>
 
@@ -361,7 +361,7 @@ export default function DailyPlanPage() {
                 </SelectContent>
               </Select>
             </div>
-            <PlanImageUpload value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
+            <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
             <Textarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened..." className="min-h-[60px] text-sm rounded-lg" />
           </SectionCard>
         </div>
@@ -433,7 +433,7 @@ export default function DailyPlanPage() {
 
       {/* Video */}
       <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <PlanVideoUpload value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
+        <UnifiedMediaBox accept={["video", "url"]} value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
       </SectionCard>
 
       {/* Sticky Save */}
