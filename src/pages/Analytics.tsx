@@ -362,7 +362,7 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Win / Loss Distribution</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Win / Loss Distribution</h3><InfoTooltip text="Breakdown of wins, losses, breakeven, untriggered and cancelled trades" /></div>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={winLossData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value" strokeWidth={0}>
@@ -378,7 +378,7 @@ export default function Analytics() {
       {/* ─── Row 2: Pair + RR Distribution ───────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Pair Performance (P/L)</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pair Performance (P/L)</h3><InfoTooltip text="Total P/L for each trading pair — click a bar to drill down" /></div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={pairData} onClick={(e: any) => { if (e?.activeLabel) handleDrill(`Pair: ${e.activeLabel}`, t => t.asset === e.activeLabel); }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -392,7 +392,7 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">RR Distribution</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">RR Distribution</h3><InfoTooltip text="How your actual risk-reward ratios are distributed across buckets" /></div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={rrDistData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -408,7 +408,7 @@ export default function Analytics() {
       {/* ─── Row 3: Session + Setup ──────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Session Performance</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Session Performance</h3><InfoTooltip text="Win rate and P/L grouped by trading session — click to drill down" /></div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={sessionData} onClick={(e: any) => { if (e?.activeLabel) { const sd = sessionData.find(s => s.name === e.activeLabel); handleDrill(`Session: ${sd?.fullName || e.activeLabel}`, t => t.session === (sd?.fullName || e.activeLabel)); } }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -439,7 +439,7 @@ export default function Analytics() {
       {/* ─── Row 4: Market Condition + Week of Month ─────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Market Condition</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Market Condition</h3><InfoTooltip text="P/L performance under different market conditions (trending, ranging, etc.)" /></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={conditionData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -453,7 +453,7 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Week of Month</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Week of Month</h3><InfoTooltip text="P/L by week of month to find patterns in monthly cycles" /></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weekOfMonthData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -488,7 +488,7 @@ export default function Analytics() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Overtrading Detection (last 30 days)</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Overtrading Detection</h3><InfoTooltip text="Days with more than 3 trades highlighted in red — potential overtrading" /></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={overtradingData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -503,7 +503,7 @@ export default function Analytics() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Time-of-Day Performance</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time-of-Day Performance</h3><InfoTooltip text="P/L performance by hour of day to find your best trading times" /></div>
           {timeOfDayData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={timeOfDayData}>
@@ -523,7 +523,7 @@ export default function Analytics() {
       {/* ─── Trade Quality Scoring ───────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Trade Quality Distribution</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Trade Quality Distribution</h3><InfoTooltip text="How your trades are distributed across quality grades" /></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={qualityData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
@@ -564,7 +564,7 @@ export default function Analytics() {
       {/* ─── Setup Lab Table ─────────────────────────────────────── */}
       {setupData.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Setup Performance Lab</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Setup Performance Lab</h3><InfoTooltip text="Detailed table comparing all setups by win rate, RR, profit factor and more" /></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
