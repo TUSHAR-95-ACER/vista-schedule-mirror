@@ -365,7 +365,8 @@ export default function WeeklyPlanPage() {
               </Select>
             </div>
             <PlanImageUpload value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened..." className="min-h-[60px] text-sm rounded-lg" />
+            <Textarea value={pa.note || ''} onChange={e => { updatePair(pa.id, { note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="What actually happened... Paste URLs for auto-preview" className="min-h-[60px] text-sm rounded-lg" />
+            <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
           </SectionCard>
         </div>
       ))}
