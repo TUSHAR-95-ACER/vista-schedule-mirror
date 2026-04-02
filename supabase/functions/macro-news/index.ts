@@ -96,23 +96,22 @@ async function fetchBreakingNews(pair: string, _date: string) {
     );
   }
 
-  // Build query based on pair
+  // Macro-only queries — USD, Fed, inflation, gold, geopolitics
   const queryMap: Record<string, string> = {
-    EURUSD: '(EUR OR euro OR ECB OR "European Central Bank") AND (USD OR dollar OR "Federal Reserve" OR Fed)',
-    GBPUSD: '(GBP OR pound OR sterling OR "Bank of England" OR BOE) AND (USD OR dollar OR "Federal Reserve" OR Fed)',
-    XAUUSD: '(gold OR XAUUSD OR "precious metal") AND (USD OR dollar OR "Federal Reserve" OR Fed OR inflation OR CPI)',
+    EURUSD: '("Federal Reserve" OR Fed OR CPI OR NFP OR inflation OR "interest rate" OR ECB OR "European Central Bank" OR euro OR tariff OR "trade war" OR geopolitical) NOT (crypto OR bitcoin OR ethereum OR celebrity OR entertainment OR sports OR "stock pick")',
+    GBPUSD: '("Federal Reserve" OR Fed OR CPI OR NFP OR inflation OR "interest rate" OR "Bank of England" OR BOE OR pound OR sterling OR tariff OR "trade war" OR geopolitical) NOT (crypto OR bitcoin OR ethereum OR celebrity OR entertainment OR sports OR "stock pick")',
+    XAUUSD: '(gold OR "precious metal" OR "Federal Reserve" OR Fed OR CPI OR NFP OR inflation OR "interest rate" OR dollar OR USD OR war OR sanctions OR geopolitical OR tariff OR "safe haven") NOT (crypto OR bitcoin OR ethereum OR celebrity OR entertainment OR sports OR "stock pick")',
   };
 
-  const query = queryMap[pair] || 'forex USD economy';
+  const query = queryMap[pair] || '("Federal Reserve" OR CPI OR NFP OR inflation OR USD OR gold OR war OR geopolitical) NOT (crypto OR bitcoin OR celebrity OR entertainment OR sports)';
 
   try {
     const url = new URL('https://newsapi.org/v2/everything');
     url.searchParams.set('q', query);
     url.searchParams.set('sortBy', 'publishedAt');
-    url.searchParams.set('pageSize', '20');
+    url.searchParams.set('pageSize', '30');
     url.searchParams.set('language', 'en');
     url.searchParams.set('apiKey', apiKey);
-    // Only fetch from approved domains
     url.searchParams.set('domains', 'reuters.com,bloomberg.com,ft.com,aljazeera.com,finance.yahoo.com,wsj.com,nytimes.com,investing.com');
 
     const response = await fetch(url.toString());
