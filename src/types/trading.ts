@@ -129,6 +129,7 @@ export interface TradeJourneyStep {
   type: string;
   time: string;
   note?: string;
+  image?: string;
 }
 
 export const JOURNEY_EVENT_TYPES = [

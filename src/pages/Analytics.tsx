@@ -401,7 +401,7 @@ export default function Analytics() {
         <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Session Performance</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={sessionData} onClick={(e: any) => { if (e?.activeLabel) handleDrill(`Session: ${e.activeLabel}`, t => t.session.startsWith(e.activeLabel.replace('NYKZ', 'New York Kill Zone').replace('LDN Close', 'London Close'))); }}>
+            <BarChart data={sessionData} onClick={(e: any) => { if (e?.activeLabel) { const sd = sessionData.find(s => s.name === e.activeLabel); handleDrill(`Session: ${sd?.fullName || e.activeLabel}`, t => t.session === (sd?.fullName || e.activeLabel)); } }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
               <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(215,20%,65%)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(215,20%,65%)' }} />
