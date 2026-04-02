@@ -157,7 +157,7 @@ export default function Psychology() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Emotion vs P/L */}
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Emotion vs P/L</h3>
+          <ChartHeader title="Emotion vs P/L" tooltip="How your emotional state during trading impacts your profit/loss" />
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={emotionData}>
