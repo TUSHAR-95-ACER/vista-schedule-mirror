@@ -168,6 +168,7 @@ export type Database = {
           target_confluences: Json | null
           timeframe: string | null
           trade_journey: Json | null
+          trend: string | null
           user_id: string
         }
         Insert: {
@@ -209,6 +210,7 @@ export type Database = {
           target_confluences?: Json | null
           timeframe?: string | null
           trade_journey?: Json | null
+          trend?: string | null
           user_id: string
         }
         Update: {
@@ -250,6 +252,7 @@ export type Database = {
           target_confluences?: Json | null
           timeframe?: string | null
           trade_journey?: Json | null
+          trend?: string | null
           user_id?: string
         }
         Relationships: []
