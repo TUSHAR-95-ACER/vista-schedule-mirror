@@ -138,7 +138,7 @@ export default function TradeQuality() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Grade vs Profit</h3>
+          <ChartHeader title="Grade vs Profit" tooltip="Shows total P/L for each quality grade — higher grades should ideally produce more profit" />
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={gradeData}>
