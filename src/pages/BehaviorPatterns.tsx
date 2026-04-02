@@ -215,7 +215,7 @@ export default function BehaviorPatterns() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistakes by Session</h3>
+          <ChartHeader title="Mistakes by Session" tooltip="Which trading session has the highest mistake count" />
           <div className="h-[220px]">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
