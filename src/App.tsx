@@ -66,6 +66,7 @@ const App = () => (
               <Route path="/backtesting-lab" element={<BacktestingLab />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/system-analytics" element={<SystemAnalytics />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
