@@ -131,6 +131,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     maxRRReached: '',
     maxAdverseMove: '',
     timeframe: '',
+    trend: '',
   };
 
   const [form, setForm] = useState(defaultForm);
