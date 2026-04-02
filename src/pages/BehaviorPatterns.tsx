@@ -252,7 +252,7 @@ export default function BehaviorPatterns() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Checklist Compliance</h3>
+          <ChartHeader title="Checklist Compliance" tooltip="How well you follow each item on your pre-trade checklist" />
           <div className="h-[250px]">
             {checklistStats.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
