@@ -85,7 +85,7 @@ function getTradeGrade(t: Trade): string {
 
 // ─── Main Component ─────────────────────────────────────────────────
 export default function Analytics() {
-  const { trades } = useTrading();
+  const { trades, sessions: ctxSessions, conditions: ctxConditions, customSetups: ctxSetups } = useTrading();
 
   // Filters
   const [filterPair, setFilterPair] = useState<string>('');
@@ -179,12 +179,12 @@ export default function Analytics() {
 
   // ─── Session Performance ──────────────────────────────────────────
   const sessionData = useMemo(() => {
-    const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
-    return sessions.map(s => {
+    const allSessions = [...new Set([...ctxSessions, ...valid.map(t => t.session)])];
+    return allSessions.map(s => {
       const st = valid.filter(t => t.session === s);
-      return { name: s.replace('New York Kill Zone', 'NYKZ').replace('London Close', 'LDN Close'), trades: st.length, winRate: calcWinRate(st), pl: st.reduce((a, t) => a + t.profitLoss, 0) };
+      return { name: s.length > 15 ? s.slice(0, 12) + '…' : s, fullName: s, trades: st.length, winRate: calcWinRate(st), pl: st.reduce((a, t) => a + t.profitLoss, 0) };
     }).filter(d => d.trades > 0);
-  }, [valid]);
+  }, [valid, ctxSessions]);
 
   // ─── Setup Performance ────────────────────────────────────────────
   const setupData = useMemo(() => {
@@ -238,12 +238,12 @@ export default function Analytics() {
 
   // ─── Week of month / weekday / condition ──────────────────────────
   const conditionData = useMemo(() => {
-    const conds = ['Trending', 'Ranging', 'Volatile'];
-    return conds.map(c => {
+    const allConds = [...new Set([...ctxConditions, ...valid.map(t => t.marketCondition)])];
+    return allConds.map(c => {
       const ct = valid.filter(t => t.marketCondition === c);
       return { name: c, trades: ct.length, winRate: calcWinRate(ct), pl: ct.reduce((a, t) => a + t.profitLoss, 0) };
     }).filter(d => d.trades > 0);
-  }, [valid]);
+  }, [valid, ctxConditions]);
 
   const weekOfMonthData = useMemo(() => {
     return [1, 2, 3, 4, 5].map(w => {
@@ -254,8 +254,8 @@ export default function Analytics() {
 
   // Available filter options
   const pairs = useMemo(() => [...new Set(trades.map(t => t.asset))].sort(), [trades]);
-  const setups = useMemo(() => [...new Set(trades.map(t => t.setup))].sort(), [trades]);
-  const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
+  const setups = useMemo(() => [...new Set([...ctxSetups, ...trades.map(t => t.setup)])].sort(), [trades, ctxSetups]);
+  const filterSessions = useMemo(() => [...new Set([...ctxSessions, ...trades.map(t => t.session)])].sort(), [trades, ctxSessions]);
 
   function handleDrill(label: string, filterFn: (t: Trade) => boolean) {
     setDrillTrades(valid.filter(filterFn));
@@ -293,7 +293,7 @@ export default function Analytics() {
           <select value={filterSession} onChange={e => setFilterSession(e.target.value)}
             className="bg-secondary text-foreground border border-border rounded-md px-2 py-1 text-xs">
             <option value="">All Sessions</option>
-            {sessions.map(s => <option key={s} value={s}>{s}</option>)}
+            {filterSessions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={filterDirection} onChange={e => setFilterDirection(e.target.value)}
             className="bg-secondary text-foreground border border-border rounded-md px-2 py-1 text-xs">
@@ -401,7 +401,7 @@ export default function Analytics() {
         <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Session Performance</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={sessionData} onClick={(e: any) => { if (e?.activeLabel) handleDrill(`Session: ${e.activeLabel}`, t => t.session.startsWith(e.activeLabel.replace('NYKZ', 'New York Kill Zone').replace('LDN Close', 'London Close'))); }}>
+            <BarChart data={sessionData} onClick={(e: any) => { if (e?.activeLabel) { const sd = sessionData.find(s => s.name === e.activeLabel); handleDrill(`Session: ${sd?.fullName || e.activeLabel}`, t => t.session === (sd?.fullName || e.activeLabel)); } }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(217,19%,27%)" opacity={0.3} />
               <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(215,20%,65%)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'hsl(215,20%,65%)' }} />

@@ -1,12 +1,17 @@
 import { useMemo } from 'react';
-import { Trade, TRADE_GRADES, TradeGrade } from '@/types/trading';
+import { Trade } from '@/types/trading';
+import { useTrading } from '@/contexts/TradingContext';
 import { cn } from '@/lib/utils';
 
 export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
+  const { gradesList } = useTrading();
+
   const data = useMemo(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+    // Use dynamic grades from context + any grades found in trades
+    const allGrades = [...new Set([...gradesList, ...valid.map(t => t.grade).filter(Boolean) as string[]])];
 
-    return TRADE_GRADES.map(grade => {
+    return allGrades.map(grade => {
       const gradeTrades = valid.filter(t => t.grade === grade);
       const wins = gradeTrades.filter(t => t.result === 'Win').length;
       const total = gradeTrades.length;
@@ -15,9 +20,9 @@ export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
 
       return { grade, trades: total, winRate, avgPl };
     });
-  }, [trades]);
+  }, [trades, gradesList]);
 
-  const gradeColors: Record<TradeGrade, string> = {
+  const gradeColorMap: Record<string, string> = {
     'A+': 'text-success',
     'A': 'text-blue-500',
     'B': 'text-foreground',
@@ -34,7 +39,7 @@ export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
       </div>
       {data.map(row => (
         <div key={row.grade} className="grid grid-cols-4 gap-2 px-2 py-2.5 border-b border-border/50 text-sm">
-          <span className={cn('font-bold', gradeColors[row.grade as TradeGrade])}>{row.grade}</span>
+          <span className={cn('font-bold', gradeColorMap[row.grade] || 'text-foreground')}>{row.grade}</span>
           <span className="text-center text-muted-foreground">{row.trades}</span>
           <span className="text-center text-muted-foreground">{row.winRate.toFixed(1)}%</span>
           <span className={cn('text-right font-mono text-xs', row.avgPl >= 0 ? 'text-success' : 'text-destructive')}>

@@ -4,7 +4,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Trade, TradeJourneyStep } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Download, ZoomIn, X } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ExternalLink, Download, ZoomIn, X, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
 import { TradeJourneyTimeline } from './TradeJourneyTimeline';
@@ -97,31 +98,55 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
               } />
             </div>
 
-            {trade.entryConfluences && trade.entryConfluences.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Entry Points</h4>
-                <div className="flex flex-wrap gap-1">
-                  {trade.entryConfluences.map(c => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
-                </div>
-              </div>
-            )}
-
-            {trade.targetConfluences && trade.targetConfluences.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">Target Points</h4>
-                <div className="flex flex-wrap gap-1">
-                  {trade.targetConfluences.map(c => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
-                </div>
-              </div>
-            )}
-
-            {trade.confluences.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">All Technical Points</h4>
-                <div className="flex flex-wrap gap-1">
-                  {trade.confluences.map(c => <Badge key={c} variant="outline" className="text-xs">{c}</Badge>)}
-                </div>
-              </div>
+            {/* Technical Points - Collapsible */}
+            {((trade.entryConfluences && trade.entryConfluences.length > 0) || (trade.targetConfluences && trade.targetConfluences.length > 0) || trade.confluences.length > 0) && (
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center justify-between w-full group">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Technical Points</h4>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-2">
+                  {trade.entryConfluences && trade.entryConfluences.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Entry Points</p>
+                      <div className="space-y-1">
+                        {trade.entryConfluences.map((c, i) => (
+                          <div key={c} className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-bold text-primary w-4 text-center">{i + 1}</span>
+                            <Badge variant="outline" className="text-xs">{c}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {trade.targetConfluences && trade.targetConfluences.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Target Points</p>
+                      <div className="space-y-1">
+                        {trade.targetConfluences.map((c, i) => (
+                          <div key={c} className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-bold text-primary w-4 text-center">{i + 1}</span>
+                            <Badge variant="outline" className="text-xs">{c}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {trade.confluences.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">All Technical Points</p>
+                      <div className="space-y-1">
+                        {trade.confluences.map((c, i) => (
+                          <div key={c} className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-bold text-primary w-4 text-center">{i + 1}</span>
+                            <Badge variant="outline" className="text-xs">{c}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {trade.management.length > 0 && (

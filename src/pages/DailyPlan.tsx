@@ -194,6 +194,24 @@ export default function DailyPlanPage() {
       <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-6 pb-20">
         <PlanListHeader title="Daily Plans" subtitle="Execution-focused daily journal" onNew={startNew} newLabel="New Day" />
 
+        {/* Stats Bar */}
+        {dailyPlans.length > 0 && (
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-mono font-bold text-foreground">{dailyPlans.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Days</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-mono font-bold text-success">{dailyPlans.filter(p => p.tookTrades).length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Trading Days</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-mono font-bold text-primary">{dailyPlans.reduce((s, p) => s + p.pairs.length, 0)}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Pairs Analyzed</p>
+            </div>
+          </div>
+        )}
+
         {dailyPlans.length === 0 ? (
           <PlanEmptyState
             message="No daily plans yet. Start your first session."

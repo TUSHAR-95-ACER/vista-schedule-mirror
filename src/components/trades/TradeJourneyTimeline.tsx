@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Clock, Pencil, Trash2, CheckCircle2, Circle } from 'lucide-react';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
+import { Plus, Clock, Pencil, Trash2, CheckCircle2, Circle, ZoomIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -23,8 +24,9 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
   const [customType, setCustomType] = useState('');
   const [time, setTime] = useState('');
   const [note, setNote] = useState('');
+  const [image, setImage] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Build full list: default "Trade Entered" + user steps
   const defaultStep: TradeJourneyStep = {
     id: '__trade_entered__',
     type: 'Trade Entered',
@@ -39,6 +41,7 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
     setCustomType('');
     setTime('');
     setNote('');
+    setImage('');
     setEditStep(null);
     setShowForm(false);
   };
@@ -59,6 +62,7 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
     }
     setTime(step.time);
     setNote(step.note || '');
+    setImage(step.image || '');
     setShowForm(true);
   };
 
@@ -69,7 +73,7 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
 
     if (editStep) {
       const updated = journey.map(s =>
-        s.id === editStep.id ? { ...s, type: resolvedType, time, note: note || undefined } : s
+        s.id === editStep.id ? { ...s, type: resolvedType, time, note: note || undefined, image: image || undefined } : s
       );
       onUpdate(updated);
     } else {
@@ -78,6 +82,7 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
         type: resolvedType,
         time,
         note: note || undefined,
+        image: image || undefined,
       };
       onUpdate([...journey, newStep]);
     }
@@ -99,14 +104,12 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
 
       {/* Timeline */}
       <div className="relative pl-6 space-y-0">
-        {/* Vertical line */}
         <div className="absolute left-[9px] top-2 bottom-2 w-px bg-border" />
 
         {allSteps.map((step, i) => {
           const isDefault = step.id === '__trade_entered__';
           return (
             <div key={step.id} className="relative pb-4 last:pb-0 group">
-              {/* Dot */}
               <div className={cn(
                 'absolute -left-6 top-0.5 flex items-center justify-center w-[18px] h-[18px] rounded-full border-2',
                 isDefault
@@ -120,7 +123,6 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
                 )}
               </div>
 
-              {/* Content */}
               <div className={cn(
                 'rounded-lg border px-3 py-2 transition-colors',
                 isDefault ? 'border-primary/30 bg-primary/5' : 'border-border bg-card hover:border-primary/20'
@@ -147,6 +149,15 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
                     </div>
                   )}
                 </div>
+                {/* Step Image */}
+                {step.image && (
+                  <div className="mt-2 relative group/img cursor-pointer" onClick={() => setPreviewImage(step.image!)}>
+                    <img src={step.image} alt={`${step.type} screenshot`} className="w-full rounded-lg border border-border object-cover max-h-[200px]" />
+                    <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/30 transition-colors rounded-lg flex items-center justify-center">
+                      <ZoomIn className="h-5 w-5 text-white opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -190,6 +201,11 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
               <Label className="text-xs">Note (optional)</Label>
               <Textarea className="text-xs min-h-[60px]" value={note} onChange={e => setNote(e.target.value)} placeholder="What happened at this step..." />
             </div>
+
+            <div>
+              <Label className="text-xs">Screenshot (optional)</Label>
+              <UnifiedMediaBox value={image} onChange={setImage} label="" accept={['image', 'url']} maxPreviewHeight="150px" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={resetForm}>Cancel</Button>
@@ -199,6 +215,15 @@ export function TradeJourneyTimeline({ tradeDate, entryTime, journey, onUpdate }
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Preview */}
+      {previewImage && (
+        <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-2 bg-black/95 border-none">
+            <img src={previewImage} alt="Journey step" className="max-w-full max-h-[85vh] object-contain rounded-md mx-auto" />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
