@@ -150,7 +150,7 @@ export default function AICoach() {
             <h1 className="text-lg font-heading uppercase tracking-wide">AI Coach</h1>
             <p className="text-xs text-muted-foreground">Your personal trading performance coach</p>
           </div>
-          <InfoTooltip content="AI Coach analyzes your entire journal — trades, plans, mistakes, psychology — to give personalized coaching and insights." />
+          <InfoTooltip text="AI Coach analyzes your entire journal — trades, plans, mistakes, psychology — to give personalized coaching and insights." />
         </div>
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clearChat} className="text-muted-foreground hover:text-destructive">
