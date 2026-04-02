@@ -395,6 +395,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
+      trend: form.trend || undefined,
     };
 
     if (editTrade) updateTrade(trade);
