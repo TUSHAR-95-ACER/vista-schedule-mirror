@@ -59,12 +59,12 @@ export function AccountPerformance({ account, trades, accounts, transactions, sc
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MetricCard label="Total P/L" value={formatCurrency(totalPL)} icon={DollarSign} trend={totalPL >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Total Payouts" value={formatCurrency(totalPayouts)} icon={Award} trend="up" />
-        <MetricCard label="Win Rate" value={formatPercent(winRate)} icon={Percent} trend={winRate >= 50 ? 'up' : 'down'} />
-        <MetricCard label="Avg RR" value={avgRR.toFixed(2)} icon={TrendingUp} />
-        <MetricCard label="Profit Factor" value={pf === Infinity ? '∞' : pf.toFixed(2)} icon={BarChart3} />
-        <MetricCard label="Max Drawdown" value={formatCurrency(dd)} icon={ArrowDown} trend="down" />
+        <MetricCard label="Total P/L" value={formatCurrency(totalPL)} icon={DollarSign} trend={totalPL >= 0 ? 'up' : 'down'} tooltip="Net profit or loss from all trades on this account" />
+        <MetricCard label="Total Payouts" value={formatCurrency(totalPayouts)} icon={Award} trend="up" tooltip="Total money withdrawn as payouts from this account" />
+        <MetricCard label="Win Rate" value={formatPercent(winRate)} icon={Percent} trend={winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of winning trades" />
+        <MetricCard label="Avg RR" value={avgRR.toFixed(2)} icon={TrendingUp} tooltip="Average risk-reward ratio achieved per trade" />
+        <MetricCard label="Profit Factor" value={pf === Infinity ? '∞' : pf.toFixed(2)} icon={BarChart3} tooltip="Gross profit ÷ gross loss. Above 1.5 is strong" />
+        <MetricCard label="Max Drawdown" value={formatCurrency(dd)} icon={ArrowDown} trend="down" tooltip="Largest peak-to-trough decline in equity" />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
