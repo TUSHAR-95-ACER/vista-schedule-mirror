@@ -107,7 +107,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function DailyPlanPage() {
-  const { dailyPlans, addDailyPlan, updateDailyPlan, trades } = useTrading();
+  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
   const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
