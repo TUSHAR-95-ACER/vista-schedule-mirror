@@ -114,7 +114,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function WeeklyPlanPage() {
-  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan } = useTrading();
+  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
   const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
