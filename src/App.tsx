@@ -21,6 +21,7 @@ import SetupPlaybook from "./pages/SetupPlaybook";
 import BehaviorPatterns from "./pages/BehaviorPatterns";
 import TradeQuality from "./pages/TradeQuality";
 import AIInsights from "./pages/AIInsights";
+import AICoach from "./pages/AICoach";
 import TradingRules from "./pages/TradingRules";
 import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/system-analytics" element={<SystemAnalytics />} />
               <Route path="/macro-news" element={<MacroNews />} />
+              <Route path="/ai-coach" element={<AICoach />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
