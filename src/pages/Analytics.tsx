@@ -344,7 +344,7 @@ export default function Analytics() {
       {/* ─── Row 1: Equity + Win/Loss ────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Equity Curve</h3>
+          <div className="flex items-center gap-1.5 mb-3"><h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Equity Curve</h3><InfoTooltip text="Cumulative profit/loss over time showing your account growth trajectory" /></div>
           <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={equityData}>
               <defs>
