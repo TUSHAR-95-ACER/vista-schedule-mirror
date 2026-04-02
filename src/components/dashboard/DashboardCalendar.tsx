@@ -240,13 +240,22 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
         cursor.setDate(cursor.getDate() + 1);
       }
 
-      const firstInYearDay = weekDays.find((day) => day.inYear);
+      // Place month label on the week that contains the 1st of the month
+      const firstOfMonthDay = weekDays.find((day) => {
+        if (!day.inYear) return false;
+        const d = new Date(`${day.dateStr}T00:00:00`);
+        return d.getDate() === 1;
+      });
       let label = '';
-      if (firstInYearDay) {
-        const monthIndex = new Date(`${firstInYearDay.dateStr}T00:00:00`).getMonth();
-        if (monthIndex !== labeledMonth) {
-          label = MONTHS[monthIndex].slice(0, 3);
-          labeledMonth = monthIndex;
+      if (firstOfMonthDay) {
+        const monthIndex = new Date(`${firstOfMonthDay.dateStr}T00:00:00`).getMonth();
+        label = MONTHS[monthIndex].slice(0, 3).toUpperCase();
+      } else if (weeks.length === 0) {
+        // First week of the year - label it with Jan if it has in-year days
+        const firstInYearDay = weekDays.find((day) => day.inYear);
+        if (firstInYearDay) {
+          const monthIndex = new Date(`${firstInYearDay.dateStr}T00:00:00`).getMonth();
+          if (monthIndex === 0) label = MONTHS[0].slice(0, 3).toUpperCase();
         }
       }
 

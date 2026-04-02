@@ -577,7 +577,7 @@ export default function Analytics() {
                     <td className="px-3 py-1.5 font-mono text-xs">{s.avgRR.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs">{s.profitFactor.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs text-destructive">{s.maxDrawdown.toFixed(2)}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">{s.edgeScore.toFixed(2)}</td>
+                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">{s.setupRating.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
