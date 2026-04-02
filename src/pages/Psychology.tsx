@@ -136,15 +136,18 @@ export default function Psychology() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
           {[
-            { label: 'Avg Discipline', value: `${stats.avgDiscipline}/5`, tone: '' },
-            { label: 'Avg Focus', value: `${stats.avgFocus}/5`, tone: '' },
-            { label: 'High Discipline Win%', value: `${stats.highDiscWinRate}%`, tone: 'text-success' },
-            { label: 'Low Discipline Win%', value: `${stats.lowDiscWinRate}%`, tone: 'text-destructive' },
-            { label: 'Total Mistakes', value: stats.totalMistakes, tone: stats.totalMistakes > 10 ? 'text-destructive' : '' },
-            { label: 'Best Emotion', value: stats.topEmotion, tone: 'text-success' },
+            { label: 'Avg Discipline', value: `${stats.avgDiscipline}/5`, tone: '', tip: 'Your average self-rated discipline score per trade (1-5)' },
+            { label: 'Avg Focus', value: `${stats.avgFocus}/5`, tone: '', tip: 'Your average self-rated focus score per trade (1-5)' },
+            { label: 'High Discipline Win%', value: `${stats.highDiscWinRate}%`, tone: 'text-success', tip: 'Win rate on trades where you rated discipline 4 or 5' },
+            { label: 'Low Discipline Win%', value: `${stats.lowDiscWinRate}%`, tone: 'text-destructive', tip: 'Win rate on trades where discipline was rated 1 or 2' },
+            { label: 'Total Mistakes', value: stats.totalMistakes, tone: stats.totalMistakes > 10 ? 'text-destructive' : '', tip: 'Total number of trading mistakes logged' },
+            { label: 'Best Emotion', value: stats.topEmotion, tone: 'text-success', tip: 'The emotional state that correlates with your best trading results' },
           ].map(item => (
             <div key={item.label} className="rounded-xl border border-border bg-card p-3">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
+              <div className="flex items-center gap-1">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
+                <InfoTooltip text={item.tip} />
+              </div>
               <p className={cn('mt-1 text-xl font-bold', item.tone || 'text-foreground')}>{item.value}</p>
             </div>
           ))}
