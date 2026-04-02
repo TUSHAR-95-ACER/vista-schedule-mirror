@@ -216,7 +216,7 @@ export default function Mistakes() {
         </div>
 
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Mistakes by Setup</h3>
+          <ChartHeader title="Mistakes by Setup" tooltip="Which trade setup type leads to the most mistakes" />
           <div className="h-[200px]">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
