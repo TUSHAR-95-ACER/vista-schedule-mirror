@@ -145,7 +145,7 @@ export default function BiasAnalytics() {
       pairAccuracy,
       sessionAccuracy,
     };
-  }, [weeklyPlans, trades]);
+  }, [weeklyPlans, dailyPlans, trades]);
 
   const missedOpps = useMemo(() => {
     let count = 0;
