@@ -445,7 +445,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="space-y-1">
                   <FieldLabel>Market</FieldLabel>
                   <Select value={form.market} onValueChange={v => set('market', v)}>
@@ -476,6 +476,18 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <Select value={form.marketCondition} onValueChange={v => set('marketCondition', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                     <SelectContent>{ctxConditions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <FieldLabel>Timeframe</FieldLabel>
+                  <Select value={form.timeframe || 'none'} onValueChange={v => set('timeframe', v === 'none' ? '' : v)}>
+                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {['1M', '5M', '15M', '30M', '1H', '4H', 'Daily', 'Weekly'].map(tf => (
+                        <SelectItem key={tf} value={tf}>{tf}</SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
