@@ -307,10 +307,10 @@ export default function BiasAnalytics() {
 
       {/* Best/Worst */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Best Pair" value={biasStats.bestPair?.pair || '—'} subtitle={biasStats.bestPair ? `${biasStats.bestPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingUp} accent="success" />
-        <StatCard label="Worst Pair" value={biasStats.worstPair?.pair || '—'} subtitle={biasStats.worstPair ? `${biasStats.worstPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingDown} accent="destructive" />
-        <StatCard label="Best Session" value={biasStats.bestSession?.session || '—'} subtitle={biasStats.bestSession ? `${biasStats.bestSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="success" />
-        <StatCard label="Worst Session" value={biasStats.worstSession?.session || '—'} subtitle={biasStats.worstSession ? `${biasStats.worstSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="destructive" />
+        <StatCard label="Best Pair" value={biasStats.bestPair?.pair || '—'} subtitle={biasStats.bestPair ? `${biasStats.bestPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingUp} accent="success" tooltip="The pair where your directional prediction is most accurate" />
+        <StatCard label="Worst Pair" value={biasStats.worstPair?.pair || '—'} subtitle={biasStats.worstPair ? `${biasStats.worstPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingDown} accent="destructive" tooltip="The pair where your directional prediction is least accurate" />
+        <StatCard label="Best Session" value={biasStats.bestSession?.session || '—'} subtitle={biasStats.bestSession ? `${biasStats.bestSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="success" tooltip="The trading session where you have the highest win rate" />
+        <StatCard label="Worst Session" value={biasStats.worstSession?.session || '—'} subtitle={biasStats.worstSession ? `${biasStats.worstSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="destructive" tooltip="The trading session where you have the lowest win rate" />
       </div>
 
       {/* Detailed breakdowns */}
