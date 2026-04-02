@@ -472,7 +472,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Condition</FieldLabel>
                   <Select value={form.marketCondition} onValueChange={v => set('marketCondition', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                    <SelectContent>{CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    <SelectContent>{ctxConditions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
