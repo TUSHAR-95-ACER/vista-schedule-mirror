@@ -68,12 +68,12 @@ export function AccountPerformance({ account, trades, accounts, transactions, sc
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MetricCard label="Total Trades" value={trades.length} />
-        <MetricCard label="Deposits" value={formatCurrency(totalDeposits)} />
-        <MetricCard label="Withdrawals" value={formatCurrency(totalWithdrawals)} />
-        <MetricCard label="Net Deposits" value={formatCurrency(totalDeposits - totalWithdrawals)} trend={totalDeposits - totalWithdrawals >= 0 ? 'up' : 'down'} />
-        <MetricCard label="Total Scale-Ups" value={totalScaleUps} icon={Zap} />
-        <MetricCard label="Growth %" value={`${growthPercent.toFixed(1)}%`} icon={TrendingUp} trend={growthPercent > 0 ? 'up' : growthPercent < 0 ? 'down' : undefined} />
+        <MetricCard label="Total Trades" value={trades.length} tooltip="Number of trades on this account" />
+        <MetricCard label="Deposits" value={formatCurrency(totalDeposits)} tooltip="Total money deposited into this account" />
+        <MetricCard label="Withdrawals" value={formatCurrency(totalWithdrawals)} tooltip="Total money withdrawn from this account" />
+        <MetricCard label="Net Deposits" value={formatCurrency(totalDeposits - totalWithdrawals)} trend={totalDeposits - totalWithdrawals >= 0 ? 'up' : 'down'} tooltip="Deposits minus withdrawals — your net capital invested" />
+        <MetricCard label="Total Scale-Ups" value={totalScaleUps} icon={Zap} tooltip="Number of times your account size was increased" />
+        <MetricCard label="Growth %" value={`${growthPercent.toFixed(1)}%`} icon={TrendingUp} trend={growthPercent > 0 ? 'up' : growthPercent < 0 ? 'down' : undefined} tooltip="Percentage growth from initial to current account size" />
       </div>
 
       {latestScale && (
