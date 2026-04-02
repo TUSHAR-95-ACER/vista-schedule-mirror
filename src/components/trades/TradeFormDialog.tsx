@@ -324,6 +324,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
   const previewResult = isMissedOrCancelled ? form.result : calcResult(previewNetPL);
 
   const handleSubmit = () => {
+    if (!form.grade) {
+      toast({ title: 'Grade required', description: 'Please select a grade before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
@@ -381,7 +385,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         checklist: form.checklist,
       },
       mistakes: form.mistakes,
-      grade: (form.grade as TradeGrade) || undefined,
+      grade: form.grade as TradeGrade,
       maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
@@ -513,11 +517,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <FieldLabel>Grade</FieldLabel>
+                  <FieldLabel>Grade <span className="text-destructive">*</span></FieldLabel>
                   <Select value={form.grade || 'none'} onValueChange={v => set('grade', v === 'none' ? '' : v)}>
-                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select grade" /></SelectTrigger>
+                    <SelectTrigger className={cn("h-9 text-xs rounded-lg", !form.grade && "border-destructive/50")}><SelectValue placeholder="Select grade" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No grade</SelectItem>
                       {gradesList.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                     </SelectContent>
                   </Select>
