@@ -235,7 +235,7 @@ export interface DailyPlan {
   id: string;
   date: string;
   dailyBias: 'Bullish' | 'Bearish' | 'Neutral';
-  sessionFocus: Session;
+  sessionFocus: string;
   maxTrades: number;
   riskLimit: string;
   pairs: DailyPairPlan[];

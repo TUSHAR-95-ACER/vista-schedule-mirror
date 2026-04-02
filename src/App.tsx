@@ -30,6 +30,7 @@ import BacktestingLab from "./pages/BacktestingLab";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import SystemAnalytics from "./pages/SystemAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/backtesting-lab" element={<BacktestingLab />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/system-analytics" element={<SystemAnalytics />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

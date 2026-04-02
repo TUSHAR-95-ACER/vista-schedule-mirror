@@ -65,7 +65,7 @@ function AccuracyBar({ label, value, total }: { label: string; value: number; to
 }
 
 export default function BiasAnalytics() {
-  const { weeklyPlans, trades } = useTrading();
+  const { weeklyPlans, dailyPlans, trades } = useTrading();
 
   const biasStats = useMemo(() => {
     let total = 0, correct = 0;
@@ -77,6 +77,7 @@ export default function BiasAnalytics() {
     let biasChanges = 0;
     let lastBias = '';
 
+    // Process weekly plan pair analyses
     weeklyPlans.forEach(wp => {
       wp.pairAnalyses.forEach(pa => {
         if (!pa.pair || !pa.actualDirection) return;
@@ -91,6 +92,24 @@ export default function BiasAnalytics() {
         const e = pairMap.get(pa.pair) || { total: 0, correct: 0 };
         e.total++; if (isCorrect) e.correct++;
         pairMap.set(pa.pair, e);
+      });
+    });
+
+    // Process daily plan pair analyses
+    dailyPlans.forEach(dp => {
+      dp.pairs.forEach(pp => {
+        if (!pp.pair || !(pp as any).actualBias) return;
+        total++;
+        const isCorrect = pp.bias === (pp as any).actualBias;
+        if (isCorrect) correct++;
+        if (lastBias && pp.bias !== lastBias) biasChanges++;
+        lastBias = pp.bias;
+        if (pp.bias === 'Bullish') { bullTotal++; if (isCorrect) bullCorrect++; }
+        if (pp.bias === 'Bearish') { bearTotal++; if (isCorrect) bearCorrect++; }
+        if (pp.bias === 'Neutral') { neutTotal++; if (isCorrect) neutCorrect++; }
+        const e = pairMap.get(pp.pair) || { total: 0, correct: 0 };
+        e.total++; if (isCorrect) e.correct++;
+        pairMap.set(pp.pair, e);
       });
     });
 
@@ -126,7 +145,7 @@ export default function BiasAnalytics() {
       pairAccuracy,
       sessionAccuracy,
     };
-  }, [weeklyPlans, trades]);
+  }, [weeklyPlans, dailyPlans, trades]);
 
   const missedOpps = useMemo(() => {
     let count = 0;

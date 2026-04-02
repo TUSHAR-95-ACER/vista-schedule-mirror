@@ -27,7 +27,7 @@ import { SessionChart } from '@/components/dashboard/SessionChart';
 import { WeeklyPerformanceChart } from '@/components/dashboard/WeeklyPerformanceChart';
 import { PerformanceByGradeChart } from '@/components/dashboard/PerformanceByGradeChart';
 import { DashboardCalendar } from '@/components/dashboard/DashboardCalendar';
-import { RRDistributionChart } from '@/components/dashboard/RRDistributionChart';
+
 
 export default function Dashboard() {
   const { trades } = useTrading();
@@ -87,8 +87,6 @@ export default function Dashboard() {
         <MetricCard label="Avg Duration" value={avgDuration} icon={Activity} />
       </div>
 
-      {/* RR Distribution Analytics */}
-      <RRDistributionChart trades={trades} />
 
       {/* Equity Curve + Win/Loss */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">

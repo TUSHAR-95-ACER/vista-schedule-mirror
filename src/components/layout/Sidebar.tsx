@@ -6,7 +6,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   ChevronLeft, ChevronRight, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
@@ -52,6 +52,7 @@ const sections: NavSection[] = [
     items: [
       { path: '/trading-rules', label: 'Trading Rules', icon: Shield },
       { path: '/control-center', label: 'Control Center', icon: Sliders },
+      { path: '/system-analytics', label: 'System Analytics', icon: Activity },
       { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save, Video, Newspaper, Layers } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save, Video, Newspaper } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -48,18 +48,17 @@ function formatWeekRange(weekStart: string): string {
 }
 
 function BiasTag({ bias }: { bias: string }) {
+  if (bias === 'Neutral') return null;
   return (
     <span className={cn(
       'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
       bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
       bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
-      bias === 'Neutral' && 'bg-muted text-muted-foreground border-border',
     )}>
       <span className={cn(
         'h-1.5 w-1.5 rounded-full',
         bias === 'Bullish' && 'bg-success',
         bias === 'Bearish' && 'bg-destructive',
-        bias === 'Neutral' && 'bg-muted-foreground',
       )} />
       {bias}
     </span>
@@ -175,6 +174,8 @@ export default function WeeklyPlanPage() {
     if (!localPlan) return;
     updateWeeklyPlan(localPlan);
     toast({ title: '✅ Saved!', description: 'Weekly plan saved successfully.' });
+    setActiveId(null);
+    setLocalPlan(null);
   };
 
   // List view
@@ -286,7 +287,7 @@ export default function WeeklyPlanPage() {
                 </SelectTrigger>
                 <SelectContent>{ALL_ASSETS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
               </Select>
-              {pa.bias !== 'Neutral' && <BiasTag bias={pa.bias} />}
+              <BiasTag bias={pa.bias} />
             </div>
             <div className="h-px flex-1 bg-gradient-to-r from-border via-transparent to-transparent" />
             {localPlan.pairAnalyses.length > 1 && (
@@ -296,13 +297,13 @@ export default function WeeklyPlanPage() {
             )}
           </div>
 
-          {/* Primary View */}
+          {/* Chart Analysis */}
           <SectionCard title="Chart Analysis" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
             <UnifiedMediaBox value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
             <Textarea value={pa.narrative || ''} onChange={e => updatePair(pa.id, { narrative: e.target.value })} placeholder="Liquidity zones, order flow expectations..." className="min-h-[70px] text-sm rounded-lg" />
           </SectionCard>
 
-          {/* Bias & Reasons side-by-side */}
+          {/* Bias & Reasons */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
               <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as any })}>
@@ -328,22 +329,6 @@ export default function WeeklyPlanPage() {
           {/* Key Levels */}
           <SectionCard title="Key Levels" icon={<Target className="h-3.5 w-3.5" />} accent="warning">
             <Textarea value={pa.keyLevels} onChange={e => updatePair(pa.id, { keyLevels: e.target.value })} placeholder="1.08500 - major resistance&#10;1.08200 - support zone" className="min-h-[70px] text-sm font-mono rounded-lg" />
-          </SectionCard>
-
-          {/* Scenarios */}
-          <SectionCard title="Scenarios" icon={<Layers className="h-3.5 w-3.5" />} badge="If / Then">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-3 p-4 rounded-xl bg-success/[0.04] border border-success/15">
-                <Label className="text-[10px] font-bold text-success uppercase tracking-wider">Bullish Scenario</Label>
-                <Textarea placeholder="Condition: If price sweeps lows..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
-                <Textarea placeholder="Reaction: Buy entries at OB..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-success/20 focus:border-success/40" />
-              </div>
-              <div className="space-y-3 p-4 rounded-xl bg-destructive/[0.04] border border-destructive/15">
-                <Label className="text-[10px] font-bold text-destructive uppercase tracking-wider">Bearish Scenario</Label>
-                <Textarea placeholder="Condition: If price fails to break..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
-                <Textarea placeholder="Reaction: Short from FVG..." className="min-h-[55px] text-sm rounded-lg bg-transparent border-destructive/20 focus:border-destructive/40" />
-              </div>
-            </div>
           </SectionCard>
 
           {/* Result */}
