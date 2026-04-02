@@ -139,12 +139,12 @@ export default function WeeklyReview() {
       {latest ? (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <MetricCard label="Latest Week" value={latest.weekName} />
-            <MetricCard label="Trades" value={latest.trades} />
-            <MetricCard label="Win Rate" value={`${latest.winRate}%`} trend={latest.winRate >= 50 ? 'up' : 'down'} />
-            <MetricCard label="P/L" value={formatCurrency(latest.pl)} trend={latest.pl >= 0 ? 'up' : 'down'} />
-            <MetricCard label="Execution Score" value={`${latest.avgExec}%`} trend={latest.avgExec >= 70 ? 'up' : 'down'} />
-            <MetricCard label="Bias Accuracy" value={`${latest.biasAccuracy}%`} trend={latest.biasAccuracy >= 50 ? 'up' : 'down'} />
+            <MetricCard label="Latest Week" value={latest.weekName} tooltip="The most recent calendar week with trading activity" />
+            <MetricCard label="Trades" value={latest.trades} tooltip="Number of trades taken in the latest week" />
+            <MetricCard label="Win Rate" value={`${latest.winRate}%`} trend={latest.winRate >= 50 ? 'up' : 'down'} tooltip="Percentage of winning trades for the latest week" />
+            <MetricCard label="P/L" value={formatCurrency(latest.pl)} trend={latest.pl >= 0 ? 'up' : 'down'} tooltip="Total profit or loss for the latest week" />
+            <MetricCard label="Execution Score" value={`${latest.avgExec}%`} trend={latest.avgExec >= 70 ? 'up' : 'down'} tooltip="Average trade execution quality for the week (0-100%)" />
+            <MetricCard label="Bias Accuracy" value={`${latest.biasAccuracy}%`} trend={latest.biasAccuracy >= 50 ? 'up' : 'down'} tooltip="How often your market bias prediction was correct this week" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
