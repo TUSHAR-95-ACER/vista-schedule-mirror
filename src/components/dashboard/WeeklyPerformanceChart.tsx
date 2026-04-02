@@ -24,10 +24,15 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
+    // Parse date string safely without timezone shift
+    const parseDateParts = (dateStr: string) => {
+      const parts = dateStr.split('-').map(Number);
+      return { year: parts[0], month: parts[1] - 1, day: parts[2] };
+    };
+
     const valid = trades.filter(t => {
-      if (t.result === 'Untriggered Setup' || t.result === 'Cancelled') return false;
-      const d = new Date(t.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      const { year, month } = parseDateParts(t.date);
+      return month === currentMonth && year === currentYear;
     });
 
     const weeks = [
@@ -39,7 +44,7 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[] }) {
     ];
 
     valid.forEach(t => {
-      const day = new Date(t.date).getDate();
+      const { day } = parseDateParts(t.date);
       for (const week of weeks) {
         if (day >= week.range[0] && day <= week.range[1]) {
           week.pl += t.profitLoss;
