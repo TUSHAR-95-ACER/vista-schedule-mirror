@@ -122,11 +122,11 @@ export default function Dashboard() {
       {/* By Grade */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Grade</h3>
+          <ChartHeader title="By Grade" tooltip="Performance grouped by the quality grade you assigned to each trade" />
           <PerformanceByGradeChart trades={trades} />
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 sm:mb-4">By Day (P/L)</h3>
+          <ChartHeader title="By Day (P/L)" tooltip="P/L broken down by day of the week to find your best trading days" />
           <div className="h-[200px] sm:h-[240px]"><WeekdayChart trades={trades} /></div>
         </div>
       </div>
