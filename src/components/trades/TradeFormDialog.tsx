@@ -517,11 +517,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <FieldLabel>Grade</FieldLabel>
+                  <FieldLabel>Grade <span className="text-destructive">*</span></FieldLabel>
                   <Select value={form.grade || 'none'} onValueChange={v => set('grade', v === 'none' ? '' : v)}>
-                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select grade" /></SelectTrigger>
+                    <SelectTrigger className={cn("h-9 text-xs rounded-lg", !form.grade && "border-destructive/50")}><SelectValue placeholder="Select grade" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No grade</SelectItem>
                       {gradesList.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                     </SelectContent>
                   </Select>
