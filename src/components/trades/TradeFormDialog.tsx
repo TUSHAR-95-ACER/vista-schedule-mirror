@@ -99,6 +99,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     customSetups, customAssets, customConfluences,
     addCustomSetup, updateCustomSetup, deleteCustomSetup,
     addCustomAsset, addCustomConfluence, updateCustomConfluence, deleteCustomConfluence,
+    markets: ctxMarkets, sessions: ctxSessions, conditions: ctxConditions,
+    gradesList, managementOptions, psychTags, violations,
   } = useTrading();
 
   const defaultForm = {
