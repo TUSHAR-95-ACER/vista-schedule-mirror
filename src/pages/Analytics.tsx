@@ -293,7 +293,7 @@ export default function Analytics() {
           <select value={filterSession} onChange={e => setFilterSession(e.target.value)}
             className="bg-secondary text-foreground border border-border rounded-md px-2 py-1 text-xs">
             <option value="">All Sessions</option>
-            {sessions.map(s => <option key={s} value={s}>{s}</option>)}
+            {filterSessions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select value={filterDirection} onChange={e => setFilterDirection(e.target.value)}
             className="bg-secondary text-foreground border border-border rounded-md px-2 py-1 text-xs">
