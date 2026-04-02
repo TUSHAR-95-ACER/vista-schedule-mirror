@@ -196,7 +196,7 @@ export default function DailyPlanPage() {
 
         {/* Stats Bar */}
         {dailyPlans.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-mono font-bold text-foreground">{dailyPlans.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Days</p>
@@ -204,10 +204,6 @@ export default function DailyPlanPage() {
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-mono font-bold text-success">{dailyPlans.filter(p => p.tookTrades).length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Trading Days</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-mono font-bold text-warning">{dailyPlans.filter(p => !p.tookTrades && p.tookTrades !== undefined).length}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">No-Trade Days</p>
             </div>
           </div>
         )}
