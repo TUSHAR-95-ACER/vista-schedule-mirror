@@ -38,55 +38,170 @@ async function fetchAllUserData(supabase: any, userId: string) {
   return context;
 }
 
-// Strip base64 images and large binary data from records
-function stripBinaryData(obj: any): any {
-  if (obj === null || obj === undefined) return obj;
-  if (typeof obj === "string") {
-    if (obj.startsWith("data:image/") || obj.length > 500) return "[image_data]";
-    return obj;
+// Format date to readable "23 Mar 2026" style
+function formatDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  } catch {
+    return dateStr;
   }
-  if (Array.isArray(obj)) return obj.map(stripBinaryData);
-  if (typeof obj === "object") {
-    const cleaned: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Skip known image/binary fields entirely
-      if (["prediction_image", "execution_image", "result_chart_image", "chartImage", "analysis_video_url"].includes(key)) {
-        continue;
-      }
-      cleaned[key] = stripBinaryData(value);
-    }
-    return cleaned;
-  }
-  return obj;
 }
 
-function summarizeIfLarge(context: Record<string, any>): string {
-  // First strip all binary/image data
-  const cleaned = stripBinaryData(context);
+// Parse JSON string fields safely
+function safeParseJson(val: any): any {
+  if (typeof val === "string") {
+    try { return JSON.parse(val); } catch { return val; }
+  }
+  return val;
+}
 
-  const summarized: Record<string, any> = {};
-  for (const [table, data] of Object.entries(cleaned)) {
-    if (!Array.isArray(data)) { summarized[table] = data; continue; }
-    if (table === "trades") {
-      summarized[table] = data.slice(0, 30);
-      summarized[`${table}_total_count`] = data.length;
-    } else if (table === "weekly_plans" || table === "daily_plans") {
-      summarized[table] = data.slice(0, 5);
-      summarized[`${table}_total_count`] = data.length;
-    } else {
-      summarized[table] = data;
+// Transform raw trade into a human-readable summary object (no IDs, no images)
+function transformTrade(trade: any): any {
+  const mistakes = safeParseJson(trade.mistakes);
+  const psychology = safeParseJson(trade.psychology);
+  const management = safeParseJson(trade.management);
+  const confluences = safeParseJson(trade.confluences);
+
+  // Build a readable label like "GBPUSD • 01 Apr 2026 • New York KZ • Loss"
+  const parts = [trade.asset, formatDate(trade.date)];
+  if (trade.session) parts.push(trade.session);
+  parts.push(trade.result);
+  if (Array.isArray(mistakes) && mistakes.length > 0) {
+    parts.push(`(${mistakes.join(", ")})`);
+  }
+  const label = parts.join(" • ");
+
+  return {
+    label,
+    direction: trade.direction,
+    setup: trade.setup,
+    market: trade.market,
+    market_condition: trade.market_condition,
+    grade: trade.grade || "N/A",
+    timeframe: trade.timeframe || "N/A",
+    trend: trade.trend || "N/A",
+    entry_price: trade.entry_price,
+    stop_loss: trade.stop_loss,
+    take_profit: trade.take_profit,
+    exit_price: trade.exit_price,
+    planned_rr: trade.planned_rr,
+    actual_rr: trade.actual_rr,
+    profit_loss: trade.profit_loss,
+    fees: trade.fees,
+    entry_time: trade.entry_time,
+    exit_time: trade.exit_time,
+    max_rr_reached: trade.max_rr_reached,
+    max_adverse_move: trade.max_adverse_move,
+    confluences: Array.isArray(confluences) ? confluences : [],
+    mistakes: Array.isArray(mistakes) ? mistakes : [],
+    psychology: Array.isArray(psychology) ? psychology : [],
+    management: Array.isArray(management) ? management : [],
+    notes: trade.notes || "",
+  };
+}
+
+// Transform a plan into readable format (strip images/binary)
+function transformPlan(plan: any, type: "weekly" | "daily"): any {
+  const result: any = {};
+  if (type === "daily") {
+    result.label = `Daily Plan • ${formatDate(plan.date)} • ${plan.session_focus} • Bias: ${plan.daily_bias}`;
+    result.max_trades = plan.max_trades;
+    result.risk_limit = plan.risk_limit;
+    result.took_trades = plan.took_trades;
+    result.reviewed = plan.reviewed;
+    result.result_narrative = plan.result_narrative;
+    result.note = plan.note;
+    // Parse pairs but strip images
+    const pairs = safeParseJson(plan.pairs);
+    if (Array.isArray(pairs)) {
+      result.pairs = pairs.map((p: any) => ({
+        pair: p.pair, bias: p.bias, setup: p.setup, keyLevels: p.keyLevels, narrative: p.narrative,
+      }));
+    }
+  } else {
+    result.label = `Weekly Plan • Week of ${formatDate(plan.week_start)} • Bias: ${plan.bias || "None"}`;
+    result.risk = plan.risk;
+    result.goals = plan.goals;
+    result.levels = plan.levels;
+    result.reviewed = plan.reviewed;
+    result.markets = safeParseJson(plan.markets);
+    result.setups = safeParseJson(plan.setups);
+    // Parse pair analyses but strip images
+    const analyses = safeParseJson(plan.pair_analyses);
+    if (Array.isArray(analyses)) {
+      result.pair_analyses = analyses.map((a: any) => ({
+        pair: a.pair, bias: a.bias, keyLevels: a.keyLevels, narrative: a.narrative,
+        expectedDirection: a.expectedDirection, actualDirection: a.actualDirection,
+        actualResult: a.actualResult, note: a.note,
+      }));
     }
   }
+  return result;
+}
 
-  let json = JSON.stringify(summarized);
-  // If still too large, further reduce
+// Transform account to readable format (no IDs)
+function transformAccount(acc: any): any {
+  return {
+    label: `${acc.name} (${acc.broker}) • ${acc.type} • ${acc.currency}`,
+    status: acc.status,
+    stage: acc.stage,
+    starting_balance: acc.starting_balance,
+    current_size: acc.current_size,
+    initial_size: acc.initial_size,
+    target_balance: acc.target_balance,
+    target_percent: acc.target_percent,
+    daily_drawdown_limit: acc.daily_drawdown_limit,
+    daily_drawdown_percent: acc.daily_drawdown_percent,
+    max_drawdown_limit: acc.max_drawdown_limit,
+    max_drawdown_percent: acc.max_drawdown_percent,
+    steps: acc.steps,
+  };
+}
+
+function buildReadableContext(context: Record<string, any>): string {
+  const readable: Record<string, any> = {};
+
+  // Trades — transform to readable labels
+  const trades = context.trades || [];
+  readable.trades = trades.slice(0, 30).map(transformTrade);
+  readable.trades_total_count = trades.length;
+
+  // Accounts
+  const accounts = context.trading_accounts || [];
+  readable.accounts = accounts.map(transformAccount);
+
+  // Weekly plans
+  const weeklyPlans = context.weekly_plans || [];
+  readable.weekly_plans = weeklyPlans.slice(0, 5).map((p: any) => transformPlan(p, "weekly"));
+  readable.weekly_plans_total_count = weeklyPlans.length;
+
+  // Daily plans
+  const dailyPlans = context.daily_plans || [];
+  readable.daily_plans = dailyPlans.slice(0, 5).map((p: any) => transformPlan(p, "daily"));
+  readable.daily_plans_total_count = dailyPlans.length;
+
+  // Transactions — simplified
+  const transactions = context.transactions || [];
+  readable.transactions = transactions.slice(0, 20).map((t: any) => ({
+    type: t.type, amount: t.amount, date: formatDate(t.date), note: t.note,
+  }));
+
+  // Scale events — simplified
+  const scaleEvents = context.scale_events || [];
+  readable.scale_events = scaleEvents.slice(0, 10).map((s: any) => ({
+    date: formatDate(s.date), old_size: s.old_size, new_size: s.new_size, note: s.note,
+  }));
+
+  // User settings — pass through (already small)
+  readable.user_settings = context.user_settings;
+
+  let json = JSON.stringify(readable);
+  // Safety: if still too large, cut trades further
   if (json.length > 30000) {
-    for (const [table, data] of Object.entries(summarized)) {
-      if (Array.isArray(data) && data.length > 10) {
-        summarized[table] = data.slice(0, 10);
-      }
-    }
-    json = JSON.stringify(summarized);
+    readable.trades = readable.trades.slice(0, 15);
+    json = JSON.stringify(readable);
   }
   return json;
 }
@@ -139,36 +254,43 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all user data
+    // Fetch all user data and build human-readable context
     const userData = await fetchAllUserData(supabase, userId);
-    const dataContext = summarizeIfLarge(userData);
+    const dataContext = buildReadableContext(userData);
 
     const systemPrompt = `You are an advanced trading performance coach and AI mentor.
-You have access to the user's FULL trading journal database. Here is their complete data:
+You have access to the user's FULL trading journal database in human-readable format:
 
 ${dataContext}
 
 YOUR ROLE:
 - Understand user's trading behavior deeply
-- Analyze performance across all dimensions (trades, psychology, plans, mistakes, backtesting)
+- Analyze performance across all dimensions (trades, psychology, plans, mistakes, management)
 - Detect patterns, mistakes, and strengths
 - Give actionable improvements
 
-RULES:
+CRITICAL RULES FOR REFERENCING TRADES:
+- ALWAYS reference trades using their human-readable label like "GBPUSD • 1 Apr 2026 • New York Kill Zone • Loss"
+- NEVER use or mention any internal IDs, UUIDs, or technical identifiers
+- When discussing multiple trades, list them using their readable labels
+- When pointing out a specific trade, include the pair, date, session, and result
+- If a trade has mistakes tagged, include them in the reference like "GBPUSD • 1 Apr 2026 • Loss (FOMO, Overtrading)"
+
+GENERAL RULES:
 - DO NOT assume or invent data that isn't provided
 - Use ONLY the provided data for trading-related questions
 - If question is general (not about their trading) → answer normally as a helpful coach
-- If question is about their trading → MUST reference their actual data
+- If question is about their trading → MUST reference their actual data with readable labels
 - If insufficient data exists → say "Not enough data yet to analyze this"
 
 RESPONSE FORMAT (for trading analysis):
-📊 **Insight**: [what you found]
-🔍 **Reason**: [why this matters]
-🎯 **Action**: [what to do about it]
+📊 **Insight**: [what you found — reference specific trades by their readable labels]
+🔍 **Reason**: [why this matters — use concrete numbers and dates]
+🎯 **Action**: [what to do about it — specific, actionable advice]
 
 For general questions, respond naturally without this format.
 
-Be concise, data-driven, and supportive. Use numbers and specifics from their data.`;
+Be concise, data-driven, and supportive. Use numbers, dates, and specific trade references from their data.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
