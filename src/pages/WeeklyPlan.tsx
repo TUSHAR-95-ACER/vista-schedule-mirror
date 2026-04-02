@@ -186,18 +186,10 @@ export default function WeeklyPlanPage() {
 
         {/* Stats Bar */}
         {weeklyPlans.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-mono font-bold text-foreground">{weeklyPlans.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Total Weeks</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-mono font-bold text-primary">{weeklyPlans.filter(p => p.bias === 'Bullish').length}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Bullish Weeks</p>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-4 text-center">
-              <p className="text-2xl font-mono font-bold text-success">{weeklyPlans.filter(p => p.reviewed).length}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Reviewed</p>
             </div>
           </div>
         )}
