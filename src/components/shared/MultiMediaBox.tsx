@@ -6,7 +6,6 @@ import { UnifiedMediaBox } from './UnifiedMediaBox';
 import { cn } from '@/lib/utils';
 
 interface MultiMediaBoxProps {
-  /** Pipe-separated values for backward compat, or array */
   values: string[];
   onChange: (values: string[]) => void;
   label: string;
@@ -16,41 +15,58 @@ interface MultiMediaBoxProps {
 }
 
 export function MultiMediaBox({ values, onChange, label, accept = ['image', 'video', 'url'], maxItems = 5, maxPreviewHeight = '300px' }: MultiMediaBoxProps) {
-  const items = values.filter(Boolean);
+  // Track number of slots separately so empty slots persist
+  const [slotCount, setSlotCount] = useState(Math.max(1, values.length));
+
+  // Ensure we always have at least slotCount entries
+  const slots = Array.from({ length: Math.max(slotCount, values.length) }, (_, i) => values[i] || '');
 
   const updateItem = (index: number, value: string) => {
-    if (!value) {
-      // Remove item
-      onChange(items.filter((_, i) => i !== index));
-    } else {
-      const updated = [...items];
-      updated[index] = value;
-      onChange(updated);
-    }
+    const updated = [...slots];
+    updated[index] = value;
+    // Pass all values (including empty) to parent but filter empties for storage
+    onChange(updated);
+  };
+
+  const removeItem = (index: number) => {
+    const updated = slots.filter((_, i) => i !== index);
+    setSlotCount(Math.max(1, updated.length));
+    onChange(updated.length === 0 ? [''] : updated);
   };
 
   const addItem = () => {
-    if (items.length < maxItems) {
-      onChange([...items, '']);
+    const filledCount = slots.filter(Boolean).length;
+    if (filledCount < maxItems) {
+      const newSlots = [...slots, ''];
+      setSlotCount(newSlots.length);
+      onChange(newSlots);
     }
   };
 
-  // Always show at least one empty slot
-  const displayItems = items.length === 0 ? [''] : items;
-  const canAdd = items.filter(Boolean).length > 0 && items.length < maxItems;
+  const filledCount = slots.filter(Boolean).length;
+  const canAdd = filledCount > 0 && filledCount < maxItems;
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>
+      {label && <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>}
       
       <div className="space-y-3">
-        {displayItems.map((item, idx) => (
+        {slots.map((item, idx) => (
           <div key={idx} className="relative">
-            {/* Item number badge for multiple items */}
-            {items.filter(Boolean).length > 1 && item && (
+            {filledCount > 1 && item && (
               <div className="absolute -top-1.5 -left-1.5 z-10 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
                 {idx + 1}
               </div>
+            )}
+            {/* Remove button for extra slots */}
+            {slots.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeItem(idx)}
+                className="absolute -top-1.5 -right-1.5 z-10 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+              >
+                <X className="h-3 w-3" />
+              </button>
             )}
             <UnifiedMediaBox
               value={item}
@@ -63,7 +79,6 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
         ))}
       </div>
 
-      {/* Add More button */}
       {canAdd && (
         <Button
           type="button"
@@ -73,7 +88,7 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
           onClick={addItem}
         >
           <Plus className="h-3.5 w-3.5" />
-          Add More ({items.filter(Boolean).length}/{maxItems})
+          Add More ({filledCount}/{maxItems})
         </Button>
       )}
     </div>

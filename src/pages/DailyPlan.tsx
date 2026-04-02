@@ -7,16 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, ChevronDown, Newspaper, Video } from 'lucide-react';
-import { DailyPlan, DailyPairPlan, ALL_ASSETS, Session } from '@/types/trading';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, Video } from 'lucide-react';
+import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
-
-const SESSIONS: Session[] = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
 
 const emptyPairPlan = (): DailyPairPlan => ({
   id: crypto.randomUUID(),
@@ -41,18 +40,17 @@ function formatFullDate(date: string): string {
 }
 
 function BiasTag({ bias }: { bias: string }) {
+  if (bias === 'Neutral') return null;
   return (
     <span className={cn(
       'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
       bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
       bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
-      bias === 'Neutral' && 'bg-muted text-muted-foreground border-border',
     )}>
       <span className={cn(
         'h-1.5 w-1.5 rounded-full',
         bias === 'Bullish' && 'bg-success',
         bias === 'Bearish' && 'bg-destructive',
-        bias === 'Neutral' && 'bg-muted-foreground',
       )} />
       {bias}
     </span>
@@ -108,7 +106,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function DailyPlanPage() {
-  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades } = useTrading();
+  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
   const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
@@ -118,9 +116,9 @@ export default function DailyPlanPage() {
       id: crypto.randomUUID(),
       date: new Date().toISOString().split('T')[0],
       dailyBias: 'Neutral',
-      sessionFocus: 'New York',
-      maxTrades: 3,
-      riskLimit: '2% per trade',
+      sessionFocus: sessions[0] || 'New York',
+      maxTrades: 2,
+      riskLimit: '1%',
       pairs: [emptyPairPlan()],
       newsItems: [],
       analysisVideoUrl: '',
@@ -166,6 +164,23 @@ export default function DailyPlanPage() {
     if (!localPlan) return;
     updateDailyPlan(localPlan);
     toast({ title: '✅ Saved!', description: 'Daily plan saved successfully.' });
+    setActiveId(null);
+    setLocalPlan(null);
+  };
+
+  // Parse sessionFocus as potentially comma-separated for multi-select
+  const selectedSessions = useMemo(() => {
+    if (!localPlan) return [];
+    const sf = localPlan.sessionFocus as string;
+    return sf ? sf.split(',').map(s => s.trim()).filter(Boolean) : [];
+  }, [localPlan?.sessionFocus]);
+
+  const toggleSession = (session: string) => {
+    const current = selectedSessions;
+    const updated = current.includes(session)
+      ? current.filter(s => s !== session)
+      : [...current, session];
+    update({ sessionFocus: updated.join(', ') as any });
   };
 
   const dayTrades = useMemo(() => {
@@ -211,7 +226,7 @@ export default function DailyPlanPage() {
     <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-5 pb-28">
       <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All days" />
 
-      {/* Hero Banner */}
+      {/* Hero Banner - no Neutral badge */}
       <div className="relative rounded-2xl overflow-hidden border border-primary/20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent" />
         <div className="relative px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -224,11 +239,10 @@ export default function DailyPlanPage() {
               {formatFullDate(localPlan.date)}
             </h1>
           </div>
-          <BiasTag bias={localPlan.dailyBias} />
         </div>
       </div>
 
-      {/* Config Section */}
+      {/* Config Section - removed daily bias */}
       <SectionCard title="Session Config" icon={<Shield className="h-3.5 w-3.5" />} badge="Setup">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -236,31 +250,34 @@ export default function DailyPlanPage() {
             <Input type="date" value={localPlan.date} onChange={e => update({ date: e.target.value })} className="rounded-lg h-9 text-sm" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Session Focus</Label>
-            <Select value={localPlan.sessionFocus} onValueChange={v => update({ sessionFocus: v as Session })}>
-              <SelectTrigger className="rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>{SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Max Trades</Label>
-            <Input type="number" min={1} max={20} value={localPlan.maxTrades} onChange={e => update({ maxTrades: parseInt(e.target.value) || 3 })} className="rounded-lg h-9 text-sm" />
+            <Input type="number" min={1} max={20} value={localPlan.maxTrades} onChange={e => update({ maxTrades: parseInt(e.target.value) || 2 })} className="rounded-lg h-9 text-sm" />
           </div>
-          <div className="space-y-1.5">
+          <div className="col-span-2 space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Risk Limit</Label>
-            <Input value={localPlan.riskLimit} onChange={e => update({ riskLimit: e.target.value })} placeholder="Max 2% per trade" className="rounded-lg h-9 text-sm" />
+            <Input value={localPlan.riskLimit} onChange={e => update({ riskLimit: e.target.value })} placeholder="1%" className="rounded-lg h-9 text-sm" />
           </div>
         </div>
+        {/* Multi-session select using checkboxes */}
         <div className="space-y-1.5">
-          <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Daily Bias</Label>
-          <Select value={localPlan.dailyBias} onValueChange={v => update({ dailyBias: v as any })}>
-            <SelectTrigger className="w-48 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Bullish">Bullish</SelectItem>
-              <SelectItem value="Bearish">Bearish</SelectItem>
-              <SelectItem value="Neutral">Neutral</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Session Focus (multi-select)</Label>
+          <div className="flex flex-wrap gap-2">
+            {sessions.map(s => (
+              <label key={s} className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium cursor-pointer transition-all',
+                selectedSessions.includes(s)
+                  ? 'bg-primary/10 border-primary/30 text-primary'
+                  : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
+              )}>
+                <Checkbox
+                  checked={selectedSessions.includes(s)}
+                  onCheckedChange={() => toggleSession(s)}
+                  className="h-3 w-3"
+                />
+                {s}
+              </label>
+            ))}
+          </div>
         </div>
       </SectionCard>
 
@@ -298,7 +315,7 @@ export default function DailyPlanPage() {
                 </SelectTrigger>
                 <SelectContent>{ALL_ASSETS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
               </Select>
-              {pp.bias !== 'Neutral' && <BiasTag bias={pp.bias} />}
+              <BiasTag bias={pp.bias} />
             </div>
             <div className="h-px flex-1 bg-gradient-to-r from-border via-transparent to-transparent" />
             {localPlan.pairs.length > 1 && (
@@ -308,7 +325,7 @@ export default function DailyPlanPage() {
             )}
           </div>
 
-          {/* Bias & Prediction in a grid */}
+          {/* Bias & Reasons */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
               <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
@@ -335,11 +352,6 @@ export default function DailyPlanPage() {
           <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
             <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
             <Textarea value={pp.narrative || ''} onChange={e => updatePair(pp.id, { narrative: e.target.value })} placeholder="Expected price movement..." className="min-h-[60px] text-sm rounded-lg" />
-          </SectionCard>
-
-          {/* Execution Plan */}
-          <SectionCard title="Execution Plan" icon={<Target className="h-3.5 w-3.5" />} accent="warning">
-            <Textarea value={pp.keyLevels} onChange={e => updatePair(pp.id, { keyLevels: e.target.value })} placeholder="Entry / SL / TP / Key levels..." className="min-h-[70px] text-sm font-mono rounded-lg" />
           </SectionCard>
 
           {/* Result */}
