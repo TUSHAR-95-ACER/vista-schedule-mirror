@@ -330,6 +330,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       toast({ title: 'Grade required', description: 'Please select a grade before saving.', variant: 'destructive' });
       return;
     }
+    if (!form.trend) {
+      toast({ title: 'Trend required', description: 'Please select a market trend before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
