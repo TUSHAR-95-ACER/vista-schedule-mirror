@@ -5,7 +5,6 @@ import { PageHeader } from '@/components/shared/MetricCard';
 import { Lightbulb, TrendingUp, TrendingDown, Target, Activity, BarChart3, Crosshair, Clock, AlertTriangle, Zap, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { cn } from '@/lib/utils';
-import { cn } from '@/lib/utils';
 
 function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }: {
   label: string; value: string; subtitle?: string;
