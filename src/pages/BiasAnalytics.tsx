@@ -65,7 +65,7 @@ function AccuracyBar({ label, value, total }: { label: string; value: number; to
 }
 
 export default function BiasAnalytics() {
-  const { weeklyPlans, trades } = useTrading();
+  const { weeklyPlans, dailyPlans, trades } = useTrading();
 
   const biasStats = useMemo(() => {
     let total = 0, correct = 0;
