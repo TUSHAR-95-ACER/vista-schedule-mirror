@@ -3,6 +3,7 @@ import { DollarSign, Percent, TrendingUp, Award, ArrowDown, BarChart3, Zap } fro
 import { Trade, TradingAccount, Transaction, ScaleEvent } from '@/types/trading';
 import { calcWinRate, calcProfitFactor, calcMaxDrawdown, calcAvgRR, formatCurrency, formatPercent } from '@/lib/calculations';
 import { MetricCard } from '@/components/shared/MetricCard';
+import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { EquityCurveChart } from '@/components/dashboard/EquityCurveChart';
 
 interface AccountPerformanceProps {
