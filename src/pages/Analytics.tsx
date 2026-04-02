@@ -85,7 +85,7 @@ function getTradeGrade(t: Trade): string {
 
 // ─── Main Component ─────────────────────────────────────────────────
 export default function Analytics() {
-  const { trades, sessions: ctxSessions, conditions: ctxConditions, customSetups: ctxSetups } = useTrading();
+  const { trades, sessions: ctxSessions, conditions: ctxConditions, customSetups: ctxSetups, gradesList } = useTrading();
 
   // Filters
   const [filterPair, setFilterPair] = useState<string>('');
