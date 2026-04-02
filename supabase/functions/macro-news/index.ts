@@ -121,15 +121,23 @@ async function fetchBreakingNews(pair: string, _date: string) {
       throw new Error(`NewsAPI error [${response.status}]: ${JSON.stringify(data)}`);
     }
 
-    const articles = (data.articles || []).map((article: any, i: number) => ({
-      id: `news-${i}-${Date.now()}`,
-      title: article.title,
-      description: article.description,
-      source: article.source?.name,
-      url: article.url,
-      publishedAt: article.publishedAt,
-      imageUrl: article.urlToImage,
-    }));
+    // Server-side filter: remove junk that slipped through
+    const JUNK_KEYWORDS = /\b(crypto|bitcoin|ethereum|solana|dogecoin|nft|meme coin|celebrity|kardashian|hollywood|netflix|spotify|tiktok|instagram|sports|nba|nfl|mlb|stock pick|penny stock)\b/i;
+
+    const articles = (data.articles || [])
+      .filter((article: any) => {
+        const text = `${article.title || ''} ${article.description || ''}`;
+        return !JUNK_KEYWORDS.test(text);
+      })
+      .map((article: any, i: number) => ({
+        id: `news-${i}-${Date.now()}`,
+        title: article.title,
+        description: article.description,
+        source: article.source?.name,
+        url: article.url,
+        publishedAt: article.publishedAt,
+        imageUrl: article.urlToImage,
+      }));
 
     return new Response(
       JSON.stringify({ success: true, data: articles }),
