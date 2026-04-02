@@ -7,11 +7,12 @@ import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { cn } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
-function StatCard({ label, value, subtitle, trend, icon: Icon, accent }: {
+function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }: {
   label: string; value: string; subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
   icon?: React.ElementType;
   accent?: 'primary' | 'success' | 'warning' | 'destructive';
+  tooltip?: string;
 }) {
   const accentBg = {
     primary: 'bg-primary/10 text-primary',
@@ -23,7 +24,10 @@ function StatCard({ label, value, subtitle, trend, icon: Icon, accent }: {
   return (
     <div className="bg-card border border-border/60 rounded-xl p-4 flex flex-col justify-between min-h-[110px] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-shadow">
       <div className="flex items-start justify-between mb-auto">
-        <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight">{label}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight">{label}</span>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         {Icon && (
           <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center shrink-0', accent ? accentBg[accent] : 'bg-muted text-muted-foreground')}>
             <Icon className="h-3.5 w-3.5" />
