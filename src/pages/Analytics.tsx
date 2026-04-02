@@ -238,12 +238,12 @@ export default function Analytics() {
 
   // ─── Week of month / weekday / condition ──────────────────────────
   const conditionData = useMemo(() => {
-    const conds = ['Trending', 'Ranging', 'Volatile'];
-    return conds.map(c => {
+    const allConds = [...new Set([...ctxConditions, ...valid.map(t => t.marketCondition)])];
+    return allConds.map(c => {
       const ct = valid.filter(t => t.marketCondition === c);
       return { name: c, trades: ct.length, winRate: calcWinRate(ct), pl: ct.reduce((a, t) => a + t.profitLoss, 0) };
     }).filter(d => d.trades > 0);
-  }, [valid]);
+  }, [valid, ctxConditions]);
 
   const weekOfMonthData = useMemo(() => {
     return [1, 2, 3, 4, 5].map(w => {
