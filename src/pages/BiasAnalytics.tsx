@@ -153,6 +153,7 @@ export default function BiasAnalytics() {
   }, [weeklyPlans, dailyPlans, trades]);
 
   const missedOpps = useMemo(() => {
+    // Renamed: "Opportunity Not Found" — bias was correct but no trade was taken
     let count = 0;
     const tradeDates = new Set(trades.map(t => t.date + '_' + t.asset));
     weeklyPlans.forEach(wp => {
