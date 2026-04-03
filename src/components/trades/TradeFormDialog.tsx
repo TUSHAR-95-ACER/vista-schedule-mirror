@@ -132,6 +132,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     maxAdverseMove: '',
     timeframe: '',
     trend: '',
+    dayTags: [] as string[],
+    dayTagInput: '',
   };
 
   const [form, setForm] = useState(defaultForm);
