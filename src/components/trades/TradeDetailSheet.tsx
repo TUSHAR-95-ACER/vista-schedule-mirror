@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Trade, TradeJourneyStep } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Video, Calendar, Tag } from 'lucide-react';
+import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Video, Calendar, Tag, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
 import { TradeJourneyTimeline } from './TradeJourneyTimeline';
@@ -17,10 +17,36 @@ interface Props {
   onClose: () => void;
 }
 
+function parseNumericValue(val: string | null | undefined): number | null {
+  if (!val || val === 'N/A') return null;
+  const cleaned = val.replace(/[%KMB,]/gi, '').trim();
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? null : num;
+}
+
+function getEventImpactBias(event: { title: string; forecast: string; previous: string; actual: string | null; currency: string }) {
+  const actual = parseNumericValue(event.actual);
+  const forecast = parseNumericValue(event.forecast);
+  if (actual === null || forecast === null) return 'neutral';
+  
+  const currency = event.currency?.toUpperCase() || '';
+  const isPositiveForCurrency = actual > forecast;
+  
+  if (isPositiveForCurrency) return `bullish_${currency}`;
+  if (actual < forecast) return `bearish_${currency}`;
+  return 'neutral';
+}
+
+function getBiasLabel(bias: string): { text: string; color: string; icon: typeof TrendingUp } {
+  if (bias.startsWith('bullish')) return { text: `Bullish ${bias.split('_')[1] || ''}`, color: 'text-success', icon: TrendingUp };
+  if (bias.startsWith('bearish')) return { text: `Bearish ${bias.split('_')[1] || ''}`, color: 'text-destructive', icon: TrendingDown };
+  return { text: 'Neutral', color: 'text-muted-foreground', icon: Minus };
+}
+
 export function TradeDetailSheet({ trade, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { updateTrade, dailyPlans } = useTrading();
-  const { calendarEvents } = useMacroNewsContext();
+  const { calendarEvents, news } = useMacroNewsContext();
 
   if (!trade) return null;
 
@@ -31,6 +57,32 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
     const eventDate = e.date?.split('T')[0] || '';
     return eventDate === trade.date;
   });
+
+  // Get top 3 most important events with impact analysis
+  const topEvents = tradeDateEvents.slice(0, 3);
+  
+  // Calculate net bias
+  const eventBiases = useMemo(() => {
+    return topEvents.map(e => ({
+      ...e,
+      bias: getEventImpactBias(e),
+    }));
+  }, [topEvents]);
+
+  const netBias = useMemo(() => {
+    const biases = eventBiases.map(e => e.bias);
+    const bullish = biases.filter(b => b.startsWith('bullish')).length;
+    const bearish = biases.filter(b => b.startsWith('bearish')).length;
+    if (bullish > bearish) return 'bullish_USD';
+    if (bearish > bullish) return 'bearish_USD';
+    return 'neutral';
+  }, [eventBiases]);
+
+  // Get same-day news
+  const sameDayNews = news.filter(n => {
+    if (!n.publishedAt) return false;
+    return n.publishedAt.split('T')[0] === trade.date;
+  }).slice(0, 3);
 
   // Get daily plan images for this date
   const dailyPlanImages: string[] = [];
@@ -93,26 +145,106 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
             </div>
           )}
 
-          {/* Economic Events for this day */}
-          {tradeDateEvents.length > 0 && (
+          {/* Event Impact Analysis */}
+          {topEvents.length > 0 && (
+            <div className="px-5 py-3 border-b border-border/50 bg-card">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1 font-semibold">
+                📊 Event Impact Analysis — {trade.date}
+              </p>
+              <div className="space-y-2">
+                {eventBiases.map(event => {
+                  const biasInfo = getBiasLabel(event.bias);
+                  const BiasIcon = biasInfo.icon;
+                  const hasActual = event.actual && event.actual !== 'N/A';
+                  return (
+                    <div key={event.id} className="bg-muted/30 border border-border/50 rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="outline" className="text-[9px] font-mono h-4">{event.currency}</Badge>
+                            <span className="text-xs font-semibold text-foreground">{event.title}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px]">
+                            <span className="text-muted-foreground">Previous: <span className="font-mono font-medium text-foreground">{event.previous}</span></span>
+                            <span className="text-muted-foreground">Forecast: <span className="font-mono font-medium text-foreground">{event.forecast}</span></span>
+                            {hasActual && (
+                              <span className="text-primary font-semibold">Actual: <span className="font-mono font-bold">{event.actual}</span></span>
+                            )}
+                          </div>
+                        </div>
+                        {hasActual && (
+                          <div className={cn("flex items-center gap-1 text-xs font-semibold shrink-0", biasInfo.color)}>
+                            <BiasIcon className="h-3.5 w-3.5" />
+                            {biasInfo.text}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Net Bias */}
+              {eventBiases.some(e => e.actual && e.actual !== 'N/A') && (
+                <div className="mt-2 pt-2 border-t border-border/50 flex items-center gap-2">
+                  {(() => {
+                    const nb = getBiasLabel(netBias);
+                    const NbIcon = nb.icon;
+                    return (
+                      <>
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase">Net Impact:</span>
+                        <div className={cn("flex items-center gap-1 text-xs font-bold", nb.color)}>
+                          <NbIcon className="h-3.5 w-3.5" />
+                          {nb.text}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Same-day economic events list (remaining) */}
+          {tradeDateEvents.length > 3 && (
             <div className="px-5 py-2 border-b border-border/50 bg-destructive/5">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                <Calendar className="h-3 w-3" /> Economic Events — {trade.date}
+                <Calendar className="h-3 w-3" /> More Events — {trade.date}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {tradeDateEvents.map(event => (
+                {tradeDateEvents.slice(3).map(event => (
                   <div key={event.id} className="text-[10px] bg-destructive/10 border border-destructive/20 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
                     <span className="font-bold text-destructive">{event.currency}</span>
                     <span className="text-foreground">{event.title}</span>
                     <span className="text-muted-foreground">{event.date ? format(new Date(event.date), 'HH:mm') : ''}</span>
-                    {event.actual && <span className="text-primary font-bold">→ {event.actual}</span>}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Daily Plan Media - compact strip */}
+          {/* Same-day News */}
+          {sameDayNews.length > 0 && (
+            <div className="px-5 py-2 border-b border-border/50 bg-muted/20">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5 font-semibold">
+                📰 News Headlines — {trade.date}
+              </p>
+              <div className="space-y-1.5">
+                {sameDayNews.map(article => (
+                  <a key={article.id} href={article.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-[11px] hover:bg-accent/50 rounded-md px-2 py-1.5 transition-colors">
+                    <Badge variant={article.impact === 'high' ? 'destructive' : 'secondary'} className="text-[8px] h-3.5 shrink-0">
+                      {article.impact === 'high' ? '🔴' : '🟡'}
+                    </Badge>
+                    <span className="text-foreground line-clamp-1 flex-1">{article.title}</span>
+                    <span className="text-muted-foreground text-[9px] shrink-0">{article.source}</span>
+                    <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Daily Plan Media */}
           {dailyPlan && (dailyPlan.resultChartImage || dailyPlan.analysisVideoUrl || dailyPlanImages.length > 0) && (
             <div className="px-5 py-2 border-b border-border/50 bg-muted/30">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
@@ -176,7 +308,6 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
 
             {/* Right Column */}
             <div className="px-5 py-3 space-y-3">
-              {/* Technical Points */}
               {((trade.entryConfluences && trade.entryConfluences.length > 0) || (trade.targetConfluences && trade.targetConfluences.length > 0) || trade.confluences.length > 0) && (
                 <Collapsible>
                   <CollapsibleTrigger className="flex items-center justify-between w-full group">
@@ -269,7 +400,7 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
             </div>
           </div>
 
-          {/* Screenshots - full width row */}
+          {/* Screenshots */}
           {(trade.predictionImage || trade.executionImage) && (
             <div className="px-5 py-3 border-t border-border/30">
               <h4 className="text-[10px] font-medium text-muted-foreground mb-2 uppercase tracking-wider">Screenshots</h4>

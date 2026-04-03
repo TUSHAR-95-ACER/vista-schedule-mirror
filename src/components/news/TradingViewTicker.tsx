@@ -9,6 +9,10 @@ export function TradingViewTicker() {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = '';
 
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tradingview-widget-container__widget';
+    containerRef.current.appendChild(wrapper);
+
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
     script.async = true;
@@ -17,7 +21,6 @@ export function TradingViewTicker() {
         { proName: 'FX:EURUSD', title: 'EUR/USD' },
         { proName: 'FX:GBPUSD', title: 'GBP/USD' },
         { proName: 'OANDA:XAUUSD', title: 'Gold' },
-        { proName: 'TVC:DXY', title: 'DXY' },
         { proName: 'FOREXCOM:US30', title: 'US30' },
         { proName: 'FOREXCOM:NAS100', title: 'NAS100' },
       ],
@@ -32,10 +35,10 @@ export function TradingViewTicker() {
   }, [resolvedTheme]);
 
   return (
-    <div className="w-full border-b border-border/50 overflow-hidden">
-      <div className="tradingview-widget-container" ref={containerRef}>
-        <div className="tradingview-widget-container__widget" />
-      </div>
+    <div className="w-full border-b border-border/50 overflow-hidden relative">
+      <div className="tradingview-widget-container" ref={containerRef} />
+      {/* Overlay to hide TradingView branding on the right */}
+      <div className="absolute top-0 right-0 h-full w-[40px] bg-background z-10" />
     </div>
   );
 }

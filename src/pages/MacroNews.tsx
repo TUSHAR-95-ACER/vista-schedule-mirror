@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import { CalendarIcon, RefreshCw, Clock, Loader2, Plus, X, Settings2 } from 'lucide-react';
+import { CalendarIcon, RefreshCw, Clock, Loader2, Plus, X, Settings2, ExternalLink, Newspaper } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { DateFilter } from '@/hooks/useMacroNews';
@@ -19,8 +19,8 @@ export default function MacroNews() {
     addPair, removePair,
     dateFilter, setDateFilter,
     customDate, setCustomDate,
-    calendarEvents,
-    loading, refresh,
+    calendarEvents, news,
+    loading, newsLoading, refresh,
   } = useMacroNewsContext();
 
   const [newPairInput, setNewPairInput] = useState('');
@@ -54,7 +54,7 @@ export default function MacroNews() {
               <span className="text-xs font-medium text-muted-foreground">Pair:</span>
               <div className="flex gap-1 flex-wrap">
                 {pairs.map(p => (
-                  <Button key={p} size="sm" variant={activePair === p ? 'default' : 'outline'} className="text-xs h-8" onClick={() => setActivePair(p)}>
+                  <Button key={p} size="sm" variant={activePair === p ? 'default' : 'outline'} className={cn("text-xs h-8", activePair !== p && "text-foreground")} onClick={() => setActivePair(p)}>
                     {p}
                   </Button>
                 ))}
@@ -120,12 +120,12 @@ export default function MacroNews() {
         </CardContent>
       </Card>
 
-      {/* Economic Calendar - Full Width */}
+      {/* Economic Calendar */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             📅 Economic Calendar — {activePair}
-            <InfoTooltip text="Real-time high-impact events filtered by pair currencies. Auto-refreshes every 60 seconds. Actual values are highlighted when released." />
+            <InfoTooltip text="Real-time high-impact events filtered by pair currencies. Auto-refreshes every 60 seconds." />
             {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
           </CardTitle>
         </CardHeader>
@@ -175,6 +175,59 @@ export default function MacroNews() {
                 </div>
               );
             })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Macro News Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Newspaper className="h-4 w-4" />
+            Macro News — {activePair}
+            <InfoTooltip text="Latest macro-economic news relevant to your selected pair. Filtered for high-impact events only." />
+            {newsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {news.length === 0 && !newsLoading && (
+            <p className="text-sm text-muted-foreground text-center py-8">No macro news available. News requires an API key to be configured.</p>
+          )}
+          <div className="grid grid-cols-1 gap-3">
+            {news.map(article => (
+              <a
+                key={article.id}
+                href={article.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "block border rounded-xl p-4 transition-all hover:bg-accent/50",
+                  article.impact === 'high' ? "border-destructive/20 bg-destructive/5" : "border-border"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  {article.imageUrl && (
+                    <img src={article.imageUrl} alt="" className="w-20 h-14 rounded-lg object-cover shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant={article.impact === 'high' ? 'destructive' : 'secondary'} className="text-[9px] h-4">
+                        {article.impact === 'high' ? '🔴 HIGH' : '🟡 MEDIUM'}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{article.source}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, HH:mm') : ''}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground line-clamp-2">{article.title}</p>
+                    {article.description && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{article.description}</p>
+                    )}
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />
+                </div>
+              </a>
+            ))}
           </div>
         </CardContent>
       </Card>
