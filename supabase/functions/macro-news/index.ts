@@ -78,8 +78,9 @@ async function fetchEconomicCalendar(currencies: string[], date: string) {
   let filtered = events.filter((event: any) => {
     if (event.impact !== 'High') return false;
     const eventCurrency = event.country?.toUpperCase();
+    if (!eventCurrency) return false;
     if (currencies.includes('ALL')) return true;
-    return currencies.includes(eventCurrency);
+    return currencies.some(c => c === eventCurrency);
   });
 
   if (date) {
