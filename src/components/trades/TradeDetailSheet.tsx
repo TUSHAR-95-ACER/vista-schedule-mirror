@@ -48,20 +48,18 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
   const { updateTrade, dailyPlans } = useTrading();
   const { calendarEvents, news } = useMacroNewsContext();
 
-  if (!trade) return null;
+  const dailyPlan = trade ? dailyPlans.find(p => p.date === trade.date) : null;
 
-  const dailyPlan = dailyPlans.find(p => p.date === trade.date);
+  const tradeDateEvents = useMemo(() => {
+    if (!trade) return [];
+    return calendarEvents.filter(e => {
+      const eventDate = e.date?.split('T')[0] || '';
+      return eventDate === trade.date;
+    });
+  }, [trade, calendarEvents]);
 
-  // Get events for this trade's date
-  const tradeDateEvents = calendarEvents.filter(e => {
-    const eventDate = e.date?.split('T')[0] || '';
-    return eventDate === trade.date;
-  });
-
-  // Get top 3 most important events with impact analysis
   const topEvents = tradeDateEvents.slice(0, 3);
-  
-  // Calculate net bias
+
   const eventBiases = useMemo(() => {
     return topEvents.map(e => ({
       ...e,
@@ -78,21 +76,27 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
     return 'neutral';
   }, [eventBiases]);
 
-  // Get same-day news
-  const sameDayNews = news.filter(n => {
-    if (!n.publishedAt) return false;
-    return n.publishedAt.split('T')[0] === trade.date;
-  }).slice(0, 3);
+  const sameDayNews = useMemo(() => {
+    if (!trade) return [];
+    return news.filter(n => {
+      if (!n.publishedAt) return false;
+      return n.publishedAt.split('T')[0] === trade.date;
+    }).slice(0, 3);
+  }, [trade, news]);
 
-  // Get daily plan images for this date
-  const dailyPlanImages: string[] = [];
-  if (dailyPlan) {
-    if (dailyPlan.resultChartImage) dailyPlanImages.push(dailyPlan.resultChartImage);
-    dailyPlan.pairs.forEach(p => {
-      if (p.chartImage) dailyPlanImages.push(p.chartImage);
-      if (p.resultChartImage) dailyPlanImages.push(p.resultChartImage);
-    });
-  }
+  const dailyPlanImages = useMemo(() => {
+    const imgs: string[] = [];
+    if (dailyPlan) {
+      if (dailyPlan.resultChartImage) imgs.push(dailyPlan.resultChartImage);
+      dailyPlan.pairs.forEach(p => {
+        if (p.chartImage) imgs.push(p.chartImage);
+        if (p.resultChartImage) imgs.push(p.resultChartImage);
+      });
+    }
+    return imgs;
+  }, [dailyPlan]);
+
+  if (!trade) return null;
 
   const handleJourneyUpdate = (journey: TradeJourneyStep[]) => {
     updateTrade({ ...trade, tradeJourney: journey });
