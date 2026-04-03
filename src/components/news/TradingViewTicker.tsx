@@ -9,10 +9,13 @@ function injectWhiteTickerText(root: ParentNode | ShadowRoot) {
   const style = document.createElement('style');
   style.id = styleId;
   style.textContent = `
-    a, span, div { color: hsl(var(--foreground)) !important; }
+    a, span, div, strong, small { color: hsl(var(--primary-foreground)) !important; opacity: 1 !important; }
+    svg, path { fill: hsl(var(--primary-foreground)) !important; stroke: hsl(var(--primary-foreground)) !important; }
     [class*="ticker"], [class*="symbol"], [class*="title"], [class*="description"] {
-      color: hsl(var(--foreground)) !important;
-      fill: hsl(var(--foreground)) !important;
+      color: hsl(var(--primary-foreground)) !important;
+      fill: hsl(var(--primary-foreground)) !important;
+      stroke: hsl(var(--primary-foreground)) !important;
+      opacity: 1 !important;
     }
   `;
 
@@ -38,13 +41,18 @@ export function TradingViewTicker() {
 
       const allElements = containerRef.current.querySelectorAll<HTMLElement>('*');
       allElements.forEach((el) => {
-        el.style.color = 'hsl(var(--foreground))';
+        el.style.setProperty('color', 'hsl(var(--primary-foreground))', 'important');
+        el.style.setProperty('fill', 'hsl(var(--primary-foreground))', 'important');
+        el.style.setProperty('stroke', 'hsl(var(--primary-foreground))', 'important');
+        el.style.setProperty('opacity', '1', 'important');
         const shadowRoot = (el as HTMLElement & { shadowRoot?: ShadowRoot }).shadowRoot;
         if (shadowRoot) {
           injectWhiteTickerText(shadowRoot);
           shadowRoot.querySelectorAll<HTMLElement>('*').forEach((shadowEl) => {
-            shadowEl.style.color = 'hsl(var(--foreground))';
-            shadowEl.style.fill = 'hsl(var(--foreground))';
+            shadowEl.style.setProperty('color', 'hsl(var(--primary-foreground))', 'important');
+            shadowEl.style.setProperty('fill', 'hsl(var(--primary-foreground))', 'important');
+            shadowEl.style.setProperty('stroke', 'hsl(var(--primary-foreground))', 'important');
+            shadowEl.style.setProperty('opacity', '1', 'important');
           });
         }
       });
@@ -90,7 +98,7 @@ export function TradingViewTicker() {
   return (
     <div className="w-full border-b border-border/50 overflow-hidden relative">
       <div className="tradingview-widget-container" ref={containerRef} />
-      <div className="absolute top-0 right-0 h-full w-[40px] bg-background z-10" />
+      <div className="absolute top-0 right-0 h-full w-[40px] bg-background z-10 pointer-events-none" />
     </div>
   );
 }
