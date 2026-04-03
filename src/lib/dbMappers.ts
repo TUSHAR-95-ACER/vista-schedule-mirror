@@ -53,6 +53,7 @@ export function dbToTrade(row: any): Trade {
     timeframe: row.timeframe || undefined,
     trend: row.trend || undefined,
     tradeJourney: row.trade_journey ? (typeof row.trade_journey === 'string' ? JSON.parse(row.trade_journey) : row.trade_journey) : undefined,
+    dayTags: row.day_tags ? (typeof row.day_tags === 'string' ? JSON.parse(row.day_tags) : row.day_tags) : [],
   };
 }
 
