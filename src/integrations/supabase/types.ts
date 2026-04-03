@@ -137,6 +137,7 @@ export type Database = {
           confluences: Json | null
           created_at: string
           date: string
+          day_tags: Json | null
           direction: string
           entry_confluences: Json | null
           entry_price: number
@@ -179,6 +180,7 @@ export type Database = {
           confluences?: Json | null
           created_at?: string
           date: string
+          day_tags?: Json | null
           direction: string
           entry_confluences?: Json | null
           entry_price?: number
@@ -221,6 +223,7 @@ export type Database = {
           confluences?: Json | null
           created_at?: string
           date?: string
+          day_tags?: Json | null
           direction?: string
           entry_confluences?: Json | null
           entry_price?: number
