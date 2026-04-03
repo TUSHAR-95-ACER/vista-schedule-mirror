@@ -227,7 +227,7 @@ export default function BiasAnalytics() {
       result.push(`Strongest read on ${biasStats.bestPair.pair} — ${biasStats.bestPair.accuracy.toFixed(0)}% across ${biasStats.bestPair.total} analyses.`);
     }
     if (missedOpps > 0) {
-      result.push(`${missedOpps} missed opportunities — you called the direction right but didn't take the trade.`);
+      result.push(`${missedOpps} opportunities not found — you called the direction right but didn't take the trade.`);
     }
     if (overconfidence > 40) {
       result.push(`Overconfidence alert: ${overconfidence}% of strong bias calls were wrong.`);
