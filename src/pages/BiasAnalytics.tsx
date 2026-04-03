@@ -153,6 +153,7 @@ export default function BiasAnalytics() {
   }, [weeklyPlans, dailyPlans, trades]);
 
   const missedOpps = useMemo(() => {
+    // Renamed: "Opportunity Not Found" — bias was correct but no trade was taken
     let count = 0;
     const tradeDates = new Set(trades.map(t => t.date + '_' + t.asset));
     weeklyPlans.forEach(wp => {
@@ -226,7 +227,7 @@ export default function BiasAnalytics() {
       result.push(`Strongest read on ${biasStats.bestPair.pair} — ${biasStats.bestPair.accuracy.toFixed(0)}% across ${biasStats.bestPair.total} analyses.`);
     }
     if (missedOpps > 0) {
-      result.push(`${missedOpps} missed opportunities — you called the direction right but didn't take the trade.`);
+      result.push(`${missedOpps} opportunities not found — you called the direction right but didn't take the trade.`);
     }
     if (overconfidence > 40) {
       result.push(`Overconfidence alert: ${overconfidence}% of strong bias calls were wrong.`);
@@ -300,7 +301,7 @@ export default function BiasAnalytics() {
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" tooltip="How often your weekly analysis leads to an actual trade" />
-        <StatCard label="Missed Opportunities" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} tooltip="Times you predicted direction correctly but didn't take the trade" />
+        <StatCard label="Opportunity Not Found" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} tooltip="Times you predicted direction correctly but didn't take the trade — your bias was right but the opportunity wasn't found/acted on" />
         <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} tooltip="How often you stick with your bias vs changing it frequently" />
         <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} tooltip="Percentage of strong directional bias calls that turned out wrong" />
       </div>

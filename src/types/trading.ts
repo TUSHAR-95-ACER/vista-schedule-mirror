@@ -123,6 +123,7 @@ export interface Trade {
   timeframe?: string;
   trend?: string;
   tradeJourney?: TradeJourneyStep[];
+  dayTags?: string[];
 }
 
 export interface TradeJourneyStep {

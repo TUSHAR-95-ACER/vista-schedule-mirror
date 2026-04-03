@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -132,6 +133,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     maxAdverseMove: '',
     timeframe: '',
     trend: '',
+    dayTags: [] as string[],
+    dayTagInput: '',
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -195,6 +198,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
         timeframe: editTrade.timeframe || '',
         trend: editTrade.trend || '',
+        dayTags: editTrade.dayTags || [],
+        dayTagInput: '',
       });
     } else {
       setForm(defaultForm);
@@ -396,6 +401,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
       trend: form.trend || undefined,
+      dayTags: form.dayTags,
     };
 
     if (editTrade) updateTrade(trade);
@@ -798,6 +804,50 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
               <div className="flex flex-wrap gap-1.5">
                 {violations.map(m => (
                   <ChipToggle key={m} label={m} checked={form.mistakes.includes(m as any)} onChange={() => toggleArrayItem('mistakes', m as any)} />
+                ))}
+              </div>
+            </FormSection>
+
+            {/* ── DAY TAGS ────────────────────────────────────────── */}
+            <FormSection title="Day Tags" icon={<StickyNote className="h-3.5 w-3.5" />}>
+              <p className="text-[9px] text-muted-foreground/60">Tag this trading day (e.g. FOMC day, CPI volatility, Low liquidity)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {form.dayTags.map((tag, i) => (
+                  <Badge key={i} variant="secondary" className="gap-1 pr-1 text-[10px]">
+                    {tag}
+                    <button type="button" onClick={() => set('dayTags', form.dayTags.filter((_, j) => j !== i))} className="ml-1 hover:text-destructive">
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <Input
+                  value={form.dayTagInput}
+                  onChange={e => set('dayTagInput', e.target.value)}
+                  placeholder="Type tag and press Enter"
+                  className="h-8 text-xs rounded-lg"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && form.dayTagInput.trim()) {
+                      e.preventDefault();
+                      set('dayTags', [...form.dayTags, form.dayTagInput.trim()]);
+                      set('dayTagInput', '');
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={() => {
+                  if (form.dayTagInput.trim()) {
+                    set('dayTags', [...form.dayTags, form.dayTagInput.trim()]);
+                    set('dayTagInput', '');
+                  }
+                }}>Add</Button>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {['FOMC day', 'CPI day', 'NFP day', 'News day', 'Low liquidity', 'High volatility', 'Rollover day'].map(suggestion => (
+                  <button key={suggestion} type="button" onClick={() => { if (!form.dayTags.includes(suggestion)) set('dayTags', [...form.dayTags, suggestion]); }}
+                    className="text-[9px] px-2 py-0.5 rounded-full border border-border/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">
+                    + {suggestion}
+                  </button>
                 ))}
               </div>
             </FormSection>
