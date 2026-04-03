@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,7 +32,6 @@ import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SystemAnalytics from "./pages/SystemAnalytics";
-import MacroNews from "./pages/MacroNews";
 import { MacroNewsProvider } from "./contexts/MacroNewsContext";
 
 const queryClient = new QueryClient();
@@ -70,7 +69,7 @@ const App = () => (
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/system-analytics" element={<SystemAnalytics />} />
-              <Route path="/macro-news" element={<MacroNews />} />
+              <Route path="/macro-news" element={<Navigate to="/" replace />} />
               <Route path="/ai-coach" element={<AICoach />} />
             </Route>
             <Route path="*" element={<NotFound />} />
