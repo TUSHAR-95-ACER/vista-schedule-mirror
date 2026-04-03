@@ -22,6 +22,7 @@ export function tradeToDb(t: Trade, userId: string) {
     timeframe: t.timeframe || null,
     trend: t.trend || null,
     trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
+    day_tags: t.dayTags ? JSON.stringify(t.dayTags) : '[]',
   };
 }
 
