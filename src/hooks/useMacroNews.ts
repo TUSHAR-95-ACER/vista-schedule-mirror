@@ -43,7 +43,7 @@ function savePairs(pairs: string[]) {
 
 // Client-side cache
 const clientCache: Record<string, { data: any; ts: number }> = {};
-const CLIENT_CACHE_TTL = 3 * 60 * 1000;
+const CLIENT_CACHE_TTL = 60 * 1000; // 60 seconds to match auto-refresh
 
 function getCached(key: string) {
   const e = clientCache[key];

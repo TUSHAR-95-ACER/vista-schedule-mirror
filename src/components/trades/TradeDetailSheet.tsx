@@ -4,11 +4,13 @@ import { Trade, TradeJourneyStep } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Video } from 'lucide-react';
+import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Video, Calendar, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
 import { TradeJourneyTimeline } from './TradeJourneyTimeline';
 import { useTrading } from '@/contexts/TradingContext';
+import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
+import { format } from 'date-fns';
 
 interface Props {
   trade: Trade | null;
@@ -18,11 +20,27 @@ interface Props {
 export function TradeDetailSheet({ trade, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { updateTrade, dailyPlans } = useTrading();
+  const { calendarEvents } = useMacroNewsContext();
 
   if (!trade) return null;
 
-  // Find daily plan for this trade's date
   const dailyPlan = dailyPlans.find(p => p.date === trade.date);
+
+  // Get events for this trade's date
+  const tradeDateEvents = calendarEvents.filter(e => {
+    const eventDate = e.date?.split('T')[0] || '';
+    return eventDate === trade.date;
+  });
+
+  // Get daily plan images for this date
+  const dailyPlanImages: string[] = [];
+  if (dailyPlan) {
+    if (dailyPlan.resultChartImage) dailyPlanImages.push(dailyPlan.resultChartImage);
+    dailyPlan.pairs.forEach(p => {
+      if (p.chartImage) dailyPlanImages.push(p.chartImage);
+      if (p.resultChartImage) dailyPlanImages.push(p.resultChartImage);
+    });
+  }
 
   const handleJourneyUpdate = (journey: TradeJourneyStep[]) => {
     updateTrade({ ...trade, tradeJourney: journey });
@@ -48,7 +66,7 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
         <DialogContent className="max-w-[720px] max-h-[85vh] overflow-y-auto p-0 gap-0">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-card border-b border-border px-5 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="font-heading text-lg font-bold">{trade.asset}</h2>
               <span className={cn('text-[10px] px-2 py-0.5 rounded font-semibold',
                 trade.direction === 'Long' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
@@ -65,22 +83,51 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
             </div>
           </div>
 
+          {/* Day Tags */}
+          {trade.dayTags && trade.dayTags.length > 0 && (
+            <div className="px-5 py-2 border-b border-border/50 bg-warning/5 flex items-center gap-2 flex-wrap">
+              <Tag className="h-3 w-3 text-warning shrink-0" />
+              {trade.dayTags.map((tag, i) => (
+                <Badge key={i} variant="outline" className="text-[10px] h-5 border-warning/30 text-warning bg-warning/10">{tag}</Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Economic Events for this day */}
+          {tradeDateEvents.length > 0 && (
+            <div className="px-5 py-2 border-b border-border/50 bg-destructive/5">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> Economic Events — {trade.date}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {tradeDateEvents.map(event => (
+                  <div key={event.id} className="text-[10px] bg-destructive/10 border border-destructive/20 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+                    <span className="font-bold text-destructive">{event.currency}</span>
+                    <span className="text-foreground">{event.title}</span>
+                    <span className="text-muted-foreground">{event.date ? format(new Date(event.date), 'HH:mm') : ''}</span>
+                    {event.actual && <span className="text-primary font-bold">→ {event.actual}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Daily Plan Media - compact strip */}
-          {dailyPlan && (dailyPlan.resultChartImage || dailyPlan.analysisVideoUrl) && (
+          {dailyPlan && (dailyPlan.resultChartImage || dailyPlan.analysisVideoUrl || dailyPlanImages.length > 0) && (
             <div className="px-5 py-2 border-b border-border/50 bg-muted/30">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
                 <Image className="h-3 w-3" /> Daily Plan Media — {trade.date}
               </p>
-              <div className="flex gap-2">
-                {dailyPlan.resultChartImage && (
-                  <div className="relative group cursor-pointer w-24 h-16 rounded border border-border overflow-hidden shrink-0"
-                    onClick={() => setPreviewImage(dailyPlan.resultChartImage!)}>
-                    <img src={dailyPlan.resultChartImage} alt="Daily chart" className="w-full h-full object-cover" />
+              <div className="flex gap-2 flex-wrap">
+                {dailyPlanImages.map((img, i) => (
+                  <div key={i} className="relative group cursor-pointer w-24 h-16 rounded border border-border overflow-hidden shrink-0"
+                    onClick={() => setPreviewImage(img)}>
+                    <img src={img} alt="Daily plan" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                       <ZoomIn className="h-3.5 w-3.5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
-                )}
+                ))}
                 {dailyPlan.analysisVideoUrl && (
                   <a href={dailyPlan.analysisVideoUrl} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-[11px] text-primary hover:underline bg-primary/5 px-3 py-1.5 rounded border border-primary/20">
