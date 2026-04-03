@@ -37,6 +37,13 @@ export function TradingViewTicker() {
 
   return (
     <div className="w-full border-b border-border/50 overflow-hidden relative">
+      <style>{`
+        .dark .tradingview-widget-container .tradingview-widget-container__widget a,
+        .dark .tradingview-widget-container .tradingview-widget-container__widget span,
+        .dark .tradingview-widget-container .tradingview-widget-container__widget div {
+          color: white !important;
+        }
+      `}</style>
       <div className="tradingview-widget-container" ref={containerRef} />
       {/* Overlay to hide TradingView branding on the right */}
       <div className="absolute top-0 right-0 h-full w-[40px] bg-background z-10" />
