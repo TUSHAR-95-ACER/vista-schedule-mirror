@@ -29,6 +29,7 @@ export function TradingViewTicker() {
       displayMode: 'adaptive',
       colorTheme: resolvedTheme === 'dark' ? 'dark' : 'light',
       locale: 'en',
+      largeChartUrl: '',
     });
 
     containerRef.current.appendChild(script);
