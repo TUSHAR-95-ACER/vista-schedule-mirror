@@ -400,6 +400,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
       trend: form.trend || undefined,
+      dayTags: form.dayTags,
     };
 
     if (editTrade) updateTrade(trade);
