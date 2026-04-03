@@ -160,14 +160,13 @@ export function useMacroNews() {
     fetchNews();
   }, [fetchCalendar, fetchNews]);
 
-  // Auto-refresh every 5 minutes
+  // Auto-refresh every 60 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      // Clear cache to force fresh fetch
       Object.keys(clientCache).forEach(k => delete clientCache[k]);
       fetchCalendar();
       fetchNews();
-    }, 5 * 60 * 1000);
+    }, 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchCalendar, fetchNews]);
 
