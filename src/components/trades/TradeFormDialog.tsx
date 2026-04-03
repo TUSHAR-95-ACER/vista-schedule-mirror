@@ -197,6 +197,8 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         maxAdverseMove: editTrade.maxAdverseMove !== undefined ? String(editTrade.maxAdverseMove) : '',
         timeframe: editTrade.timeframe || '',
         trend: editTrade.trend || '',
+        dayTags: editTrade.dayTags || [],
+        dayTagInput: '',
       });
     } else {
       setForm(defaultForm);
