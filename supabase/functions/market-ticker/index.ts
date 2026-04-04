@@ -16,10 +16,9 @@ const PAIRS = [
   { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮', decimals: 2 },
 ];
 
-// In-memory cache to avoid rate limits (free tier: 8 credits/min)
 let cachedData: any = null;
 let cacheTime = 0;
-const CACHE_TTL = 120_000; // 2 minute cache
+const CACHE_TTL = 120_000;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,40 +40,28 @@ serve(async (req) => {
   }
 
   try {
-    // Split into two batches to stay under 8 credits/min
-    // Batch 1: Forex pairs (4 symbols = 4 credits)
-    const batch1 = PAIRS.slice(0, 4);
-    const batch1Symbols = batch1.map(p => p.symbol).join(',');
+    // Single batch request for all symbols (8 credits = exactly the free limit)
+    const symbolStr = PAIRS.map(p => p.symbol).join(',');
+    const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
     
-    const res1 = await fetch(
-      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(batch1Symbols)}&apikey=${apiKey}`
-    );
-    const data1 = await res1.json();
+    const response = await fetch(url);
+    const rawData = await response.json();
     
-    if (data1.code === 429) {
-      console.log('Rate limited, returning cache or empty');
+    // Check for rate limit error
+    if (rawData.code === 429 || rawData.status === 'error') {
+      console.log('Rate limited or error:', rawData.message);
       if (cachedData) {
         return new Response(JSON.stringify({ data: cachedData, cached: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      return new Response(JSON.stringify({ error: 'Rate limited, please wait' }), {
+        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-    
-    // Batch 2: Remaining (4 symbols = 4 credits)  
-    const batch2 = PAIRS.slice(4);
-    const batch2Symbols = batch2.map(p => p.symbol).join(',');
-    
-    const res2 = await fetch(
-      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(batch2Symbols)}&apikey=${apiKey}`
-    );
-    const data2 = await res2.json();
-
-    const allData = { ...data1, ...data2 };
-    console.log('Combined keys:', Object.keys(allData));
 
     const results = PAIRS.map(p => {
-      const quote = allData[p.symbol];
-      
+      const quote = rawData[p.symbol];
       if (!quote || typeof quote !== 'object' || quote.status === 'error') {
         return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
       }
@@ -89,8 +76,12 @@ serve(async (req) => {
       };
     });
 
-    cachedData = results;
-    cacheTime = Date.now();
+    // Only cache if we got real data (at least one non-zero price)
+    const hasData = results.some(r => r.price > 0);
+    if (hasData) {
+      cachedData = results;
+      cacheTime = Date.now();
+    }
 
     return new Response(JSON.stringify({ data: results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
