@@ -5,18 +5,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SYMBOLS = [
-  { symbol: 'EUR/USD', display: 'EURUSD', flag: '🇪🇺' },
-  { symbol: 'GBP/USD', display: 'GBPUSD', flag: '🇬🇧' },
-  { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇' },
-  { symbol: 'XAG/USD', display: 'XAGUSD', flag: '🥈' },
-  { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿' },
-  { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦' },
-];
-
-const STOCK_SYMBOLS = [
-  { symbol: 'TSLA', display: 'TESLA', flag: '🚗' },
-  { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮' },
+const PAIRS = [
+  { symbol: 'EUR/USD', display: 'EURUSD', flag: '🇪🇺', decimals: 5 },
+  { symbol: 'GBP/USD', display: 'GBPUSD', flag: '🇬🇧', decimals: 5 },
+  { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇', decimals: 2 },
+  { symbol: 'XAG/USD', display: 'XAGUSD', flag: '🥈', decimals: 3 },
+  { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿', decimals: 2 },
+  { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦', decimals: 5 },
+  { symbol: 'TSLA', display: 'TESLA', flag: '🚗', decimals: 2 },
+  { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮', decimals: 2 },
 ];
 
 serve(async (req) => {
@@ -32,32 +29,55 @@ serve(async (req) => {
   }
 
   try {
-    const allSymbols = [...SYMBOLS, ...STOCK_SYMBOLS];
-    const symbolStr = allSymbols.map(s => s.symbol).join(',');
-
-    const response = await fetch(
-      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`
-    );
-
+    const symbolStr = PAIRS.map(p => p.symbol).join(',');
+    
+    // Use /quote endpoint for price + change data
+    const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
+    console.log('Fetching:', url);
+    
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Twelve Data API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const rawData = await response.json();
+    console.log('Raw response keys:', Object.keys(rawData));
+    
+    // Log first item to debug structure
+    const firstKey = Object.keys(rawData)[0];
+    if (firstKey) {
+      console.log('First item:', JSON.stringify(rawData[firstKey]).substring(0, 300));
+    }
 
-    const results = allSymbols.map(s => {
-      const quote = data[s.symbol] || data;
-      const price = parseFloat(quote?.close || quote?.price || '0');
-      const prevClose = parseFloat(quote?.previous_close || '0');
-      const change = price - prevClose;
-      const changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
+    const results = PAIRS.map(p => {
+      // For multiple symbols, data is keyed by symbol name
+      const quote = rawData[p.symbol];
+      
+      if (!quote || quote.status === 'error') {
+        console.log(`No data for ${p.symbol}:`, quote?.message || 'missing');
+        return {
+          symbol: p.display,
+          flag: p.flag,
+          price: 0,
+          change: 0,
+          changePercent: 0,
+          decimals: p.decimals,
+        };
+      }
+
+      const price = parseFloat(quote.close || '0');
+      const prevClose = parseFloat(quote.previous_close || '0');
+      const change = parseFloat(quote.change || '0') || (price - prevClose);
+      const changePercent = parseFloat(quote.percent_change || '0') || 
+        (prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0);
 
       return {
-        symbol: s.display,
-        flag: s.flag,
-        price: price,
-        change: change,
-        changePercent: changePercent,
+        symbol: p.display,
+        flag: p.flag,
+        price,
+        change,
+        changePercent,
+        decimals: p.decimals,
       };
     });
 
