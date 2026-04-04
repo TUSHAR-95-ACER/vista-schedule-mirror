@@ -27,7 +27,7 @@ export function MarketTicker() {
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(fetchPrices, 12000);
+    const interval = setInterval(fetchPrices, 60000); // Every 60s to respect rate limits
     return () => clearInterval(interval);
   }, [fetchPrices]);
 
