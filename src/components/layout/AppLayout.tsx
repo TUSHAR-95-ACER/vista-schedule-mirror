@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
-import { TradingViewTicker } from '@/components/news/TradingViewTicker';
+import { MarketTicker } from '@/components/news/MarketTicker';
 import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
