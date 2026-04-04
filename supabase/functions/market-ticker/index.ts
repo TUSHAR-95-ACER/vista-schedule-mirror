@@ -16,10 +16,10 @@ const PAIRS = [
   { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮', decimals: 2 },
 ];
 
-// In-memory cache
+// In-memory cache to avoid rate limits (free tier: 8 credits/min)
 let cachedData: any = null;
 let cacheTime = 0;
-const CACHE_TTL = 60_000; // 60 seconds cache
+const CACHE_TTL = 120_000; // 2 minute cache
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -41,30 +41,53 @@ serve(async (req) => {
   }
 
   try {
-    // Fetch each pair individually to avoid multi-symbol issues
-    const results = await Promise.all(
-      PAIRS.map(async (p) => {
-        try {
-          const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(p.symbol)}&apikey=${apiKey}`;
-          const res = await fetch(url);
-          const quote = await res.json();
-
-          if (quote.status === 'error' || quote.code) {
-            console.log(`Error for ${p.symbol}:`, quote.message || quote.code);
-            return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
-          }
-
-          const price = parseFloat(quote.close || '0');
-          const change = parseFloat(quote.change || '0');
-          const changePercent = parseFloat(quote.percent_change || '0');
-
-          return { symbol: p.display, flag: p.flag, price, change, changePercent, decimals: p.decimals };
-        } catch (e) {
-          console.error(`Fetch error for ${p.symbol}:`, e);
-          return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
-        }
-      })
+    // Split into two batches to stay under 8 credits/min
+    // Batch 1: Forex pairs (4 symbols = 4 credits)
+    const batch1 = PAIRS.slice(0, 4);
+    const batch1Symbols = batch1.map(p => p.symbol).join(',');
+    
+    const res1 = await fetch(
+      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(batch1Symbols)}&apikey=${apiKey}`
     );
+    const data1 = await res1.json();
+    
+    if (data1.code === 429) {
+      console.log('Rate limited, returning cache or empty');
+      if (cachedData) {
+        return new Response(JSON.stringify({ data: cachedData, cached: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // Batch 2: Remaining (4 symbols = 4 credits)  
+    const batch2 = PAIRS.slice(4);
+    const batch2Symbols = batch2.map(p => p.symbol).join(',');
+    
+    const res2 = await fetch(
+      `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(batch2Symbols)}&apikey=${apiKey}`
+    );
+    const data2 = await res2.json();
+
+    const allData = { ...data1, ...data2 };
+    console.log('Combined keys:', Object.keys(allData));
+
+    const results = PAIRS.map(p => {
+      const quote = allData[p.symbol];
+      
+      if (!quote || typeof quote !== 'object' || quote.status === 'error') {
+        return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
+      }
+
+      return {
+        symbol: p.display,
+        flag: p.flag,
+        price: parseFloat(quote.close || '0'),
+        change: parseFloat(quote.change || '0'),
+        changePercent: parseFloat(quote.percent_change || '0'),
+        decimals: p.decimals,
+      };
+    });
 
     cachedData = results;
     cacheTime = Date.now();
@@ -74,7 +97,6 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Market ticker error:', error);
-    // Return cached data on error if available
     if (cachedData) {
       return new Response(JSON.stringify({ data: cachedData, cached: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
