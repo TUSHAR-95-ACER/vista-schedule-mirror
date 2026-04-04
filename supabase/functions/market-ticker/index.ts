@@ -9,7 +9,6 @@ const PAIRS = [
   { symbol: 'EUR/USD', display: 'EURUSD', flag: '🇪🇺', decimals: 5 },
   { symbol: 'GBP/USD', display: 'GBPUSD', flag: '🇬🇧', decimals: 5 },
   { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇', decimals: 2 },
-  { symbol: 'XAG/USD', display: 'XAGUSD', flag: '🥈', decimals: 3 },
   { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿', decimals: 2 },
   { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦', decimals: 5 },
   { symbol: 'TSLA', display: 'TESLA', flag: '🚗', decimals: 2 },
@@ -18,7 +17,7 @@ const PAIRS = [
 
 let cachedData: any = null;
 let cacheTime = 0;
-const CACHE_TTL = 120_000;
+const CACHE_TTL = 180_000; // 3 minutes cache to stay well under rate limits
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -32,7 +31,6 @@ serve(async (req) => {
     });
   }
 
-  // Return cached data if fresh
   if (cachedData && Date.now() - cacheTime < CACHE_TTL) {
     return new Response(JSON.stringify({ data: cachedData, cached: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -40,22 +38,21 @@ serve(async (req) => {
   }
 
   try {
-    // Single batch request for all symbols (8 credits = exactly the free limit)
     const symbolStr = PAIRS.map(p => p.symbol).join(',');
     const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
     
     const response = await fetch(url);
     const rawData = await response.json();
     
-    // Check for rate limit error
     if (rawData.code === 429 || rawData.status === 'error') {
-      console.log('Rate limited or error:', rawData.message);
       if (cachedData) {
+        // Extend cache on rate limit
+        cacheTime = Date.now();
         return new Response(JSON.stringify({ data: cachedData, cached: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'Rate limited, please wait' }), {
+      return new Response(JSON.stringify({ error: 'Rate limited' }), {
         status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -65,7 +62,6 @@ serve(async (req) => {
       if (!quote || typeof quote !== 'object' || quote.status === 'error') {
         return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
       }
-
       return {
         symbol: p.display,
         flag: p.flag,
@@ -76,7 +72,6 @@ serve(async (req) => {
       };
     });
 
-    // Only cache if we got real data (at least one non-zero price)
     const hasData = results.some(r => r.price > 0);
     if (hasData) {
       cachedData = results;
