@@ -16,6 +16,11 @@ const PAIRS = [
   { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮', decimals: 2 },
 ];
 
+// In-memory cache
+let cachedData: any = null;
+let cacheTime = 0;
+const CACHE_TTL = 60_000; // 60 seconds cache
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -28,64 +33,53 @@ serve(async (req) => {
     });
   }
 
-  try {
-    const symbolStr = PAIRS.map(p => p.symbol).join(',');
-    
-    // Use /quote endpoint for price + change data
-    const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
-    console.log('Fetching:', url);
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Twelve Data API error: ${response.status}`);
-    }
-
-    const rawData = await response.json();
-    console.log('Raw response keys:', Object.keys(rawData));
-    
-    // Log first item to debug structure
-    const firstKey = Object.keys(rawData)[0];
-    if (firstKey) {
-      console.log('First item:', JSON.stringify(rawData[firstKey]).substring(0, 300));
-    }
-
-    const results = PAIRS.map(p => {
-      // For multiple symbols, data is keyed by symbol name
-      const quote = rawData[p.symbol];
-      
-      if (!quote || quote.status === 'error') {
-        console.log(`No data for ${p.symbol}:`, quote?.message || 'missing');
-        return {
-          symbol: p.display,
-          flag: p.flag,
-          price: 0,
-          change: 0,
-          changePercent: 0,
-          decimals: p.decimals,
-        };
-      }
-
-      const price = parseFloat(quote.close || '0');
-      const prevClose = parseFloat(quote.previous_close || '0');
-      const change = parseFloat(quote.change || '0') || (price - prevClose);
-      const changePercent = parseFloat(quote.percent_change || '0') || 
-        (prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0);
-
-      return {
-        symbol: p.display,
-        flag: p.flag,
-        price,
-        change,
-        changePercent,
-        decimals: p.decimals,
-      };
+  // Return cached data if fresh
+  if (cachedData && Date.now() - cacheTime < CACHE_TTL) {
+    return new Response(JSON.stringify({ data: cachedData, cached: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+  }
+
+  try {
+    // Fetch each pair individually to avoid multi-symbol issues
+    const results = await Promise.all(
+      PAIRS.map(async (p) => {
+        try {
+          const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(p.symbol)}&apikey=${apiKey}`;
+          const res = await fetch(url);
+          const quote = await res.json();
+
+          if (quote.status === 'error' || quote.code) {
+            console.log(`Error for ${p.symbol}:`, quote.message || quote.code);
+            return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
+          }
+
+          const price = parseFloat(quote.close || '0');
+          const change = parseFloat(quote.change || '0');
+          const changePercent = parseFloat(quote.percent_change || '0');
+
+          return { symbol: p.display, flag: p.flag, price, change, changePercent, decimals: p.decimals };
+        } catch (e) {
+          console.error(`Fetch error for ${p.symbol}:`, e);
+          return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
+        }
+      })
+    );
+
+    cachedData = results;
+    cacheTime = Date.now();
 
     return new Response(JSON.stringify({ data: results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Market ticker error:', error);
+    // Return cached data on error if available
+    if (cachedData) {
+      return new Response(JSON.stringify({ data: cachedData, cached: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
