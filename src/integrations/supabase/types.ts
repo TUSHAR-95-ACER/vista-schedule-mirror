@@ -392,6 +392,7 @@ export type Database = {
           management_options: Json | null
           markets: Json | null
           notebook_categories: Json | null
+          preferences: Json | null
           psych_tags: Json | null
           sessions: Json | null
           updated_at: string
@@ -409,6 +410,7 @@ export type Database = {
           management_options?: Json | null
           markets?: Json | null
           notebook_categories?: Json | null
+          preferences?: Json | null
           psych_tags?: Json | null
           sessions?: Json | null
           updated_at?: string
@@ -426,6 +428,7 @@ export type Database = {
           management_options?: Json | null
           markets?: Json | null
           notebook_categories?: Json | null
+          preferences?: Json | null
           psych_tags?: Json | null
           sessions?: Json | null
           updated_at?: string

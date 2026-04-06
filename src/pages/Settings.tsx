@@ -4,7 +4,6 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Settings as SettingsIcon,
   ToggleLeft,
@@ -25,7 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
-import { useTrading } from '@/contexts/TradingContext';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 function SettingCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -106,27 +105,27 @@ function WorkspaceModulesPanel() {
   );
 }
 
-function TradingPreferencesPanel() {
+function TradingPreferencesPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Trading Preferences</h2>
       <SettingCard title="Risk Management" description="Default risk parameters for new trades">
         <SettingRow label="Default Risk %" description="Applied to each new trade">
-          <Input type="number" defaultValue="1" step="0.5" min="0.1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.defaultRiskPercent ?? 1} onChange={e => update('defaultRiskPercent', parseFloat(e.target.value) || 0)} step="0.5" min="0.1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
         <SettingRow label="Default Risk:Reward" description="Target RR ratio">
-          <Input type="number" defaultValue="2" step="0.5" min="0.5" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.defaultRR ?? 2} onChange={e => update('defaultRR', parseFloat(e.target.value) || 0)} step="0.5" min="0.5" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
         <SettingRow label="Max Daily Trades" description="Limit trades per day">
-          <Input type="number" defaultValue="3" min="1" max="20" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.maxDailyTrades ?? 3} onChange={e => update('maxDailyTrades', parseInt(e.target.value) || 1)} min="1" max="20" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
         <SettingRow label="Max Daily Loss" description="Stop trading after hitting this loss">
-          <Input type="number" defaultValue="3" step="0.5" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.maxDailyLoss ?? 3} onChange={e => update('maxDailyLoss', parseFloat(e.target.value) || 0)} step="0.5" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
       </SettingCard>
       <SettingCard title="Session & Pairs" description="Primary trading focus">
         <SettingRow label="Default Session">
-          <Select defaultValue="New York Kill Zone">
+          <Select value={prefs.defaultSession ?? 'New York Kill Zone'} onValueChange={v => update('defaultSession', v)}>
             <SelectTrigger className="h-8 w-44 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               {['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'].map(s => (
@@ -136,10 +135,10 @@ function TradingPreferencesPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Preferred Pairs" description="Comma-separated">
-          <Input defaultValue="EURUSD, GBPUSD, XAUUSD" className="h-8 w-56 text-xs rounded-lg" />
+          <Input value={prefs.preferredPairs ?? ''} onChange={e => update('preferredPairs', e.target.value)} className="h-8 w-56 text-xs rounded-lg" />
         </SettingRow>
         <SettingRow label="Default Market">
-          <Select defaultValue="Forex">
+          <Select value={prefs.defaultMarket ?? 'Forex'} onValueChange={v => update('defaultMarket', v)}>
             <SelectTrigger className="h-8 w-36 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               {['Forex', 'Crypto', 'Commodities', 'Indices', 'Stocks', 'Futures'].map(m => (
@@ -153,49 +152,49 @@ function TradingPreferencesPanel() {
   );
 }
 
-function JournalBehaviorPanel() {
+function JournalBehaviorPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Journal Behavior</h2>
       <SettingCard title="Trade Logging" description="Control trade entry defaults and behaviors">
         <SettingRow label="Default Trade Size" description="Pre-filled lot size">
-          <Input type="number" defaultValue="0.1" step="0.01" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.defaultTradeSize ?? 0.1} onChange={e => update('defaultTradeSize', parseFloat(e.target.value) || 0)} step="0.01" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
         <SettingRow label="Auto-save Plans" description="Save plans automatically as you type">
-          <Switch defaultChecked />
+          <Switch checked={prefs.autoSavePlans ?? true} onCheckedChange={v => update('autoSavePlans', v)} />
         </SettingRow>
         <SettingRow label="Require Grade" description="Force grade selection on every trade">
-          <Switch defaultChecked />
+          <Switch checked={prefs.requireGrade ?? true} onCheckedChange={v => update('requireGrade', v)} />
         </SettingRow>
         <SettingRow label="Require Psychology" description="Force emotion/focus/discipline entry">
-          <Switch defaultChecked />
+          <Switch checked={prefs.requirePsychology ?? true} onCheckedChange={v => update('requirePsychology', v)} />
         </SettingRow>
         <SettingRow label="Show Entry Gate" description="Show checklist confirmation before logging trades">
-          <Switch defaultChecked />
+          <Switch checked={prefs.showEntryGate ?? true} onCheckedChange={v => update('showEntryGate', v)} />
         </SettingRow>
       </SettingCard>
       <SettingCard title="Plan Defaults" description="Default values for daily and weekly plans">
         <SettingRow label="Default Max Trades" description="Pre-filled max trades per day">
-          <Input type="number" defaultValue="3" min="1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
+          <Input type="number" value={prefs.defaultMaxTrades ?? 3} onChange={e => update('defaultMaxTrades', parseInt(e.target.value) || 1)} min="1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
         </SettingRow>
         <SettingRow label="Default Risk Limit" description="Pre-filled risk limit text">
-          <Input defaultValue="1% per trade" className="h-8 w-40 text-xs rounded-lg" />
+          <Input value={prefs.defaultRiskLimit ?? '1% per trade'} onChange={e => update('defaultRiskLimit', e.target.value)} className="h-8 w-40 text-xs rounded-lg" />
         </SettingRow>
       </SettingCard>
     </div>
   );
 }
 
-function AISettingsPanel() {
+function AISettingsPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">AI Settings</h2>
       <SettingCard title="AI Coach" description="Personalize AI-powered trading analysis">
         <SettingRow label="AI Coach" description="Enable AI-powered trade analysis">
-          <Switch defaultChecked />
+          <Switch checked={prefs.aiCoachEnabled ?? true} onCheckedChange={v => update('aiCoachEnabled', v)} />
         </SettingRow>
         <SettingRow label="Analysis Depth">
-          <Select defaultValue="advanced">
+          <Select value={prefs.analysisDepth ?? 'advanced'} onValueChange={v => update('analysisDepth', v)}>
             <SelectTrigger className="h-8 w-36 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="basic">Basic</SelectItem>
@@ -204,7 +203,7 @@ function AISettingsPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Response Style">
-          <Select defaultValue="direct">
+          <Select value={prefs.responseStyle ?? 'direct'} onValueChange={v => update('responseStyle', v)}>
             <SelectTrigger className="h-8 w-44 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="direct">Direct & Actionable</SelectItem>
@@ -214,62 +213,51 @@ function AISettingsPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Auto-generate Insights" description="AI reviews trades automatically after logging">
-          <Switch />
+          <Switch checked={prefs.autoGenerateInsights ?? false} onCheckedChange={v => update('autoGenerateInsights', v)} />
         </SettingRow>
       </SettingCard>
     </div>
   );
 }
 
-function MarketSettingsPanel() {
+function MarketSettingsPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Market & Data</h2>
-      <SettingCard title="Timezone & Calendar" description="Economic calendar and market data settings">
+      <SettingCard title="Timezone" description="Your trading timezone">
         <SettingRow label="Default Timezone">
-          <Select defaultValue="UTC">
-            <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+          <Select value={prefs.defaultTimezone ?? 'America/New_York'} onValueChange={v => update('defaultTimezone', v)}>
+            <SelectTrigger className="h-8 w-48 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {['UTC', 'EST', 'GMT', 'CET', 'IST', 'JST', 'AEST'].map(tz => (
-                <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+              {[
+                { value: 'America/New_York', label: 'New York (EST)' },
+                { value: 'Europe/London', label: 'London (GMT)' },
+                { value: 'Europe/Berlin', label: 'Berlin (CET)' },
+                { value: 'Asia/Kolkata', label: 'Kolkata / Mumbai (IST)' },
+                { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+                { value: 'Asia/Dubai', label: 'Dubai (GST)' },
+                { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
+                { value: 'UTC', label: 'UTC' },
+              ].map(tz => (
+                <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow label="News Filter" description="Which currencies to track">
-          <Select defaultValue="usd">
-            <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="usd">USD Only</SelectItem>
-              <SelectItem value="major">Major Currencies</SelectItem>
-              <SelectItem value="global">Global</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingRow>
-        <SettingRow label="Impact Filter" description="Minimum event importance">
-          <Select defaultValue="high">
-            <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="high">High Only</SelectItem>
-              <SelectItem value="medium">Medium & High</SelectItem>
-              <SelectItem value="all">All Events</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingRow>
       </SettingCard>
-      <SettingCard title="TradingView Integration" description="Live market ticker settings">
-        <SettingRow label="Show Ticker" description="Display TradingView ticker tape at top">
-          <Switch defaultChecked />
+      <SettingCard title="Market Ticker" description="Live market ticker settings">
+        <SettingRow label="Show Ticker" description="Display live ticker at top">
+          <Switch checked={prefs.showTicker ?? true} onCheckedChange={v => update('showTicker', v)} />
         </SettingRow>
         <SettingRow label="Ticker Symbols" description="Comma-separated symbols">
-          <Input defaultValue="EURUSD, GBPUSD, XAUUSD, US30, NAS100" className="h-8 w-56 text-xs rounded-lg" />
+          <Input value={prefs.tickerSymbols ?? ''} onChange={e => update('tickerSymbols', e.target.value)} className="h-8 w-56 text-xs rounded-lg" />
         </SettingRow>
       </SettingCard>
     </div>
   );
 }
 
-function UIPreferencesPanel() {
+function UIPreferencesPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   const { theme, setTheme } = useTheme();
   return (
     <div className="space-y-5">
@@ -292,7 +280,7 @@ function UIPreferencesPanel() {
           </div>
         </SettingRow>
         <SettingRow label="Layout Density">
-          <Select defaultValue="comfortable">
+          <Select value={prefs.layoutDensity ?? 'comfortable'} onValueChange={v => update('layoutDensity', v)}>
             <SelectTrigger className="h-8 w-36 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="compact">Compact</SelectItem>
@@ -302,7 +290,7 @@ function UIPreferencesPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Chart Theme" description="Color scheme for charts">
-          <Select defaultValue="default">
+          <Select value={prefs.chartTheme ?? 'default'} onValueChange={v => update('chartTheme', v)}>
             <SelectTrigger className="h-8 w-36 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="default">Default</SelectItem>
@@ -312,42 +300,42 @@ function UIPreferencesPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Sidebar Collapsed" description="Start with sidebar collapsed">
-          <Switch />
+          <Switch checked={prefs.sidebarCollapsed ?? false} onCheckedChange={v => update('sidebarCollapsed', v)} />
         </SettingRow>
       </SettingCard>
     </div>
   );
 }
 
-function NotificationsPanel() {
+function NotificationsPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Notifications</h2>
       <SettingCard title="Alert Preferences" description="Control reminders and alerts">
         <SettingRow label="Daily Plan Reminder" description="Remind to fill daily plan each morning">
-          <Switch />
+          <Switch checked={prefs.dailyPlanReminder ?? false} onCheckedChange={v => update('dailyPlanReminder', v)} />
         </SettingRow>
         <SettingRow label="Weekly Review Reminder" description="Remind to review at end of week">
-          <Switch />
+          <Switch checked={prefs.weeklyReviewReminder ?? false} onCheckedChange={v => update('weeklyReviewReminder', v)} />
         </SettingRow>
         <SettingRow label="Trade Limit Warning" description="Alert when approaching max daily trades">
-          <Switch defaultChecked />
+          <Switch checked={prefs.tradeLimitWarning ?? true} onCheckedChange={v => update('tradeLimitWarning', v)} />
         </SettingRow>
       </SettingCard>
     </div>
   );
 }
 
-function AccountPanel() {
+function AccountPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Account & Profile</h2>
       <SettingCard title="Profile" description="Your account information">
         <SettingRow label="Display Name">
-          <Input defaultValue="" placeholder="Your name" className="h-8 w-48 text-xs rounded-lg" />
+          <Input value={prefs.displayName ?? ''} onChange={e => update('displayName', e.target.value)} placeholder="Your name" className="h-8 w-48 text-xs rounded-lg" />
         </SettingRow>
         <SettingRow label="Trading Style">
-          <Select defaultValue="scalper">
+          <Select value={prefs.tradingStyle ?? 'scalper'} onValueChange={v => update('tradingStyle', v)}>
             <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="scalper">Scalper</SelectItem>
@@ -358,7 +346,7 @@ function AccountPanel() {
           </Select>
         </SettingRow>
         <SettingRow label="Experience Level">
-          <Select defaultValue="intermediate">
+          <Select value={prefs.experienceLevel ?? 'intermediate'} onValueChange={v => update('experienceLevel', v)}>
             <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="beginner">Beginner</SelectItem>
@@ -366,6 +354,28 @@ function AccountPanel() {
               <SelectItem value="advanced">Advanced</SelectItem>
             </SelectContent>
           </Select>
+        </SettingRow>
+      </SettingCard>
+    </div>
+  );
+}
+
+function RiskManagementPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
+  return (
+    <div className="space-y-5">
+      <h2 className="text-lg font-heading font-bold">Risk Rules</h2>
+      <SettingCard title="Trading Rules" description="Rules enforced during trade entry">
+        <SettingRow label="Max Concurrent Trades" description="Maximum open positions at once">
+          <Input type="number" value={prefs.maxConcurrentTrades ?? 2} onChange={e => update('maxConcurrentTrades', parseInt(e.target.value) || 1)} min="1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
+        </SettingRow>
+        <SettingRow label="Max Lot Size" description="Maximum lot size per trade">
+          <Input type="number" value={prefs.maxLotSize ?? 1.0} onChange={e => update('maxLotSize', parseFloat(e.target.value) || 0)} step="0.1" className="h-8 w-20 text-xs font-mono rounded-lg" />
+        </SettingRow>
+        <SettingRow label="Enforce Daily Loss Limit" description="Block trade entry after daily loss limit hit">
+          <Switch checked={prefs.enforceDailyLossLimit ?? false} onCheckedChange={v => update('enforceDailyLossLimit', v)} />
+        </SettingRow>
+        <SettingRow label="Enforce Trade Count Limit" description="Block trade entry after max trades reached">
+          <Switch checked={prefs.enforceTradeCountLimit ?? true} onCheckedChange={v => update('enforceTradeCountLimit', v)} />
         </SettingRow>
       </SettingCard>
     </div>
@@ -399,28 +409,6 @@ function DataPanel() {
   );
 }
 
-function RiskManagementPanel() {
-  return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-heading font-bold">Risk Rules</h2>
-      <SettingCard title="Trading Rules" description="Rules enforced during trade entry">
-        <SettingRow label="Max Concurrent Trades" description="Maximum open positions at once">
-          <Input type="number" defaultValue="2" min="1" max="10" className="h-8 w-20 text-xs font-mono rounded-lg" />
-        </SettingRow>
-        <SettingRow label="Max Lot Size" description="Maximum lot size per trade">
-          <Input type="number" defaultValue="1.0" step="0.1" className="h-8 w-20 text-xs font-mono rounded-lg" />
-        </SettingRow>
-        <SettingRow label="Enforce Daily Loss Limit" description="Block trade entry after daily loss limit hit">
-          <Switch />
-        </SettingRow>
-        <SettingRow label="Enforce Trade Count Limit" description="Block trade entry after max trades reached">
-          <Switch defaultChecked />
-        </SettingRow>
-      </SettingCard>
-    </div>
-  );
-}
-
 const tabs = [
   { id: 'modules', label: 'Modules', icon: Sliders },
   { id: 'trading', label: 'Trading', icon: Target },
@@ -436,18 +424,21 @@ const tabs = [
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('modules');
+  const { prefs, updatePref, loaded } = useUserPreferences();
+
+  const update = (key: string, value: any) => updatePref(key as any, value);
 
   const renderPanel = () => {
     switch (activeTab) {
       case 'modules': return <WorkspaceModulesPanel />;
-      case 'trading': return <TradingPreferencesPanel />;
-      case 'journal': return <JournalBehaviorPanel />;
-      case 'risk': return <RiskManagementPanel />;
-      case 'ai': return <AISettingsPanel />;
-      case 'market': return <MarketSettingsPanel />;
-      case 'ui': return <UIPreferencesPanel />;
-      case 'notifications': return <NotificationsPanel />;
-      case 'account': return <AccountPanel />;
+      case 'trading': return <TradingPreferencesPanel prefs={prefs} update={update} />;
+      case 'journal': return <JournalBehaviorPanel prefs={prefs} update={update} />;
+      case 'risk': return <RiskManagementPanel prefs={prefs} update={update} />;
+      case 'ai': return <AISettingsPanel prefs={prefs} update={update} />;
+      case 'market': return <MarketSettingsPanel prefs={prefs} update={update} />;
+      case 'ui': return <UIPreferencesPanel prefs={prefs} update={update} />;
+      case 'notifications': return <NotificationsPanel prefs={prefs} update={update} />;
+      case 'account': return <AccountPanel prefs={prefs} update={update} />;
       case 'data': return <DataPanel />;
       default: return <WorkspaceModulesPanel />;
     }
@@ -465,7 +456,6 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Horizontal Tab Navigation */}
       <div className="mb-6 overflow-x-auto">
         <div className="flex gap-1 p-1 bg-muted/30 rounded-xl border border-border/50 min-w-max">
           {tabs.map(tab => {
@@ -489,9 +479,10 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Content Panel */}
       <div className="min-h-[400px]">
-        {renderPanel()}
+        {!loaded ? (
+          <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">Loading settings...</div>
+        ) : renderPanel()}
       </div>
     </div>
   );
