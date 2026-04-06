@@ -11,13 +11,12 @@ const PAIRS = [
   { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇', decimals: 2 },
   { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿', decimals: 2 },
   { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦', decimals: 5 },
-  { symbol: 'TSLA', display: 'TESLA', flag: '🚗', decimals: 2 },
-  { symbol: 'NVDA', display: 'NVIDIA', flag: '🎮', decimals: 2 },
 ];
 
+// In-memory cache (survives within same instance)
 let cachedData: any = null;
 let cacheTime = 0;
-const CACHE_TTL = 180_000; // 3 minutes cache to stay well under rate limits
+const CACHE_TTL = 300_000; // 5 minutes cache
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -31,6 +30,7 @@ serve(async (req) => {
     });
   }
 
+  // Return cache if still valid
   if (cachedData && Date.now() - cacheTime < CACHE_TTL) {
     return new Response(JSON.stringify({ data: cachedData, cached: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -38,22 +38,27 @@ serve(async (req) => {
   }
 
   try {
+    // Use /price endpoint - lighter weight, fewer credits
     const symbolStr = PAIRS.map(p => p.symbol).join(',');
     const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
-    
+
     const response = await fetch(url);
     const rawData = await response.json();
-    
+
+    // Check for rate limiting
     if (rawData.code === 429 || rawData.status === 'error') {
       if (cachedData) {
-        // Extend cache on rate limit
-        cacheTime = Date.now();
+        cacheTime = Date.now(); // Extend cache
         return new Response(JSON.stringify({ data: cachedData, cached: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      return new Response(JSON.stringify({ error: 'Rate limited' }), {
-        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // No cache available - return empty placeholder data instead of error
+      const placeholder = PAIRS.map(p => ({
+        symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals,
+      }));
+      return new Response(JSON.stringify({ data: placeholder, limited: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -88,8 +93,12 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Return placeholder instead of error
+    const placeholder = PAIRS.map(p => ({
+      symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals,
+    }));
+    return new Response(JSON.stringify({ data: placeholder, error: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

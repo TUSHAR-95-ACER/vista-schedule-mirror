@@ -32,7 +32,7 @@ export function MarketTicker() {
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(fetchPrices, 180000); // 3 min to match server cache
+    const interval = setInterval(fetchPrices, 300000); // 5 min to respect API rate limits
     return () => clearInterval(interval);
   }, [fetchPrices]);
 
