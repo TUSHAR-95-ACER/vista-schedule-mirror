@@ -105,7 +105,7 @@ export default function WeeklyReview() {
             biasAccuracy = Math.round((correct.length / analyzed.length) * 100);
           } else if (matchingPlan.bias) {
             // Fallback: check overall weekly bias vs pair results
-            const pairsWithResult = matchingPlan.pairAnalyses.filter(pa => pa.actualResult && pa.actualResult !== '');
+            const pairsWithResult = matchingPlan.pairAnalyses.filter(pa => pa.actualResult && pa.actualResult !== '' as any);
             if (pairsWithResult.length > 0) {
               const winsAligned = pairsWithResult.filter(pa => pa.actualResult === 'Win').length;
               biasAccuracy = Math.round((winsAligned / pairsWithResult.length) * 100);
