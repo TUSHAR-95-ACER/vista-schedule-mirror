@@ -35,7 +35,7 @@ function calcExecutionScore(t: Trade): number {
 
 export default function TradeQuality() {
   const { trades } = useTrading();
-  const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
+  const valid = useMemo(() => trades, [trades]);
 
   const gradeData = useMemo(() => {
     const grades = ['A+', 'A', 'B', 'C'];

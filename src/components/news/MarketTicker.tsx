@@ -61,7 +61,7 @@ export function MarketTicker() {
     >
       <div
         className={cn(
-          "flex items-center gap-0 whitespace-nowrap py-2",
+          "flex items-center gap-0 whitespace-nowrap py-3",
           "animate-marquee"
         )}
         style={isPaused ? { animationPlayState: 'paused' } : undefined}
@@ -69,19 +69,19 @@ export function MarketTicker() {
         {doubled.map((item, i) => (
           <div
             key={`${item.symbol}-${i}`}
-            className="flex items-center gap-2 px-4 border-r border-border/30 last:border-r-0 cursor-default group transition-transform duration-200 hover:scale-105"
+            className="flex items-center gap-3 px-6 border-r border-border/30 last:border-r-0 cursor-default group transition-transform duration-200 hover:scale-105"
           >
-            <span className="text-sm">{item.flag}</span>
-            <span className="text-xs font-bold text-foreground tracking-wide">
+            <span className="text-lg">{item.flag}</span>
+            <span className="text-sm font-bold text-foreground tracking-wide">
               {item.symbol}
             </span>
-            <span className="text-xs font-mono text-foreground/80">
+            <span className="text-sm font-mono text-foreground/80">
               {item.price > 0 ? formatPrice(item.price, item.decimals) : '—'}
             </span>
             {item.price > 0 && (
               <span
                 className={cn(
-                  "text-[10px] font-semibold font-mono",
+                  "text-xs font-semibold font-mono",
                   item.changePercent >= 0 ? "text-success" : "text-destructive"
                 )}
               >
