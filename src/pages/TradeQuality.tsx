@@ -9,7 +9,7 @@ import { formatCurrency, calcAvgRR } from '@/lib/calculations';
 import { Trade } from '@/types/trading';
 import { Lightbulb } from 'lucide-react';
 
-const COLORS = ['hsl(142,71%,45%)', 'hsl(210,100%,50%)', 'hsl(38,92%,50%)', 'hsl(0,84%,60%)'];
+const COLORS = ['hsl(142,71%,45%)', 'hsl(210,100%,50%)', 'hsl(38,92%,50%)', 'hsl(0,84%,60%)', 'hsl(260,60%,50%)'];
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
