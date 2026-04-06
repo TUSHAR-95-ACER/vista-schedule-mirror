@@ -38,9 +38,9 @@ export default function TradeQuality() {
   const valid = useMemo(() => trades, [trades]);
 
   const gradeData = useMemo(() => {
-    const grades = ['A+', 'A', 'B', 'C'];
+    const grades = ['A+', 'A', 'B', 'C', 'Ungraded'];
     return grades.map(grade => {
-      const gt = valid.filter(t => t.grade === grade);
+      const gt = valid.filter(t => grade === 'Ungraded' ? (!t.grade || !['A+', 'A', 'B', 'C'].includes(t.grade)) : t.grade === grade);
       const wins = gt.filter(t => t.result === 'Win').length;
       const winRate = gt.length ? Math.round((wins / gt.length) * 100) : 0;
       const avgPL = gt.length ? gt.reduce((s, t) => s + t.profitLoss, 0) / gt.length : 0;

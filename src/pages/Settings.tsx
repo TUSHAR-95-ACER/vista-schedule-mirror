@@ -236,26 +236,6 @@ function MarketSettingsPanel() {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow label="News Filter" description="Which currencies to track">
-          <Select defaultValue="usd">
-            <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="usd">USD Only</SelectItem>
-              <SelectItem value="major">Major Currencies</SelectItem>
-              <SelectItem value="global">Global</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingRow>
-        <SettingRow label="Impact Filter" description="Minimum event importance">
-          <Select defaultValue="high">
-            <SelectTrigger className="h-8 w-40 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="high">High Only</SelectItem>
-              <SelectItem value="medium">Medium & High</SelectItem>
-              <SelectItem value="all">All Events</SelectItem>
-            </SelectContent>
-          </Select>
-        </SettingRow>
       </SettingCard>
       <SettingCard title="TradingView Integration" description="Live market ticker settings">
         <SettingRow label="Show Ticker" description="Display TradingView ticker tape at top">
