@@ -99,7 +99,7 @@ export default function WeeklyReview() {
         });
         let biasAccuracy = 0;
         if (matchingPlan) {
-          const analyzed = matchingPlan.pairAnalyses.filter(pa => pa.actualDirection && pa.actualDirection !== '');
+          const analyzed = matchingPlan.pairAnalyses.filter(pa => pa.actualDirection && pa.actualDirection !== '' as any);
           if (analyzed.length > 0) {
             const correct = analyzed.filter(pa => pa.bias === pa.actualDirection);
             biasAccuracy = Math.round((correct.length / analyzed.length) * 100);
