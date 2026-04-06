@@ -86,13 +86,40 @@ export default function WeeklyReview() {
         const tradesPerDay = tradingDays > 0 ? Math.round(wt.length / tradingDays * 10) / 10 : 0;
         const overtrading = tradesPerDay > 3;
 
-        // Bias accuracy from weekly plans
-        const matchingPlan = weeklyPlans.find(wp => wp.weekStart === week);
+        // Bias accuracy from weekly plans - match by date range
+        const weekEnd = new Date(week);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const matchingPlan = weeklyPlans.find(wp => {
+          const wpStart = new Date(wp.weekStart);
+          const wpEnd = new Date(wpStart);
+          wpEnd.setDate(wpEnd.getDate() + 6);
+          const tradeWeekStart = new Date(week);
+          // Plans match if their weeks overlap
+          return Math.abs(tradeWeekStart.getTime() - wpStart.getTime()) <= 3 * 24 * 60 * 60 * 1000;
+        });
         let biasAccuracy = 0;
         if (matchingPlan) {
-          const analyzed = matchingPlan.pairAnalyses.filter(pa => pa.actualDirection);
-          const correct = analyzed.filter(pa => pa.bias === pa.actualDirection);
-          biasAccuracy = analyzed.length > 0 ? Math.round((correct.length / analyzed.length) * 100) : 0;
+          const analyzed = matchingPlan.pairAnalyses.filter(pa => pa.actualDirection && pa.actualDirection !== '' as any);
+          if (analyzed.length > 0) {
+            const correct = analyzed.filter(pa => pa.bias === pa.actualDirection);
+            biasAccuracy = Math.round((correct.length / analyzed.length) * 100);
+          } else if (matchingPlan.bias) {
+            // Fallback: check overall weekly bias vs pair results
+            const pairsWithResult = matchingPlan.pairAnalyses.filter(pa => pa.actualResult && pa.actualResult !== '' as any);
+            if (pairsWithResult.length > 0) {
+              const winsAligned = pairsWithResult.filter(pa => pa.actualResult === 'Win').length;
+              biasAccuracy = Math.round((winsAligned / pairsWithResult.length) * 100);
+            } else {
+              // Check if any trades this week align with the overall bias
+              const biasDir = matchingPlan.bias.toLowerCase();
+              const aligned = wt.filter(t => {
+                if (biasDir === 'bullish' && t.direction === 'Long' && t.result === 'Win') return true;
+                if (biasDir === 'bearish' && t.direction === 'Short' && t.result === 'Win') return true;
+                return false;
+              });
+              biasAccuracy = wt.length > 0 ? Math.round((aligned.length / wt.length) * 100) : 0;
+            }
+          }
         }
 
         // Best/worst pair

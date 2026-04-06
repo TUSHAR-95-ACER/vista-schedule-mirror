@@ -324,12 +324,6 @@ function NotificationsPanel() {
     <div className="space-y-5">
       <h2 className="text-lg font-heading font-bold">Notifications</h2>
       <SettingCard title="Alert Preferences" description="Control reminders and alerts">
-        <SettingRow label="High-Impact News Alerts" description="Show alerts for major economic events">
-          <Switch defaultChecked />
-        </SettingRow>
-        <SettingRow label="Event Countdown" description="Alert before events start">
-          <Switch defaultChecked />
-        </SettingRow>
         <SettingRow label="Daily Plan Reminder" description="Remind to fill daily plan each morning">
           <Switch />
         </SettingRow>

@@ -48,6 +48,7 @@ interface TradingContextType {
   updateCustomSetup: (previous: string, next: string) => void;
   deleteCustomSetup: (setup: string) => void;
   addCustomAsset: (asset: string) => void;
+  deleteCustomAsset: (asset: string) => void;
   addCustomConfluence: (c: string) => void;
   updateCustomConfluence: (previous: string, next: string) => void;
   deleteCustomConfluence: (c: string) => void;
@@ -326,7 +327,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan,
       addDailyPlan, updateDailyPlan, deleteDailyPlan,
       addCustomSetup: setupsCRUD.add, updateCustomSetup: setupsCRUD.update, deleteCustomSetup: setupsCRUD.remove,
-      addCustomAsset: assetsCRUD.add,
+      addCustomAsset: assetsCRUD.add, deleteCustomAsset: assetsCRUD.remove,
       addCustomConfluence: confluencesCRUD.add, updateCustomConfluence: confluencesCRUD.update, deleteCustomConfluence: confluencesCRUD.remove,
       addMarket: marketsCRUD.add, updateMarket: marketsCRUD.update, deleteMarket: marketsCRUD.remove,
       addSession: sessionsCRUD.add, updateSession: sessionsCRUD.update, deleteSession: sessionsCRUD.remove,

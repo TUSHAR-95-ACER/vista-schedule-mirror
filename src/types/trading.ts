@@ -255,9 +255,7 @@ export interface DailyPlan {
 export const TRADE_GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C'];
 
 export const FOREX_PAIRS = [
-  'EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD', 'NZDUSD', 'USDCAD',
-  'EURGBP', 'EURJPY', 'GBPJPY', 'AUDJPY', 'CADJPY', 'EURAUD', 'EURNZD',
-  'GBPAUD', 'GBPNZD', 'AUDNZD', 'AUDCAD',
+  'EURUSD', 'GBPUSD', 'USDCAD',
 ];
 
 export const METALS = ['XAUUSD', 'XAGUSD'];

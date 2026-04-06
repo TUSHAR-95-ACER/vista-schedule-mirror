@@ -99,7 +99,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     addTrade, updateTrade, accounts,
     customSetups, customAssets, customConfluences,
     addCustomSetup, updateCustomSetup, deleteCustomSetup,
-    addCustomAsset, addCustomConfluence, updateCustomConfluence, deleteCustomConfluence,
+    addCustomAsset, deleteCustomAsset, addCustomConfluence, updateCustomConfluence, deleteCustomConfluence,
     markets: ctxMarkets, sessions: ctxSessions, conditions: ctxConditions,
     gradesList, managementOptions, psychTags, violations,
   } = useTrading();
@@ -474,7 +474,22 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   <FieldLabel>Asset / Pair</FieldLabel>
                   <Select value={form.asset} onValueChange={v => set('asset', v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
-                    <SelectContent>{allAssets.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent>
+                    <SelectContent>
+                      {allAssets.map(a => (
+                        <div key={a} className="flex items-center group">
+                          <SelectItem value={a} className="flex-1">{a}</SelectItem>
+                          {customAssets.includes(a) && (
+                            <button
+                              type="button"
+                              className="opacity-0 group-hover:opacity-100 p-1 text-destructive hover:text-destructive/80 transition-opacity"
+                              onClick={(e) => { e.stopPropagation(); deleteCustomAsset(a); if (form.asset === a) set('asset', ''); }}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </SelectContent>
                   </Select>
                   <div className="flex gap-1">
                     <Input placeholder="New asset" value={newAsset} onChange={e => setNewAsset(e.target.value)} className="h-7 text-[10px] rounded-md" />
