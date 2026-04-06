@@ -47,7 +47,7 @@ interface TradingContextType {
   addCustomSetup: (setup: string) => void;
   updateCustomSetup: (previous: string, next: string) => void;
   deleteCustomSetup: (setup: string) => void;
-  addCustomAsset: (asset: string) => void;
+  deleteCustomAsset: (asset: string) => void;
   addCustomConfluence: (c: string) => void;
   updateCustomConfluence: (previous: string, next: string) => void;
   deleteCustomConfluence: (c: string) => void;
