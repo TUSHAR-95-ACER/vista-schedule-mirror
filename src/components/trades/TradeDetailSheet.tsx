@@ -173,6 +173,8 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
                 <DataRow label="Session" value={trade.session} />
                 <DataRow label="Condition" value={trade.marketCondition} />
                 {trade.trend && <DataRow label="Trend" value={trade.trend} />}
+                {(trade as any).curve && <DataRow label="Curve" value={(trade as any).curve} />}
+                {trade.timeframe && <DataRow label="Timeframe" value={trade.timeframe} />}
                 <DataRow label="Setup" value={trade.setup} />
                 <DataRow label="Quantity" value={trade.quantity} mono />
               </InfoCard>
