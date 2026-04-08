@@ -324,19 +324,6 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
                           </div>
                         </div>
                       )}
-                      {trade.confluences.length > 0 && (
-                        <div>
-                          <p className="text-[9px] font-semibold text-muted-foreground uppercase mb-1">All Points</p>
-                          <div className="space-y-0.5">
-                            {trade.confluences.map((c, i) => (
-                              <div key={c} className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-mono font-bold text-primary w-3 text-center">{i + 1}</span>
-                                <Badge variant="outline" className="text-[10px] h-5">{c}</Badge>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </CollapsibleContent>
                   </Collapsible>
                 </InfoCard>

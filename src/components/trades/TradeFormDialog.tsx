@@ -135,6 +135,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     trend: '',
     dayTags: [] as string[],
     dayTagInput: '',
+    curve: '' as 'Right' | 'Left' | 'Centre' | '',
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -200,6 +201,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         trend: editTrade.trend || '',
         dayTags: editTrade.dayTags || [],
         dayTagInput: '',
+        curve: (editTrade as any).curve || '',
       });
     } else {
       setForm(defaultForm);
@@ -339,6 +341,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       toast({ title: 'Trend required', description: 'Please select a market trend before saving.', variant: 'destructive' });
       return;
     }
+    if (!form.curve) {
+      toast({ title: 'Curve required', description: 'Please select a curve position before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
@@ -402,6 +408,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       timeframe: form.timeframe || undefined,
       trend: form.trend || undefined,
       dayTags: form.dayTags,
+      curve: form.curve || undefined,
     };
 
     if (editTrade) updateTrade(trade);

@@ -115,8 +115,8 @@ export default function Dashboard() {
           <div className="h-[200px] sm:h-[240px]"><SessionChart trades={trades} /></div>
         </div>
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <ChartHeader title="By Week" tooltip="Weekly P/L to track consistency across calendar weeks" />
-          <div className="h-[200px] sm:h-[240px]"><WeeklyPerformanceChart trades={trades} /></div>
+          <ChartHeader title="By Week" tooltip="Weekly P/L to track consistency across calendar weeks (matches calendar row layout)" />
+          <div className="h-[200px] sm:h-[240px]"><WeeklyPerformanceChart trades={trades} month={new Date().getMonth()} year={new Date().getFullYear()} /></div>
         </div>
       </div>
 
