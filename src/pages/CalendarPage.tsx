@@ -198,7 +198,7 @@ export default function CalendarPage() {
             </Select>
             <Select value={String(year)} onValueChange={v => setYear(parseInt(v))}>
               <SelectTrigger className="w-[100px] h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>{[2024, 2025, 2026].map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+              <SelectContent>{Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
             </Select>
           </>
         )}

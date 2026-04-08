@@ -347,7 +347,18 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
                 <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">Trading Calendar</p>
-                  <h3 className="font-heading text-2xl font-bold tracking-tight text-foreground">{MONTHS[month]} {year}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-heading text-2xl font-bold tracking-tight text-foreground">{MONTHS[month]}</h3>
+                    <select
+                      value={year}
+                      onChange={e => setYear(parseInt(e.target.value))}
+                      className="bg-transparent font-heading text-2xl font-bold tracking-tight text-foreground border-none outline-none cursor-pointer appearance-none"
+                    >
+                      {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(y => (
+                        <option key={y} value={y} className="bg-card text-foreground text-base">{y}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
               </div>
