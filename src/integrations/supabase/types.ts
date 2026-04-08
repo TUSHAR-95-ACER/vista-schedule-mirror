@@ -136,6 +136,7 @@ export type Database = {
           chart_link: string | null
           confluences: Json | null
           created_at: string
+          curve: string | null
           date: string
           day_tags: Json | null
           direction: string
@@ -179,6 +180,7 @@ export type Database = {
           chart_link?: string | null
           confluences?: Json | null
           created_at?: string
+          curve?: string | null
           date: string
           day_tags?: Json | null
           direction: string
@@ -222,6 +224,7 @@ export type Database = {
           chart_link?: string | null
           confluences?: Json | null
           created_at?: string
+          curve?: string | null
           date?: string
           day_tags?: Json | null
           direction?: string

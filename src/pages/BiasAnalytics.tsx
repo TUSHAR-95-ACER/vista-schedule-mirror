@@ -287,13 +287,6 @@ export default function BiasAnalytics() {
               </div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bearish</span>
             </div>
-            <div className="text-center">
-              <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                <Minus className="h-3.5 w-3.5" />
-                <span className="font-heading text-lg font-bold">{biasStats.neutral.toFixed(0)}%</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Neutral</span>
-            </div>
           </div>
         </div>
       </div>

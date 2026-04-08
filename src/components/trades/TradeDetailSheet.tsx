@@ -173,6 +173,8 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
                 <DataRow label="Session" value={trade.session} />
                 <DataRow label="Condition" value={trade.marketCondition} />
                 {trade.trend && <DataRow label="Trend" value={trade.trend} />}
+                {(trade as any).curve && <DataRow label="Curve" value={(trade as any).curve} />}
+                {trade.timeframe && <DataRow label="Timeframe" value={trade.timeframe} />}
                 <DataRow label="Setup" value={trade.setup} />
                 <DataRow label="Quantity" value={trade.quantity} mono />
               </InfoCard>
@@ -316,19 +318,6 @@ export function TradeDetailSheet({ trade, onClose }: Props) {
                           <p className="text-[9px] font-semibold text-muted-foreground uppercase mb-1">Target Points</p>
                           <div className="space-y-0.5">
                             {trade.targetConfluences.map((c, i) => (
-                              <div key={c} className="flex items-center gap-1.5">
-                                <span className="text-[9px] font-mono font-bold text-primary w-3 text-center">{i + 1}</span>
-                                <Badge variant="outline" className="text-[10px] h-5">{c}</Badge>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {trade.confluences.length > 0 && (
-                        <div>
-                          <p className="text-[9px] font-semibold text-muted-foreground uppercase mb-1">All Points</p>
-                          <div className="space-y-0.5">
-                            {trade.confluences.map((c, i) => (
                               <div key={c} className="flex items-center gap-1.5">
                                 <span className="text-[9px] font-mono font-bold text-primary w-3 text-center">{i + 1}</span>
                                 <Badge variant="outline" className="text-[10px] h-5">{c}</Badge>

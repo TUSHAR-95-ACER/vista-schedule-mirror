@@ -7,7 +7,7 @@ export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
   const { gradesList } = useTrading();
 
   const data = useMemo(() => {
-    const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+    const valid = trades;
     // Use dynamic grades from context + any grades found in trades
     const allGrades = [...new Set([...gradesList, ...valid.map(t => t.grade).filter(Boolean) as string[]])];
 

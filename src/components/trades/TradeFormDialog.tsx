@@ -135,6 +135,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     trend: '',
     dayTags: [] as string[],
     dayTagInput: '',
+    curve: '' as 'Right' | 'Left' | 'Centre' | '',
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -200,6 +201,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         trend: editTrade.trend || '',
         dayTags: editTrade.dayTags || [],
         dayTagInput: '',
+        curve: (editTrade as any).curve || '',
       });
     } else {
       setForm(defaultForm);
@@ -339,6 +341,10 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       toast({ title: 'Trend required', description: 'Please select a market trend before saving.', variant: 'destructive' });
       return;
     }
+    if (!form.curve) {
+      toast({ title: 'Curve required', description: 'Please select a curve position before saving.', variant: 'destructive' });
+      return;
+    }
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
@@ -402,6 +408,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       timeframe: form.timeframe || undefined,
       trend: form.trend || undefined,
       dayTags: form.dayTags,
+      curve: form.curve || undefined,
     };
 
     if (editTrade) updateTrade(trade);
@@ -523,12 +530,25 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   </Select>
                 </div>
                 <div className="space-y-1">
+                  <FieldLabel>Timeframe</FieldLabel>
                   <Select value={form.timeframe || 'none'} onValueChange={v => set('timeframe', v === 'none' ? '' : v)}>
                     <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue placeholder="Select..." /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">—</SelectItem>
                       {['1M', '5M', '15M', '30M', '1H', '4H', 'Daily', 'Weekly'].map(tf => (
                         <SelectItem key={tf} value={tf}>{tf}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <FieldLabel>Curve <span className="text-destructive">*</span></FieldLabel>
+                  <Select value={form.curve || 'none'} onValueChange={v => set('curve', v === 'none' ? '' : v)}>
+                    <SelectTrigger className={cn("h-9 text-xs rounded-lg", !form.curve && "border-destructive/50")}><SelectValue placeholder="Select..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      {['Right', 'Left', 'Centre'].map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

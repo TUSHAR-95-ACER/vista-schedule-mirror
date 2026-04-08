@@ -124,6 +124,7 @@ export interface Trade {
   trend?: string;
   tradeJourney?: TradeJourneyStep[];
   dayTags?: string[];
+  curve?: 'Right' | 'Left' | 'Centre';
 }
 
 export interface TradeJourneyStep {
