@@ -366,19 +366,38 @@ export default function WeeklyPlanPage() {
         <Plus className="h-4 w-4" /> Add Pair Analysis
       </button>
 
-      {/* Calendar Result */}
-      <SectionCard title="Calendar Result" icon={<Calendar className="h-3.5 w-3.5" />} accent="warning" badge="Post-Week">
-        <Textarea
-          value={localPlan.newsResult || ''}
-          onChange={e => update({ newsResult: e.target.value })}
-          placeholder="Which events impacted the market? Was the reaction expected?"
-          className="min-h-[70px] text-sm rounded-lg"
+      {/* Observation - Notion-style block */}
+      <SectionCard title="Observation" icon={<NotebookPen className="h-3.5 w-3.5" />} accent="primary" badge="Journal">
+        <RichJournalBlock
+          title="Weekly Observation"
+          scope={`weekly/${localPlan.id}/observation`}
+          value={coerceRichJournal((localPlan as WeeklyPlan).observation)}
+          onChange={v => update({ observation: serializeJournal(v) } as Partial<WeeklyPlan>)}
+          placeholder="Planning notes, market observations, annotated charts…"
+          className="border-0 shadow-none p-0 bg-transparent"
         />
       </SectionCard>
 
-      {/* Video */}
+      {/* Calendar Result - Notion-style block */}
+      <SectionCard title="Calendar Result" icon={<Calendar className="h-3.5 w-3.5" />} accent="warning" badge="Post-Week">
+        <RichJournalBlock
+          title="Reflection & Media"
+          scope={`weekly/${localPlan.id}/calendar-result`}
+          value={coerceRichJournal((localPlan as WeeklyPlan).calendarResult, localPlan.newsResult, undefined)}
+          onChange={v => update({ calendarResult: serializeJournal(v), newsResult: v.text } as Partial<WeeklyPlan>)}
+          placeholder="Which events impacted the market? Was the reaction expected?"
+          className="border-0 shadow-none p-0 bg-transparent"
+        />
+      </SectionCard>
+
+      {/* Analysis Video - real Storage upload */}
       <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <UnifiedMediaBox accept={["video", "url"]} value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
+        <JournalVideoUpload
+          url={localPlan.analysisVideoUrl}
+          path={(localPlan as WeeklyPlan).analysisVideoPath}
+          scope={`weekly/${localPlan.id}/video`}
+          onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<WeeklyPlan>)}
+        />
       </SectionCard>
 
       {/* Sticky Save */}
