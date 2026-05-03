@@ -187,16 +187,32 @@ export interface NewsItem {
   image?: string;
 }
 
+// Rich journal value (for Notion-style blocks)
+export interface RichJournalDoc {
+  text: string;
+  media: Array<{
+    id: string;
+    type: 'image' | 'video';
+    url: string;
+    path?: string;
+    name?: string;
+    legacy?: boolean;
+  }>;
+}
+
 // Weekly Plan with multi-pair analysis
 export interface PairAnalysis {
   id: string;
   pair: string;
   bias: 'Bullish' | 'Bearish' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
   setupFocus: string;
   reasons: PairReason[];
   keyLevels: string;
   chartImage?: string;
   narrative?: string;
+  /** Notion-style chart analysis block (text + media uploads) */
+  analysisJournal?: RichJournalDoc;
   expectedDirection: 'Buy' | 'Sell';
   resultChartImage?: string;
   resultNarrative?: string;
