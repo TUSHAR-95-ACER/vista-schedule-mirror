@@ -169,6 +169,7 @@ export type Database = {
           take_profit: number
           target_confluences: Json | null
           timeframe: string | null
+          trade_analysis: Json | null
           trade_journey: Json | null
           trend: string | null
           user_id: string
@@ -213,6 +214,7 @@ export type Database = {
           take_profit?: number
           target_confluences?: Json | null
           timeframe?: string | null
+          trade_analysis?: Json | null
           trade_journey?: Json | null
           trend?: string | null
           user_id: string
@@ -257,6 +259,7 @@ export type Database = {
           take_profit?: number
           target_confluences?: Json | null
           timeframe?: string | null
+          trade_analysis?: Json | null
           trade_journey?: Json | null
           trend?: string | null
           user_id?: string
