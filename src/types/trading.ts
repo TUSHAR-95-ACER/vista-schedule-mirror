@@ -125,6 +125,8 @@ export interface Trade {
   tradeJourney?: TradeJourneyStep[];
   dayTags?: string[];
   curve?: 'Right' | 'Left' | 'Centre';
+  /** Notion-style trade thesis block (text + media). Replaces Technical Points UI. */
+  tradeAnalysis?: { text: string; media: Array<{ id: string; type: 'image' | 'video'; url: string; path?: string; name?: string; legacy?: boolean }> };
 }
 
 export interface TradeJourneyStep {
