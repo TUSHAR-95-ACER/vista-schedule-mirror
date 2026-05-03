@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
-import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, BarChart3, Target, TrendingUp, FileText, Eye, Save, Video, Newspaper } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Video, Newspaper, NotebookPen } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
+import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
+import { JournalVideoUpload } from '@/components/shared/JournalVideoUpload';
+import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
@@ -117,7 +118,7 @@ export default function WeeklyPlanPage() {
   const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
-  const { previews: notePreviews, loading: noteLoading, detectAndFetch: detectNoteUrls, removePreview: removeNotePreview } = useUrlPreview();
+  
 
   const startNew = () => {
     const plan: WeeklyPlan = {
@@ -307,57 +308,52 @@ export default function WeeklyPlanPage() {
             )}
           </div>
 
-          {/* Chart Analysis */}
+          {/* Chart Analysis - Notion-style */}
           <SectionCard title="Chart Analysis" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
             <UnifiedMediaBox value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
-            <Textarea value={pa.narrative || ''} onChange={e => updatePair(pa.id, { narrative: e.target.value })} placeholder="Liquidity zones, order flow expectations..." className="min-h-[70px] text-sm rounded-lg" />
+            <RichJournalBlock
+              title="Analysis Notes"
+              scope={`weekly/${localPlan.id}/pair-${pa.id}/analysis`}
+              value={coerceRichJournal(pa.analysisJournal, pa.narrative, undefined)}
+              onChange={v => updatePair(pa.id, { analysisJournal: serializeJournal(v), narrative: v.text })}
+              placeholder="Liquidity zones, order flow expectations, key reasoning…"
+              className="border-0 shadow-none p-0 bg-transparent"
+            />
           </SectionCard>
 
-          {/* Bias & Reasons */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
-              <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as any })}>
-                <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bullish">Bullish</SelectItem>
-                  <SelectItem value="Bearish">Bearish</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
-            </SectionCard>
-
-            <SectionCard title="Reasons" icon={<FileText className="h-3.5 w-3.5" />}>
-              <Textarea
-                value={(pa.reasons as any).__freeText || (typeof pa.reasons === 'string' ? pa.reasons : pa.reasons?.join?.(', ') || '')}
-                onChange={e => updatePair(pa.id, { reasons: e.target.value as any })}
-                placeholder="Technical reasons for this bias..."
-                className="min-h-[60px] text-sm rounded-lg"
-              />
-            </SectionCard>
-          </div>
-
-          {/* Key Levels */}
-          <SectionCard title="Key Levels" icon={<Target className="h-3.5 w-3.5" />} accent="warning">
-            <Textarea value={pa.keyLevels} onChange={e => updatePair(pa.id, { keyLevels: e.target.value })} placeholder="1.08500 - major resistance&#10;1.08200 - support zone" className="min-h-[70px] text-sm font-mono rounded-lg" />
-          </SectionCard>
-
-          {/* Result */}
-          <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Direction</Label>
-              <Select value={pa.actualDirection || 'none'} onValueChange={v => updatePair(pa.id, { actualDirection: v === 'none' ? '' : v as any })}>
-                <SelectTrigger className="w-48 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  <SelectItem value="Bullish">Bullish</SelectItem>
-                  <SelectItem value="Bearish">Bearish</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Predicted Bias vs Actual Bias */}
+          <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
+                <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as PairAnalysis['bias'] })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bullish">Bullish</SelectItem>
+                    <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Neutral">Neutral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
+                <Select value={pa.actualBias || 'none'} onValueChange={v => updatePair(pa.id, { actualBias: v === 'none' ? '' : v as PairAnalysis['actualBias'] })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">—</SelectItem>
+                    <SelectItem value="Bullish">Bullish</SelectItem>
+                    <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Neutral">Neutral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+          </SectionCard>
+
+          {/* Result chart only (Actual Direction removed; lives in Actual Bias above) */}
+          <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
             <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => { updatePair(pa.id, { note: e.target.value }); detectNoteUrls(e.target.value); }} placeholder="What actually happened... Paste URLs for auto-preview" className="min-h-[60px] text-sm rounded-lg" />
-            <LinkPreviewList previews={notePreviews} loading={noteLoading} onRemove={removeNotePreview} />
+            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg" />
           </SectionCard>
         </div>
       ))}
@@ -370,19 +366,38 @@ export default function WeeklyPlanPage() {
         <Plus className="h-4 w-4" /> Add Pair Analysis
       </button>
 
-      {/* Calendar Result */}
-      <SectionCard title="Calendar Result" icon={<Calendar className="h-3.5 w-3.5" />} accent="warning" badge="Post-Week">
-        <Textarea
-          value={localPlan.newsResult || ''}
-          onChange={e => update({ newsResult: e.target.value })}
-          placeholder="Which events impacted the market? Was the reaction expected?"
-          className="min-h-[70px] text-sm rounded-lg"
+      {/* Observation - Notion-style block */}
+      <SectionCard title="Observation" icon={<NotebookPen className="h-3.5 w-3.5" />} accent="primary" badge="Journal">
+        <RichJournalBlock
+          title="Weekly Observation"
+          scope={`weekly/${localPlan.id}/observation`}
+          value={coerceRichJournal((localPlan as WeeklyPlan).observation)}
+          onChange={v => update({ observation: serializeJournal(v) } as Partial<WeeklyPlan>)}
+          placeholder="Planning notes, market observations, annotated charts…"
+          className="border-0 shadow-none p-0 bg-transparent"
         />
       </SectionCard>
 
-      {/* Video */}
+      {/* Calendar Result - Notion-style block */}
+      <SectionCard title="Calendar Result" icon={<Calendar className="h-3.5 w-3.5" />} accent="warning" badge="Post-Week">
+        <RichJournalBlock
+          title="Reflection & Media"
+          scope={`weekly/${localPlan.id}/calendar-result`}
+          value={coerceRichJournal((localPlan as WeeklyPlan).calendarResult, localPlan.newsResult, undefined)}
+          onChange={v => update({ calendarResult: serializeJournal(v), newsResult: v.text } as Partial<WeeklyPlan>)}
+          placeholder="Which events impacted the market? Was the reaction expected?"
+          className="border-0 shadow-none p-0 bg-transparent"
+        />
+      </SectionCard>
+
+      {/* Analysis Video - real Storage upload */}
       <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <UnifiedMediaBox accept={["video", "url"]} value={localPlan.analysisVideoUrl || ''} onChange={v => update({ analysisVideoUrl: v })} label="Upload analysis video" />
+        <JournalVideoUpload
+          url={localPlan.analysisVideoUrl}
+          path={(localPlan as WeeklyPlan).analysisVideoPath}
+          scope={`weekly/${localPlan.id}/video`}
+          onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<WeeklyPlan>)}
+        />
       </SectionCard>
 
       {/* Sticky Save */}

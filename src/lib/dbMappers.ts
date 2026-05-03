@@ -24,6 +24,7 @@ export function tradeToDb(t: Trade, userId: string) {
     trade_journey: t.tradeJourney ? JSON.stringify(t.tradeJourney) : null,
     day_tags: t.dayTags ? JSON.stringify(t.dayTags) : '[]',
     curve: (t as any).curve || null,
+    trade_analysis: (t as any).tradeAnalysis ? JSON.stringify((t as any).tradeAnalysis) : null,
   };
 }
 
@@ -56,7 +57,8 @@ export function dbToTrade(row: any): Trade {
     tradeJourney: row.trade_journey ? (typeof row.trade_journey === 'string' ? JSON.parse(row.trade_journey) : row.trade_journey) : undefined,
     dayTags: row.day_tags ? (typeof row.day_tags === 'string' ? JSON.parse(row.day_tags) : row.day_tags) : [],
     curve: row.curve || undefined,
-  };
+    tradeAnalysis: row.trade_analysis ? (typeof row.trade_analysis === 'string' ? JSON.parse(row.trade_analysis) : row.trade_analysis) : undefined,
+  } as Trade;
 }
 
 // TradingAccount: app <-> DB
@@ -126,6 +128,8 @@ export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
     news_items: p.newsItems ? JSON.stringify(p.newsItems) : null,
     news_result: p.newsResult || null, analysis_video_url: p.analysisVideoUrl || null,
     reviewed: p.reviewed || false,
+    observation: (p as any).observation ? JSON.stringify((p as any).observation) : null,
+    calendar_result: (p as any).calendarResult ? JSON.stringify((p as any).calendarResult) : null,
   };
 }
 export function dbToWeeklyPlan(row: any): WeeklyPlan {
@@ -138,7 +142,9 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
     newsItems: row.news_items ? (typeof row.news_items === 'string' ? JSON.parse(row.news_items) : row.news_items) : undefined,
     newsResult: row.news_result || undefined, analysisVideoUrl: row.analysis_video_url || undefined,
     reviewed: row.reviewed || false,
-  };
+    observation: row.observation ? (typeof row.observation === 'string' ? JSON.parse(row.observation) : row.observation) : undefined,
+    calendarResult: row.calendar_result ? (typeof row.calendar_result === 'string' ? JSON.parse(row.calendar_result) : row.calendar_result) : undefined,
+  } as WeeklyPlan;
 }
 
 // DailyPlan
@@ -152,6 +158,8 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
     result_chart_image: p.resultChartImage || null,
     analysis_video_url: p.analysisVideoUrl || null, note: p.note || null,
     reviewed: p.reviewed || false,
+    day_summary: (p as any).daySummary ? JSON.stringify((p as any).daySummary) : null,
+    notes_journal: (p as any).notesJournal ? JSON.stringify((p as any).notesJournal) : null,
   };
 }
 export function dbToDailyPlan(row: any): DailyPlan {
@@ -164,5 +172,7 @@ export function dbToDailyPlan(row: any): DailyPlan {
     resultChartImage: row.result_chart_image || undefined,
     analysisVideoUrl: row.analysis_video_url || undefined, note: row.note || undefined,
     reviewed: row.reviewed || false,
-  };
+    daySummary: row.day_summary ? (typeof row.day_summary === 'string' ? JSON.parse(row.day_summary) : row.day_summary) : undefined,
+    notesJournal: row.notes_journal ? (typeof row.notes_journal === 'string' ? JSON.parse(row.notes_journal) : row.notes_journal) : undefined,
+  } as DailyPlan;
 }

@@ -125,6 +125,8 @@ export interface Trade {
   tradeJourney?: TradeJourneyStep[];
   dayTags?: string[];
   curve?: 'Right' | 'Left' | 'Centre';
+  /** Notion-style trade thesis block (text + media). Replaces Technical Points UI. */
+  tradeAnalysis?: { text: string; media: Array<{ id: string; type: 'image' | 'video'; url: string; path?: string; name?: string; legacy?: boolean }> };
 }
 
 export interface TradeJourneyStep {
@@ -187,16 +189,32 @@ export interface NewsItem {
   image?: string;
 }
 
+// Rich journal value (for Notion-style blocks)
+export interface RichJournalDoc {
+  text: string;
+  media: Array<{
+    id: string;
+    type: 'image' | 'video';
+    url: string;
+    path?: string;
+    name?: string;
+    legacy?: boolean;
+  }>;
+}
+
 // Weekly Plan with multi-pair analysis
 export interface PairAnalysis {
   id: string;
   pair: string;
   bias: 'Bullish' | 'Bearish' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
   setupFocus: string;
   reasons: PairReason[];
   keyLevels: string;
   chartImage?: string;
   narrative?: string;
+  /** Notion-style chart analysis block (text + media uploads) */
+  analysisJournal?: RichJournalDoc;
   expectedDirection: 'Buy' | 'Sell';
   resultChartImage?: string;
   resultNarrative?: string;
@@ -219,6 +237,12 @@ export interface WeeklyPlan {
   newsResult?: string;
   analysisVideoUrl?: string;
   reviewed?: boolean;
+  /** Notion-style observation block */
+  observation?: RichJournalDoc;
+  /** Notion-style calendar/news result block */
+  calendarResult?: RichJournalDoc;
+  /** Persisted Storage path for analysis video (in addition to URL) */
+  analysisVideoPath?: string;
 }
 
 // Daily Plan
@@ -226,11 +250,14 @@ export interface DailyPairPlan {
   id: string;
   pair: string;
   bias: 'Bullish' | 'Bearish' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
   setup: string;
   reasons: PairReason[];
   keyLevels: string;
   chartImage?: string;
   narrative?: string;
+  /** Notion-style prediction analysis block */
+  analysisJournal?: RichJournalDoc;
   resultChartImage?: string;
   resultNarrative?: string;
   note?: string;
@@ -251,6 +278,9 @@ export interface DailyPlan {
   analysisVideoUrl?: string;
   note?: string;
   reviewed?: boolean;
+  daySummary?: RichJournalDoc;
+  notesJournal?: RichJournalDoc;
+  analysisVideoPath?: string;
 }
 
 export const TRADE_GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C'];

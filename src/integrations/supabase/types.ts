@@ -20,10 +20,12 @@ export type Database = {
           created_at: string
           daily_bias: string
           date: string
+          day_summary: Json | null
           id: string
           max_trades: number
           news_items: Json | null
           note: string | null
+          notes_journal: Json | null
           pairs: Json | null
           result_chart_image: string | null
           result_narrative: string | null
@@ -38,10 +40,12 @@ export type Database = {
           created_at?: string
           daily_bias?: string
           date: string
+          day_summary?: Json | null
           id: string
           max_trades?: number
           news_items?: Json | null
           note?: string | null
+          notes_journal?: Json | null
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
@@ -56,10 +60,12 @@ export type Database = {
           created_at?: string
           daily_bias?: string
           date?: string
+          day_summary?: Json | null
           id?: string
           max_trades?: number
           news_items?: Json | null
           note?: string | null
+          notes_journal?: Json | null
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
@@ -169,6 +175,7 @@ export type Database = {
           take_profit: number
           target_confluences: Json | null
           timeframe: string | null
+          trade_analysis: Json | null
           trade_journey: Json | null
           trend: string | null
           user_id: string
@@ -213,6 +220,7 @@ export type Database = {
           take_profit?: number
           target_confluences?: Json | null
           timeframe?: string | null
+          trade_analysis?: Json | null
           trade_journey?: Json | null
           trend?: string | null
           user_id: string
@@ -257,6 +265,7 @@ export type Database = {
           take_profit?: number
           target_confluences?: Json | null
           timeframe?: string | null
+          trade_analysis?: Json | null
           trade_journey?: Json | null
           trend?: string | null
           user_id?: string
@@ -444,6 +453,7 @@ export type Database = {
         Row: {
           analysis_video_url: string | null
           bias: string
+          calendar_result: Json | null
           created_at: string
           goals: string | null
           id: string
@@ -451,6 +461,7 @@ export type Database = {
           markets: Json | null
           news_items: Json | null
           news_result: string | null
+          observation: Json | null
           pair_analyses: Json | null
           reviewed: boolean | null
           risk: string | null
@@ -461,6 +472,7 @@ export type Database = {
         Insert: {
           analysis_video_url?: string | null
           bias?: string
+          calendar_result?: Json | null
           created_at?: string
           goals?: string | null
           id: string
@@ -468,6 +480,7 @@ export type Database = {
           markets?: Json | null
           news_items?: Json | null
           news_result?: string | null
+          observation?: Json | null
           pair_analyses?: Json | null
           reviewed?: boolean | null
           risk?: string | null
@@ -478,6 +491,7 @@ export type Database = {
         Update: {
           analysis_video_url?: string | null
           bias?: string
+          calendar_result?: Json | null
           created_at?: string
           goals?: string | null
           id?: string
@@ -485,6 +499,7 @@ export type Database = {
           markets?: Json | null
           news_items?: Json | null
           news_result?: string | null
+          observation?: Json | null
           pair_analyses?: Json | null
           reviewed?: boolean | null
           risk?: string | null
