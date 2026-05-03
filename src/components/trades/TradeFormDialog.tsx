@@ -737,7 +737,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
               <div className="space-y-1">
                 <FieldLabel>Notes</FieldLabel>
-                <Textarea value={form.notes} onChange={e => { set('notes', e.target.value); detectNotesUrls(e.target.value); }} className="text-xs min-h-[60px] rounded-lg" placeholder="Trade notes... Paste URLs for auto-preview" />
+                <AutoExpandTextarea value={form.notes} onChange={e => { set('notes', e.target.value); detectNotesUrls(e.target.value); }} className="text-sm rounded-lg border border-input bg-background px-3 py-2" placeholder="Trade notes… Paste URLs for auto-preview" minRows={2} />
                 <LinkPreviewList previews={notesPreviews} loading={notesLoading} onRemove={removeNotesPreview} />
               </div>
 
