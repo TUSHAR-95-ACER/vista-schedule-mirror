@@ -669,7 +669,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             <FormSection title="Trade Analysis" icon={<Target className="h-3.5 w-3.5" />}>
               <RichJournalBlock
                 title="Manual thesis & post-trade analysis"
-                scope={`trade/${form.id || 'new'}/analysis`}
+                scope={`trade/${editTrade?.id || 'new'}/analysis`}
                 value={coerceRichJournal((form as any).tradeAnalysis)}
                 onChange={(v) => set('tradeAnalysis' as any, serializeJournal(v) as any)}
                 placeholder="Technical thesis, fundamental thesis, entry logic, target logic, sentiment, execution reasoning, post-trade observations…"
