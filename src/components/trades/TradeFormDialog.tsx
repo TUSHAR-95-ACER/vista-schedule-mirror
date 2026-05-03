@@ -662,70 +662,18 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
               )}
             </FormSection>
 
-            {/* ── TECHNICAL POINTS (Collapsible) ──────────────────── */}
-            <Collapsible>
-              <FormSection title="Technical Points" icon={<Target className="h-3.5 w-3.5" />} className="relative">
-                <CollapsibleTrigger asChild>
-                  <Button type="button" variant="ghost" size="sm" className="absolute top-2 right-3 h-7 text-[10px] uppercase tracking-wider text-muted-foreground gap-1">
-                    {form.entryConfluences.length + form.targetConfluences.length > 0
-                      ? `${form.entryConfluences.length + form.targetConfluences.length} selected`
-                      : 'Expand'
-                    }
-                    <ChevronDown className="h-3 w-3 transition-transform [[data-state=open]_&]:rotate-180" />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="space-y-3 pt-1">
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground mb-2 uppercase tracking-wide">For Entry</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {allConfluences.map(c => (
-                          <ChipToggle key={`entry-${c}`} label={c} checked={form.entryConfluences.includes(c)} onChange={() => toggleTechnicalPoint('entryConfluences', c)} />
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground mb-2 uppercase tracking-wide">For Target</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {allConfluences.map(c => (
-                          <ChipToggle key={`target-${c}`} label={c} checked={form.targetConfluences.includes(c)} onChange={() => toggleTechnicalPoint('targetConfluences', c)} />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Input placeholder="Add technical option" value={newConfluence} onChange={e => setNewConfluence(e.target.value)} className="h-8 text-xs rounded-lg" />
-                      <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-xs rounded-lg font-semibold" onClick={addConfluenceOption}>Add</Button>
-                    </div>
-                    <Collapsible open={confluencesOpen} onOpenChange={setConfluencesOpen}>
-                      <CollapsibleTrigger asChild>
-                        <Button type="button" variant="ghost" size="sm" className="h-7 w-full justify-between text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                          Manage Technical Points <ChevronDown className={`h-3 w-3 transition-transform ${confluencesOpen ? 'rotate-180' : ''}`} />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-1 space-y-1.5 rounded-lg border border-border/50 bg-muted/20 p-2 animate-in slide-in-from-top-1">
-                        {allConfluences.map(confluence => (
-                          <div key={confluence} className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-1.5">
-                            {editingConfluence === confluence ? (
-                              <>
-                                <Input value={editingConfluenceValue} onChange={e => setEditingConfluenceValue(e.target.value)} className="h-7 text-xs rounded-md" />
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => saveConfluenceEdit(confluence)}><Check className="h-3.5 w-3.5" /></Button>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingConfluence(null); setEditingConfluenceValue(''); }}><X className="h-3.5 w-3.5" /></Button>
-                              </>
-                            ) : (
-                              <>
-                                <span className="flex-1 text-xs font-medium">{confluence}</span>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingConfluence(confluence); setEditingConfluenceValue(confluence); }}><Pencil className="h-3.5 w-3.5" /></Button>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeConfluenceOption(confluence)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                              </>
-                            )}
-                          </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                </CollapsibleContent>
-              </FormSection>
-            </Collapsible>
+            {/* ── TRADE ANALYSIS (Notion-style) ──────────────────── */}
+            <FormSection title="Trade Analysis" icon={<Target className="h-3.5 w-3.5" />}>
+              <RichJournalBlock
+                title="Manual thesis & post-trade analysis"
+                scope={`trade/${form.id || 'new'}/analysis`}
+                value={coerceRichJournal((form as any).tradeAnalysis)}
+                onChange={(v) => set('tradeAnalysis' as any, serializeJournal(v) as any)}
+                placeholder="Technical thesis, fundamental thesis, entry logic, target logic, sentiment, execution reasoning, post-trade observations…"
+                className="border-0 shadow-none p-0 bg-transparent"
+              />
+            </FormSection>
+
 
             {/* ── TRADE MANAGEMENT ──────────────────────────────── */}
             <FormSection title="Trade Management" icon={<Settings2 className="h-3.5 w-3.5" />}>
