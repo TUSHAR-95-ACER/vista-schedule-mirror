@@ -235,6 +235,12 @@ export interface WeeklyPlan {
   newsResult?: string;
   analysisVideoUrl?: string;
   reviewed?: boolean;
+  /** Notion-style observation block */
+  observation?: RichJournalDoc;
+  /** Notion-style calendar/news result block */
+  calendarResult?: RichJournalDoc;
+  /** Persisted Storage path for analysis video (in addition to URL) */
+  analysisVideoPath?: string;
 }
 
 // Daily Plan
@@ -242,9 +248,18 @@ export interface DailyPairPlan {
   id: string;
   pair: string;
   bias: 'Bullish' | 'Bearish' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
   setup: string;
   reasons: PairReason[];
   keyLevels: string;
+  chartImage?: string;
+  narrative?: string;
+  /** Notion-style prediction analysis block */
+  analysisJournal?: RichJournalDoc;
+  resultChartImage?: string;
+  resultNarrative?: string;
+  note?: string;
+}
   chartImage?: string;
   narrative?: string;
   resultChartImage?: string;
