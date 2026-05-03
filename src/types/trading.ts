@@ -260,12 +260,6 @@ export interface DailyPairPlan {
   resultNarrative?: string;
   note?: string;
 }
-  chartImage?: string;
-  narrative?: string;
-  resultChartImage?: string;
-  resultNarrative?: string;
-  note?: string;
-}
 
 export interface DailyPlan {
   id: string;
@@ -282,6 +276,9 @@ export interface DailyPlan {
   analysisVideoUrl?: string;
   note?: string;
   reviewed?: boolean;
+  daySummary?: RichJournalDoc;
+  notesJournal?: RichJournalDoc;
+  analysisVideoPath?: string;
 }
 
 export const TRADE_GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C'];
