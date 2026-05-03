@@ -139,6 +139,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     dayTags: [] as string[],
     dayTagInput: '',
     curve: '' as 'Right' | 'Left' | 'Centre' | '',
+    tradeAnalysis: undefined as Trade['tradeAnalysis'] | undefined,
   };
 
   const [form, setForm] = useState(defaultForm);
