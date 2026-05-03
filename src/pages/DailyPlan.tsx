@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
-import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +11,9 @@ import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Cloc
 import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
+import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
+import { JournalVideoUpload } from '@/components/shared/JournalVideoUpload';
+import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
