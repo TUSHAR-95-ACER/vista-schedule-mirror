@@ -1,12 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Edit, ExternalLink, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { TradeFormDialog } from '@/components/trades/TradeFormDialog';
-import { TradeDetailSheet } from '@/components/trades/TradeDetailSheet';
+const TradeFormDialog = lazy(() => import('@/components/trades/TradeFormDialog').then(m => ({ default: m.TradeFormDialog })));
+const TradeDetailSheet = lazy(() => import('@/components/trades/TradeDetailSheet').then(m => ({ default: m.TradeDetailSheet })));
 import { TradeEntryGate } from '@/components/trades/TradeEntryGate';
 import { TradeGalleryView } from '@/components/trades/TradeGalleryView';
 import { Trade } from '@/types/trading';
@@ -241,8 +241,14 @@ export default function Trades() {
         onPass={() => { setShowGate(false); setShowForm(true); }}
         onCancel={() => setShowGate(false)}
       />
-      <TradeFormDialog open={showForm} onOpenChange={setShowForm} editTrade={editTrade} />
-      <TradeDetailSheet trade={selectedTrade} onClose={() => setSelectedTrade(null)} />
+      <Suspense fallback={null}>
+        {(showForm || editTrade) && (
+          <TradeFormDialog open={showForm} onOpenChange={setShowForm} editTrade={editTrade} />
+        )}
+        {selectedTrade && (
+          <TradeDetailSheet trade={selectedTrade} onClose={() => setSelectedTrade(null)} />
+        )}
+      </Suspense>
     </div>
   );
 }

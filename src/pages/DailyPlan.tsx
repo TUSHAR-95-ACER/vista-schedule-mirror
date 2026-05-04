@@ -340,28 +340,17 @@ export default function DailyPlanPage() {
             )}
           </div>
 
-          {/* Bias & Reasons */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
-              <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
-                <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bullish">Bullish</SelectItem>
-                  <SelectItem value="Bearish">Bearish</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
-            </SectionCard>
-
-            <SectionCard title="Reasons" icon={<FileText className="h-3.5 w-3.5" />}>
-              <Textarea
-                value={typeof pp.reasons === 'string' ? pp.reasons : pp.reasons?.join?.(', ') || ''}
-                onChange={e => updatePair(pp.id, { reasons: e.target.value as any })}
-                placeholder="Technical reasons for this bias..."
-                className="min-h-[60px] text-sm rounded-lg"
-              />
-            </SectionCard>
-          </div>
+          {/* Bias (single, simple) */}
+          <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+            <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
+              <SelectTrigger className="w-full sm:w-64 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Bullish">Bullish</SelectItem>
+                <SelectItem value="Bearish">Bearish</SelectItem>
+                <SelectItem value="Neutral">Neutral</SelectItem>
+              </SelectContent>
+            </Select>
+          </SectionCard>
 
           {/* Prediction Chart - Notion-style notes */}
           <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
@@ -378,20 +367,8 @@ export default function DailyPlanPage() {
 
           {/* Result */}
           <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
-              <Select value={pp.actualBias || 'none'} onValueChange={v => updatePair(pp.id, { actualBias: v === 'none' ? '' : v as DailyPairPlan['actualBias'] })}>
-                <SelectTrigger className="w-48 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">—</SelectItem>
-                  <SelectItem value="Bullish">Bullish</SelectItem>
-                  <SelectItem value="Bearish">Bearish</SelectItem>
-                  <SelectItem value="Neutral">Neutral</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg" />
+            <Textarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg font-journal" />
           </SectionCard>
         </div>
       ))}

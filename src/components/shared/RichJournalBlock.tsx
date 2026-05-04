@@ -144,7 +144,7 @@ export function RichJournalBlock({
   };
 
   return (
-    <div className={cn('rounded-2xl border border-border bg-card p-5 space-y-4', className)}>
+    <div className={cn('rounded-2xl border border-border bg-card p-4 space-y-3', className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">{title}</h3>
         <div className="flex items-center gap-1">
@@ -174,8 +174,8 @@ export function RichJournalBlock({
           value={value.text}
           onChange={(e) => onChange({ ...value, text: e.target.value })}
           placeholder={placeholder}
-          minRows={4}
-          className="text-[15px] leading-7"
+          minRows={3}
+          className="font-journal"
         />
       </div>
 
