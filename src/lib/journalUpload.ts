@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { effectiveContentType } from '@/lib/mediaTypes';
 
 const BUCKET = 'journal-media';
 
