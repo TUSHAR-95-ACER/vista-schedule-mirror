@@ -6,7 +6,7 @@ export const TOGGLEABLE_PAGES = [
   { path: '/trades', label: 'Trades', section: 'OVERVIEW' },
   { path: '/accounts', label: 'Accounts', section: 'OVERVIEW' },
   { path: '/notebook', label: 'Notebook', section: 'OVERVIEW' },
-  { path: '/daily-checklist', label: 'Checklist', section: 'OVERVIEW' },
+  
   { path: '/weekly-plan', label: 'Weekly Plan', section: 'PLANNING & REVIEW' },
   { path: '/daily-plan', label: 'Daily Plan', section: 'PLANNING & REVIEW' },
   { path: '/weekly-review', label: 'Weekly Review', section: 'PLANNING & REVIEW' },

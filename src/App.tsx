@@ -26,7 +26,7 @@ import TradingRules from "./pages/TradingRules";
 import BiasAnalytics from "./pages/BiasAnalytics";
 import ControlCenter from "./pages/ControlCenter";
 import ResearchLab from "./pages/ResearchLab";
-import DailyChecklist from "./pages/DailyChecklist";
+
 import BacktestingLab from "./pages/BacktestingLab";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
@@ -64,7 +64,7 @@ const App = () => (
               <Route path="/bias-analytics" element={<BiasAnalytics />} />
               <Route path="/control-center" element={<ControlCenter />} />
               <Route path="/research-lab" element={<ResearchLab />} />
-              <Route path="/daily-checklist" element={<DailyChecklist />} />
+              <Route path="/daily-checklist" element={<Navigate to="/" replace />} />
               <Route path="/backtesting-lab" element={<BacktestingLab />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/settings" element={<Settings />} />
