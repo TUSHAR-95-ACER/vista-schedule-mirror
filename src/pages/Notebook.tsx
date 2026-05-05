@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, BookOpen, Eye, Edit, X, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptNotebook } from '@/lib/aiInsightAdapters';
 
 interface NotebookEntry {
   id: string;
