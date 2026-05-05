@@ -35,10 +35,11 @@ export async function uploadJournalMedia(
     ? setInterval(() => onProgress(Math.min(90, (Math.random() * 10) + 30)), 250)
     : null;
 
+  const contentType = effectiveContentType(file);
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
     cacheControl: '3600',
     upsert: false,
-    contentType: file.type,
+    contentType,
   });
   if (ticker) clearInterval(ticker);
   if (error) {
