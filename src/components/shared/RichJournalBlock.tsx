@@ -114,7 +114,14 @@ export function RichJournalBlock({
   );
 
   const handleFiles = (files: FileList | File[]) => {
-    Array.from(files).forEach((f) => startUpload(f));
+    Array.from(files).forEach((f) => {
+      const err = validate(f);
+      if (err) {
+        toast({ title: 'Upload blocked', description: err, variant: 'destructive' });
+        return;
+      }
+      startUpload(f);
+    });
   };
 
   const onPaste = (e: React.ClipboardEvent) => {
