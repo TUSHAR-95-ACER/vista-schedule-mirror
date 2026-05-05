@@ -479,6 +479,8 @@ export default function DailyPlanPage() {
         />
       </SectionCard>
 
+      <AIInsightsPanel page="Daily Plan" payload={adaptDailyPlan(localPlan, dayTrades)} />
+
       {/* Sticky Save */}
       <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-background/80 backdrop-blur-lg border-t border-border/50">
         <div className="max-w-[900px] mx-auto">
