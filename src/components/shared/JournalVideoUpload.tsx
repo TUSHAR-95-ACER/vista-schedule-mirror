@@ -130,7 +130,7 @@ export function JournalVideoUpload({ url, path, scope, onChange }: JournalVideoU
           <input
             ref={inputRef}
             type="file"
-            accept="video/*"
+            accept={VIDEO_ACCEPT_ATTR}
             className="hidden"
             onChange={(e) => e.target.files?.[0] && start(e.target.files[0])}
           />
