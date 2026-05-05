@@ -17,6 +17,8 @@ import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptDailyPlan } from '@/lib/aiInsightAdapters';
 
 const emptyPairPlan = (): DailyPairPlan => ({
   id: crypto.randomUUID(),
