@@ -95,7 +95,7 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
               <Upload className="h-3.5 w-3.5" /> Choose File
             </Button>
           </div>
-          <input ref={fileRef} type="file" accept="video/mp4,video/webm" onChange={handleFile} className="hidden" />
+          <input ref={fileRef} type="file" accept={VIDEO_ACCEPT_ATTR} onChange={handleFile} className="hidden" />
         </div>
       )}
     </div>
