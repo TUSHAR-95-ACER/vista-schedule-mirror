@@ -284,6 +284,7 @@ export default function Psychology() {
           </table>
         </div>
       </div>
+      <AIInsightsPanel page="Psychology" payload={adaptPsychology(trades)} className="mx-4 sm:mx-6 mb-6" />
     </div>
   );
 }
