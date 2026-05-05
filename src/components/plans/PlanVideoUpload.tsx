@@ -30,7 +30,7 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
     e.stopPropagation();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type.startsWith('video/') || file.type === 'video/mp4' || file.type === 'video/webm')) {
+    if (file && isAcceptedVideo(file)) {
       const url = URL.createObjectURL(file);
       onChange(url);
     }
