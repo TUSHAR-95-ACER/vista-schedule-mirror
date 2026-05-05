@@ -238,6 +238,8 @@ export default function Trades() {
         <TradeGalleryView trades={sorted} onSelectTrade={setSelectedTrade} />
       )}
 
+      <AIInsightsPanel page="Trades" payload={adaptTrades(sorted)} className="mt-6" />
+
       <TradeEntryGate
         open={showGate}
         onPass={() => { setShowGate(false); setShowForm(true); }}
