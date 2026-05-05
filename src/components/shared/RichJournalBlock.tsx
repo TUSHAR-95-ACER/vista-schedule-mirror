@@ -10,6 +10,8 @@ import {
   deleteJournalMedia,
   type UploadedMedia,
 } from '@/lib/journalUpload';
+import { isAcceptedImage, isAcceptedVideo, isAcceptedMedia, VIDEO_ACCEPT_ATTR, IMAGE_VIDEO_ACCEPT_ATTR } from '@/lib/mediaTypes';
+import { toast } from '@/hooks/use-toast';
 
 export interface MediaAsset {
   id: string;
