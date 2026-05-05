@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptPsychology } from '@/lib/aiInsightAdapters';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
