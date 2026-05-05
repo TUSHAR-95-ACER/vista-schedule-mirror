@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Upload, Video, X, Loader2, AlertCircle, RefreshCw, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { uploadJournalMedia, deleteJournalMedia, getSignedUrl } from '@/lib/journalUpload';
-import { useEffect } from 'react';
+import { isAcceptedVideo, VIDEO_ACCEPT_ATTR, MAX_VIDEO_BYTES } from '@/lib/mediaTypes';
 
 interface JournalVideoUploadProps {
   url?: string;
