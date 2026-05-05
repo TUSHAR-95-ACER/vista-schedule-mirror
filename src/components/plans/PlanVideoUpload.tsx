@@ -3,6 +3,7 @@ import { Video, X, Upload } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isAcceptedVideo, VIDEO_ACCEPT_ATTR } from '@/lib/mediaTypes';
 
 interface PlanVideoUploadProps {
   value?: string;
