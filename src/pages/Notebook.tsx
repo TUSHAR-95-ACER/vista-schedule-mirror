@@ -285,6 +285,7 @@ export default function Notebook() {
             </div>
           )}
         </div>
+        <AIInsightsPanel page="Notebook" payload={adaptNotebook(entries.map(e => ({ category: e.category, pair: e.pair, date: e.date, title: `${e.pair} ${e.category}`, content: e.notes })))} className="mt-6" />
       </div>
     </div>
   );
