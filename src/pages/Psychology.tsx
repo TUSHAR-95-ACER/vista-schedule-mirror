@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptPsychology } from '@/lib/aiInsightAdapters';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -282,6 +284,7 @@ export default function Psychology() {
           </table>
         </div>
       </div>
+      <AIInsightsPanel page="Psychology" payload={adaptPsychology(trades)} className="mx-4 sm:mx-6 mb-6" />
     </div>
   );
 }

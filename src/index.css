@@ -206,6 +206,17 @@
   .font-journal p { margin: 0.35em 0; }
   .font-journal ul, .font-journal ol { margin: 0.35em 0; padding-left: 1.2em; }
   .font-journal li { margin: 0.15em 0; }
+
+  /* Journal workspace mono identity — toggled by body[data-journal="true"]. */
+  body[data-journal="true"] main,
+  body[data-journal="true"] main * {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    letter-spacing: -0.005em;
+  }
+  body[data-journal="true"] main h1,
+  body[data-journal="true"] main h2,
+  body[data-journal="true"] main h3,
+  body[data-journal="true"] main h4 { letter-spacing: -0.02em; }
   .text-profit {
     @apply text-success;
   }

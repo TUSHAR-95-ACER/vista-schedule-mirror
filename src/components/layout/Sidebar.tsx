@@ -20,7 +20,7 @@ const sections: NavSection[] = [
       { path: '/trades', label: 'Trades', icon: ArrowLeftRight },
       { path: '/accounts', label: 'Accounts', icon: Wallet },
       { path: '/notebook', label: 'Notebook', icon: BookOpen },
-      { path: '/daily-checklist', label: 'Checklist', icon: CheckSquare },
+      
     ],
   },
   {

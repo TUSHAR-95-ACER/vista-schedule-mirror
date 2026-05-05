@@ -10,6 +10,8 @@ import {
   deleteJournalMedia,
   type UploadedMedia,
 } from '@/lib/journalUpload';
+import { isAcceptedImage, isAcceptedVideo, isAcceptedMedia, VIDEO_ACCEPT_ATTR, IMAGE_VIDEO_ACCEPT_ATTR } from '@/lib/mediaTypes';
+import { toast } from '@/hooks/use-toast';
 
 export interface MediaAsset {
   id: string;
@@ -77,7 +79,14 @@ export function RichJournalBlock({
   }, [value.media.map((m) => m.path).join('|')]);
 
   const acceptAttr =
-    accept === 'image' ? 'image/*' : accept === 'video' ? 'video/*' : 'image/*,video/*';
+    accept === 'image' ? 'image/*' : accept === 'video' ? VIDEO_ACCEPT_ATTR : IMAGE_VIDEO_ACCEPT_ATTR;
+
+  const validate = (file: File): string | null => {
+    if (accept === 'image' && !isAcceptedImage(file)) return `Unsupported image: ${file.name}`;
+    if (accept === 'video' && !isAcceptedVideo(file)) return `Unsupported video: ${file.name}. Try MP4, WebM, MOV, AVI, MKV, or MPEG.`;
+    if (accept === 'both' && !isAcceptedMedia(file)) return `Unsupported file: ${file.name}`;
+    return null;
+  };
 
   const startUpload = useCallback(
     async (file: File) => {
@@ -105,7 +114,14 @@ export function RichJournalBlock({
   );
 
   const handleFiles = (files: FileList | File[]) => {
-    Array.from(files).forEach((f) => startUpload(f));
+    Array.from(files).forEach((f) => {
+      const err = validate(f);
+      if (err) {
+        toast({ title: 'Upload blocked', description: err, variant: 'destructive' });
+        return;
+      }
+      startUpload(f);
+    });
   };
 
   const onPaste = (e: React.ClipboardEvent) => {

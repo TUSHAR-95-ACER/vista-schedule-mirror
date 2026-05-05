@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { effectiveContentType } from '@/lib/mediaTypes';
 
 const BUCKET = 'journal-media';
 
@@ -34,10 +35,11 @@ export async function uploadJournalMedia(
     ? setInterval(() => onProgress(Math.min(90, (Math.random() * 10) + 30)), 250)
     : null;
 
+  const contentType = effectiveContentType(file);
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
     cacheControl: '3600',
     upsert: false,
-    contentType: file.type,
+    contentType,
   });
   if (ticker) clearInterval(ticker);
   if (error) {
@@ -52,7 +54,7 @@ export async function uploadJournalMedia(
   return {
     path,
     url,
-    type: file.type.startsWith('video/') ? 'video' : 'image',
+    type: contentType.startsWith('video/') ? 'video' : 'image',
     name: file.name,
     size: file.size,
   };

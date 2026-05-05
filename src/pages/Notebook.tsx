@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, BookOpen, Eye, Edit, X, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptNotebook } from '@/lib/aiInsightAdapters';
 
 interface NotebookEntry {
   id: string;
@@ -283,6 +285,7 @@ export default function Notebook() {
             </div>
           )}
         </div>
+        <AIInsightsPanel page="Notebook" payload={adaptNotebook(entries.map(e => ({ category: e.category, pair: e.pair, date: e.date, title: `${e.pair} ${e.category}`, content: e.notes })))} className="mt-6" />
       </div>
     </div>
   );

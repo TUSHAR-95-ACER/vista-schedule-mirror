@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Upload, Video, X, Loader2, AlertCircle, RefreshCw, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { uploadJournalMedia, deleteJournalMedia, getSignedUrl } from '@/lib/journalUpload';
-import { useEffect } from 'react';
+import { isAcceptedVideo, VIDEO_ACCEPT_ATTR, MAX_VIDEO_BYTES } from '@/lib/mediaTypes';
 
 interface JournalVideoUploadProps {
   url?: string;
@@ -36,8 +36,18 @@ export function JournalVideoUpload({ url, path, scope, onChange }: JournalVideoU
   }, [path, url]);
 
   const start = async (file: File) => {
-    setPendingFile(file);
     setError(null);
+    if (!isAcceptedVideo(file)) {
+      setPendingFile(file);
+      setError(`Unsupported video format: ${file.name}. Try MP4, WebM, MOV, AVI, MKV, or MPEG.`);
+      return;
+    }
+    if (file.size > MAX_VIDEO_BYTES) {
+      setPendingFile(file);
+      setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 50 MB.`);
+      return;
+    }
+    setPendingFile(file);
     setUploading(true);
     setProgress(0);
     try {
@@ -120,7 +130,7 @@ export function JournalVideoUpload({ url, path, scope, onChange }: JournalVideoU
           <input
             ref={inputRef}
             type="file"
-            accept="video/*"
+            accept={VIDEO_ACCEPT_ATTR}
             className="hidden"
             onChange={(e) => e.target.files?.[0] && start(e.target.files[0])}
           />

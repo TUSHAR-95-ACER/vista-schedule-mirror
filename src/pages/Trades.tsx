@@ -13,6 +13,8 @@ import { Trade } from '@/types/trading';
 import { getDayOfWeek } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptTrades } from '@/lib/aiInsightAdapters';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -235,6 +237,8 @@ export default function Trades() {
       {viewMode === 'gallery' && (
         <TradeGalleryView trades={sorted} onSelectTrade={setSelectedTrade} />
       )}
+
+      <AIInsightsPanel page="Trades" payload={adaptTrades(sorted)} className="mt-6" />
 
       <TradeEntryGate
         open={showGate}

@@ -16,6 +16,8 @@ import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journal
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptWeeklyPlan } from '@/lib/aiInsightAdapters';
 
 const emptyPairAnalysis = (): PairAnalysis => ({
   id: crypto.randomUUID(),
@@ -399,6 +401,8 @@ export default function WeeklyPlanPage() {
           onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<WeeklyPlan>)}
         />
       </SectionCard>
+
+      <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
 
       {/* Sticky Save */}
       <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-background/80 backdrop-blur-lg border-t border-border/50">
