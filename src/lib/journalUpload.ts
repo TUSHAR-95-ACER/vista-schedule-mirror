@@ -54,7 +54,7 @@ export async function uploadJournalMedia(
   return {
     path,
     url,
-    type: file.type.startsWith('video/') ? 'video' : 'image',
+    type: contentType.startsWith('video/') ? 'video' : 'image',
     name: file.name,
     size: file.size,
   };
