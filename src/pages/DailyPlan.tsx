@@ -340,16 +340,33 @@ export default function DailyPlanPage() {
             )}
           </div>
 
-          {/* Bias (single, simple) */}
-          <SectionCard title="Bias" icon={<TrendingUp className="h-3.5 w-3.5" />}>
-            <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
-              <SelectTrigger className="w-full sm:w-64 rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Bullish">Bullish</SelectItem>
-                <SelectItem value="Bearish">Bearish</SelectItem>
-                <SelectItem value="Neutral">Neutral</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Predicted Bias vs Actual Bias (mirrors Weekly Plan) */}
+          <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
+                <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bullish">Bullish</SelectItem>
+                    <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Neutral">Neutral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
+                <Select value={pp.actualBias || 'none'} onValueChange={v => updatePair(pp.id, { actualBias: v === 'none' ? '' : v as DailyPairPlan['actualBias'] })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">—</SelectItem>
+                    <SelectItem value="Bullish">Bullish</SelectItem>
+                    <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Neutral">Neutral</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </SectionCard>
 
           {/* Prediction Chart - Notion-style notes */}
