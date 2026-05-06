@@ -314,7 +314,7 @@ Be concise, data-driven, and supportive. Use numbers, dates, and specific trade 
         model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemPrompt },
-          ...messages,
+          ...safeMessages,
         ],
         stream: true,
       }),
