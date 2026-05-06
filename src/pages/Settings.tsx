@@ -279,6 +279,17 @@ function UIPreferencesPanel({ prefs, update }: { prefs: any; update: (k: string,
             </button>
           </div>
         </SettingRow>
+        <SettingRow label="Journal Font" description="Global mono typography across the entire workspace">
+          <Select value={prefs.journalFont ?? 'notion'} onValueChange={v => update('journalFont', v)}>
+            <SelectTrigger className="h-8 w-44 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="notion"><span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>Notion Mono</span></SelectItem>
+              <SelectItem value="jetbrains"><span style={{ fontFamily: '"JetBrains Mono", monospace' }}>JetBrains Mono</span></SelectItem>
+              <SelectItem value="ibm"><span style={{ fontFamily: '"IBM Plex Mono", monospace' }}>IBM Plex Mono</span></SelectItem>
+              <SelectItem value="space"><span style={{ fontFamily: '"Space Mono", monospace' }}>Space Mono</span></SelectItem>
+            </SelectContent>
+          </Select>
+        </SettingRow>
         <SettingRow label="Layout Density">
           <Select value={prefs.layoutDensity ?? 'comfortable'} onValueChange={v => update('layoutDensity', v)}>
             <SelectTrigger className="h-8 w-36 text-xs rounded-lg"><SelectValue /></SelectTrigger>
