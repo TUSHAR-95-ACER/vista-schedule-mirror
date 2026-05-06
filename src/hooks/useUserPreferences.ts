@@ -38,6 +38,7 @@ export interface UserPreferences {
   layoutDensity?: string;
   chartTheme?: string;
   sidebarCollapsed?: boolean;
+  journalFont?: 'notion' | 'jetbrains' | 'ibm' | 'space';
   // Notifications
   dailyPlanReminder?: boolean;
   weeklyReviewReminder?: boolean;
@@ -77,6 +78,7 @@ const DEFAULT_PREFS: UserPreferences = {
   layoutDensity: 'comfortable',
   chartTheme: 'default',
   sidebarCollapsed: false,
+  journalFont: 'notion',
   dailyPlanReminder: false,
   weeklyReviewReminder: false,
   tradeLimitWarning: true,
@@ -106,6 +108,13 @@ export function useUserPreferences() {
       setLoaded(true);
     })();
   }, [user]);
+
+  // Apply journal font globally whenever it changes; persist to localStorage for instant boot.
+  useEffect(() => {
+    const font = prefs.journalFont || 'notion';
+    document.documentElement.setAttribute('data-journal-font', font);
+    try { localStorage.setItem('ef_journal_font', font); } catch { /* ignore */ }
+  }, [prefs.journalFont]);
 
   // Debounced save
   const saveToDb = useCallback(async (newPrefs: UserPreferences) => {

@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, BookOpen, Eye, Edit, X, Check, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Plus, Trash2, BookOpen, Edit, Check, TrendingUp, TrendingDown, Minus, FileText, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptNotebook } from '@/lib/aiInsightAdapters';
+import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
+import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
 
 interface NotebookEntry {
   id: string;
@@ -21,77 +22,96 @@ interface NotebookEntry {
   pair: string;
   category: string;
   bias: string;
-  keyLevels: string;
-  notes: string;
+  /** Legacy fields kept for back-compat with old saved entries. */
+  keyLevels?: string;
+  notes?: string;
   image?: string;
+  /** New unified Notion-style journal value. */
+  journal?: RichJournalValue;
   createdAt: string;
 }
 
 const STORAGE_KEY = 'ef_notebook_entries';
+const BIAS_OPTIONS = ['Bullish', 'Bearish', 'Sideways', 'Neutral'] as const;
+
+const todayISO = () => new Date().toISOString().split('T')[0];
+
+const emptyForm = (): NotebookEntry => ({
+  id: '',
+  date: todayISO(),
+  pair: '',
+  category: '',
+  bias: '',
+  journal: emptyJournal(),
+  createdAt: '',
+});
 
 export default function Notebook() {
   const { user } = useAuth();
   const { notebookCategories } = useTrading();
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const emptyForm = {
-    date: new Date().toISOString().split('T')[0],
-    pair: '', category: '', bias: '', keyLevels: '', notes: '', image: '',
-  };
-  const [form, setForm] = useState(emptyForm);
   const [filterCat, setFilterCat] = useState('all');
-  const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [draft, setDraft] = useState<NotebookEntry>(emptyForm());
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!user) { setEntries([]); return; }
     setEntries(loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []));
   }, [user]);
 
-  const save = (updated: NotebookEntry[]) => {
+  const persist = (updated: NotebookEntry[]) => {
     setEntries(updated);
     if (user) saveUserStorage(STORAGE_KEY, user.id, updated);
   };
 
-  const handleAdd = () => {
-    if (!form.pair || !form.category) return;
-    if (editingId) {
-      save(entries.map(e => e.id === editingId ? { ...e, ...form } : e));
-      setEditingId(null);
-    } else {
-      const entry: NotebookEntry = { id: crypto.randomUUID(), ...form, createdAt: new Date().toISOString() };
-      save([entry, ...entries]);
-    }
-    setForm(emptyForm);
+  const openNew = () => {
+    setDraft(emptyForm());
+    setIsEditing(false);
+    setEditorOpen(true);
   };
 
-  const startEdit = (entry: NotebookEntry) => {
-    setEditingId(entry.id);
-    setForm({
-      date: entry.date, pair: entry.pair, category: entry.category,
-      bias: entry.bias, keyLevels: entry.keyLevels, notes: entry.notes, image: entry.image || '',
+  const openEdit = (entry: NotebookEntry) => {
+    setDraft({
+      ...entry,
+      journal: coerceRichJournal(entry.journal, entry.notes, entry.image),
     });
+    setIsEditing(true);
+    setEditorOpen(true);
   };
 
-  const cancelEdit = () => {
-    setEditingId(null);
-    setForm(emptyForm);
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    const items = e.clipboardData.items;
-    for (const item of items) {
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile();
-        if (!file) continue;
-        const reader = new FileReader();
-        reader.onload = () => setForm(f => ({ ...f, image: reader.result as string }));
-        reader.readAsDataURL(file);
-        e.preventDefault();
-        break;
-      }
+  const saveDraft = () => {
+    if (!draft.pair || !draft.category) return;
+    const journal = serializeJournal(draft.journal || emptyJournal());
+    if (isEditing) {
+      persist(entries.map(e => e.id === draft.id ? {
+        ...e,
+        date: draft.date,
+        pair: draft.pair,
+        category: draft.category,
+        bias: draft.bias,
+        journal,
+        // Clear legacy fields once migrated
+        notes: undefined,
+        keyLevels: undefined,
+        image: undefined,
+      } : e));
+    } else {
+      const entry: NotebookEntry = {
+        id: crypto.randomUUID(),
+        date: draft.date,
+        pair: draft.pair,
+        category: draft.category,
+        bias: draft.bias,
+        journal,
+        createdAt: new Date().toISOString(),
+      };
+      persist([entry, ...entries]);
     }
+    setEditorOpen(false);
   };
+
+  const deleteEntry = (id: string) => persist(entries.filter(e => e.id !== id));
 
   const filtered = filterCat === 'all' ? entries : entries.filter(e => e.category === filterCat);
 
@@ -104,9 +124,10 @@ export default function Notebook() {
   }, [entries]);
 
   const biasIcon = (bias: string) => {
-    if (bias.toLowerCase().includes('bull')) return <TrendingUp className="h-3 w-3 text-success" />;
-    if (bias.toLowerCase().includes('bear')) return <TrendingDown className="h-3 w-3 text-destructive" />;
-    return <Minus className="h-3 w-3 text-muted-foreground" />;
+    if (bias === 'Bullish') return <TrendingUp className="h-3 w-3 text-success" />;
+    if (bias === 'Bearish') return <TrendingDown className="h-3 w-3 text-destructive" />;
+    if (bias === 'Sideways') return <Minus className="h-3 w-3 text-warning" />;
+    return null;
   };
 
   const categoryColor = (cat: string) => {
@@ -122,9 +143,19 @@ export default function Notebook() {
     return colors[cat] || 'bg-muted text-muted-foreground border-border';
   };
 
+  const previewOf = (e: NotebookEntry): { text: string; thumb?: string } => {
+    const j = coerceRichJournal(e.journal, e.notes, e.image);
+    const firstImg = j.media.find(m => m.type === 'image')?.url;
+    const text = (j.text || '').trim().slice(0, 220);
+    return { text, thumb: firstImg };
+  };
+
   return (
     <div className="p-4 lg:p-6 max-w-[1600px] mx-auto">
-      <PageHeader title="Notebook" subtitle="Document observations, patterns & missed opportunities">
+      <PageHeader title="Notebook" subtitle="A flexible research notebook for ideas, observations & patterns">
+        <Button onClick={openNew} className="gap-1.5 rounded-xl h-9">
+          <Plus className="h-4 w-4" /> New Notebook Entry
+        </Button>
         <ThemeToggle />
       </PageHeader>
 
@@ -136,157 +167,151 @@ export default function Notebook() {
         <MetricCard label="Categories" value={notebookCategories.length} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <div className="bg-card border border-border rounded-2xl p-5 space-y-4 h-fit shadow-sm" onPaste={handlePaste}>
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <div className={cn('h-8 w-8 rounded-xl flex items-center justify-center', editingId ? 'bg-warning/10' : 'bg-primary/10')}>
-                {editingId ? <Edit className="h-4 w-4 text-warning" /> : <Plus className="h-4 w-4 text-primary" />}
-              </div>
-              <h3 className="text-sm font-bold uppercase tracking-wide">{editingId ? 'Edit Entry' : 'New Entry'}</h3>
-            </div>
-            {editingId && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={cancelEdit}>
-                <X className="h-3 w-3 mr-1" /> Cancel
-              </Button>
-            )}
-          </div>
+      {/* Filter chips */}
+      <div className="flex gap-2 flex-wrap mb-5">
+        <Button variant={filterCat === 'all' ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat('all')}>All</Button>
+        {notebookCategories.map(c => (
+          <Button key={c} variant={filterCat === c ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat(c)}>{c}</Button>
+        ))}
+      </div>
 
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Date</Label>
-            <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="h-9 text-xs mt-1.5 rounded-xl" />
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Pair</Label>
-            <Input value={form.pair} onChange={e => setForm(f => ({ ...f, pair: e.target.value }))} className="h-9 text-xs mt-1.5 rounded-xl" placeholder="EURUSD, XAUUSD..." />
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Category</Label>
-            <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-              <SelectTrigger className="h-9 text-xs mt-1.5 rounded-xl"><SelectValue placeholder="Select category" /></SelectTrigger>
-              <SelectContent>
-                {notebookCategories.map(c => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Bias</Label>
-            <Select value={form.bias || 'none'} onValueChange={v => setForm(f => ({ ...f, bias: v === 'none' ? '' : v }))}>
-              <SelectTrigger className="h-9 text-xs mt-1.5 rounded-xl"><SelectValue placeholder="Select bias" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">—</SelectItem>
-                <SelectItem value="Bullish">Bullish</SelectItem>
-                <SelectItem value="Bearish">Bearish</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Key Levels</Label>
-            <Textarea value={form.keyLevels} onChange={e => setForm(f => ({ ...f, keyLevels: e.target.value }))} className="text-xs min-h-[60px] mt-1.5 rounded-xl" placeholder="Support / Resistance levels" />
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
-            <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="text-xs min-h-[80px] mt-1.5 rounded-xl" placeholder="Observations, context..." />
-          </div>
-
-          <UnifiedMediaBox
-            value={form.image}
-            onChange={v => setForm(f => ({ ...f, image: v }))}
-            label="Chart / Media"
-            maxPreviewHeight="200px"
-          />
-
-          <Button onClick={handleAdd} className="w-full gap-1.5 rounded-xl h-10">
-            {editingId ? <><Check className="h-4 w-4" /> Update Entry</> : <><Plus className="h-4 w-4" /> Save Entry</>}
-          </Button>
+      {/* Entries grid */}
+      {filtered.length === 0 ? (
+        <div className="bg-card border border-border rounded-2xl p-16 text-center text-muted-foreground">
+          <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
+          <p className="text-sm mb-4">No entries yet. Start documenting your research.</p>
+          <Button onClick={openNew} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Notebook Entry</Button>
         </div>
-
-        {/* Entries List */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Filter chips */}
-          <div className="flex gap-2 flex-wrap">
-            <Button variant={filterCat === 'all' ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat('all')}>All</Button>
-            {notebookCategories.map(c => (
-              <Button key={c} variant={filterCat === c ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat(c)}>{c}</Button>
-            ))}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="bg-card border border-border rounded-2xl p-12 text-center text-muted-foreground">
-              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No entries yet. Start documenting your observations.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map(entry => (
-                <div key={entry.id} className={cn(
-                  'bg-card border rounded-2xl overflow-hidden transition-all hover:shadow-lg group',
-                  editingId === entry.id ? 'border-warning/40 ring-1 ring-warning/20' : 'border-border hover:border-primary/20'
-                )}>
-                  <div className="px-5 py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {/* Bias indicator circle */}
-                        <div className={cn(
-                          'h-11 w-11 rounded-xl flex items-center justify-center shrink-0 text-xs font-black tracking-tight',
-                          entry.bias.toLowerCase().includes('bull') ? 'bg-success/10 text-success border border-success/20' :
-                          entry.bias.toLowerCase().includes('bear') ? 'bg-destructive/10 text-destructive border border-destructive/20' :
-                          'bg-muted text-muted-foreground border border-border'
-                        )}>
-                          {entry.pair.substring(0, 3)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold tracking-tight">{entry.pair}</span>
-                            <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-semibold border', categoryColor(entry.category))}>
-                              {entry.category}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              {biasIcon(entry.bias)}
-                              <span className={cn('text-xs font-semibold',
-                                entry.bias.toLowerCase().includes('bull') ? 'text-success' :
-                                entry.bias.toLowerCase().includes('bear') ? 'text-destructive' : 'text-muted-foreground'
-                              )}>{entry.bias}</span>
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground mt-1 font-mono">
-                            {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            {entry.keyLevels && <span className="ml-2 text-foreground/60">· {entry.keyLevels}</span>}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        {entry.image && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg" onClick={() => setExpandedEntry(expandedEntry === entry.id ? null : entry.id)}>
-                            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 text-primary" onClick={() => startEdit(entry)}>
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 text-destructive" onClick={() => save(entries.filter(e => e.id !== entry.id))}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    {entry.notes && (
-                      <p className="text-xs text-muted-foreground/80 mt-3 leading-relaxed pl-[56px] border-l-2 border-border/50 ml-5">{entry.notes}</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+          {filtered.map(entry => {
+            const { text, thumb } = previewOf(entry);
+            return (
+              <article
+                key={entry.id}
+                onClick={() => openEdit(entry)}
+                className="group cursor-pointer bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all"
+              >
+                {thumb ? (
+                  <div className="aspect-[16/9] bg-muted overflow-hidden">
+                    <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" />
+                  </div>
+                ) : (
+                  <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-muted-foreground/40" />
+                  </div>
+                )}
+                <div className="p-4 space-y-2.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-bold tracking-tight">{entry.pair}</span>
+                    <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-semibold border', categoryColor(entry.category))}>
+                      {entry.category}
+                    </span>
+                    {entry.bias && entry.bias !== 'Neutral' && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
+                        {biasIcon(entry.bias)} {entry.bias}
+                      </span>
                     )}
                   </div>
-                  {/* Expanded Image */}
-                  {expandedEntry === entry.id && entry.image && (
-                    <div className="border-t border-border/50 p-4 bg-muted/5">
-                      <img src={entry.image} alt="Chart" className="w-full max-h-[400px] object-contain rounded-xl" />
-                    </div>
+                  {text && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{text}</p>
                   )}
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-primary" onClick={(e) => { e.stopPropagation(); openEdit(entry); }}>
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-destructive" onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </article>
+            );
+          })}
         </div>
-        <AIInsightsPanel page="Notebook" payload={adaptNotebook(entries.map(e => ({ category: e.category, pair: e.pair, date: e.date, title: `${e.pair} ${e.category}`, content: e.notes })))} className="mt-6" />
-      </div>
+      )}
+
+      <AIInsightsPanel
+        page="Notebook"
+        payload={adaptNotebook(entries.map(e => ({
+          category: e.category,
+          pair: e.pair,
+          date: e.date,
+          title: `${e.pair} ${e.category}`,
+          content: coerceRichJournal(e.journal, e.notes, e.image).text,
+        })))}
+      />
+
+      {/* === Notebook Entry Editor — Notion-style === */}
+      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b border-border/50">
+            <DialogTitle className="text-base font-bold uppercase tracking-wide flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              {isEditing ? 'Edit Notebook Entry' : 'New Notebook Entry'}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Compact metadata header */}
+          <div className="px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-3 border-b border-border/50 bg-muted/10">
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Date</Label>
+              <Input type="date" value={draft.date} onChange={e => setDraft(d => ({ ...d, date: e.target.value }))} className="h-9 text-xs mt-1.5 rounded-lg" />
+            </div>
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Pair *</Label>
+              <Input value={draft.pair} onChange={e => setDraft(d => ({ ...d, pair: e.target.value }))} placeholder="EURUSD" className="h-9 text-xs mt-1.5 rounded-lg" />
+            </div>
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Category *</Label>
+              <Select value={draft.category} onValueChange={v => setDraft(d => ({ ...d, category: v }))}>
+                <SelectTrigger className="h-9 text-xs mt-1.5 rounded-lg"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {notebookCategories.map(c => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Bias <span className="text-muted-foreground/60 normal-case font-normal">(optional)</span></Label>
+              <Select value={draft.bias || 'none'} onValueChange={v => setDraft(d => ({ ...d, bias: v === 'none' ? '' : v }))}>
+                <SelectTrigger className="h-9 text-xs mt-1.5 rounded-lg"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {BIAS_OPTIONS.map(b => <SelectItem key={b} value={b} className="text-xs">{b}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Single flexible Notion-style writing surface */}
+          <div className="px-6 py-5 bg-background">
+            <RichJournalBlock
+              title="Research Notes"
+              scope={`notebook/${draft.id || 'new'}`}
+              value={draft.journal || emptyJournal()}
+              onChange={(v) => setDraft(d => ({ ...d, journal: v }))}
+              placeholder="Start writing… paste screenshots, drop charts, attach video. Mix text and media freely."
+              accept="both"
+              className="border-0 shadow-none p-0 bg-transparent"
+            />
+            <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1.5">
+              <ImageIcon className="h-3 w-3" /> Tip: paste screenshots, drag-drop images/video, or use Add media — everything saves into one journal page.
+            </p>
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t border-border/50 bg-muted/10 sm:justify-between">
+            <Button variant="ghost" onClick={() => setEditorOpen(false)} className="text-xs">Cancel</Button>
+            <Button onClick={saveDraft} disabled={!draft.pair || !draft.category} className="gap-1.5 rounded-xl">
+              {isEditing ? <><Check className="h-4 w-4" /> Update Entry</> : <><Plus className="h-4 w-4" /> Save Entry</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
