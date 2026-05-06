@@ -352,6 +352,7 @@ export default function DailyPlanPage() {
                   <SelectContent>
                     <SelectItem value="Bullish">Bullish</SelectItem>
                     <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Sideways">Sideways</SelectItem>
                     <SelectItem value="Neutral">Neutral</SelectItem>
                   </SelectContent>
                 </Select>
@@ -364,6 +365,7 @@ export default function DailyPlanPage() {
                     <SelectItem value="none">—</SelectItem>
                     <SelectItem value="Bullish">Bullish</SelectItem>
                     <SelectItem value="Bearish">Bearish</SelectItem>
+                    <SelectItem value="Sideways">Sideways</SelectItem>
                     <SelectItem value="Neutral">Neutral</SelectItem>
                   </SelectContent>
                 </Select>
