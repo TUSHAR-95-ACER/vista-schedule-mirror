@@ -253,6 +253,18 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Cap messages and per-message size to prevent abuse / context blowup
+    const MAX_MESSAGES = 20;
+    const MAX_CHARS = 4000;
+    const safeMessages = messages.slice(-MAX_MESSAGES).map((m: any) => ({
+      role: m?.role === "assistant" || m?.role === "system" ? m.role : "user",
+      content: typeof m?.content === "string" ? m.content.slice(0, MAX_CHARS) : "",
+    })).filter((m: any) => m.content.length > 0);
+    if (safeMessages.length === 0) {
+      return new Response(JSON.stringify({ error: "no valid messages" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Fetch all user data and build human-readable context
     const userData = await fetchAllUserData(supabase, userId);
