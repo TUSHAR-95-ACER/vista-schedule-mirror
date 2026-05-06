@@ -57,11 +57,13 @@ function BiasTag({ bias }: { bias: string }) {
       'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
       bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
       bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
+      bias === 'Sideways' && 'bg-warning/10 text-warning border-warning/25',
     )}>
       <span className={cn(
         'h-1.5 w-1.5 rounded-full',
         bias === 'Bullish' && 'bg-success',
         bias === 'Bearish' && 'bg-destructive',
+        bias === 'Sideways' && 'bg-warning',
       )} />
       {bias}
     </span>
