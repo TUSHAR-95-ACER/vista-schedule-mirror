@@ -69,7 +69,9 @@ serve(async (req) => {
 
     const panelsPrompt = `You are a trading analyst. From this journal data, produce JSON with exactly these keys, each a SHORT (max 2 sentences) data-grounded insight: biggest_leak, best_edge, behavior_pattern, execution_flaw, risk_profile, this_week_focus. Reference real pairs/sessions/numbers.\n\nDATA:\n${context}`;
 
-    const useModel = model || (mode === "deep" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash");
+    const ALLOWED_MODELS = ["google/gemini-2.5-flash", "google/gemini-2.5-pro"];
+    const defaultModel = mode === "deep" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+    const useModel = ALLOWED_MODELS.includes(model) ? model : defaultModel;
 
     if (mode === "panels") {
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
