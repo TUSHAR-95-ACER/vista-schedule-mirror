@@ -198,25 +198,49 @@
   }
   /* Notion-style writing surface for journal blocks. */
   .font-journal {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    font-size: 13.5px;
-    line-height: 1.65;
+    font-family: var(--journal-font, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-size: 14.5px;
+    line-height: 1.7;
     letter-spacing: -0.005em;
   }
-  .font-journal p { margin: 0.35em 0; }
-  .font-journal ul, .font-journal ol { margin: 0.35em 0; padding-left: 1.2em; }
-  .font-journal li { margin: 0.15em 0; }
+  .font-journal p { margin: 0.4em 0; }
+  .font-journal ul, .font-journal ol { margin: 0.4em 0; padding-left: 1.2em; }
+  .font-journal li { margin: 0.18em 0; }
 
-  /* Journal workspace mono identity — toggled by body[data-journal="true"]. */
-  body[data-journal="true"] main,
-  body[data-journal="true"] main * {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  /* ============================================================
+     GLOBAL JOURNAL TYPOGRAPHY SYSTEM
+     Applied app-wide via html[data-journal-font="..."].
+     ============================================================ */
+  :root {
+    --journal-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+  html[data-journal-font="notion"]    { --journal-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  html[data-journal-font="jetbrains"] { --journal-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="ibm"]       { --journal-font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="space"]     { --journal-font: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  /* Apply selected font globally across sidebar + main + dialogs. */
+  html[data-journal-font] body,
+  html[data-journal-font] body * {
+    font-family: var(--journal-font) !important;
     letter-spacing: -0.005em;
   }
-  body[data-journal="true"] main h1,
-  body[data-journal="true"] main h2,
-  body[data-journal="true"] main h3,
-  body[data-journal="true"] main h4 { letter-spacing: -0.02em; }
+  html[data-journal-font] h1,
+  html[data-journal-font] h2,
+  html[data-journal-font] h3,
+  html[data-journal-font] h4 { letter-spacing: -0.02em; }
+
+  /* Larger, more readable scale (trading terminal feel — not dev-console tiny). */
+  html[data-journal-font] body { font-size: 14.5px; line-height: 1.55; }
+  html[data-journal-font] .text-\[10px\] { font-size: 11px !important; }
+  html[data-journal-font] .text-\[11px\] { font-size: 12px !important; }
+  html[data-journal-font] .text-xs       { font-size: 12.5px !important; line-height: 1.5 !important; }
+  html[data-journal-font] .text-sm       { font-size: 13.5px !important; line-height: 1.55 !important; }
+  html[data-journal-font] .text-base     { font-size: 15px !important; }
+  html[data-journal-font] .text-lg       { font-size: 17px !important; }
+  html[data-journal-font] .text-xl       { font-size: 20px !important; }
+  html[data-journal-font] .text-2xl      { font-size: 24px !important; }
+  html[data-journal-font] .text-3xl      { font-size: 30px !important; }
   .text-profit {
     @apply text-success;
   }
