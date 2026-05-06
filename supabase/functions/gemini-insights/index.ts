@@ -123,7 +123,7 @@ Return 3 to 5 SHORT, SPECIFIC, ACTIONABLE insights grounded ONLY in the provided
     });
   } catch (e) {
     console.error(e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
