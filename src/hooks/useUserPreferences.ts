@@ -109,6 +109,13 @@ export function useUserPreferences() {
     })();
   }, [user]);
 
+  // Apply journal font globally whenever it changes; persist to localStorage for instant boot.
+  useEffect(() => {
+    const font = prefs.journalFont || 'notion';
+    document.documentElement.setAttribute('data-journal-font', font);
+    try { localStorage.setItem('ef_journal_font', font); } catch { /* ignore */ }
+  }, [prefs.journalFont]);
+
   // Debounced save
   const saveToDb = useCallback(async (newPrefs: UserPreferences) => {
     if (!user) return;
