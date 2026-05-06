@@ -78,6 +78,7 @@ const DEFAULT_PREFS: UserPreferences = {
   layoutDensity: 'comfortable',
   chartTheme: 'default',
   sidebarCollapsed: false,
+  journalFont: 'notion',
   dailyPlanReminder: false,
   weeklyReviewReminder: false,
   tradeLimitWarning: true,
