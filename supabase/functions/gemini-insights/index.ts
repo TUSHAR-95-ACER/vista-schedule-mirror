@@ -1,9 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"];
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
 const SCHEMA = {
   type: "ARRAY",
@@ -21,6 +25,28 @@ const SCHEMA = {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const KEY = Deno.env.get("GEMINI_API_KEY");
     if (!KEY) {
       return new Response(JSON.stringify({ error: "GEMINI_API_KEY missing" }), {
@@ -28,15 +54,16 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { page, payload, model = "gemini-2.5-flash" } = await req.json();
+    const { page, payload, model } = await req.json();
     if (!page || !payload) {
       return new Response(JSON.stringify({ error: "page and payload required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const useModel = ALLOWED_MODELS.includes(model) ? model : DEFAULT_MODEL;
 
-    const sys = `You are a senior trading performance analyst reviewing a trader's "${page}" page.
+    const sys = `You are a senior trading performance analyst reviewing a trader's "${String(page).slice(0, 80)}" page.
 Return 3 to 5 SHORT, SPECIFIC, ACTIONABLE insights grounded ONLY in the provided JSON data.
 - No fluff, no motivational filler, no generic advice.
 - Reference real numbers, pairs, sessions, setups when available.
@@ -45,7 +72,7 @@ Return 3 to 5 SHORT, SPECIFIC, ACTIONABLE insights grounded ONLY in the provided
 
     const userText = `PAGE DATA (JSON):\n${JSON.stringify(payload).slice(0, 12000)}`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${KEY}`;
     const body = {
       systemInstruction: { parts: [{ text: sys }] },
       contents: [{ role: "user", parts: [{ text: userText }] }],
