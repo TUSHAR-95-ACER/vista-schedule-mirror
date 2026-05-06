@@ -206,8 +206,8 @@ export interface RichJournalDoc {
 export interface PairAnalysis {
   id: string;
   pair: string;
-  bias: 'Bullish' | 'Bearish' | 'Neutral';
-  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
+  bias: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral' | '';
   setupFocus: string;
   reasons: PairReason[];
   keyLevels: string;
@@ -218,7 +218,7 @@ export interface PairAnalysis {
   expectedDirection: 'Buy' | 'Sell';
   resultChartImage?: string;
   resultNarrative?: string;
-  actualDirection?: 'Bullish' | 'Bearish' | 'Neutral' | '';
+  actualDirection?: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral' | '';
   actualResult?: 'Win' | 'Loss' | 'Untriggered Setup' | '';
   note?: string;
 }
@@ -249,8 +249,8 @@ export interface WeeklyPlan {
 export interface DailyPairPlan {
   id: string;
   pair: string;
-  bias: 'Bullish' | 'Bearish' | 'Neutral';
-  actualBias?: 'Bullish' | 'Bearish' | 'Neutral' | '';
+  bias: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral' | '';
   setup: string;
   reasons: PairReason[];
   keyLevels: string;
@@ -266,7 +266,7 @@ export interface DailyPairPlan {
 export interface DailyPlan {
   id: string;
   date: string;
-  dailyBias: 'Bullish' | 'Bearish' | 'Neutral';
+  dailyBias: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral';
   sessionFocus: string;
   maxTrades: number;
   riskLimit: string;
