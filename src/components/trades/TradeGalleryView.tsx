@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { X, Download, ZoomIn } from 'lucide-react';
 import { getDayOfWeek } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LazyTradeImage } from './LazyTradeImage';
 
 interface Props {
   trades: Trade[];
@@ -54,28 +55,15 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {trades.map(trade => {
-            const img = getImage(trade);
             return (
               <div
                 key={trade.id}
                 className="group bg-card border border-border rounded-xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary/30"
                 onClick={() => setExpandedTrade(trade)}
               >
-                {/* Image area */}
+                {/* Image area — lazy-hydrated when card scrolls into view. */}
                 <div className="relative aspect-[16/10] bg-muted overflow-hidden">
-                  {img ? (
-                    <img
-                      src={img}
-                      alt={`${trade.asset} chart`}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/50">
-                      <ImageOff className="h-10 w-10" />
-                      <span className="text-xs font-medium">No Chart</span>
-                    </div>
-                  )}
+                  <LazyTradeImage trade={trade} alt={`${trade.asset} chart`} className="w-full h-full" />
                   {/* Result badge overlay */}
                   <div className="absolute top-2 right-2">
                     <span className={cn('px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm', resultStyle[trade.result])}>
