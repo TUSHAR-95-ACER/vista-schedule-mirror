@@ -216,6 +216,23 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     setConfluencesOpen(false);
   }, [editTrade, open]);
 
+  // On edit, fetch the heavy media columns (base64 images) which are excluded
+  // from the lite list query. Patch them into the form once they arrive.
+  useEffect(() => {
+    if (!open || !editTrade) return;
+    if (editTrade.predictionImage || editTrade.executionImage) return;
+    let cancelled = false;
+    hydrateTradeMedia(editTrade.id).then(full => {
+      if (cancelled || !full) return;
+      setForm(f => ({
+        ...f,
+        predictionImage: full.predictionImage || f.predictionImage,
+        executionImage: full.executionImage || f.executionImage,
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [open, editTrade, hydrateTradeMedia]);
+
   const set = (key: string, val: any) => {
     if (key === 'market') {
       setForm(f => ({ ...f, market: val, asset: '' }));
