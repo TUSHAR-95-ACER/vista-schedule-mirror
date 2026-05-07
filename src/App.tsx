@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,34 +8,50 @@ import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Trades from "./pages/Trades";
-import Accounts from "./pages/Accounts";
-import Analytics from "./pages/Analytics";
-import Psychology from "./pages/Psychology";
-import Mistakes from "./pages/Mistakes";
-import WeeklyPlan from "./pages/WeeklyPlan";
-import DailyPlan from "./pages/DailyPlan";
-import Notebook from "./pages/Notebook";
-import WeeklyReview from "./pages/WeeklyReview";
-import SetupPlaybook from "./pages/SetupPlaybook";
-import BehaviorPatterns from "./pages/BehaviorPatterns";
-import TradeQuality from "./pages/TradeQuality";
-import AIInsights from "./pages/AIInsights";
-import AICoach from "./pages/AICoach";
-import TradingRules from "./pages/TradingRules";
-import BiasAnalytics from "./pages/BiasAnalytics";
-import ControlCenter from "./pages/ControlCenter";
-import ResearchLab from "./pages/ResearchLab";
-
-import BacktestingLab from "./pages/BacktestingLab";
-import CalendarPage from "./pages/CalendarPage";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import SystemAnalytics from "./pages/SystemAnalytics";
 import { MacroNewsProvider } from "./contexts/MacroNewsContext";
 
-const queryClient = new QueryClient();
+// PERFORMANCE: Route-level code splitting. Each page only downloads when navigated to,
+// shrinking the initial bundle from ~all-pages to just shell + Login + Dashboard route.
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Trades = lazy(() => import("./pages/Trades"));
+const Accounts = lazy(() => import("./pages/Accounts"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Psychology = lazy(() => import("./pages/Psychology"));
+const Mistakes = lazy(() => import("./pages/Mistakes"));
+const WeeklyPlan = lazy(() => import("./pages/WeeklyPlan"));
+const DailyPlan = lazy(() => import("./pages/DailyPlan"));
+const Notebook = lazy(() => import("./pages/Notebook"));
+const WeeklyReview = lazy(() => import("./pages/WeeklyReview"));
+const SetupPlaybook = lazy(() => import("./pages/SetupPlaybook"));
+const BehaviorPatterns = lazy(() => import("./pages/BehaviorPatterns"));
+const TradeQuality = lazy(() => import("./pages/TradeQuality"));
+const AIInsights = lazy(() => import("./pages/AIInsights"));
+const AICoach = lazy(() => import("./pages/AICoach"));
+const TradingRules = lazy(() => import("./pages/TradingRules"));
+const BiasAnalytics = lazy(() => import("./pages/BiasAnalytics"));
+const ControlCenter = lazy(() => import("./pages/ControlCenter"));
+const ResearchLab = lazy(() => import("./pages/ResearchLab"));
+const BacktestingLab = lazy(() => import("./pages/BacktestingLab"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const RouteFallback = () => (
+  <div className="flex items-center justify-center h-full p-12">
+    <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -46,33 +63,33 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute><MacroNewsProvider><AppLayout /></MacroNewsProvider></ProtectedRoute>}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/trades" element={<Trades />} />
-              <Route path="/accounts" element={<Accounts />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/psychology" element={<Psychology />} />
-              <Route path="/mistakes" element={<Mistakes />} />
-              <Route path="/weekly-plan" element={<WeeklyPlan />} />
-              <Route path="/daily-plan" element={<DailyPlan />} />
-              <Route path="/notebook" element={<Notebook />} />
-              <Route path="/weekly-review" element={<WeeklyReview />} />
-              <Route path="/setup-playbook" element={<SetupPlaybook />} />
-              <Route path="/behavior-patterns" element={<BehaviorPatterns />} />
-              <Route path="/trade-quality" element={<TradeQuality />} />
-              <Route path="/ai-insights" element={<AIInsights />} />
-              <Route path="/trading-rules" element={<TradingRules />} />
-              <Route path="/bias-analytics" element={<BiasAnalytics />} />
-              <Route path="/control-center" element={<ControlCenter />} />
-              <Route path="/research-lab" element={<ResearchLab />} />
+              <Route path="/" element={<Suspense fallback={<RouteFallback />}><Dashboard /></Suspense>} />
+              <Route path="/trades" element={<Suspense fallback={<RouteFallback />}><Trades /></Suspense>} />
+              <Route path="/accounts" element={<Suspense fallback={<RouteFallback />}><Accounts /></Suspense>} />
+              <Route path="/analytics" element={<Suspense fallback={<RouteFallback />}><Analytics /></Suspense>} />
+              <Route path="/psychology" element={<Suspense fallback={<RouteFallback />}><Psychology /></Suspense>} />
+              <Route path="/mistakes" element={<Suspense fallback={<RouteFallback />}><Mistakes /></Suspense>} />
+              <Route path="/weekly-plan" element={<Suspense fallback={<RouteFallback />}><WeeklyPlan /></Suspense>} />
+              <Route path="/daily-plan" element={<Suspense fallback={<RouteFallback />}><DailyPlan /></Suspense>} />
+              <Route path="/notebook" element={<Suspense fallback={<RouteFallback />}><Notebook /></Suspense>} />
+              <Route path="/weekly-review" element={<Suspense fallback={<RouteFallback />}><WeeklyReview /></Suspense>} />
+              <Route path="/setup-playbook" element={<Suspense fallback={<RouteFallback />}><SetupPlaybook /></Suspense>} />
+              <Route path="/behavior-patterns" element={<Suspense fallback={<RouteFallback />}><BehaviorPatterns /></Suspense>} />
+              <Route path="/trade-quality" element={<Suspense fallback={<RouteFallback />}><TradeQuality /></Suspense>} />
+              <Route path="/ai-insights" element={<Suspense fallback={<RouteFallback />}><AIInsights /></Suspense>} />
+              <Route path="/trading-rules" element={<Suspense fallback={<RouteFallback />}><TradingRules /></Suspense>} />
+              <Route path="/bias-analytics" element={<Suspense fallback={<RouteFallback />}><BiasAnalytics /></Suspense>} />
+              <Route path="/control-center" element={<Suspense fallback={<RouteFallback />}><ControlCenter /></Suspense>} />
+              <Route path="/research-lab" element={<Suspense fallback={<RouteFallback />}><ResearchLab /></Suspense>} />
               <Route path="/daily-checklist" element={<Navigate to="/" replace />} />
-              <Route path="/backtesting-lab" element={<BacktestingLab />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/system-analytics" element={<SystemAnalytics />} />
+              <Route path="/backtesting-lab" element={<Suspense fallback={<RouteFallback />}><BacktestingLab /></Suspense>} />
+              <Route path="/calendar" element={<Suspense fallback={<RouteFallback />}><CalendarPage /></Suspense>} />
+              <Route path="/settings" element={<Suspense fallback={<RouteFallback />}><Settings /></Suspense>} />
+              <Route path="/system-analytics" element={<Suspense fallback={<RouteFallback />}><SystemAnalytics /></Suspense>} />
               <Route path="/macro-news" element={<Navigate to="/" replace />} />
-              <Route path="/ai-coach" element={<AICoach />} />
+              <Route path="/ai-coach" element={<Suspense fallback={<RouteFallback />}><AICoach /></Suspense>} />
             </Route>
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Suspense fallback={<RouteFallback />}><NotFound /></Suspense>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
