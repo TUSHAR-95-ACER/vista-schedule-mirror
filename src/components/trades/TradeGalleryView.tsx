@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useTrading } from '@/contexts/TradingContext';
 import { Trade } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { ImageOff } from 'lucide-react';
@@ -17,8 +18,21 @@ interface Props {
 }
 
 export function TradeGalleryView({ trades, onSelectTrade }: Props) {
+  const { hydrateTradeMedia } = useTrading();
   const [expandedTrade, setExpandedTrade] = useState<Trade | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Hydrate full media for the expanded trade so the bigger preview shows images.
+  useEffect(() => {
+    if (!expandedTrade) return;
+    if (expandedTrade.executionImage || expandedTrade.predictionImage) return;
+    let cancelled = false;
+    hydrateTradeMedia(expandedTrade.id).then(full => {
+      if (cancelled || !full) return;
+      setExpandedTrade(prev => (prev && prev.id === full.id ? { ...prev, ...full } : prev));
+    });
+    return () => { cancelled = true; };
+  }, [expandedTrade?.id, hydrateTradeMedia]);
 
   const formatDate = (dateStr: string) => {
     try {
