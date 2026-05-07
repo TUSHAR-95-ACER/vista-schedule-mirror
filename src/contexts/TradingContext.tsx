@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { CONFLUENCE_OPTIONS, SETUPS, Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan } from '@/types/trading';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -30,6 +30,16 @@ interface TradingContextType {
   violations: string[];
   notebookCategories: string[];
   loading: boolean;
+  // Per-resource loading flags so pages can render their own data without waiting on others.
+  loadingTrades: boolean;
+  loadingDailyPlans: boolean;
+  loadingWeeklyPlans: boolean;
+  loadingAccounts: boolean;
+  loadingSettings: boolean;
+  /** Fetches a single trade (incl. heavy media columns) on demand. */
+  hydrateTradeMedia: (id: string) => Promise<Trade | null>;
+  /** Fetches a single daily plan with full media on demand. */
+  hydrateDailyPlanMedia: (id: string) => Promise<DailyPlan | null>;
   addTrade: (trade: Trade) => void;
   updateTrade: (trade: Trade) => void;
   deleteTrade: (id: string) => void;
@@ -73,6 +83,25 @@ const DEFAULT_PSYCH = ['Confident', 'Fearful', 'Greedy', 'Neutral', 'Anxious', '
 const DEFAULT_VIOLATIONS = ['FOMO', 'Early Entry', 'Overtrading', 'Emotional', 'Ignored SL'];
 const DEFAULT_NOTEBOOK_CATS = ['Pattern', 'Missed Trade', 'Opportunity Not Taken', 'Observation', 'News Reaction'];
 
+// PERFORMANCE: Initial trade fetch excludes heavy base64 image columns
+// (prediction_image, execution_image). They're hydrated on demand via
+// hydrateTradeMedia(id) when the user opens the gallery card or detail sheet.
+const TRADE_LITE_COLUMNS = [
+  'id','user_id','date','entry_time','exit_time','market','asset','direction','session',
+  'market_condition','setup','quantity','entry_price','stop_loss','take_profit','exit_price',
+  'result','planned_rr','actual_rr','max_rr_reached','max_adverse_move','pips','profit_loss',
+  'fees','notes','accounts','management','confluences','entry_confluences','target_confluences',
+  'chart_link','psychology','mistakes','grade','timeframe','trend','trade_journey','day_tags',
+  'curve','trade_analysis','created_at',
+].join(',');
+
+// Same idea for daily plans — drop result_chart_image (often base64) from list fetch.
+const DAILY_PLAN_LITE_COLUMNS = [
+  'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit','pairs',
+  'news_items','took_trades','result_narrative','analysis_video_url','note','reviewed',
+  'day_summary','notes_journal','created_at',
+].join(',');
+
 export function TradingProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -92,7 +121,16 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   const [psychTags, setPsychTags] = useState<string[]>(DEFAULT_PSYCH);
   const [violations, setViolations] = useState<string[]>(DEFAULT_VIOLATIONS);
   const [notebookCategories, setNotebookCategories] = useState<string[]>(DEFAULT_NOTEBOOK_CATS);
-  const [loading, setLoading] = useState(true);
+
+  const [loadingTrades, setLoadingTrades] = useState(true);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [loadingDailyPlans, setLoadingDailyPlans] = useState(true);
+  const [loadingWeeklyPlans, setLoadingWeeklyPlans] = useState(true);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+
+  // Aggregate loading: any resource still loading.
+  const loading =
+    loadingTrades || loadingAccounts || loadingDailyPlans || loadingWeeklyPlans || loadingSettings;
 
   const resetState = useCallback(() => {
     setTrades([]);
@@ -114,66 +152,146 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     setNotebookCategories(DEFAULT_NOTEBOOK_CATS);
   }, []);
 
-  // Load all data from Supabase when user changes
+  // Track current load to ignore stale responses on rapid user switches.
+  const loadIdRef = useRef(0);
+
+  // Stream-load: each query fires independently and updates its own slice the moment it returns.
+  // No Promise.all → a slow trade fetch never blocks Daily Plan rendering.
   useEffect(() => {
     resetState();
 
     if (!user) {
-      setLoading(false);
+      setLoadingTrades(false);
+      setLoadingAccounts(false);
+      setLoadingDailyPlans(false);
+      setLoadingWeeklyPlans(false);
+      setLoadingSettings(false);
       return;
     }
 
+    loadIdRef.current += 1;
+    const myLoadId = loadIdRef.current;
     const uid = user.id;
-    setLoading(true);
 
-    Promise.all([
-      db.from('trades').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
-      db.from('trading_accounts').select('*').eq('user_id', uid),
-      db.from('transactions').select('*').eq('user_id', uid),
-      db.from('scale_events').select('*').eq('user_id', uid),
-      db.from('weekly_plans').select('*').eq('user_id', uid),
-      db.from('daily_plans').select('*').eq('user_id', uid),
-      db.from('user_settings').select('*').eq('user_id', uid).maybeSingle(),
-    ]).then(([tradesRes, accountsRes, txRes, scaleRes, wpRes, dpRes, settingsRes]) => {
-      if (tradesRes.data) setTrades(tradesRes.data.map(dbToTrade));
-      if (accountsRes.data) setAccounts(accountsRes.data.map(dbToAccount));
-      if (txRes.data) setTransactions(txRes.data.map(dbToTx));
-      if (scaleRes.data) setScaleEvents(scaleRes.data.map(dbToScale));
-      if (wpRes.data) setWeeklyPlans(wpRes.data.map(dbToWeeklyPlan));
-      if (dpRes.data) setDailyPlans(dpRes.data.map(dbToDailyPlan));
+    setLoadingTrades(true);
+    setLoadingAccounts(true);
+    setLoadingDailyPlans(true);
+    setLoadingWeeklyPlans(true);
+    setLoadingSettings(true);
 
-      if (settingsRes.data) {
-        const s = settingsRes.data;
-        const parse = (v: any, def: string[]) => {
-          if (!v) return def;
-          const arr = typeof v === 'string' ? JSON.parse(v) : v;
-          return Array.isArray(arr) && arr.length > 0 ? arr : def;
-        };
-        setCustomSetups(parse(s.custom_setups, [...SETUPS]));
-        setCustomAssets(parse(s.custom_assets, []));
-        setCustomConfluences(parse(s.custom_confluences, [...CONFLUENCE_OPTIONS]));
-        setMarkets(parse(s.markets, DEFAULT_MARKETS));
-        setSessions(parse(s.sessions, DEFAULT_SESSIONS));
-        setConditions(parse(s.conditions, DEFAULT_CONDITIONS));
-        setGradesList(parse(s.grades_list, DEFAULT_GRADES));
-        setManagementOptions(parse(s.management_options, DEFAULT_MANAGEMENT));
-        setPsychTags(parse(s.psych_tags, DEFAULT_PSYCH));
-        setViolations(parse(s.violations, DEFAULT_VIOLATIONS));
-        setNotebookCategories(parse(s.notebook_categories, DEFAULT_NOTEBOOK_CATS));
-      } else if (user) {
-        // Create default settings row
-        db.from('user_settings').insert({
-          user_id: uid,
-          custom_setups: [...SETUPS], custom_assets: [], custom_confluences: [...CONFLUENCE_OPTIONS],
-          markets: DEFAULT_MARKETS, sessions: DEFAULT_SESSIONS, conditions: DEFAULT_CONDITIONS,
-          grades_list: DEFAULT_GRADES, management_options: DEFAULT_MANAGEMENT,
-          psych_tags: DEFAULT_PSYCH, violations: DEFAULT_VIOLATIONS,
-          notebook_categories: DEFAULT_NOTEBOOK_CATS,
-        }).then(() => {});
-      }
-      setLoading(false);
-    });
+    const isStale = () => loadIdRef.current !== myLoadId;
+
+    // Trades — lite (no base64 images).
+    db.from('trades').select(TRADE_LITE_COLUMNS).eq('user_id', uid)
+      .order('created_at', { ascending: false })
+      .then(({ data }: any) => {
+        if (isStale()) return;
+        if (data) setTrades(data.map(dbToTrade));
+        setLoadingTrades(false);
+      });
+
+    // Daily plans — lite. THIS is what was getting blocked behind the giant trade fetch.
+    db.from('daily_plans').select(DAILY_PLAN_LITE_COLUMNS).eq('user_id', uid)
+      .order('date', { ascending: false })
+      .then(({ data }: any) => {
+        if (isStale()) return;
+        if (data) setDailyPlans(data.map(dbToDailyPlan));
+        setLoadingDailyPlans(false);
+      });
+
+    db.from('weekly_plans').select('*').eq('user_id', uid)
+      .order('week_start', { ascending: false })
+      .then(({ data }: any) => {
+        if (isStale()) return;
+        if (data) setWeeklyPlans(data.map(dbToWeeklyPlan));
+        setLoadingWeeklyPlans(false);
+      });
+
+    db.from('trading_accounts').select('*').eq('user_id', uid)
+      .then(({ data }: any) => {
+        if (isStale()) return;
+        if (data) setAccounts(data.map(dbToAccount));
+        setLoadingAccounts(false);
+      });
+
+    db.from('transactions').select('*').eq('user_id', uid)
+      .then(({ data }: any) => { if (!isStale() && data) setTransactions(data.map(dbToTx)); });
+
+    db.from('scale_events').select('*').eq('user_id', uid)
+      .then(({ data }: any) => { if (!isStale() && data) setScaleEvents(data.map(dbToScale)); });
+
+    db.from('user_settings').select('*').eq('user_id', uid).maybeSingle()
+      .then(({ data }: any) => {
+        if (isStale()) return;
+        if (data) {
+          const s = data;
+          const parse = (v: any, def: string[]) => {
+            if (!v) return def;
+            const arr = typeof v === 'string' ? JSON.parse(v) : v;
+            return Array.isArray(arr) && arr.length > 0 ? arr : def;
+          };
+          setCustomSetups(parse(s.custom_setups, [...SETUPS]));
+          setCustomAssets(parse(s.custom_assets, []));
+          setCustomConfluences(parse(s.custom_confluences, [...CONFLUENCE_OPTIONS]));
+          setMarkets(parse(s.markets, DEFAULT_MARKETS));
+          setSessions(parse(s.sessions, DEFAULT_SESSIONS));
+          setConditions(parse(s.conditions, DEFAULT_CONDITIONS));
+          setGradesList(parse(s.grades_list, DEFAULT_GRADES));
+          setManagementOptions(parse(s.management_options, DEFAULT_MANAGEMENT));
+          setPsychTags(parse(s.psych_tags, DEFAULT_PSYCH));
+          setViolations(parse(s.violations, DEFAULT_VIOLATIONS));
+          setNotebookCategories(parse(s.notebook_categories, DEFAULT_NOTEBOOK_CATS));
+        } else {
+          db.from('user_settings').insert({
+            user_id: uid,
+            custom_setups: [...SETUPS], custom_assets: [], custom_confluences: [...CONFLUENCE_OPTIONS],
+            markets: DEFAULT_MARKETS, sessions: DEFAULT_SESSIONS, conditions: DEFAULT_CONDITIONS,
+            grades_list: DEFAULT_GRADES, management_options: DEFAULT_MANAGEMENT,
+            psych_tags: DEFAULT_PSYCH, violations: DEFAULT_VIOLATIONS,
+            notebook_categories: DEFAULT_NOTEBOOK_CATS,
+          }).then(() => {});
+        }
+        setLoadingSettings(false);
+      });
   }, [user, resetState]);
+
+  // ── On-demand media hydration ──
+  // Cache so opening the same trade detail twice doesn't refetch.
+  const tradeMediaCache = useRef<Map<string, Trade>>(new Map());
+  const dailyPlanMediaCache = useRef<Map<string, DailyPlan>>(new Map());
+
+  const hydrateTradeMedia = useCallback(async (id: string): Promise<Trade | null> => {
+    if (!user) return null;
+    const cached = tradeMediaCache.current.get(id);
+    if (cached) return cached;
+    const { data } = await db.from('trades')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) return null;
+    const full = dbToTrade(data);
+    tradeMediaCache.current.set(id, full);
+    // Also patch the in-memory list so the row picks up images without a re-fetch.
+    setTrades(s => s.map(t => t.id === id ? { ...t, ...full } : t));
+    return full;
+  }, [user]);
+
+  const hydrateDailyPlanMedia = useCallback(async (id: string): Promise<DailyPlan | null> => {
+    if (!user) return null;
+    const cached = dailyPlanMediaCache.current.get(id);
+    if (cached) return cached;
+    const { data } = await db.from('daily_plans')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) return null;
+    const full = dbToDailyPlan(data);
+    dailyPlanMediaCache.current.set(id, full);
+    setDailyPlans(s => s.map(p => p.id === id ? { ...p, ...full } : p));
+    return full;
+  }, [user]);
 
   // Helper: save settings to Supabase
   const saveSettings = useCallback((updates: Record<string, any>) => {
@@ -185,11 +303,13 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   // ── Trades CRUD ──
   const addTrade = useCallback((trade: Trade) => {
     setTrades(s => [trade, ...s]);
+    tradeMediaCache.current.set(trade.id, trade);
     if (user) db.from('trades').insert(tradeToDb(trade, user.id) as any).then(() => {});
   }, [user]);
 
   const updateTrade = useCallback((trade: Trade) => {
     setTrades(s => s.map(t => t.id === trade.id ? trade : t));
+    tradeMediaCache.current.set(trade.id, trade);
     if (user) {
       const { id, ...rest } = tradeToDb(trade, user.id);
       db.from('trades').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
@@ -198,6 +318,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTrade = useCallback((id: string) => {
     setTrades(s => s.filter(t => t.id !== id));
+    tradeMediaCache.current.delete(id);
     if (user) db.from('trades').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
@@ -254,11 +375,13 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   // ── Daily Plans ──
   const addDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => [...s, plan]);
+    dailyPlanMediaCache.current.set(plan.id, plan);
     if (user) db.from('daily_plans').insert(dailyPlanToDb(plan, user.id) as any).then(() => {});
   }, [user]);
 
   const updateDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => s.map(p => p.id === plan.id ? plan : p));
+    dailyPlanMediaCache.current.set(plan.id, plan);
     if (user) {
       const { id, ...rest } = dailyPlanToDb(plan, user.id);
       db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
@@ -267,6 +390,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
 
   const deleteDailyPlan = useCallback((id: string) => {
     setDailyPlans(s => s.filter(p => p.id !== id));
+    dailyPlanMediaCache.current.delete(id);
     if (user) db.from('daily_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
 
@@ -321,6 +445,8 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       trades, accounts, transactions, scaleEvents, weeklyPlans, dailyPlans,
       customSetups, customAssets, customConfluences, markets, sessions, conditions,
       gradesList, managementOptions, psychTags, violations, notebookCategories, loading,
+      loadingTrades, loadingDailyPlans, loadingWeeklyPlans, loadingAccounts, loadingSettings,
+      hydrateTradeMedia, hydrateDailyPlanMedia,
       addTrade, updateTrade, deleteTrade,
       addAccount, updateAccount, deleteAccount,
       addTransaction, addScaleEvent,
