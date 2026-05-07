@@ -218,7 +218,15 @@ export default function DailyPlanPage() {
           </div>
         )}
 
-        {dailyPlans.length === 0 ? (
+        {loadingDailyPlans ? (
+          // Skeleton during initial fetch — fixes the "blank page" race condition where
+          // empty state would flash before data hydrated.
+          <div className="grid gap-2">
+            {[0,1,2].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-card border border-border animate-pulse" />
+            ))}
+          </div>
+        ) : dailyPlans.length === 0 ? (
           <PlanEmptyState
             message="No daily plans yet. Start your first session."
             actionLabel="Create your first plan"
