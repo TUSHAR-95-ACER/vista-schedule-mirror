@@ -111,7 +111,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function DailyPlanPage() {
-  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions } = useTrading();
+  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions, loadingDailyPlans, hydrateDailyPlanMedia } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
   
@@ -139,6 +139,11 @@ export default function DailyPlanPage() {
     if (plan) {
       setActiveId(id);
       setLocalPlan({ ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) });
+      // Hydrate heavy media (e.g. result chart image) for this single plan.
+      hydrateDailyPlanMedia(id).then(full => {
+        if (!full) return;
+        setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: full.resultChartImage ?? prev.resultChartImage } : prev);
+      });
     }
   };
 
