@@ -105,6 +105,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     addCustomAsset, deleteCustomAsset, addCustomConfluence, updateCustomConfluence, deleteCustomConfluence,
     markets: ctxMarkets, sessions: ctxSessions, conditions: ctxConditions,
     gradesList, managementOptions, psychTags, violations,
+    hydrateTradeMedia,
   } = useTrading();
 
   const defaultForm = {
@@ -214,6 +215,23 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     setSetupsOpen(false);
     setConfluencesOpen(false);
   }, [editTrade, open]);
+
+  // On edit, fetch the heavy media columns (base64 images) which are excluded
+  // from the lite list query. Patch them into the form once they arrive.
+  useEffect(() => {
+    if (!open || !editTrade) return;
+    if (editTrade.predictionImage || editTrade.executionImage) return;
+    let cancelled = false;
+    hydrateTradeMedia(editTrade.id).then(full => {
+      if (cancelled || !full) return;
+      setForm(f => ({
+        ...f,
+        predictionImage: full.predictionImage || f.predictionImage,
+        executionImage: full.executionImage || f.executionImage,
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [open, editTrade, hydrateTradeMedia]);
 
   const set = (key: string, val: any) => {
     if (key === 'market') {

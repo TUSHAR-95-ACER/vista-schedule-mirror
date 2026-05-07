@@ -111,7 +111,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function DailyPlanPage() {
-  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions } = useTrading();
+  const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions, loadingDailyPlans, hydrateDailyPlanMedia } = useTrading();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
   
@@ -139,6 +139,11 @@ export default function DailyPlanPage() {
     if (plan) {
       setActiveId(id);
       setLocalPlan({ ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) });
+      // Hydrate heavy media (e.g. result chart image) for this single plan.
+      hydrateDailyPlanMedia(id).then(full => {
+        if (!full) return;
+        setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: full.resultChartImage ?? prev.resultChartImage } : prev);
+      });
     }
   };
 
@@ -213,7 +218,15 @@ export default function DailyPlanPage() {
           </div>
         )}
 
-        {dailyPlans.length === 0 ? (
+        {loadingDailyPlans ? (
+          // Skeleton during initial fetch — fixes the "blank page" race condition where
+          // empty state would flash before data hydrated.
+          <div className="grid gap-2">
+            {[0,1,2].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-card border border-border animate-pulse" />
+            ))}
+          </div>
+        ) : dailyPlans.length === 0 ? (
           <PlanEmptyState
             message="No daily plans yet. Start your first session."
             actionLabel="Create your first plan"

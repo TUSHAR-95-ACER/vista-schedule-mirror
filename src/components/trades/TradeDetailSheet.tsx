@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Trade, TradeJourneyStep } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
@@ -64,10 +64,23 @@ function DataRow({ label, value, mono, highlight }: { label: string; value: Reac
   );
 }
 
-export function TradeDetailSheet({ trade, onClose }: Props) {
+export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const { updateTrade, dailyPlans } = useTrading();
+  const { updateTrade, dailyPlans, hydrateTradeMedia } = useTrading();
   const { calendarEvents, news } = useMacroNewsContext();
+
+  // Hydrate full media (base64 images) for the opened trade. The list view ships
+  // a "lite" trade without images for fast load; we fill them in once the sheet opens.
+  const [hydrated, setHydrated] = useState<typeof tradeProp>(tradeProp);
+  useEffect(() => {
+    setHydrated(tradeProp);
+    if (tradeProp && !tradeProp.predictionImage && !tradeProp.executionImage) {
+      hydrateTradeMedia(tradeProp.id).then(full => {
+        if (full) setHydrated(prev => prev && prev.id === full.id ? { ...prev, ...full } : prev);
+      });
+    }
+  }, [tradeProp, hydrateTradeMedia]);
+  const trade = hydrated;
 
   const dailyPlan = trade ? dailyPlans.find(p => p.date === trade.date) : null;
 
