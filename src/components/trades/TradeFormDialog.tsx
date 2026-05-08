@@ -28,12 +28,14 @@ import { cn } from '@/lib/utils';
 
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
 
-const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => resolve(String(reader.result));
-  reader.onerror = () => reject(reader.error);
-  reader.readAsDataURL(file);
-});
+import { uploadJournalMedia } from '@/lib/journalUpload';
+
+// PERF: New trade screenshots upload to Supabase Storage and we persist only
+// the URL — never base64 — to avoid bloating the trades row.
+const uploadImageToStorage = async (file: File): Promise<string> => {
+  const m = await uploadJournalMedia(file, 'trades');
+  return m.url;
+};
 
 /* ── Premium Section Card ─────────────────────────────────── */
 function FormSection({ title, icon, accent = 'primary', children, className }: {
