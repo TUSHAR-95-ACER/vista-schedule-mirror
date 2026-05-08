@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authActionLoading, setAuthActionLoading] = useState(false);
   const authEventSeenRef = useRef(false);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const failsafe = setTimeout(() => {
       console.warn('[auth] init timeout - showing login instead of blocking UI');
       if (mounted) setLoading(false);
-    }, 4000);
+    }, 8000);
 
     supabase.auth.getSession()
       .then(({ data: { session: currentSession }, error }) => {
@@ -75,20 +76,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const clearLocalAuthCache = () => {
+    Object.keys(localStorage)
+      .filter((key) => /^sb-.+-auth-token$/.test(key) || key === 'supabase.auth.token')
+      .forEach((key) => localStorage.removeItem(key));
+  };
+
   const signInWithGoogle = async () => {
-    setLoading(true);
+    setAuthActionLoading(true);
     try {
       console.info('[auth] google sign-in start');
-      await supabase.auth.signOut({ scope: 'local' }).catch((error) => {
-        console.warn('[auth] local stale-session clear failed before google sign-in', error);
-      });
+      clearLocalAuthCache();
       const { lovable } = await import('@/integrations/lovable');
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
         extraParams: { prompt: 'select_account' },
       });
       if (result?.error) {
-        setLoading(false);
         throw result.error;
       }
       const { data } = await supabase.auth.getSession();
@@ -97,36 +101,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(data.session);
         setUser(data.session.user);
       }
-      setLoading(false);
     } catch (err) {
       console.error('[auth] google sign-in failed', err);
-      setLoading(false);
       throw err;
+    } finally {
+      setAuthActionLoading(false);
     }
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    setLoading(true);
+    setAuthActionLoading(true);
     console.info('[auth] email sign-in start', { email });
-    await supabase.auth.signOut({ scope: 'local' }).catch((error) => {
-      console.warn('[auth] local stale-session clear failed before sign-in', error);
-    });
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setLoading(false);
-      console.error('[auth] email sign-in failed', error);
-      throw error;
+    try {
+      clearLocalAuthCache();
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.error('[auth] email sign-in failed', error);
+        throw error;
+      }
+      if (!data.session) {
+        const noSessionError = new Error('Sign in completed but no session was returned. Please verify your email and try again.');
+        console.error('[auth] email sign-in returned no session', noSessionError);
+        throw noSessionError;
+      }
+      setSession(data.session);
+      setUser(data.user ?? data.session.user);
+      console.info('[auth] email sign-in request accepted');
+    } finally {
+      setAuthActionLoading(false);
     }
-    if (!data.session) {
-      setLoading(false);
-      const noSessionError = new Error('Sign in completed but no session was returned. Please verify your email and try again.');
-      console.error('[auth] email sign-in returned no session', noSessionError);
-      throw noSessionError;
-    }
-    setSession(data.session);
-    setUser(data.user ?? data.session.user);
-    setLoading(false);
-    console.info('[auth] email sign-in request accepted');
   };
 
   const signUpWithEmail = async (email: string, password: string, fullName?: string) => {
@@ -150,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading: loading || authActionLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );
