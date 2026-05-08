@@ -113,11 +113,11 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
         >
           <div className="flex flex-col items-center gap-3">
             <div className="h-12 w-12 rounded-xl bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 transition-colors">
-              <ImagePlus className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
+              {uploading ? <Loader2 className="h-5 w-5 text-primary animate-spin" /> : <ImagePlus className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />}
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                {dragging ? 'Drop here!' : 'Drag & drop or paste image'}
+                {uploading ? 'Uploading…' : (dragging ? 'Drop here!' : 'Drag & drop or paste image')}
               </p>
               <p className="text-[11px] text-muted-foreground/60 mt-1">PNG, JPG up to 10MB</p>
             </div>
@@ -127,6 +127,7 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
               size="sm"
               className="rounded-lg text-xs font-semibold gap-1.5"
               onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+              disabled={uploading}
             >
               <Upload className="h-3.5 w-3.5" /> Choose File
             </Button>
