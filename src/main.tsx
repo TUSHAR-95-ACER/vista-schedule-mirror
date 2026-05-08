@@ -23,22 +23,14 @@ try {
   document.documentElement.setAttribute('data-journal-font', 'notion');
 }
 
-const root = createRoot(document.getElementById("root")!);
+import App from "./App.tsx";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { TradingProvider } from "@/contexts/TradingContext";
 
-async function bootstrap() {
-  const [{ default: App }, { AuthProvider }, { TradingProvider }] = await Promise.all([
-    import("./App.tsx"),
-    import("@/contexts/AuthContext"),
-    import("@/contexts/TradingContext"),
-  ]);
-
-  root.render(
-    <AuthProvider>
-      <TradingProvider>
-        <App />
-      </TradingProvider>
-    </AuthProvider>
-  );
-}
-
-bootstrap();
+createRoot(document.getElementById("root")!).render(
+  <AuthProvider>
+    <TradingProvider>
+      <App />
+    </TradingProvider>
+  </AuthProvider>
+);
