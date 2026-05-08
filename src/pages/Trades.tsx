@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Edit, ExternalLink, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
