@@ -21,6 +21,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const authEventSeenRef = useRef(false);
 
+  const authDebug = (stage: string, details: Record<string, unknown> = {}) => {
+    console.info(`[auth] ${stage}`, {
+      origin: window.location.origin,
+      path: window.location.pathname,
+      inIframe: window.self !== window.top,
+      ...details,
+    });
+  };
+
   useEffect(() => {
     let mounted = true;
     console.info('[auth] init', {
@@ -83,24 +92,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      console.info('[auth] google sign-in start');
+      authDebug('google oauth redirect start', {
+        callbackOrigin: window.location.origin,
+      });
       clearLocalAuthCache();
       const { lovable } = await import('@/integrations/lovable');
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
-        extraParams: { prompt: 'select_account' },
+      });
+      authDebug('google provider response', {
+        redirected: Boolean(result?.redirected),
+        hasError: Boolean(result?.error),
+        errorMessage: result?.error?.message,
+        hasTokens: Boolean(result && 'tokens' in result && result.tokens),
       });
       if (result?.error) {
         throw result.error;
       }
-      const { data } = await supabase.auth.getSession();
+      if (result?.redirected) return;
+
+      const { data, error } = await supabase.auth.getSession();
+      authDebug('auth callback session check', {
+        hasSession: Boolean(data.session),
+        hasError: Boolean(error),
+        errorMessage: error?.message,
+      });
+      if (error) throw error;
       if (data.session) {
-        console.info('[auth] google sign-in session confirmed');
+        authDebug('auth session creation confirmed', { userId: data.session.user.id });
         setSession(data.session);
         setUser(data.session.user);
+        setLoading(false);
+      } else {
+        throw new Error('Google sign in completed, but no session was created. Please try again from the published app URL.');
       }
     } catch (err) {
-      console.error('[auth] google sign-in failed', err);
+      setLoading(false);
+      console.error('[auth] google consent-check failure details', {
+        error: err,
+        message: err instanceof Error ? err.message : String(err),
+        origin: window.location.origin,
+      });
       throw err;
     }
   };
