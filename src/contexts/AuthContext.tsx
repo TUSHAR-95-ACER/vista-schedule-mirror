@@ -142,7 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    const currentUserId = user?.id;
     await supabase.auth.signOut();
+    if (currentUserId) clearAllUserStorage(currentUserId);
     setUser(null);
     setSession(null);
   };
