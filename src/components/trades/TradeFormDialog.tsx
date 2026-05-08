@@ -28,12 +28,14 @@ import { cn } from '@/lib/utils';
 
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
 
-const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => resolve(String(reader.result));
-  reader.onerror = () => reject(reader.error);
-  reader.readAsDataURL(file);
-});
+import { uploadJournalMedia } from '@/lib/journalUpload';
+
+// PERF: New trade screenshots upload to Supabase Storage and we persist only
+// the URL — never base64 — to avoid bloating the trades row.
+const uploadImageToStorage = async (file: File): Promise<string> => {
+  const m = await uploadJournalMedia(file, 'trades');
+  return m.url;
+};
 
 /* ── Premium Section Card ─────────────────────────────────── */
 function FormSection({ title, icon, accent = 'primary', children, className }: {
@@ -326,8 +328,12 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
   const handleImageFile = async (key: 'predictionImage' | 'executionImage', file?: File | null) => {
     if (!file) return;
-    const image = await readFileAsDataUrl(file);
-    set(key, image);
+    try {
+      const url = await uploadImageToStorage(file);
+      set(key, url);
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
+    }
   };
 
   const handlePasteImage = async (event: React.ClipboardEvent<HTMLDivElement>, key: 'predictionImage' | 'executionImage') => {

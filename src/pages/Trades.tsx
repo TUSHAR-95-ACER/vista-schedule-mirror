@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Edit, ExternalLink, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
@@ -53,6 +53,24 @@ export default function Trades() {
       return mult * (a.profitLoss - b.profitLoss);
     });
   }, [filtered, sortField, sortDir]);
+
+  // PERF: Infinite scroll — only render the first N rows, load 50 more when sentinel scrolls into view.
+  const PAGE_SIZE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterPair, filterResult, sortField, sortDir, viewMode]);
+  const visible = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting) {
+        setVisibleCount(c => Math.min(c + PAGE_SIZE, sorted.length));
+      }
+    }, { rootMargin: '300px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [sorted.length]);
 
   const toggleSort = (field: 'date' | 'profitLoss') => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -172,7 +190,7 @@ export default function Trades() {
                     </td>
                   </tr>
                 ) : (
-                  sorted.map(trade => (
+                  visible.map(trade => (
                     <tr
                       key={trade.id}
                       className="border-b border-border/50 hover:bg-accent/50 cursor-pointer transition-colors h-8"
@@ -230,12 +248,24 @@ export default function Trades() {
               </tbody>
             </table>
           </div>
+          {visibleCount < sorted.length && (
+            <div ref={sentinelRef} className="px-3 py-4 text-center text-xs text-muted-foreground">
+              Loading more… ({visibleCount} / {sorted.length})
+            </div>
+          )}
         </div>
       )}
 
       {/* Gallery View */}
       {viewMode === 'gallery' && (
-        <TradeGalleryView trades={sorted} onSelectTrade={setSelectedTrade} />
+        <>
+          <TradeGalleryView trades={visible} onSelectTrade={setSelectedTrade} />
+          {visibleCount < sorted.length && (
+            <div ref={sentinelRef} className="py-4 text-center text-xs text-muted-foreground">
+              Loading more… ({visibleCount} / {sorted.length})
+            </div>
+          )}
+        </>
       )}
 
       <AIInsightsPanel page="Trades" payload={adaptTrades(sorted)} className="mt-6" />
