@@ -1,26 +1,39 @@
 import { useState, useRef, useCallback } from 'react';
-import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { uploadJournalMedia } from '@/lib/journalUpload';
+import { toast } from '@/hooks/use-toast';
 
 interface PlanImageUploadProps {
   value?: string;
   onChange: (v: string) => void;
   label: string;
+  /** Storage subfolder for organization. */
+  scope?: string;
 }
 
-export function PlanImageUpload({ value, onChange, label }: PlanImageUploadProps) {
+export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: PlanImageUploadProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [uploading, setUploading] = useState(false);
 
-  const readFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => onChange(reader.result as string);
-    reader.readAsDataURL(file);
+  // PERF: New uploads go straight to Supabase Storage (URL only), instead of
+  // base64 in the database row. Existing base64 values still display fine.
+  const readFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const m = await uploadJournalMedia(file, scope);
+      onChange(m.url);
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
