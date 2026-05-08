@@ -26,13 +26,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
-    });
+    // Hard timeout so the UI never gets stuck on "Loading..." if the auth
+    // server is unreachable or the stored refresh token is bad.
+    const failsafe = setTimeout(() => setLoading(false), 4000);
 
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession()
+      .then(({ data: { session: currentSession }, error }) => {
+        if (error) {
+          // Stale/invalid refresh token in localStorage → clear it so we don't
+          // loop forever trying to refresh.
+          supabase.auth.signOut().catch(() => {});
+        }
+        setSession(currentSession ?? null);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      })
+      .finally(() => clearTimeout(failsafe));
+
+    return () => {
+      clearTimeout(failsafe);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
