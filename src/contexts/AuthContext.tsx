@@ -122,6 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session);
       setUser(data.user ?? data.session.user);
       console.info('[auth] email sign-in request accepted');
+    } catch (err) {
+      console.error('[auth] email sign-in failed', err);
+      throw err;
     }
   };
 
