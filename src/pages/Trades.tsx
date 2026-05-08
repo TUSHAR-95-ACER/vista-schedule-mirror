@@ -54,6 +54,24 @@ export default function Trades() {
     });
   }, [filtered, sortField, sortDir]);
 
+  // PERF: Infinite scroll — only render the first N rows, load 50 more when sentinel scrolls into view.
+  const PAGE_SIZE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterPair, filterResult, sortField, sortDir, viewMode]);
+  const visible = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(entries => {
+      if (entries[0]?.isIntersecting) {
+        setVisibleCount(c => Math.min(c + PAGE_SIZE, sorted.length));
+      }
+    }, { rootMargin: '300px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [sorted.length]);
+
   const toggleSort = (field: 'date' | 'profitLoss') => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortField(field); setSortDir('desc'); }
