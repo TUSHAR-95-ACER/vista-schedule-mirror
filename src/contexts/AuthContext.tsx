@@ -19,7 +19,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authActionLoading, setAuthActionLoading] = useState(false);
   const authEventSeenRef = useRef(false);
 
   useEffect(() => {
@@ -83,7 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    setAuthActionLoading(true);
     try {
       console.info('[auth] google sign-in start');
       clearLocalAuthCache();
@@ -104,13 +102,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('[auth] google sign-in failed', err);
       throw err;
-    } finally {
-      setAuthActionLoading(false);
     }
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    setAuthActionLoading(true);
     console.info('[auth] email sign-in start', { email });
     try {
       clearLocalAuthCache();
@@ -127,8 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(data.session);
       setUser(data.user ?? data.session.user);
       console.info('[auth] email sign-in request accepted');
-    } finally {
-      setAuthActionLoading(false);
     }
   };
 
@@ -153,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading: loading || authActionLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );
