@@ -190,7 +190,7 @@ export default function Trades() {
                     </td>
                   </tr>
                 ) : (
-                  sorted.map(trade => (
+                  visible.map(trade => (
                     <tr
                       key={trade.id}
                       className="border-b border-border/50 hover:bg-accent/50 cursor-pointer transition-colors h-8"
@@ -248,12 +248,24 @@ export default function Trades() {
               </tbody>
             </table>
           </div>
+          {visibleCount < sorted.length && (
+            <div ref={sentinelRef} className="px-3 py-4 text-center text-xs text-muted-foreground">
+              Loading more… ({visibleCount} / {sorted.length})
+            </div>
+          )}
         </div>
       )}
 
       {/* Gallery View */}
       {viewMode === 'gallery' && (
-        <TradeGalleryView trades={sorted} onSelectTrade={setSelectedTrade} />
+        <>
+          <TradeGalleryView trades={visible} onSelectTrade={setSelectedTrade} />
+          {visibleCount < sorted.length && (
+            <div ref={sentinelRef} className="py-4 text-center text-xs text-muted-foreground">
+              Loading more… ({visibleCount} / {sorted.length})
+            </div>
+          )}
+        </>
       )}
 
       <AIInsightsPanel page="Trades" payload={adaptTrades(sorted)} className="mt-6" />
