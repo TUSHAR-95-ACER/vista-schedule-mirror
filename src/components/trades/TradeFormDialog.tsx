@@ -328,8 +328,12 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
   const handleImageFile = async (key: 'predictionImage' | 'executionImage', file?: File | null) => {
     if (!file) return;
-    const image = await readFileAsDataUrl(file);
-    set(key, image);
+    try {
+      const url = await uploadImageToStorage(file);
+      set(key, url);
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload image', variant: 'destructive' });
+    }
   };
 
   const handlePasteImage = async (event: React.ClipboardEvent<HTMLDivElement>, key: 'predictionImage' | 'executionImage') => {
