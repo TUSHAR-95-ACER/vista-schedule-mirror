@@ -396,15 +396,6 @@ export default function WeeklyPlanPage() {
         />
       </SectionCard>
 
-      {/* Analysis Video - real Storage upload */}
-      <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <JournalVideoUpload
-          url={localPlan.analysisVideoUrl}
-          path={(localPlan as WeeklyPlan).analysisVideoPath}
-          scope={`weekly/${localPlan.id}/video`}
-          onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<WeeklyPlan>)}
-        />
-      </SectionCard>
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
 
