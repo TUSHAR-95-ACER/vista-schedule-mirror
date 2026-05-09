@@ -6,12 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Video, Newspaper, NotebookPen } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Newspaper, NotebookPen } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
-import { JournalVideoUpload } from '@/components/shared/JournalVideoUpload';
 import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
@@ -396,15 +395,6 @@ export default function WeeklyPlanPage() {
         />
       </SectionCard>
 
-      {/* Analysis Video - real Storage upload */}
-      <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <JournalVideoUpload
-          url={localPlan.analysisVideoUrl}
-          path={(localPlan as WeeklyPlan).analysisVideoPath}
-          scope={`weekly/${localPlan.id}/video`}
-          onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<WeeklyPlan>)}
-        />
-      </SectionCard>
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
 

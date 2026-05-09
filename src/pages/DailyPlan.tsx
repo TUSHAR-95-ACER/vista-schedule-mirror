@@ -7,12 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, Video } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper } from 'lucide-react';
 import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
-import { JournalVideoUpload } from '@/components/shared/JournalVideoUpload';
 import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
@@ -483,16 +482,6 @@ export default function DailyPlanPage() {
           onChange={v => update({ notesJournal: serializeJournal(v), note: v.text } as Partial<DailyPlan>)}
           placeholder="Final thoughts, screenshots, video clips…"
           className="border-0 shadow-none p-0 bg-transparent"
-        />
-      </SectionCard>
-
-      {/* Video - real upload */}
-      <SectionCard title="Analysis Video" icon={<Video className="h-3.5 w-3.5" />}>
-        <JournalVideoUpload
-          url={localPlan.analysisVideoUrl}
-          path={(localPlan as DailyPlan).analysisVideoPath}
-          scope={`daily/${localPlan.id}/video`}
-          onChange={(next) => update({ analysisVideoUrl: next.url, analysisVideoPath: next.path } as Partial<DailyPlan>)}
         />
       </SectionCard>
 
