@@ -54,28 +54,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (mounted) setLoading(false);
     }, 8000);
 
-    supabase.auth.getSession()
-      .then(({ data: { session: currentSession }, error }) => {
+    // Retry getSession once on transient network failure before giving up.
+    const tryGetSession = async (attempt = 1): Promise<void> => {
+      try {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         if (!mounted || authEventSeenRef.current) return;
         if (error) {
-          // Stale/invalid refresh token in localStorage → clear it so we don't
-          // loop forever trying to refresh.
-          console.warn('[auth] getSession failed; clearing local session', error);
+          // Auth-level error (bad/expired refresh token) → clear local session.
+          console.warn('[auth] getSession returned error; clearing local session', error);
           supabase.auth.signOut({ scope: 'local' }).catch(() => {});
         }
         setSession(currentSession ?? null);
         setUser(currentSession?.user ?? null);
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!mounted || authEventSeenRef.current) return;
-        console.warn('[auth] getSession network failure; clearing local session', error);
-        supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        // Network/transport failure — retry once after short backoff before
+        // assuming the stored session is bad.
+        if (attempt < 2) {
+          console.warn(`[auth] getSession transient failure (attempt ${attempt}); retrying`, error);
+          await new Promise((r) => setTimeout(r, 1200));
+          return tryGetSession(attempt + 1);
+        }
+        console.warn('[auth] getSession failed after retry; continuing without session', error);
+        // Do NOT signOut on pure network failure — preserve token for next load.
         setSession(null);
         setUser(null);
         setLoading(false);
-      })
-      .finally(() => clearTimeout(failsafe));
+      }
+    };
+
+    tryGetSession().finally(() => clearTimeout(failsafe));
 
     return () => {
       mounted = false;
