@@ -128,31 +128,10 @@ export function useMacroNews() {
     }
   }, [activePair, getDateString]);
 
+  // Breaking news (NewsAPI) intentionally disabled — only economic calendar is used.
   const fetchNews = useCallback(async () => {
-    const cacheKey = `news-${activePair}`;
-    const cached = getCached(cacheKey);
-    if (cached) { setNews(cached); return; }
-
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
-    setNewsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('macro-news', {
-        body: { pair: activePair, source: 'news' },
-      });
-      if (error) throw error;
-      if (data?.success) {
-        const articles: NewsArticle[] = data.data || [];
-        setNews(articles);
-        setClientCache(cacheKey, articles);
-      }
-    } catch (err) {
-      console.error('Failed to fetch news:', err);
-    } finally {
-      setNewsLoading(false);
-      fetchingRef.current = false;
-    }
-  }, [activePair]);
+    setNews([]);
+  }, []);
 
   // Fetch on filter change
   useEffect(() => {
