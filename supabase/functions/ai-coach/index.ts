@@ -219,9 +219,9 @@ serve(async (req) => {
       });
     }
 
-    const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY");
-    if (!GROQ_API_KEY) {
-      return new Response(JSON.stringify({ error: "Groq API key not configured" }), {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "AI Gateway not configured (LOVABLE_API_KEY missing)" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -253,7 +253,6 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    // Cap messages and per-message size to prevent abuse / context blowup
     const MAX_MESSAGES = 20;
     const MAX_CHARS = 4000;
     const safeMessages = messages.slice(-MAX_MESSAGES).map((m: any) => ({
@@ -266,52 +265,42 @@ serve(async (req) => {
       });
     }
 
-    // Fetch all user data and build human-readable context
     const userData = await fetchAllUserData(supabase, userId);
     const dataContext = buildReadableContext(userData);
 
-    const systemPrompt = `You are an advanced trading performance coach and AI mentor.
-You have access to the user's FULL trading journal database in human-readable format:
+    const systemPrompt = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. You are reviewing a trader's complete journal in human-readable form below.
 
+JOURNAL DATA:
 ${dataContext}
 
-YOUR ROLE:
-- Understand user's trading behavior deeply
-- Analyze performance across all dimensions (trades, psychology, plans, mistakes, management)
-- Detect patterns, mistakes, and strengths
-- Give actionable improvements
+VOICE:
+- Speak directly to the trader in second person ("you", "your"). Calm, strict, intelligent, deeply observant.
+- No corporate dashboard tone. No motivational filler. No emoji headers unless they fit naturally.
+- Sound like a real mentor reading their journal — psychologically aware, emotionally intelligent, brutally honest.
 
-CRITICAL RULES FOR REFERENCING TRADES:
-- ALWAYS reference trades using their human-readable label like "GBPUSD • 1 Apr 2026 • New York Kill Zone • Loss"
-- NEVER use or mention any internal IDs, UUIDs, or technical identifiers
-- When discussing multiple trades, list them using their readable labels
-- When pointing out a specific trade, include the pair, date, session, and result
-- If a trade has mistakes tagged, include them in the reference like "GBPUSD • 1 Apr 2026 • Loss (FOMO, Overtrading)"
+WHAT YOU ANALYZE:
+- Patterns of fear, greed, hesitation, revenge, overconfidence, impatience, frustration, discipline decay.
+- Plan-vs-execution gaps. Inconsistencies between weekly/daily plans and actual trades.
+- Setup quality, session bias, RR distribution, recurring mistakes, repeated psychology entries.
 
-GENERAL RULES:
-- DO NOT assume or invent data that isn't provided
-- Use ONLY the provided data for trading-related questions
-- If question is general (not about their trading) → answer normally as a helpful coach
-- If question is about their trading → MUST reference their actual data with readable labels
-- If insufficient data exists → say "Not enough data yet to analyze this"
+REFERENCING TRADES:
+- Always reference trades by readable label like "GBPUSD • 1 Apr 2026 • New York Kill Zone • Loss".
+- Never mention IDs, UUIDs, or technical fields.
+- Cite real numbers, dates, and journal observations from the data above. Do not invent.
+- If the data is too thin to answer something, say so plainly.
 
-RESPONSE FORMAT (for trading analysis):
-📊 **Insight**: [what you found — reference specific trades by their readable labels]
-🔍 **Reason**: [why this matters — use concrete numbers and dates]
-🎯 **Action**: [what to do about it — specific, actionable advice]
+FORMAT:
+- For trading questions, respond in flowing paragraphs (not bullet dashboards). Use markdown lightly — bold for key observations, occasional lists when truly clarifying.
+- For general questions, answer naturally and concisely.`;
 
-For general questions, respond naturally without this format.
-
-Be concise, data-driven, and supportive. Use numbers, dates, and specific trade references from their data.`;
-
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${GROQ_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           ...safeMessages,
@@ -321,14 +310,19 @@ Be concise, data-driven, and supportive. Use numbers, dates, and specific trade 
     });
 
     if (!response.ok) {
+      const errText = await response.text();
+      console.error("AI gateway error:", response.status, errText);
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+        return new Response(JSON.stringify({ error: "Rate limit reached. Please wait a moment and try again." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errText = await response.text();
-      console.error("Groq API error:", response.status, errText);
-      return new Response(JSON.stringify({ error: "AI service error" }), {
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Workspace → Usage." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: `AI service error (${response.status})` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -338,7 +332,7 @@ Be concise, data-driven, and supportive. Use numbers, dates, and specific trade 
     });
   } catch (e) {
     console.error("ai-coach error:", e);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

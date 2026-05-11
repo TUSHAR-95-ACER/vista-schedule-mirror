@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+/* Sora + Inter loaded via <link> in index.html for preconnect performance. */
 
 @tailwind base;
 @tailwind components;
@@ -40,9 +40,9 @@
     --sidebar-border: 217 19% 27%;
     --sidebar-ring: 210 100% 50%;
 
-    --font-heading: 'Manrope', 'Inter', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-heading: 'Sora', 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
     --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
     --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
@@ -167,13 +167,40 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
   html {
     @apply scroll-smooth;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  h1 { letter-spacing: -0.03em; font-weight: 700; }
   h1, h2, h3, h4, h5, h6, p, span, button, a, td, th, label {
     overflow-wrap: break-word;
+  }
+  /* Card titles (shadcn) — apply Sora */
+  [data-slot="card-title"], .card-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  /* Sidebar labels — slightly larger, Sora */
+  [data-sidebar="menu-button"], [data-sidebar="group-label"] {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    font-size: 0.875rem;
   }
 }
 

@@ -79,7 +79,13 @@ export default function AICoach() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
-      if (!resp.ok || !resp.body) { toast.error('Chat failed'); setChatLoading(false); return; }
+      if (!resp.ok || !resp.body) {
+        let msg = `Chat failed (${resp.status})`;
+        try { const j = await resp.json(); if (j?.error) msg = j.error; } catch {}
+        toast.error(msg);
+        setChatLoading(false);
+        return;
+      }
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buf = '';

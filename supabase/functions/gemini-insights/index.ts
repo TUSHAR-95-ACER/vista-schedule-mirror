@@ -6,31 +6,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ALLOWED_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"];
-const DEFAULT_MODEL = "gemini-2.5-flash";
-
-const SCHEMA = {
-  type: "ARRAY",
-  items: {
-    type: "OBJECT",
-    properties: {
-      title: { type: "STRING" },
-      description: { type: "STRING" },
-      severity: { type: "STRING", enum: ["info", "good", "warn", "critical"] },
-    },
-    required: ["title", "description"],
-  },
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    // Auth check
+    // Auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -42,79 +25,119 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!KEY) {
-      return new Response(JSON.stringify({ error: "GEMINI_API_KEY missing" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "AI Gateway not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { page, payload, model } = await req.json();
+
+    const { page, payload } = await req.json();
     if (!page || !payload) {
       return new Response(JSON.stringify({ error: "page and payload required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const useModel = ALLOWED_MODELS.includes(model) ? model : DEFAULT_MODEL;
 
-    const sys = `You are a senior trading performance analyst reviewing a trader's "${String(page).slice(0, 80)}" page.
-Return 3 to 5 SHORT, SPECIFIC, ACTIONABLE insights grounded ONLY in the provided JSON data.
-- No fluff, no motivational filler, no generic advice.
-- Reference real numbers, pairs, sessions, setups when available.
-- Each "description" max 2 sentences.
-- "severity": "good" for edges/strengths, "warn" for leaks, "critical" for serious risk, "info" otherwise.`;
+    const sys = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. The user is reviewing their "${String(page).slice(0, 80)}" page and wants you to read their journal data like a real coach would.
 
-    const userText = `PAGE DATA (JSON):\n${JSON.stringify(payload).slice(0, 12000)}`;
+VOICE
+- Talk to the trader directly, second person ("you", "your"). Calm, strict, deeply observant.
+- No corporate dashboard tone, no motivational filler, no emoji headers, no labels like RISK/EDGE/LEAK.
+- Write like a mentor reviewing their journal aloud — psychologically aware, emotionally intelligent, brutally honest, never robotic.
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${useModel}:generateContent?key=${KEY}`;
-    const body = {
-      systemInstruction: { parts: [{ text: sys }] },
-      contents: [{ role: "user", parts: [{ text: userText }] }],
-      generationConfig: {
-        temperature: 0.4,
-        responseMimeType: "application/json",
-        responseSchema: SCHEMA,
-      },
-    };
+WHAT TO PRODUCE
+- 3 to 4 long-form insights. Each one is a meaningful paragraph (4 to 7 sentences), not a one-liner.
+- Each insight has:
+  • a "title": a sentence-form human observation, e.g. "Your execution is better than your patience", "Most losses started after emotional urgency", "You already know your edge but ignore it". Never use single-word labels.
+  • a "body": flowing paragraph that does five things in order — observation, behavioural cause, evidence cited from the journal data (real numbers, pairs, sessions, dates, setups, mistakes, psychology entries), correction, future focus.
+- Reference real data: pairs, sessions, RR, dates, setup names, recurring mistakes, plan-vs-execution gaps. Never invent.
+- If the data is too thin for an insight, write fewer insights rather than padding.
+- Severity is internal only: "good" for genuine strengths, "warn" for leaks, "critical" for serious risk, "info" otherwise.`;
 
-    const r = await fetch(url, {
+    const userText = `JOURNAL DATA FOR THIS PAGE (JSON):\n${JSON.stringify(payload).slice(0, 14000)}`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-pro",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: userText },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "emit_insights",
+              description: "Return mentor-style insights about the trader's journal.",
+              parameters: {
+                type: "object",
+                properties: {
+                  insights: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Sentence-form observation, never a single label." },
+                        body: { type: "string", description: "Long-form paragraph: observation, cause, evidence, correction, future focus." },
+                        severity: { type: "string", enum: ["info", "good", "warn", "critical"] },
+                      },
+                      required: ["title", "body"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["insights"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "emit_insights" } },
+      }),
     });
 
-    if (!r.ok) {
-      const text = await r.text();
-      console.error("Gemini error", r.status, text);
-      return new Response(JSON.stringify({ error: `Gemini ${r.status}` }), {
-        status: r.status === 429 ? 429 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("AI gateway error", response.status, text);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Workspace → Usage." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: `AI service error (${response.status})` }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const j = await r.json();
-    const raw = j?.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-    let insights: any[] = [];
-    try {
-      insights = JSON.parse(raw);
-    } catch {
-      const match = raw.match(/\[[\s\S]*\]/);
-      if (match) {
-        try { insights = JSON.parse(match[0]); } catch { insights = []; }
-      }
-    }
-    if (!Array.isArray(insights)) insights = [];
+
+    const j = await response.json();
+    const argsStr = j?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}";
+    let parsed: any = {};
+    try { parsed = JSON.parse(argsStr); } catch { parsed = {}; }
+    let insights = Array.isArray(parsed?.insights) ? parsed.insights : [];
+
+    // Backward compatibility for older clients reading "description"
     insights = insights
-      .filter((i) => i && typeof i.title === "string" && typeof i.description === "string")
-      .slice(0, 5)
-      .map((i) => ({
-        title: String(i.title).slice(0, 80),
-        description: String(i.description).slice(0, 280),
+      .filter((i: any) => i && typeof i.title === "string" && typeof i.body === "string")
+      .slice(0, 4)
+      .map((i: any) => ({
+        title: String(i.title).slice(0, 140),
+        body: String(i.body).slice(0, 1400),
+        description: String(i.body).slice(0, 1400), // legacy field name
         severity: ["info", "good", "warn", "critical"].includes(i.severity) ? i.severity : "info",
       }));
 
@@ -123,9 +146,8 @@ Return 3 to 5 SHORT, SPECIFIC, ACTIONABLE insights grounded ONLY in the provided
     });
   } catch (e) {
     console.error(e);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
