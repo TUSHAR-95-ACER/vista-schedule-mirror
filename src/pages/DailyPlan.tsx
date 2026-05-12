@@ -17,6 +17,7 @@ import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/p
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { adaptDailyPlan } from '@/lib/aiInsightAdapters';
 
 const emptyPairPlan = (): DailyPairPlan => ({
@@ -356,9 +357,9 @@ export default function DailyPlanPage() {
             )}
           </div>
 
-          {/* Predicted Bias vs Actual Bias (mirrors Weekly Plan) */}
+          {/* Predicted Bias | Actual Bias | Market Sentiment */}
           <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
                 <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
@@ -383,6 +384,10 @@ export default function DailyPlanPage() {
                     <SelectItem value="Neutral">Neutral</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Sentiment</Label>
+                <MarketSentimentSlider value={pp.marketSentiment} onChange={v => updatePair(pp.id, { marketSentiment: v })} />
               </div>
             </div>
           </SectionCard>

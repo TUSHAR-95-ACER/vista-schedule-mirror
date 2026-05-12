@@ -4,6 +4,7 @@ import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
 import { AutoExpandTextarea } from '@/components/shared/AutoExpandTextarea';
+import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -143,6 +144,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     dayTagInput: '',
     curve: '' as 'Right' | 'Left' | 'Centre' | '',
     tradeAnalysis: undefined as Trade['tradeAnalysis'] | undefined,
+    marketSentiment: undefined as number | undefined,
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -210,6 +212,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         dayTagInput: '',
         curve: (editTrade as any).curve || '',
         tradeAnalysis: editTrade.tradeAnalysis,
+        marketSentiment: editTrade.marketSentiment,
       });
     } else {
       setForm(defaultForm);
@@ -439,6 +442,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       dayTags: form.dayTags,
       curve: form.curve || undefined,
       tradeAnalysis: form.tradeAnalysis,
+      marketSentiment: form.marketSentiment,
     };
 
     if (editTrade) updateTrade(trade);
@@ -583,6 +587,14 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <FieldLabel>Market Sentiment {form.asset ? <span className="text-muted-foreground/60 normal-case ml-1">· {form.asset}</span> : null}</FieldLabel>
+                <MarketSentimentSlider
+                  value={form.marketSentiment}
+                  onChange={v => set('marketSentiment', v)}
+                />
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

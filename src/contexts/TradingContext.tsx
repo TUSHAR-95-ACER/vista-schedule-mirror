@@ -92,7 +92,7 @@ const TRADE_LITE_COLUMNS = [
   'result','planned_rr','actual_rr','max_rr_reached','max_adverse_move','pips','profit_loss',
   'fees','notes','accounts','management','confluences','entry_confluences','target_confluences',
   'chart_link','psychology','mistakes','grade','timeframe','trend','trade_journey','day_tags',
-  'curve','trade_analysis','created_at',
+  'curve','trade_analysis','market_sentiment','created_at',
 ].join(',');
 
 // Same idea for daily plans — drop result_chart_image (often base64) from list fetch.

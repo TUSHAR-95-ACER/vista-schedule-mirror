@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePageVisibility } from '@/contexts/PageVisibilityContext';
+import { supabase } from '@/integrations/supabase/client';
 import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
@@ -62,8 +63,24 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const { isPageEnabled } = usePageVisibility();
+  const [profileName, setProfileName] = useState<string>('');
+
+  useEffect(() => {
+    if (!user) { setProfileName(''); return; }
+    let cancelled = false;
+    const metaName = (user.user_metadata as any)?.full_name || (user.user_metadata as any)?.name;
+    if (metaName) setProfileName(metaName);
+    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle().then(({ data }) => {
+      if (cancelled) return;
+      const name = (data as any)?.full_name || metaName || '';
+      if (name) setProfileName(name);
+    });
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const displayName = profileName || 'Trader Workspace';
 
   const filteredSections = sections.map(section => ({
     ...section,
@@ -77,12 +94,12 @@ export function Sidebar() {
     )}>
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border shrink-0">
         <div className="h-8 w-8 rounded-lg border border-border bg-background flex items-center justify-center shrink-0">
-          <span className="text-foreground font-heading font-bold text-xs">EF</span>
+          <span className="text-foreground font-heading font-bold text-xs">MJ</span>
         </div>
         {!collapsed && (
           <div className="flex flex-col overflow-hidden">
-            <span className="font-heading text-sm font-bold text-foreground leading-tight truncate">EdgeFinder Pro</span>
-            <span className="text-[10px] text-foreground leading-tight">Trading Intelligence</span>
+            <span className="font-heading text-[15px] font-bold text-foreground leading-tight truncate tracking-tight">Master Journal</span>
+            <span className="text-[11px] font-medium text-muted-foreground leading-tight truncate">{displayName}</span>
           </div>
         )}
       </div>

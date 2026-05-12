@@ -158,6 +158,7 @@ export type Database = {
           management: Json | null
           market: string
           market_condition: string
+          market_sentiment: number | null
           max_adverse_move: number | null
           max_rr_reached: number | null
           mistakes: Json | null
@@ -203,6 +204,7 @@ export type Database = {
           management?: Json | null
           market: string
           market_condition: string
+          market_sentiment?: number | null
           max_adverse_move?: number | null
           max_rr_reached?: number | null
           mistakes?: Json | null
@@ -248,6 +250,7 @@ export type Database = {
           management?: Json | null
           market?: string
           market_condition?: string
+          market_sentiment?: number | null
           max_adverse_move?: number | null
           max_rr_reached?: number | null
           mistakes?: Json | null
