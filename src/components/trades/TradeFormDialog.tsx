@@ -442,6 +442,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       dayTags: form.dayTags,
       curve: form.curve || undefined,
       tradeAnalysis: form.tradeAnalysis,
+      marketSentiment: form.marketSentiment,
     };
 
     if (editTrade) updateTrade(trade);
