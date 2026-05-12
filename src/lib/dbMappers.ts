@@ -25,6 +25,7 @@ export function tradeToDb(t: Trade, userId: string) {
     day_tags: t.dayTags ? JSON.stringify(t.dayTags) : '[]',
     curve: (t as any).curve || null,
     trade_analysis: (t as any).tradeAnalysis ? JSON.stringify((t as any).tradeAnalysis) : null,
+    market_sentiment: (t as any).marketSentiment ?? null,
   };
 }
 
@@ -58,6 +59,7 @@ export function dbToTrade(row: any): Trade {
     dayTags: row.day_tags ? (typeof row.day_tags === 'string' ? JSON.parse(row.day_tags) : row.day_tags) : [],
     curve: row.curve || undefined,
     tradeAnalysis: row.trade_analysis ? (typeof row.trade_analysis === 'string' ? JSON.parse(row.trade_analysis) : row.trade_analysis) : undefined,
+    marketSentiment: row.market_sentiment != null ? Number(row.market_sentiment) : undefined,
   } as Trade;
 }
 

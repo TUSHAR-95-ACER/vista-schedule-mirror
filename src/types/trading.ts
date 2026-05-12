@@ -127,6 +127,8 @@ export interface Trade {
   curve?: 'Right' | 'Left' | 'Centre';
   /** Notion-style trade thesis block (text + media). Replaces Technical Points UI. */
   tradeAnalysis?: { text: string; media: Array<{ id: string; type: 'image' | 'video'; url: string; path?: string; name?: string; legacy?: boolean }> };
+  /** Crowd sentiment for the trade's pair: long % 0-100 (short % = 100 - this). */
+  marketSentiment?: number;
 }
 
 export interface TradeJourneyStep {
