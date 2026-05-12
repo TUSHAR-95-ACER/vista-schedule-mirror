@@ -212,6 +212,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         dayTagInput: '',
         curve: (editTrade as any).curve || '',
         tradeAnalysis: editTrade.tradeAnalysis,
+        marketSentiment: editTrade.marketSentiment,
       });
     } else {
       setForm(defaultForm);
