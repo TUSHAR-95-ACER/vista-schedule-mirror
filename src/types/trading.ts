@@ -261,6 +261,8 @@ export interface DailyPairPlan {
   resultChartImage?: string;
   resultNarrative?: string;
   note?: string;
+  /** Crowd sentiment slider: long % 0-100 (short % = 100 - this). */
+  marketSentiment?: number;
 }
 
 export interface DailyPlan {
