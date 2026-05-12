@@ -17,6 +17,7 @@ import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/p
 import { PlanListItem } from '@/components/plans/PlanListItem';
 import { toast } from '@/hooks/use-toast';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { adaptDailyPlan } from '@/lib/aiInsightAdapters';
 
 const emptyPairPlan = (): DailyPairPlan => ({
