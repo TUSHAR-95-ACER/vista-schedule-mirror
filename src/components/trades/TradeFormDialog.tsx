@@ -4,6 +4,7 @@ import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
 import { AutoExpandTextarea } from '@/components/shared/AutoExpandTextarea';
+import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -143,6 +144,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     dayTagInput: '',
     curve: '' as 'Right' | 'Left' | 'Centre' | '',
     tradeAnalysis: undefined as Trade['tradeAnalysis'] | undefined,
+    marketSentiment: undefined as number | undefined,
   };
 
   const [form, setForm] = useState(defaultForm);
