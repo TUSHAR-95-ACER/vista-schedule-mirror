@@ -247,7 +247,7 @@ serve(async (req) => {
     // Use service role to fetch all user data (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { messages } = await req.json();
+    const { messages, attachments } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
