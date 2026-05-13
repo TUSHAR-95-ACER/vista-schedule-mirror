@@ -62,28 +62,48 @@ export default function AICoach() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [autoChartHint, setAutoChartHint] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const CHART_RX = /\b(chart|image|picture|screenshot|setup|trade pic|see (my|this)|review (this|my)|what do you see|analy[sz]e\s+(my|this|the)?\s*(latest|last|recent)?\s*(trade|chart|setup|image|screenshot)?)\b/i;
+
+  const filesToDataUrls = async (files: FileList | File[]): Promise<string[]> => {
+    const arr = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, 3);
+    return Promise.all(arr.map(f => new Promise<string>((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result as string);
+      r.onerror = rej;
+      r.readAsDataURL(f);
+    })));
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || chatLoading) return;
-    const userMsg: Msg = { role: 'user', content: text };
+    if ((!text && pendingImages.length === 0) || chatLoading) return;
+    const userMsg: Msg = { role: 'user', content: text || 'Analyze this chart.' };
+    const sentImages = pendingImages;
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setPendingImages([]);
     setChatLoading(true);
+    const triggered = sentImages.length === 0 && CHART_RX.test(text);
+    setAutoChartHint(triggered);
     let acc = '';
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      if (!token) { toast.error('Please log in'); setChatLoading(false); return; }
+      if (!token) { toast.error('Please log in'); setChatLoading(false); setAutoChartHint(false); return; }
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ messages: [...messages, userMsg] }),
+        body: JSON.stringify({ messages: [...messages, userMsg], attachments: sentImages }),
       });
       if (!resp.ok || !resp.body) {
         let msg = `Chat failed (${resp.status})`;
         try { const j = await resp.json(); if (j?.error) msg = j.error; } catch {}
         toast.error(msg);
-        setChatLoading(false);
+        setChatLoading(false); setAutoChartHint(false);
         return;
       }
       const reader = resp.body.getReader();
@@ -114,6 +134,7 @@ export default function AICoach() {
       }
     } catch (e) { console.error(e); toast.error('Chat error'); }
     setChatLoading(false);
+    setAutoChartHint(false);
   };
 
   return (
