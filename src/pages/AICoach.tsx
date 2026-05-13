@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Bot, User, Sparkles, Activity, TrendingUp, AlertTriangle, Target, Brain, Shield, Compass, RefreshCw, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Activity, TrendingUp, AlertTriangle, Target, Brain, Shield, Compass, RefreshCw, Loader2, ImageIcon, Paperclip, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
