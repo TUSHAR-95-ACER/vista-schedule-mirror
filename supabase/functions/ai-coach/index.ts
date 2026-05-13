@@ -247,7 +247,7 @@ serve(async (req) => {
     // Use service role to fetch all user data (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { messages } = await req.json();
+    const { messages, attachments } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -268,7 +268,53 @@ serve(async (req) => {
     const userData = await fetchAllUserData(supabase, userId);
     const dataContext = buildReadableContext(userData);
 
-    const systemPrompt = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. You are reviewing a trader's complete journal in human-readable form below.
+    // ===== Multimodal: auto-fetch latest chart if user references one =====
+    const lastUserMsg = [...safeMessages].reverse().find((m: any) => m.role === "user");
+    const lastText = (lastUserMsg?.content || "").toLowerCase();
+    const CHART_TRIGGERS = /\b(chart|image|images|picture|pictures|screenshot|setup|trade pic|see (my|this)|review (this|my)|what do you see|analy[sz]e (my|this|the) (latest|last|recent)?\s*(trade|chart|setup|image|screenshot)?)\b/;
+    const wantsChart = CHART_TRIGGERS.test(lastText);
+
+    type AttachedImage = { url: string; label: string; trade?: any };
+    const images: AttachedImage[] = [];
+
+    // 1. Client-attached images (paste / upload) take priority
+    if (Array.isArray(attachments)) {
+      for (const a of attachments.slice(0, 3)) {
+        if (typeof a === "string" && a.startsWith("data:image/")) {
+          images.push({ url: a, label: "User-attached image" });
+        } else if (a && typeof a.url === "string") {
+          images.push({ url: a.url, label: a.label || "User-attached image" });
+        }
+      }
+    }
+
+    // 2. Auto-fetch latest journal chart if user asked about a chart and didn't attach one
+    let autoFetchedTrade: any = null;
+    if (wantsChart && images.length === 0) {
+      const { data: latestTrade } = await supabase
+        .from("trades")
+        .select("*")
+        .eq("user_id", userId)
+        .or("execution_image.not.is.null,prediction_image.not.is.null")
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestTrade) {
+        autoFetchedTrade = latestTrade;
+        const img = latestTrade.execution_image || latestTrade.prediction_image;
+        if (img) {
+          const which = latestTrade.execution_image ? "execution chart" : "prediction chart";
+          const label = `${latestTrade.asset} • ${formatDate(latestTrade.date)} • ${which}`;
+          images.push({ url: img, label, trade: latestTrade });
+        }
+      }
+    }
+
+    const hasImages = images.length > 0;
+    const useVision = hasImages;
+
+    let systemPrompt = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. You are reviewing a trader's complete journal in human-readable form below.
 
 JOURNAL DATA:
 ${dataContext}
@@ -293,6 +339,54 @@ FORMAT:
 - For trading questions, respond in flowing paragraphs (not bullet dashboards). Use markdown lightly — bold for key observations, occasional lists when truly clarifying.
 - For general questions, answer naturally and concisely.`;
 
+    if (useVision) {
+      const tradeCtx = autoFetchedTrade ? `
+
+CHART CONTEXT (auto-loaded from journal):
+- Pair: ${autoFetchedTrade.asset}
+- Date: ${formatDate(autoFetchedTrade.date)}
+- Direction: ${autoFetchedTrade.direction}
+- Bias: ${autoFetchedTrade.market_condition || "n/a"} | Trend: ${autoFetchedTrade.trend || "n/a"}
+- Session: ${autoFetchedTrade.session || "n/a"} | Timeframe: ${autoFetchedTrade.timeframe || "n/a"}
+- Setup: ${autoFetchedTrade.setup || "n/a"} | Grade: ${autoFetchedTrade.grade || "n/a"}
+- Result: ${autoFetchedTrade.result} | Planned RR: ${autoFetchedTrade.planned_rr} | Actual RR: ${autoFetchedTrade.actual_rr}
+- Notes: ${(autoFetchedTrade.notes || "").slice(0, 600)}` : "";
+
+      systemPrompt += `
+
+VISION MODE (Gemini Vision):
+You are now looking at the trader's actual chart screenshot${images.length > 1 ? "s" : ""}: ${images.map(i => i.label).join(" | ")}.${tradeCtx}
+
+Analyze the chart visually and combine it with the journal context above. Use institutional / Smart Money Concepts language where it fits the chart:
+- Market structure (BOS, CHoCH, internal vs swing)
+- Liquidity (buy-side / sell-side, equal highs/lows, runs, sweeps)
+- PO3 (accumulation → manipulation → distribution)
+- Inducement, OB / breaker / mitigation blocks, FVG / imbalance
+- SMT divergence, session timing (Asia / London / NY KZ)
+- Execution quality vs the plan, emotional execution, risk-model adherence
+
+Speak as an institutional mentor reviewing the trader's screenshot in real time. Reference specifically what you see (wicks, sweeps, candle behavior, where price reacted) and tie it back to their journaled bias / setup / outcome. Do not just describe — coach.`;
+    }
+
+    // Build the final messages array (multimodal-aware)
+    const finalMessages: any[] = [
+      { role: "system", content: systemPrompt },
+      ...safeMessages.slice(0, -1),
+    ];
+    if (lastUserMsg) {
+      if (hasImages) {
+        finalMessages.push({
+          role: "user",
+          content: [
+            { type: "text", text: lastUserMsg.content || "Analyze this chart." },
+            ...images.map(img => ({ type: "image_url", image_url: { url: img.url } })),
+          ],
+        });
+      } else {
+        finalMessages.push(lastUserMsg);
+      }
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -300,11 +394,8 @@ FORMAT:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...safeMessages,
-        ],
+        model: useVision ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+        messages: finalMessages,
         stream: true,
       }),
     });

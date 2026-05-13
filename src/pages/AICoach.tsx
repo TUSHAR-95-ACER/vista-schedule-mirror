@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Bot, User, Sparkles, Activity, TrendingUp, AlertTriangle, Target, Brain, Shield, Compass, RefreshCw, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Activity, TrendingUp, AlertTriangle, Target, Brain, Shield, Compass, RefreshCw, Loader2, ImageIcon, Paperclip, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -62,28 +62,48 @@ export default function AICoach() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [autoChartHint, setAutoChartHint] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const CHART_RX = /\b(chart|image|picture|screenshot|setup|trade pic|see (my|this)|review (this|my)|what do you see|analy[sz]e\s+(my|this|the)?\s*(latest|last|recent)?\s*(trade|chart|setup|image|screenshot)?)\b/i;
+
+  const filesToDataUrls = async (files: FileList | File[]): Promise<string[]> => {
+    const arr = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, 3);
+    return Promise.all(arr.map(f => new Promise<string>((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result as string);
+      r.onerror = rej;
+      r.readAsDataURL(f);
+    })));
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || chatLoading) return;
-    const userMsg: Msg = { role: 'user', content: text };
+    if ((!text && pendingImages.length === 0) || chatLoading) return;
+    const userMsg: Msg = { role: 'user', content: text || 'Analyze this chart.' };
+    const sentImages = pendingImages;
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setPendingImages([]);
     setChatLoading(true);
+    const triggered = sentImages.length === 0 && CHART_RX.test(text);
+    setAutoChartHint(triggered);
     let acc = '';
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      if (!token) { toast.error('Please log in'); setChatLoading(false); return; }
+      if (!token) { toast.error('Please log in'); setChatLoading(false); setAutoChartHint(false); return; }
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ messages: [...messages, userMsg] }),
+        body: JSON.stringify({ messages: [...messages, userMsg], attachments: sentImages }),
       });
       if (!resp.ok || !resp.body) {
         let msg = `Chat failed (${resp.status})`;
         try { const j = await resp.json(); if (j?.error) msg = j.error; } catch {}
         toast.error(msg);
-        setChatLoading(false);
+        setChatLoading(false); setAutoChartHint(false);
         return;
       }
       const reader = resp.body.getReader();
@@ -114,6 +134,7 @@ export default function AICoach() {
       }
     } catch (e) { console.error(e); toast.error('Chat error'); }
     setChatLoading(false);
+    setAutoChartHint(false);
   };
 
   return (
@@ -232,18 +253,79 @@ export default function AICoach() {
                 </div>
               ))
             )}
+            {chatLoading && autoChartHint && (
+              <div className="flex items-center gap-2 text-xs text-primary px-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <ImageIcon className="h-3.5 w-3.5" />
+                Analyzing your latest uploaded chart with Gemini Vision…
+              </div>
+            )}
+            {chatLoading && !autoChartHint && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…
+              </div>
+            )}
           </div>
+          {pendingImages.length > 0 && (
+            <div className="border-t border-border px-3 pt-3 flex gap-2 flex-wrap">
+              {pendingImages.map((src, i) => (
+                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border">
+                  <img src={src} alt="attachment" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setPendingImages(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute top-0 right-0 bg-background/80 rounded-bl-md p-0.5 hover:bg-background"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="border-t border-border p-3 flex gap-2 items-end">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={async (e) => {
+                if (e.target.files) {
+                  const urls = await filesToDataUrls(e.target.files);
+                  setPendingImages(prev => [...prev, ...urls].slice(0, 3));
+                  e.target.value = '';
+                }
+              }}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="rounded-lg h-10 w-10 shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={chatLoading}
+              title="Attach chart image"
+            >
+              <Paperclip className="w-4 h-4" />
+            </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onPaste={async (e) => {
+                const items = Array.from(e.clipboardData?.items || []);
+                const files = items.map(i => i.getAsFile()).filter((f): f is File => !!f && f.type.startsWith('image/'));
+                if (files.length) {
+                  e.preventDefault();
+                  const urls = await filesToDataUrls(files);
+                  setPendingImages(prev => [...prev, ...urls].slice(0, 3));
+                }
+              }}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-              placeholder="Ask deeper about your trading data..."
+              placeholder="Ask deeper, or paste/attach a chart…"
               className="resize-none min-h-[40px] max-h-[120px] rounded-lg text-sm"
               rows={1}
               disabled={chatLoading}
             />
-            <Button onClick={sendMessage} disabled={!input.trim() || chatLoading} size="icon" className="rounded-lg h-10 w-10 shrink-0">
+            <Button onClick={sendMessage} disabled={(!input.trim() && pendingImages.length === 0) || chatLoading} size="icon" className="rounded-lg h-10 w-10 shrink-0">
               <Send className="w-4 h-4" />
             </Button>
           </div>
