@@ -77,6 +77,171 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_analyses: {
+        Row: {
+          actual_outcome: string | null
+          analysis_date: string
+          confidence_level: string | null
+          conflict_signals: Json | null
+          created_at: string
+          dovish_probability: number | null
+          environment: string | null
+          expectation_pricing: string | null
+          fed_bias: string | null
+          fed_confidence: number | null
+          fed_cycle: string | null
+          future_probabilities: Json | null
+          gold_bias: string | null
+          gold_confidence: number | null
+          hawkish_probability: number | null
+          id: string
+          inflation_pressure: string | null
+          interpretation: string | null
+          macro_theme: string | null
+          market_focus: string | null
+          narrative: string | null
+          narrative_shift: string | null
+          outcome_accurate: boolean | null
+          positioning_risk: string | null
+          predicted_outcome: string | null
+          rate_cut_probability: number | null
+          rate_hike_probability: number | null
+          recession_risk: number | null
+          smart_money_view: string | null
+          source_event_ids: Json | null
+          trade_filter: string | null
+          updated_at: string
+          usd_bias: string | null
+          usd_confidence: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_outcome?: string | null
+          analysis_date?: string
+          confidence_level?: string | null
+          conflict_signals?: Json | null
+          created_at?: string
+          dovish_probability?: number | null
+          environment?: string | null
+          expectation_pricing?: string | null
+          fed_bias?: string | null
+          fed_confidence?: number | null
+          fed_cycle?: string | null
+          future_probabilities?: Json | null
+          gold_bias?: string | null
+          gold_confidence?: number | null
+          hawkish_probability?: number | null
+          id?: string
+          inflation_pressure?: string | null
+          interpretation?: string | null
+          macro_theme?: string | null
+          market_focus?: string | null
+          narrative?: string | null
+          narrative_shift?: string | null
+          outcome_accurate?: boolean | null
+          positioning_risk?: string | null
+          predicted_outcome?: string | null
+          rate_cut_probability?: number | null
+          rate_hike_probability?: number | null
+          recession_risk?: number | null
+          smart_money_view?: string | null
+          source_event_ids?: Json | null
+          trade_filter?: string | null
+          updated_at?: string
+          usd_bias?: string | null
+          usd_confidence?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_outcome?: string | null
+          analysis_date?: string
+          confidence_level?: string | null
+          conflict_signals?: Json | null
+          created_at?: string
+          dovish_probability?: number | null
+          environment?: string | null
+          expectation_pricing?: string | null
+          fed_bias?: string | null
+          fed_confidence?: number | null
+          fed_cycle?: string | null
+          future_probabilities?: Json | null
+          gold_bias?: string | null
+          gold_confidence?: number | null
+          hawkish_probability?: number | null
+          id?: string
+          inflation_pressure?: string | null
+          interpretation?: string | null
+          macro_theme?: string | null
+          market_focus?: string | null
+          narrative?: string | null
+          narrative_shift?: string | null
+          outcome_accurate?: boolean | null
+          positioning_risk?: string | null
+          predicted_outcome?: string | null
+          rate_cut_probability?: number | null
+          rate_hike_probability?: number | null
+          recession_risk?: number | null
+          smart_money_view?: string | null
+          source_event_ids?: Json | null
+          trade_filter?: string | null
+          updated_at?: string
+          usd_bias?: string | null
+          usd_confidence?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      macro_events: {
+        Row: {
+          actual: number | null
+          created_at: string
+          event: string
+          forecast: number | null
+          id: string
+          impact: string | null
+          notes: string | null
+          previous: number | null
+          release_date: string
+          surprise: string | null
+          trend: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual?: number | null
+          created_at?: string
+          event: string
+          forecast?: number | null
+          id?: string
+          impact?: string | null
+          notes?: string | null
+          previous?: number | null
+          release_date?: string
+          surprise?: string | null
+          trend?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual?: number | null
+          created_at?: string
+          event?: string
+          forecast?: number | null
+          id?: string
+          impact?: string | null
+          notes?: string | null
+          previous?: number | null
+          release_date?: string
+          surprise?: string | null
+          trend?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
