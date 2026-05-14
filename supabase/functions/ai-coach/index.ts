@@ -277,13 +277,45 @@ serve(async (req) => {
     type AttachedImage = { url: string; label: string; trade?: any };
     const images: AttachedImage[] = [];
 
+    // Size limits to prevent payload abuse / credit drain
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB per image
+    const MAX_TOTAL_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB combined
+    const MAX_REMOTE_URL_LEN = 2048;
+    let totalImageBytes = 0;
+
     // 1. Client-attached images (paste / upload) take priority
     if (Array.isArray(attachments)) {
       for (const a of attachments.slice(0, 3)) {
         if (typeof a === "string" && a.startsWith("data:image/")) {
+          const commaIdx = a.indexOf(",");
+          if (commaIdx === -1) continue;
+          const b64Len = a.length - commaIdx - 1;
+          const approxBytes = Math.floor(b64Len * 0.75);
+          if (approxBytes > MAX_IMAGE_BYTES) {
+            console.warn("ai-coach: skipping oversized image attachment", approxBytes);
+            continue;
+          }
+          if (totalImageBytes + approxBytes > MAX_TOTAL_IMAGE_BYTES) {
+            console.warn("ai-coach: total image payload cap reached");
+            break;
+          }
+          totalImageBytes += approxBytes;
           images.push({ url: a, label: "User-attached image" });
         } else if (a && typeof a.url === "string") {
-          images.push({ url: a.url, label: a.label || "User-attached image" });
+          const url = a.url;
+          if (url.startsWith("data:image/")) {
+            const commaIdx = url.indexOf(",");
+            if (commaIdx === -1) continue;
+            const approxBytes = Math.floor((url.length - commaIdx - 1) * 0.75);
+            if (approxBytes > MAX_IMAGE_BYTES) continue;
+            if (totalImageBytes + approxBytes > MAX_TOTAL_IMAGE_BYTES) break;
+            totalImageBytes += approxBytes;
+          } else if (/^https?:\/\//i.test(url) && url.length <= MAX_REMOTE_URL_LEN) {
+            // allow remote https URLs
+          } else {
+            continue;
+          }
+          images.push({ url, label: typeof a.label === "string" ? a.label.slice(0, 200) : "User-attached image" });
         }
       }
     }
