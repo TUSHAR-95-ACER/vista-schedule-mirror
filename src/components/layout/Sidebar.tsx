@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   ChevronLeft, ChevronRight, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar, Activity, MessageCircle } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, CheckSquare, LogOut, Settings, Calendar, Activity, MessageCircle, Compass } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
@@ -46,6 +46,7 @@ const sections: NavSection[] = [
       { path: '/research-lab', label: 'Research Lab', icon: Beaker },
       { path: '/backtesting-lab', label: 'Backtest Lab', icon: FlaskConical },
       { path: '/ai-coach', label: 'AI Coach', icon: MessageCircle },
+      { path: '/macro-intelligence', label: 'Macro Intelligence', icon: Compass },
     ],
   },
   {

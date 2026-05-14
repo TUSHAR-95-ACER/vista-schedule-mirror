@@ -36,6 +36,7 @@ const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
+const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/settings" element={<Suspense fallback={<RouteFallback />}><Settings /></Suspense>} />
               <Route path="/system-analytics" element={<Suspense fallback={<RouteFallback />}><SystemAnalytics /></Suspense>} />
               <Route path="/macro-news" element={<Navigate to="/" replace />} />
+              <Route path="/macro-intelligence" element={<Suspense fallback={<RouteFallback />}><MacroIntelligence /></Suspense>} />
               <Route path="/ai-coach" element={<Suspense fallback={<RouteFallback />}><AICoach /></Suspense>} />
             </Route>
             <Route path="*" element={<Suspense fallback={<RouteFallback />}><NotFound /></Suspense>} />
