@@ -245,6 +245,10 @@
   html[data-journal-font="jetbrains"] { --journal-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
   html[data-journal-font="ibm"]       { --journal-font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
   html[data-journal-font="space"]     { --journal-font: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="fira"]      { --journal-font: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="roboto"]    { --journal-font: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="source"]    { --journal-font: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  html[data-journal-font="geist"]     { --journal-font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
 
   /* Apply selected font globally across sidebar + main + dialogs. */
   html[data-journal-font] body,
