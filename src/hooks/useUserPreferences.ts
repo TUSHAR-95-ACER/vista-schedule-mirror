@@ -38,7 +38,7 @@ export interface UserPreferences {
   layoutDensity?: string;
   chartTheme?: string;
   sidebarCollapsed?: boolean;
-  journalFont?: 'notion' | 'jetbrains' | 'ibm' | 'space';
+  journalFont?: 'notion' | 'jetbrains' | 'ibm' | 'space' | 'fira' | 'roboto' | 'source' | 'geist';
   // Notifications
   dailyPlanReminder?: boolean;
   weeklyReviewReminder?: boolean;

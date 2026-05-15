@@ -10,32 +10,88 @@ const TOOL = {
   type: "function",
   function: {
     name: "emit_macro_intelligence",
-    description: "Return a structured institutional macro intelligence snapshot.",
+    description: "Return a structured institutional macro intelligence snapshot in SIMPLE language.",
     parameters: {
       type: "object",
       properties: {
-        macro_theme: { type: "string", description: "e.g. Inflation Cooling, Growth Slowdown" },
-        fed_cycle: { type: "string", description: "Hike Cycle, Pause Cycle, Cut Cycle, Late Cycle, etc." },
-        environment: { type: "string", description: "Risk-On, Risk-Off, Soft Landing, Stagflation, Recessionary, Late Cycle, Liquidity Stress, Inflationary" },
-        narrative: { type: "string", description: "Current dominant institutional narrative, 1-2 sentences." },
-        narrative_shift: { type: "string", description: "What changed vs prior snapshot. Empty string if first analysis." },
-        interpretation: { type: "string", description: "Mentor-style paragraph: what happened, why it matters, fed implication, what may happen next. Probability language only." },
+        // PRIMARY LAYER
+        dominant_narrative: { type: "string", description: "ONE sentence: the dominant market story right now. Plain English." },
+        narrative_drivers: {
+          type: "array",
+          description: "3-5 short bullet drivers (max 6 words each).",
+          items: { type: "string" },
+        },
+        macro_theme: { type: "string", description: "Short label e.g. Inflation Cooling, Growth Slowdown" },
+        fed_cycle: { type: "string" },
+        environment: { type: "string", enum: ["Risk-On", "Risk-Off", "Soft Landing", "Stagflation", "Recessionary", "Late Cycle", "Liquidity Stress", "Inflationary"] },
+        market_focus: { type: "string", description: "What markets currently focus on most. Short label." },
+        market_focus_explanation: { type: "string", description: "1-2 SHORT sentences explaining the focus." },
+
+        // CURRENT STORY
+        current_story: {
+          type: "array",
+          description: "4-6 SHORT bullets describing what's happening right now. Max 10 words each. Plain English.",
+          items: { type: "string" },
+        },
+
+        // FORWARD EXPECTATION ENGINE
+        next_event: { type: "string", description: "Most important upcoming data markets are waiting on (e.g. CPI, NFP, FOMC)." },
+        forward_expectation: {
+          type: "object",
+          properties: {
+            if_high: {
+              type: "object",
+              properties: {
+                probability: { type: "number" },
+                outcomes: { type: "array", items: { type: "string" }, description: "3-4 short outcome bullets." },
+              },
+              required: ["probability", "outcomes"],
+              additionalProperties: false,
+            },
+            if_low: {
+              type: "object",
+              properties: {
+                probability: { type: "number" },
+                outcomes: { type: "array", items: { type: "string" } },
+              },
+              required: ["probability", "outcomes"],
+              additionalProperties: false,
+            },
+          },
+          required: ["if_high", "if_low"],
+          additionalProperties: false,
+        },
+
+        // BIASES
         fed_bias: { type: "string", enum: ["Hawkish", "Dovish", "Neutral", "Lean Hawkish", "Lean Dovish"] },
         usd_bias: { type: "string", enum: ["Bullish", "Bearish", "Neutral", "Lean Bullish", "Lean Bearish"] },
         gold_bias: { type: "string", enum: ["Bullish", "Bearish", "Neutral", "Lean Bullish", "Lean Bearish"] },
-        fed_confidence: { type: "number", description: "0-100" },
-        usd_confidence: { type: "number", description: "0-100" },
-        gold_confidence: { type: "number", description: "0-100" },
+        fed_confidence: { type: "number" },
+        usd_confidence: { type: "number" },
+        gold_confidence: { type: "number" },
+
+        // SPECTRUMS
         hawkish_probability: { type: "number" },
         dovish_probability: { type: "number" },
         rate_cut_probability: { type: "number" },
         rate_hike_probability: { type: "number" },
         recession_risk: { type: "number" },
-        inflation_pressure: { type: "string", enum: ["Low", "Medium", "High", "Very High", "Cooling"] },
-        market_focus: { type: "string", description: "What macro factor markets currently prioritize most." },
-        smart_money_view: { type: "string", description: "Institutional interpretation paragraph." },
-        expectation_pricing: { type: "string", description: "How much was already priced in; asymmetric reaction commentary." },
-        positioning_risk: { type: "string", description: "Crowded long/short USD or Gold, squeeze risk, etc." },
+        inflation_pressure: { type: "string", enum: ["Low Inflation", "Neutral Inflation", "High Inflation"] },
+
+        // SECONDARY LAYER
+        interpretation: { type: "string", description: "2-3 short paragraphs. Simple words. Mentor tone." },
+        smart_money_view: { type: "string", description: "1-2 SHORT sentences. What institutions may focus on." },
+        expectation_pricing: { type: "string", description: "1-2 SHORT sentences about what is already priced in." },
+        positioning_risk: { type: "string", description: "1-2 SHORT sentences." },
+        coaching: {
+          type: "array",
+          description: "2-4 mentor cautions. Each 1 short sentence.",
+          items: { type: "string" },
+        },
+        narrative_shift: { type: "string", description: "What changed vs prior cycles. Empty if first analysis." },
+        historical_context: { type: "string", description: "1-2 sentences on how current cycle compares to prior cycles." },
+
+        // CONFLICTS
         conflict_signals: {
           type: "array",
           items: {
@@ -49,46 +105,63 @@ const TOOL = {
             additionalProperties: false,
           },
         },
+
+        // FUTURE PROBABILITIES
         future_probabilities: {
           type: "array",
-          description: "Forward-looking probabilistic outcomes.",
           items: {
             type: "object",
             properties: {
               outcome: { type: "string" },
               probability: { type: "number" },
-              rationale: { type: "string" },
+              rationale: { type: "string", description: "ONE short sentence." },
             },
             required: ["outcome", "probability", "rationale"],
             additionalProperties: false,
           },
         },
-        trade_filter: { type: "string", description: "Actionable macro environment summary for trading." },
+
+        trade_filter: { type: "string", description: "1 SHORT sentence on what trades fit current macro." },
         confidence_level: { type: "string", enum: ["Low", "Medium", "High"] },
+
         per_event_analysis: {
           type: "array",
-          description: "For each input event: surprise, trend, impact, brief reasoning.",
           items: {
             type: "object",
             properties: {
               event: { type: "string" },
-              surprise: { type: "string", enum: ["Bullish USD", "Bearish USD", "Neutral", "Hot Inflation", "Cooling Inflation"] },
+              surprise: { type: "string", enum: ["Bullish USD", "Bearish USD", "Neutral", "High Inflation", "Low Inflation"] },
               trend: { type: "string", enum: ["Improving", "Weakening", "Stable"] },
               impact: { type: "string", enum: ["Low", "Medium", "High", "Very High"] },
-              reasoning: { type: "string" },
+              reasoning: { type: "string", description: "ONE short sentence." },
             },
             required: ["event", "surprise", "trend", "impact", "reasoning"],
             additionalProperties: false,
           },
         },
+
+        // TIMELINE EVENT to append to cycle timeline
+        timeline_entry: {
+          type: "object",
+          properties: {
+            date: { type: "string" },
+            headline: { type: "string", description: "Short, e.g. 'NFP stronger than expected'." },
+          },
+          required: ["date", "headline"],
+          additionalProperties: false,
+        },
       },
       required: [
-        "macro_theme", "fed_cycle", "environment", "narrative", "interpretation",
+        "dominant_narrative", "narrative_drivers", "macro_theme", "fed_cycle", "environment",
+        "market_focus", "market_focus_explanation", "current_story",
+        "next_event", "forward_expectation",
         "fed_bias", "usd_bias", "gold_bias", "fed_confidence", "usd_confidence", "gold_confidence",
         "hawkish_probability", "dovish_probability", "rate_cut_probability", "rate_hike_probability",
-        "recession_risk", "inflation_pressure", "market_focus", "smart_money_view",
-        "expectation_pricing", "positioning_risk", "conflict_signals", "future_probabilities",
-        "trade_filter", "confidence_level", "per_event_analysis", "narrative_shift",
+        "recession_risk", "inflation_pressure",
+        "interpretation", "smart_money_view", "expectation_pricing", "positioning_risk",
+        "coaching", "narrative_shift", "historical_context",
+        "conflict_signals", "future_probabilities",
+        "trade_filter", "confidence_level", "per_event_analysis", "timeline_entry",
       ],
       additionalProperties: false,
     },
@@ -113,22 +186,23 @@ serve(async (req) => {
     const userId = claims.claims.sub;
     const supabase = createClient(supabaseUrl, supabaseService);
 
-    const { events = [], context = "" } = await req.json();
+    const { events = [], context = "", cycle_id = null } = await req.json();
     if (!Array.isArray(events) || events.length === 0) {
       return new Response(JSON.stringify({ error: "events array required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Pull last 3 prior analyses for narrative continuity
+    // Pull last 3 prior cycles' analyses for narrative continuity
     const { data: priorAnalyses } = await supabase
       .from("macro_analyses")
-      .select("analysis_date, macro_theme, fed_cycle, environment, narrative, fed_bias, usd_bias, gold_bias")
+      .select("analysis_date, macro_theme, fed_cycle, environment, narrative, fed_bias, usd_bias, gold_bias, cycle_id")
       .eq("user_id", userId)
       .order("analysis_date", { ascending: false })
-      .limit(3);
+      .limit(6);
 
     const today = new Date().toISOString().slice(0, 10);
     const eventsForAi = events.slice(0, 30).map((e: any) => ({
       event: String(e.event || "").slice(0, 80),
+      category: e.category || null,
       previous: e.previous,
       forecast: e.forecast,
       actual: e.actual,
@@ -137,30 +211,40 @@ serve(async (req) => {
       notes: String(e.notes || "").slice(0, 300),
     }));
 
-    const systemPrompt = `You are an institutional macro strategist for a hedge-fund-style trading terminal. Analyze the supplied US macro data points and emit a structured macro intelligence snapshot via the emit_macro_intelligence tool.
+    const systemPrompt = `You are an institutional macro mentor for a hedge-fund-style trading terminal. Analyze the supplied US macro data points and emit a structured snapshot via the emit_macro_intelligence tool.
 
-RULES:
-- Always speak in probability language ("may", "likely", "probability increasing", "markets may interpret"). Never use "will", "guaranteed", "certain".
-- Analyze BOTH Forecast vs Actual (surprise) AND Previous vs Actual (trend) — explain them separately in interpretation and per_event_analysis.reasoning.
-- Separate ECONOMIC interpretation from MARKET PRICING interpretation (expectation_pricing).
-- Detect macro conflicts (strong labor vs weak consumption, hot wages vs cooling CPI, etc.) and surface them in conflict_signals.
-- Reference prior snapshots to detect narrative shifts. If first run, narrative_shift = "".
+CRITICAL STYLE RULES:
+- Use SIMPLE English. Short sentences. Plain words. A beginner must understand instantly.
+- NO economist jargon. NO research-paper tone. NO long essays.
+- Probability language only: "may", "likely", "probability rising". Never "will", "guaranteed", "certain".
+- Keep every text field short. Bullets are 6-10 words max.
+- Replace "Hot Inflation" with "High Inflation". Replace "Cooling Inflation" with "Low Inflation".
+
+ANALYSIS RULES:
+- Surprise = Forecast vs Actual. Trend = Previous vs Actual. Address BOTH separately.
+- Separate ECONOMIC reading from MARKET PRICING reading (expectation_pricing).
+- Detect macro conflicts (strong jobs vs weak consumption etc.) — surface in conflict_signals.
+- Compare to prior cycles. If first analysis, narrative_shift = "" and historical_context = "".
+- forward_expectation: list what markets wait on next, with two outcome paths (if_high / if_low) and short bullet outcomes.
+- coaching[]: mentor cautions like "One CPI print does not change the trend".
+- timeline_entry: ONE short headline summarizing today's key release for cycle timeline.
+- per_event_analysis: include EVERY event provided.
 - Probabilities are 0-100 numbers. Confidences are 0-100.
-- Focus: USD, Gold (XAUUSD), Fed expectations, macro cycle.
-- Keep paragraphs concise, intelligent, institutional tone.`;
+- Focus: USD, Gold (XAUUSD), Fed expectations, macro cycle.`;
 
     const userMsg = `TODAY: ${today}
+CYCLE_ID: ${cycle_id || "(none — single snapshot mode)"}
 
 PRIOR SNAPSHOTS (most recent first, may be empty):
 ${JSON.stringify(priorAnalyses || [], null, 2)}
 
-INPUT EVENTS:
+INPUT EVENTS (this cycle):
 ${JSON.stringify(eventsForAi, null, 2)}
 
 ADDITIONAL CONTEXT:
 ${String(context || "").slice(0, 1500)}
 
-Emit the structured macro intelligence snapshot now.`;
+Emit the structured macro intelligence snapshot now. Use SIMPLE language.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -193,6 +277,9 @@ Emit the structured macro intelligence snapshot now.`;
     let parsed: any;
     try { parsed = JSON.parse(toolCall.function.arguments); }
     catch { return new Response(JSON.stringify({ error: "Malformed AI output" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+
+    // Map narrative for legacy 'narrative' field
+    parsed.narrative = parsed.dominant_narrative;
 
     return new Response(JSON.stringify({ analysis: parsed }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {

@@ -27,6 +27,7 @@ const sections: NavSection[] = [
   {
     title: 'PLANNING & REVIEW',
     items: [
+      { path: '/macro-intelligence', label: 'Macro Intelligence', icon: Compass },
       { path: '/weekly-plan', label: 'Weekly Plan', icon: ClipboardList },
       { path: '/daily-plan', label: 'Daily Plan', icon: FileText },
       { path: '/weekly-review', label: 'Weekly Review', icon: FileText },
@@ -46,7 +47,6 @@ const sections: NavSection[] = [
       { path: '/research-lab', label: 'Research Lab', icon: Beaker },
       { path: '/backtesting-lab', label: 'Backtest Lab', icon: FlaskConical },
       { path: '/ai-coach', label: 'AI Coach', icon: MessageCircle },
-      { path: '/macro-intelligence', label: 'Macro Intelligence', icon: Compass },
     ],
   },
   {

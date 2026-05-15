@@ -84,6 +84,7 @@ export type Database = {
           confidence_level: string | null
           conflict_signals: Json | null
           created_at: string
+          cycle_id: string | null
           dovish_probability: number | null
           environment: string | null
           expectation_pricing: string | null
@@ -102,6 +103,7 @@ export type Database = {
           narrative: string | null
           narrative_shift: string | null
           outcome_accurate: boolean | null
+          outcome_status: string | null
           positioning_risk: string | null
           predicted_outcome: string | null
           rate_cut_probability: number | null
@@ -121,6 +123,7 @@ export type Database = {
           confidence_level?: string | null
           conflict_signals?: Json | null
           created_at?: string
+          cycle_id?: string | null
           dovish_probability?: number | null
           environment?: string | null
           expectation_pricing?: string | null
@@ -139,6 +142,7 @@ export type Database = {
           narrative?: string | null
           narrative_shift?: string | null
           outcome_accurate?: boolean | null
+          outcome_status?: string | null
           positioning_risk?: string | null
           predicted_outcome?: string | null
           rate_cut_probability?: number | null
@@ -158,6 +162,7 @@ export type Database = {
           confidence_level?: string | null
           conflict_signals?: Json | null
           created_at?: string
+          cycle_id?: string | null
           dovish_probability?: number | null
           environment?: string | null
           expectation_pricing?: string | null
@@ -176,6 +181,7 @@ export type Database = {
           narrative?: string | null
           narrative_shift?: string | null
           outcome_accurate?: boolean | null
+          outcome_status?: string | null
           positioning_risk?: string | null
           predicted_outcome?: string | null
           rate_cut_probability?: number | null
@@ -191,10 +197,63 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_cycles: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          current_story: Json | null
+          cycle_month: string
+          dominant_narrative: string | null
+          forward_expectation: Json | null
+          id: string
+          label: string | null
+          market_focus: string | null
+          narrative_drivers: Json | null
+          status: string
+          timeline: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          current_story?: Json | null
+          cycle_month: string
+          dominant_narrative?: string | null
+          forward_expectation?: Json | null
+          id?: string
+          label?: string | null
+          market_focus?: string | null
+          narrative_drivers?: Json | null
+          status?: string
+          timeline?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          current_story?: Json | null
+          cycle_month?: string
+          dominant_narrative?: string | null
+          forward_expectation?: Json | null
+          id?: string
+          label?: string | null
+          market_focus?: string | null
+          narrative_drivers?: Json | null
+          status?: string
+          timeline?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       macro_events: {
         Row: {
           actual: number | null
+          category: string | null
           created_at: string
+          cycle_id: string | null
           event: string
           forecast: number | null
           id: string
@@ -210,7 +269,9 @@ export type Database = {
         }
         Insert: {
           actual?: number | null
+          category?: string | null
           created_at?: string
+          cycle_id?: string | null
           event: string
           forecast?: number | null
           id?: string
@@ -226,7 +287,9 @@ export type Database = {
         }
         Update: {
           actual?: number | null
+          category?: string | null
           created_at?: string
+          cycle_id?: string | null
           event?: string
           forecast?: number | null
           id?: string

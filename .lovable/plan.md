@@ -1,62 +1,57 @@
-Three coordinated passes. Each is independent so I can verify between them.
+# Macro Intelligence v2 — Monthly Cycle System
 
-## Pass 1 — Global Typography (Sora + Inter)
+This is a large multi-area request. Breaking it into 4 focused workstreams.
 
-**index.html**
-- Add `<link rel="preconnect">` for fonts.gstatic.com
-- Preload Sora (400/500/600/700) and Inter (400/500/600/700) from Google Fonts
+## 1. Sidebar reorder
+- Move **Macro Intelligence** above **Weekly Plan** and **Daily Plan** in `Sidebar.tsx`.
 
-**tailwind.config.ts**
-- `fontFamily.heading: ['Sora', ...sans]`
-- `fontFamily.sans: ['Inter', ...system]` (becomes the new body default)
-- Keep mono available but no longer the default
+## 2. Market Sentiment cleanup
+- Remove DXY from sentiment slider lists (DXY is an index, not a tradable pair) in `MarketSentimentSlider.tsx` consumers + `DailyPlan.tsx` / `TradeFormDialog.tsx` filter.
 
-**src/index.css**
-- Set `body { font-family: Inter, ... }`
-- Set `h1,h2,h3,h4,h5,h6,[data-heading] { font-family: Sora; font-weight: 600 }`
-- Tighten letter-spacing on display sizes; bump base line-height to 1.6 for body
-- Slightly larger sidebar label (`.sidebar-label { font-size: 0.875rem; font-weight: 500 }`)
-- Larger metric value class (`.metric-value { font-family: Sora; font-weight: 600; font-size: 1.875rem }`)
+## 3. Add 4 new fonts
+- Add 4 new monospace/display font presets selectable via `html[data-journal-font]` in `index.html` + journal font picker in Settings.
+- Suggest: JetBrains Mono, IBM Plex Mono, Geist Mono, Space Grotesk (or similar). Confirm with user later if needed but default add: `JetBrains Mono`, `IBM Plex Mono`, `Geist Mono`, `Space Grotesk`.
 
-**Sidebar / card headers**
-- Add `font-heading` class on `Sidebar.tsx` nav labels and `CardTitle` (shadcn) via globals — done with a CSS rule on `[data-slot="card-title"]` to avoid touching every component
+## 4. Macro Intelligence — full rebuild
 
-**Journal Font setting**
-- Keep the existing `data-journal-font` switcher but make Inter+Sora the default; the existing mono presets remain user-selectable
+### 4a. Database (migration)
+- New table `macro_cycles`:
+  - `id uuid pk`, `user_id uuid`, `cycle_month text` (e.g. `2026-05`), `label text`, `status text` (`active`|`archived`), `dominant_narrative text`, `narrative_drivers jsonb`, `current_story jsonb`, `forward_expectation jsonb`, `market_focus text`, `timeline jsonb`, `created_at`, `archived_at`.
+  - RLS: own-rows only.
+- Extend `macro_events`: add `cycle_id uuid`, `category text` (Inflation/Labor/Growth/Fed/Manufacturing).
+- Extend `macro_analyses`: add `cycle_id uuid`, `outcome_status text` (`worked`|`not_worked`|null) — replace boolean usage.
+- Unique `(user_id, cycle_id, analysis_date)` so re-saving updates rather than duplicates.
 
-## Pass 2 — AI Insights Rewrite (mentor voice)
+### 4b. Edge function `macro-intelligence` rewrite
+- Accept `cycle_id`, fetch all events for cycle + last 3 cycles' analyses for historical memory.
+- Tool schema additions: `dominant_narrative`, `narrative_drivers[]`, `current_story[]` (short bullets), `forward_expectation` `{if_high, if_low}`, `market_focus`, `coaching[]`, `historical_shift`.
+- New simple-language rules in system prompt: short sentences, swap "Hot/Cooling Inflation" → "High/Low/Neutral Inflation".
+- Upsert analysis (don't insert duplicates) — keyed on `(cycle_id, analysis_date)`.
 
-**supabase/functions/gemini-insights/index.ts**
-- Rewrite system prompt: "You are an elite institutional trading psychologist & prop-firm performance coach. Speak directly to the trader in second person. No labels like RISK/EDGE/LEAK. No bullet dashboards. Output 3–5 long-form paragraphs. Each paragraph: observation → behavioral cause → journal evidence (cite setups/sessions/RR/dates) → correction → future focus."
-- Switch model to `google/gemini-2.5-pro` via Lovable AI Gateway (no GEMINI_API_KEY dependency, more reliable for nuanced prose)
-- Use tool-calling for structured output: `{ insights: [{ title: string, body: string }] }` — titles must be sentence-form (e.g. "Your execution is better than your patience")
-- Pipe full journal context (existing aggregation already in the function)
+### 4c. UI rewrite (`MacroIntelligence.tsx`)
+- Cycle switcher header with **Start New Macro Cycle** button + confirm dialog.
+- Archived cycles read-only.
+- Layered hierarchy:
+  - **Primary:** Dominant Narrative hero + USD/Gold/Fed/Environment/Next-Focus chips.
+  - **Current Story:** simple bullets.
+  - **Forward Expectation Engine:** two outcome cards (If High / If Low) with arrows + probability bars.
+  - **Fed spectrum bars:** Dovish↔Hawkish, Cuts↔Hikes (replace probability rings).
+  - **Smart Money / Conflict / Pricing / Positioning:** compact cards.
+  - **Coaching layer:** mentor cautions.
+  - **Economic Table:** grouped collapsible by category, compact mode, dynamic add/remove.
+  - **Timeline:** vertical macro timeline of cycle events.
+  - **Prediction History:** compact list, `Worked` / `Not Worked` toggle (no Hit/Miss buttons).
+- Executive summary default; "Deep Dive" expandable for full reasoning.
+- Glassmorphism, dark, terminal aesthetic — keep existing tokens.
 
-**src/components/shared/AIInsightsPanel.tsx** (and consumers)
-- Replace small label-cards with paragraph blocks: title (Sora 600, lg) + body (Inter 400, prose-base, max-w-2xl, leading-relaxed)
-- Add smooth fade-in (`animate-in fade-in duration-500`)
-- Skeleton loader using new typography
+## Technical notes
+- All AI text constrained via tool schema with `maxLength` hints in prompt; system prompt enforces "simple language, short sentences".
+- Save Events upserts — uses `onConflict: 'cycle_id,analysis_date'` to prevent duplicates.
+- Outcome tracking via single `outcome_status` field with two-state toggle.
+- Cycle creation: archive current `active` row, insert new with status `active` for current `YYYY-MM`.
 
-## Pass 3 — Fix AI Coach "Chat failed"
+## Out of scope (will not touch)
+- AI Coach / AI Insights pages (already rebuilt earlier).
+- Trade/Plan flows beyond DXY removal.
 
-**Diagnose**
-- Check `supabase/functions/ai-coach/index.ts` — read current implementation, verify it uses LOVABLE_API_KEY (not raw GEMINI_API_KEY which can fail), verify response parsing, verify CORS, verify it consumes streaming response correctly
-- Check the frontend `pages/AICoach.tsx` for how it surfaces errors
-
-**Fix**
-- Migrate ai-coach to Lovable AI Gateway streaming pattern (SSE) using `LOVABLE_API_KEY`, model `google/gemini-2.5-flash` for speed
-- System prompt loads journal context (trades summary, recent psychology, plans, mistakes, notebook titles)
-- Surface real error text from edge function (`error.message`) instead of generic "Chat failed"
-- Handle 429/402 with friendly toasts
-- Frontend: token-by-token streaming, auto-scroll, typing indicator, markdown rendering via `react-markdown` (add if missing), retry button on failed message, persist messages to localStorage keyed by user_id
-
-**Verify**
-- Use `supabase--curl_edge_functions` to POST a sample message and confirm 200 + stream
-- Open browser preview, send a message, confirm streamed reply renders
-
-## Order of work
-1. Typography (touches CSS/html only — low risk, instantly visible)
-2. AI Coach fix (highest user pain — "Chat failed")
-3. AI Insights rewrite (largest prompt + UI surgery)
-
-I'll deliver pass 1 first, verify, then continue.
+After approval I will execute in this order: migration → edge function → fonts/sidebar/sentiment → MacroIntelligence UI.
