@@ -589,13 +589,15 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <FieldLabel>Market Sentiment {form.asset ? <span className="text-muted-foreground/60 normal-case ml-1">· {form.asset}</span> : null}</FieldLabel>
-                <MarketSentimentSlider
-                  value={form.marketSentiment}
-                  onChange={v => set('marketSentiment', v)}
-                />
-              </div>
+              {form.asset !== 'DXY' && (
+                <div className="space-y-1">
+                  <FieldLabel>Market Sentiment {form.asset ? <span className="text-muted-foreground/60 normal-case ml-1">· {form.asset}</span> : null}</FieldLabel>
+                  <MarketSentimentSlider
+                    value={form.marketSentiment}
+                    onChange={v => set('marketSentiment', v)}
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div className="space-y-1">
