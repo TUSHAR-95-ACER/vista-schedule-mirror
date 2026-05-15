@@ -385,10 +385,12 @@ export default function DailyPlanPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Sentiment</Label>
-                <MarketSentimentSlider value={pp.marketSentiment} onChange={v => updatePair(pp.id, { marketSentiment: v })} />
-              </div>
+              {pp.pair !== 'DXY' && (
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Sentiment</Label>
+                  <MarketSentimentSlider value={pp.marketSentiment} onChange={v => updatePair(pp.id, { marketSentiment: v })} />
+                </div>
+              )}
             </div>
           </SectionCard>
 
