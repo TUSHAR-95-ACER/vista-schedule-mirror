@@ -287,6 +287,10 @@ function UIPreferencesPanel({ prefs, update }: { prefs: any; update: (k: string,
               <SelectItem value="jetbrains"><span style={{ fontFamily: '"JetBrains Mono", monospace' }}>JetBrains Mono</span></SelectItem>
               <SelectItem value="ibm"><span style={{ fontFamily: '"IBM Plex Mono", monospace' }}>IBM Plex Mono</span></SelectItem>
               <SelectItem value="space"><span style={{ fontFamily: '"Space Mono", monospace' }}>Space Mono</span></SelectItem>
+              <SelectItem value="fira"><span style={{ fontFamily: '"Fira Code", monospace' }}>Fira Code</span></SelectItem>
+              <SelectItem value="roboto"><span style={{ fontFamily: '"Roboto Mono", monospace' }}>Roboto Mono</span></SelectItem>
+              <SelectItem value="source"><span style={{ fontFamily: '"Source Code Pro", monospace' }}>Source Code Pro</span></SelectItem>
+              <SelectItem value="geist"><span style={{ fontFamily: '"Geist Mono", monospace' }}>Geist Mono</span></SelectItem>
             </SelectContent>
           </Select>
         </SettingRow>
