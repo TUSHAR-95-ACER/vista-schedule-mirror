@@ -232,13 +232,13 @@ function MiniBlock({ label, value, icon }: { label: string; value?: string; icon
 function NumInput({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
   return (
     <Input
-      type="number" step="any"
+      type="number" step="any" inputMode="decimal"
       value={value ?? ""}
       onChange={e => {
         const v = e.target.value;
         onChange(v === "" ? null : Number(v));
       }}
-      className="h-8 bg-transparent border-border/40 text-sm"
+      className="h-8 w-full min-w-[68px] bg-transparent border-border/40 text-sm px-2 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
     />
   );
 }
@@ -806,9 +806,9 @@ export default function MacroIntelligence() {
                         <thead>
                           <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
                             <th className="text-left font-medium px-2 py-1.5">Event</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Prev</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Fcst</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Actual</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
                             <th className="text-left font-medium px-2 py-1.5 w-32">Surprise</th>
                             <th className="text-left font-medium px-2 py-1.5 w-24">Trend</th>
                             <th className="text-left font-medium px-2 py-1.5 w-20">Impact</th>
