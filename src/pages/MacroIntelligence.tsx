@@ -232,13 +232,13 @@ function MiniBlock({ label, value, icon }: { label: string; value?: string; icon
 function NumInput({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
   return (
     <Input
-      type="number" step="any"
+      type="number" step="any" inputMode="decimal"
       value={value ?? ""}
       onChange={e => {
         const v = e.target.value;
         onChange(v === "" ? null : Number(v));
       }}
-      className="h-8 bg-transparent border-border/40 text-sm"
+      className="h-8 w-full min-w-[68px] bg-transparent border-border/40 text-sm px-2 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
     />
   );
 }
