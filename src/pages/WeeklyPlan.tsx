@@ -398,11 +398,11 @@ export default function WeeklyPlanPage() {
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
 
-      {/* Sticky Save */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-background/80 backdrop-blur-lg border-t border-border/50">
-        <div className="max-w-[900px] mx-auto">
-          <Button onClick={handleSave} className="w-full h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wider shadow-lg gap-2">
-            <Save className="h-4 w-4" /> Save Weekly Plan
+      {/* Sticky Save — compact */}
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Button onClick={handleSave} size="sm" className="h-9 px-4 rounded-full font-heading font-semibold text-xs uppercase tracking-wider shadow-lg gap-1.5 bg-primary/95 backdrop-blur">
+            <Save className="h-3.5 w-3.5" /> Save Weekly Plan
           </Button>
         </div>
       </div>
