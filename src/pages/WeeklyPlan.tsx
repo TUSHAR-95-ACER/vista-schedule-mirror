@@ -207,7 +207,7 @@ export default function WeeklyPlanPage() {
           />
         ) : (
           <div className="grid gap-2">
-            {[...weeklyPlans].reverse().map(plan => (
+            {[...weeklyPlans].sort((a, b) => (b.weekStart || '').localeCompare(a.weekStart || '')).map(plan => (
               <PlanListItem
                 key={plan.id}
                 onClick={() => openPlan(plan.id)}
