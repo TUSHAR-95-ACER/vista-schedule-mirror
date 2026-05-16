@@ -806,9 +806,9 @@ export default function MacroIntelligence() {
                         <thead>
                           <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
                             <th className="text-left font-medium px-2 py-1.5">Event</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Prev</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Fcst</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Actual</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
                             <th className="text-left font-medium px-2 py-1.5 w-32">Surprise</th>
                             <th className="text-left font-medium px-2 py-1.5 w-24">Trend</th>
                             <th className="text-left font-medium px-2 py-1.5 w-20">Impact</th>
