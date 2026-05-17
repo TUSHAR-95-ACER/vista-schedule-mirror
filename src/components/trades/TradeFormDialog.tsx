@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAICoach } from '@/contexts/AICoachContext';
 import { useUrlPreview } from '@/hooks/useUrlPreview';
 import { LinkPreviewList } from '@/components/shared/LinkPreview';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -110,6 +111,27 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     gradesList, managementOptions, psychTags, violations,
     hydrateTradeMedia,
   } = useTrading();
+  const { setTrade: setAITrade } = useAICoach();
+
+  // Register the open trade as AI Coach context, clear it on close/unmount
+  useEffect(() => {
+    if (open && editTrade) {
+      const lbl = `Trade • ${editTrade.asset} • ${editTrade.date} • ${editTrade.direction} • ${editTrade.result}`;
+      const detail = `Open trade in editor:
+- Pair: ${editTrade.asset}
+- Date: ${editTrade.date}
+- Direction: ${editTrade.direction}
+- Session: ${editTrade.session || 'n/a'} | Timeframe: ${editTrade.timeframe || 'n/a'}
+- Setup: ${editTrade.setup || 'n/a'} | Grade: ${editTrade.grade || 'n/a'}
+- Planned RR: ${editTrade.plannedRR ?? 'n/a'} | Actual RR: ${editTrade.actualRR ?? 'n/a'}
+- Result: ${editTrade.result} | P/L: ${editTrade.profitLoss ?? 'n/a'}
+- Notes: ${(editTrade.notes || '').slice(0, 500)}`;
+      setAITrade({ label: lbl, detail });
+    } else if (!open) {
+      setAITrade(null);
+    }
+    return () => { setAITrade(null); };
+  }, [open, editTrade, setAITrade]);
 
   const defaultForm = {
     date: new Date().toISOString().split('T')[0],
@@ -452,7 +474,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[92vh] p-0 rounded-2xl border-border/50 overflow-hidden">
+      <DialogContent className="max-w-[88vw] w-[88vw] sm:max-w-[88vw] max-h-[92vh] p-0 rounded-2xl border-border/50 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-3 border-b border-border/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <div className="flex items-center gap-3">

@@ -247,7 +247,7 @@ serve(async (req) => {
     // Use service role to fetch all user data (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { messages, attachments } = await req.json();
+    const { messages, attachments, pageContext } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages array required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -346,10 +346,21 @@ serve(async (req) => {
     const hasImages = images.length > 0;
     const useVision = hasImages;
 
+    // Build optional page/trade/note context block sent from the global AI drawer
+    let pageContextBlock = "";
+    if (pageContext && typeof pageContext === "object") {
+      const scope = typeof pageContext.scope === "string" ? pageContext.scope : "page";
+      const label = typeof pageContext.label === "string" ? pageContext.label.slice(0, 200) : "";
+      const detail = typeof pageContext.detail === "string" ? pageContext.detail.slice(0, 4000) : "";
+      if (label || detail) {
+        pageContextBlock = `\n\nACTIVE CONTEXT (scope=${scope}):\n- ${label}\n${detail ? detail + "\n" : ""}Focus your reply on this active context unless the trader explicitly asks for a broader view.`;
+      }
+    }
+
     let systemPrompt = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. You are reviewing a trader's complete journal in human-readable form below.
 
 JOURNAL DATA:
-${dataContext}
+${dataContext}${pageContextBlock}
 
 VOICE:
 - Speak directly to the trader in second person ("you", "your"). Calm, strict, intelligent, deeply observant.

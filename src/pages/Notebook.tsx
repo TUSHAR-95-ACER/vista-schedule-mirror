@@ -15,6 +15,7 @@ import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptNotebook } from '@/lib/aiInsightAdapters';
 import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
 import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
+import { useAICoach } from '@/contexts/AICoachContext';
 
 interface NotebookEntry {
   id: string;
@@ -54,11 +55,30 @@ export default function Notebook() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [draft, setDraft] = useState<NotebookEntry>(emptyForm());
   const [isEditing, setIsEditing] = useState(false);
+  const { setNote: setAINote } = useAICoach();
 
   useEffect(() => {
     if (!user) { setEntries([]); return; }
     setEntries(loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []));
   }, [user]);
+
+  // Register the open notebook entry as AI Coach context
+  useEffect(() => {
+    if (editorOpen && (draft.pair || draft.category)) {
+      const text = coerceRichJournal(draft.journal, draft.notes, draft.image).text || '';
+      const lbl = `Note • ${draft.pair || 'Untitled'} • ${draft.category || 'no category'} • ${draft.date}`;
+      const detail = `Open notebook entry:
+- Pair: ${draft.pair || 'n/a'}
+- Category: ${draft.category || 'n/a'}
+- Bias: ${draft.bias || 'n/a'}
+- Date: ${draft.date}
+- Research notes: ${text.slice(0, 1500)}`;
+      setAINote({ label: lbl, detail });
+    } else if (!editorOpen) {
+      setAINote(null);
+    }
+    return () => { setAINote(null); };
+  }, [editorOpen, draft, setAINote]);
 
   const persist = (updated: NotebookEntry[]) => {
     setEntries(updated);
@@ -249,7 +269,7 @@ export default function Notebook() {
 
       {/* === Notebook Entry Editor — Notion-style === */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogContent className="max-w-[88vw] w-[88vw] sm:max-w-[88vw] max-h-[92vh] overflow-y-auto p-0 gap-0">
           <DialogHeader className="px-6 pt-6 pb-3 border-b border-border/50">
             <DialogTitle className="text-base font-bold uppercase tracking-wide flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />
