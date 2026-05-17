@@ -452,7 +452,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[92vh] p-0 rounded-2xl border-border/50 overflow-hidden">
+      <DialogContent className="max-w-[88vw] w-[88vw] sm:max-w-[88vw] max-h-[92vh] p-0 rounded-2xl border-border/50 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-3 border-b border-border/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <div className="flex items-center gap-3">
