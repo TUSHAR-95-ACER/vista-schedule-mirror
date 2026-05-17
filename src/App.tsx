@@ -26,12 +26,12 @@ const SetupPlaybook = lazy(() => import("./pages/SetupPlaybook"));
 const BehaviorPatterns = lazy(() => import("./pages/BehaviorPatterns"));
 const TradeQuality = lazy(() => import("./pages/TradeQuality"));
 const AIInsights = lazy(() => import("./pages/AIInsights"));
-const AICoach = lazy(() => import("./pages/AICoach"));
+
 const TradingRules = lazy(() => import("./pages/TradingRules"));
 const BiasAnalytics = lazy(() => import("./pages/BiasAnalytics"));
 const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const ResearchLab = lazy(() => import("./pages/ResearchLab"));
-const BacktestingLab = lazy(() => import("./pages/BacktestingLab"));
+
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -83,7 +83,8 @@ const App = () => (
               <Route path="/control-center" element={<Suspense fallback={<RouteFallback />}><ControlCenter /></Suspense>} />
               <Route path="/research-lab" element={<Suspense fallback={<RouteFallback />}><ResearchLab /></Suspense>} />
               <Route path="/daily-checklist" element={<Navigate to="/" replace />} />
-              <Route path="/backtesting-lab" element={<Suspense fallback={<RouteFallback />}><BacktestingLab /></Suspense>} />
+              <Route path="/backtesting-lab" element={<Navigate to="/" replace />} />
+              <Route path="/ai-coach" element={<Navigate to="/" replace />} />
               <Route path="/calendar" element={<Suspense fallback={<RouteFallback />}><CalendarPage /></Suspense>} />
               <Route path="/settings" element={<Suspense fallback={<RouteFallback />}><Settings /></Suspense>} />
               <Route path="/system-analytics" element={<Suspense fallback={<RouteFallback />}><SystemAnalytics /></Suspense>} />
