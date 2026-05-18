@@ -57,8 +57,8 @@ const sections: NavSection[] = [
   },
 ];
 
-const SLIM = 64;   // px collapsed width (footprint)
-const WIDE = 240;  // px expanded width (overlay)
+const SLIM = 52;   // px collapsed width (footprint)
+const WIDE = 216;  // px expanded width (overlay)
 
 export function Sidebar() {
   const [pinned, setPinned] = useState<boolean>(() => {
@@ -117,37 +117,37 @@ export function Sidebar() {
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-2.5 px-3 h-14 border-b border-border shrink-0">
-          <div className="h-8 w-8 rounded-lg border border-border bg-background flex items-center justify-center shrink-0">
-            <span className="text-foreground font-heading font-bold text-xs">MJ</span>
+        <div className="flex items-center gap-2 px-2.5 h-11 border-b border-border shrink-0">
+          <div className="h-7 w-7 rounded-md border border-border bg-background flex items-center justify-center shrink-0">
+            <span className="text-foreground font-heading font-bold text-[10px]">MJ</span>
           </div>
           {expanded && (
             <div className="flex flex-col overflow-hidden flex-1 min-w-0">
-              <span className="font-heading text-[14px] font-bold text-foreground leading-tight truncate tracking-tight">Master Journal</span>
-              <span className="text-[10px] font-medium text-muted-foreground leading-tight truncate">{displayName}</span>
+              <span className="font-heading text-[12px] font-bold text-foreground leading-tight truncate tracking-tight">Master Journal</span>
+              <span className="text-[9px] font-medium text-muted-foreground leading-tight truncate">{displayName}</span>
             </div>
           )}
           {expanded && (
             <button
               onClick={togglePin}
               title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
-              className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+              className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
             >
-              {pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+              {pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
             </button>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <nav className="flex-1 py-1.5 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {filteredSections.map(section => (
-            <div key={section.title} className="mb-3">
+            <div key={section.title} className="mb-1.5">
               {expanded ? (
-                <p className="px-3 mb-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">{section.title}</p>
+                <p className="px-2.5 mb-0.5 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/80">{section.title}</p>
               ) : (
-                <div className="mx-3 mb-1 h-px bg-border/60" />
+                <div className="mx-2.5 mb-0.5 h-px bg-border/50" />
               )}
-              <div className="flex flex-col gap-0.5 px-2">
+              <div className="flex flex-col gap-px px-1.5">
                 {section.items.map(item => {
                   const active = location.pathname === item.path;
                   return (
@@ -156,16 +156,16 @@ export function Sidebar() {
                       onClick={() => navigate(item.path)}
                       title={!expanded ? item.label : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 h-9 rounded-md transition-colors text-sm",
-                        expanded ? "px-2.5 justify-start" : "px-0 justify-center",
+                        "flex items-center gap-2 h-7 rounded transition-colors",
+                        expanded ? "px-2 justify-start" : "px-0 justify-center",
                         active
                           ? "bg-accent text-foreground font-semibold"
-                          : "text-foreground/80 hover:bg-accent hover:text-foreground"
+                          : "text-foreground/75 hover:bg-accent/60 hover:text-foreground"
                       )}
                     >
-                      <item.icon className="h-4 w-4 shrink-0" />
+                      <item.icon className="h-3.5 w-3.5 shrink-0" />
                       {expanded && (
-                        <span className="truncate text-[12px] leading-none">{item.label}</span>
+                        <span className="truncate text-[11.5px] leading-none">{item.label}</span>
                       )}
                     </button>
                   );
@@ -181,11 +181,11 @@ export function Sidebar() {
             onClick={signOut}
             title="Logout"
             className={cn(
-              "flex items-center gap-2 w-full h-10 text-xs text-destructive hover:bg-destructive/10 transition-colors",
-              expanded ? "px-3 justify-start" : "justify-center"
+              "flex items-center gap-2 w-full h-8 text-[11px] text-destructive hover:bg-destructive/10 transition-colors",
+              expanded ? "px-2.5 justify-start" : "justify-center"
             )}
           >
-            <LogOut className="h-4 w-4 shrink-0" />
+            <LogOut className="h-3.5 w-3.5 shrink-0" />
             {expanded && <span>Logout</span>}
           </button>
         </div>
