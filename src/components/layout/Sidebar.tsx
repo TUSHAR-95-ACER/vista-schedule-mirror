@@ -113,8 +113,8 @@ export function Sidebar() {
       <aside
         style={{ width: expanded ? WIDE : SLIM }}
         className={cn(
-          "absolute inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border transition-[width] duration-200 ease-out overflow-hidden",
-          expanded && !pinned && "shadow-2xl"
+          "absolute inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border/80 transition-[width] duration-150 ease-out overflow-hidden",
+          expanded && !pinned && "shadow-[0_8px_40px_-4px_rgba(0,0,0,0.55)] border-r-foreground/10"
         )}
       >
         {/* Header */}
