@@ -57,8 +57,8 @@ const sections: NavSection[] = [
   },
 ];
 
-const SLIM = 64;   // px collapsed width (footprint)
-const WIDE = 240;  // px expanded width (overlay)
+const SLIM = 52;   // px collapsed width (footprint)
+const WIDE = 216;  // px expanded width (overlay)
 
 export function Sidebar() {
   const [pinned, setPinned] = useState<boolean>(() => {
