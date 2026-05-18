@@ -61,8 +61,9 @@ const SLIM = 52;   // px collapsed width (footprint)
 const WIDE = 216;  // px expanded width (overlay)
 
 export function Sidebar() {
+  // Default to unpinned (slim, hover-to-expand overlay). User can opt-in via pin toggle.
   const [pinned, setPinned] = useState<boolean>(() => {
-    try { return localStorage.getItem('sidebar-pinned') === '1'; } catch { return false; }
+    try { return localStorage.getItem('sidebar-pinned-v2') === '1'; } catch { return false; }
   });
   const [hover, setHover] = useState(false);
   const navigate = useNavigate();
