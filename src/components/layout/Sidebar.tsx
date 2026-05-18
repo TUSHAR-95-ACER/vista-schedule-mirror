@@ -90,7 +90,7 @@ export function Sidebar() {
   const togglePin = () => {
     setPinned(p => {
       const next = !p;
-      try { localStorage.setItem('sidebar-pinned', next ? '1' : '0'); } catch {}
+      try { localStorage.setItem('sidebar-pinned-v2', next ? '1' : '0'); } catch {}
       return next;
     });
   };
