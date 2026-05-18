@@ -61,8 +61,9 @@ const SLIM = 52;   // px collapsed width (footprint)
 const WIDE = 216;  // px expanded width (overlay)
 
 export function Sidebar() {
+  // Default to unpinned (slim, hover-to-expand overlay). User can opt-in via pin toggle.
   const [pinned, setPinned] = useState<boolean>(() => {
-    try { return localStorage.getItem('sidebar-pinned') === '1'; } catch { return false; }
+    try { return localStorage.getItem('sidebar-pinned-v2') === '1'; } catch { return false; }
   });
   const [hover, setHover] = useState(false);
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ export function Sidebar() {
   const togglePin = () => {
     setPinned(p => {
       const next = !p;
-      try { localStorage.setItem('sidebar-pinned', next ? '1' : '0'); } catch {}
+      try { localStorage.setItem('sidebar-pinned-v2', next ? '1' : '0'); } catch {}
       return next;
     });
   };
@@ -112,8 +113,8 @@ export function Sidebar() {
       <aside
         style={{ width: expanded ? WIDE : SLIM }}
         className={cn(
-          "absolute inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border transition-[width] duration-200 ease-out overflow-hidden",
-          expanded && !pinned && "shadow-2xl"
+          "absolute inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border/80 transition-[width] duration-150 ease-out overflow-hidden",
+          expanded && !pinned && "shadow-[0_8px_40px_-4px_rgba(0,0,0,0.55)] border-r-foreground/10"
         )}
       >
         {/* Header */}
