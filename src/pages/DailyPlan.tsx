@@ -201,7 +201,7 @@ export default function DailyPlanPage() {
   // List view
   if (!activeId) {
     return (
-      <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-6 pb-20">
+      <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-6 pb-20">
         <PlanListHeader title="Daily Plans" subtitle="Execution-focused daily journal" onNew={startNew} newLabel="New Day" />
 
         {/* Stats Bar */}
@@ -255,7 +255,7 @@ export default function DailyPlanPage() {
   if (!localPlan) return null;
 
   return (
-    <div className="p-4 sm:p-6 max-w-[900px] mx-auto space-y-5 pb-28">
+    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5 pb-28">
       <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All days" />
 
       {/* Hero Banner - no Neutral badge */}
