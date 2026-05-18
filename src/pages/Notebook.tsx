@@ -171,7 +171,7 @@ export default function Notebook() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto">
+    <div className="p-4 lg:p-6 mx-auto w-full">
       <PageHeader title="Notebook" subtitle="A flexible research notebook for ideas, observations & patterns">
         <Button onClick={openNew} className="gap-1.5 rounded-xl h-9">
           <Plus className="h-4 w-4" /> New Notebook Entry
