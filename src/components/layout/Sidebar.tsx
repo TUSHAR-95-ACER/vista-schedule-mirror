@@ -57,8 +57,8 @@ const sections: NavSection[] = [
   },
 ];
 
-const SLIM = 52;   // px collapsed width (footprint)
-const WIDE = 216;  // px expanded width (overlay)
+const SLIM = 56;   // px collapsed width (footprint)
+const WIDE = 232;  // px expanded width (overlay) — 2-col card grid
 
 export function Sidebar() {
   // Default to unpinned (slim, hover-to-expand overlay). User can opt-in via pin toggle.
