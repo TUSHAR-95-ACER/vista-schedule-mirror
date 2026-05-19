@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { Sidebar } from './Sidebar';
 import { MarketTicker } from '@/components/news/MarketTicker';
 import { AICoachProvider, useAICoach } from '@/contexts/AICoachContext';
-import { AICoachDrawer, AICoachTriggerButton } from '@/components/ai/AICoachDrawer';
+import { AICoachDrawer } from '@/components/ai/AICoachDrawer';
 
 const PATH_LABELS: Record<string, string> = {
   '/': 'Dashboard',
@@ -46,7 +46,7 @@ function ShellInner() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <MarketTicker />
-        <AICoachTriggerButton />
+        
         <main className="flex-1 overflow-y-auto font-body [&_h1]:font-heading [&_h2]:font-heading [&_h3]:font-heading [&_h1]:uppercase [&_h2]:uppercase [&_h3]:uppercase">
           <Outlet />
         </main>

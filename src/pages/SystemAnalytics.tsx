@@ -39,7 +39,7 @@ export default function SystemAnalytics() {
   const worstTrade = validTrades.length > 0 ? Math.min(...validTrades.map(t => t.profitLoss)).toFixed(2) : '0';
 
   return (
-    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto space-y-6">
+    <div className="p-3 sm:p-6 w-full space-y-6">
       <PageHeader title="System Analytics" subtitle="Trade system metrics, RR distribution & performance insights">
         <ThemeToggle />
       </PageHeader>

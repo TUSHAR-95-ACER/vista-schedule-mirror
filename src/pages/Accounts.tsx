@@ -504,7 +504,7 @@ export default function Accounts() {
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Accounts" subtitle="All accounts combined">
         <ThemeToggle />
         <Button size="sm" className="gap-1.5 bg-success hover:bg-success/90 text-success-foreground" onClick={openNew}>

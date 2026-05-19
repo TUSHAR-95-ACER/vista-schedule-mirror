@@ -57,8 +57,8 @@ const sections: NavSection[] = [
   },
 ];
 
-const SLIM = 52;   // px collapsed width (footprint)
-const WIDE = 216;  // px expanded width (overlay)
+const SLIM = 56;   // px collapsed width (footprint)
+const WIDE = 232;  // px expanded width (overlay) — 2-col card grid
 
 export function Sidebar() {
   // Default to unpinned (slim, hover-to-expand overlay). User can opt-in via pin toggle.
@@ -139,34 +139,41 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-1.5 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        {/* Nav — 2-col card grid launcher */}
+        <nav className="flex-1 py-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {filteredSections.map(section => (
-            <div key={section.title} className="mb-1.5">
+            <div key={section.title} className="mb-2.5">
               {expanded ? (
-                <p className="px-2.5 mb-0.5 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/80">{section.title}</p>
+                <p className="px-2.5 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">{section.title}</p>
               ) : (
-                <div className="mx-2.5 mb-0.5 h-px bg-border/50" />
+                <div className="mx-2 mb-1.5 h-px bg-border/60" />
               )}
-              <div className="flex flex-col gap-px px-1.5">
+              <div className={cn("px-1.5", expanded ? "grid grid-cols-2 gap-1" : "flex flex-col gap-1")}>
                 {section.items.map(item => {
                   const active = location.pathname === item.path;
                   return (
                     <button
                       key={item.path}
                       onClick={() => navigate(item.path)}
-                      title={!expanded ? item.label : undefined}
+                      title={!expanded ? item.label : item.label}
                       className={cn(
-                        "flex items-center gap-2 h-7 rounded transition-colors",
-                        expanded ? "px-2 justify-start" : "px-0 justify-center",
+                        "group relative flex flex-col items-center justify-center gap-1 rounded-md border transition-all",
+                        expanded
+                          ? "h-[52px] px-1.5 py-1.5"
+                          : "h-9 w-9 mx-auto border-transparent",
                         active
-                          ? "bg-accent text-foreground font-semibold"
-                          : "text-foreground/75 hover:bg-accent/60 hover:text-foreground"
+                          ? "bg-primary/10 border-primary/40 text-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]"
+                          : expanded
+                            ? "bg-card border-border/60 text-foreground/75 hover:bg-accent hover:text-foreground hover:border-border"
+                            : "text-foreground/70 hover:bg-accent hover:text-foreground"
                       )}
                     >
-                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <item.icon className={cn("shrink-0 transition-colors", expanded ? "h-4 w-4" : "h-4 w-4", active && "text-primary")} />
                       {expanded && (
-                        <span className="truncate text-[11.5px] leading-none">{item.label}</span>
+                        <span className="text-[9.5px] font-medium leading-tight tracking-tight text-center truncate w-full">{item.label}</span>
+                      )}
+                      {active && expanded && (
+                        <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-primary" />
                       )}
                     </button>
                   );

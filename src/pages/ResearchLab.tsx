@@ -462,7 +462,7 @@ function StrategyTestingTab() {
 // ─── MAIN PAGE ───
 export default function ResearchLab() {
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Research Lab" subtitle="Test tools and strategies before real trading">
         <ThemeToggle />
       </PageHeader>

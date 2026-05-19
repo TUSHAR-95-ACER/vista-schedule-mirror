@@ -35,7 +35,7 @@ export default function SetupPlaybook() {
   const worstSetup = setupData.length > 1 ? setupData[setupData.length - 1] : null;
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Setup Playbook" subtitle="Performance analytics for each trading setup">
         <ThemeToggle />
       </PageHeader>

@@ -251,7 +251,7 @@ export default function BiasAnalytics() {
   const hasData = biasStats.total > 0;
 
   return (
-    <div className="p-4 lg:p-6 max-w-[1400px] mx-auto space-y-6">
+    <div className="p-4 lg:p-6 w-full space-y-6">
       <PageHeader title="Bias Performance" subtitle="Track your prediction accuracy and identify patterns">
         <ThemeToggle />
       </PageHeader>

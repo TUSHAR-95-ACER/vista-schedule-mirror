@@ -59,7 +59,7 @@ export default function TradingRules() {
   const compliance = rules.length ? Math.round((rules.filter(r => r.active).length / rules.length) * 100) : 0;
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Trading Rules" subtitle={`${rules.length} rules · ${compliance}% active`}>
         <ThemeToggle />
       </PageHeader>

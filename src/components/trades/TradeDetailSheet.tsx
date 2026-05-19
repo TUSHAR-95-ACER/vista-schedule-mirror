@@ -139,7 +139,7 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
   return (
     <>
       <Dialog open={!!trade} onOpenChange={onClose}>
-        <DialogContent className="max-w-[88vw] w-[88vw] sm:max-w-[88vw] max-h-[92vh] overflow-y-auto p-0 gap-0 bg-background">
+        <DialogContent className="max-w-[96vw] w-[96vw] sm:max-w-[96vw] max-h-[94vh] overflow-y-auto p-0 gap-0 bg-background">
           
           {/* ═══════ TOP SUMMARY BAR ═══════ */}
           <div className="sticky top-0 z-10 bg-card border-b border-border px-6 py-4">

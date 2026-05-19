@@ -269,7 +269,7 @@ export default function Notebook() {
 
       {/* === Notebook Entry Editor — Notion-style === */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="max-w-[88vw] w-[88vw] sm:max-w-[88vw] max-h-[92vh] overflow-y-auto p-0 gap-0">
+        <DialogContent className="max-w-[96vw] w-[96vw] sm:max-w-[96vw] max-h-[94vh] overflow-y-auto p-0 gap-0">
           <DialogHeader className="px-6 pt-6 pb-3 border-b border-border/50">
             <DialogTitle className="text-base font-bold uppercase tracking-wide flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-primary" />

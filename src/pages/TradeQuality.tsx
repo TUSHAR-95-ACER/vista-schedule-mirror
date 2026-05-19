@@ -121,7 +121,7 @@ export default function TradeQuality() {
   }, [gradeData, holdQuality, exitDiscipline, avgExecScore]);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Trade Quality" subtitle="Quality scoring & execution analysis">
         <ThemeToggle />
       </PageHeader>
