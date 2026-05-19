@@ -113,18 +113,22 @@ export function MarketTicker() {
               <span className="text-sm font-bold text-foreground tracking-wide">
                 {item.symbol}
               </span>
-              <span className="text-sm font-mono text-foreground/80">
-                {item.price > 0 ? formatPrice(item.price, item.decimals) : '—'}
-              </span>
-              {item.price > 0 && (
-                <span
-                  className={cn(
-                    "text-xs font-semibold font-mono",
-                    item.changePercent >= 0 ? "text-success" : "text-destructive"
-                  )}
-                >
-                  {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
-                </span>
+              {item.price > 0 ? (
+                <>
+                  <span className="text-sm font-mono text-foreground/80">
+                    {formatPrice(item.price, item.decimals)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-semibold font-mono",
+                      item.changePercent >= 0 ? "text-success" : "text-destructive"
+                    )}
+                  >
+                    {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
+                  </span>
+                </>
+              ) : (
+                <span className="h-3 w-16 rounded bg-muted/40 animate-pulse" />
               )}
             </div>
           ))}
