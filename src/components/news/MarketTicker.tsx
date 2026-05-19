@@ -13,8 +13,19 @@ interface TickerItem {
   decimals: number;
 }
 
+const CACHE_KEY = 'market-ticker-cache-v1';
+
+function loadCache(): TickerItem[] {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
 export function MarketTicker() {
-  const [items, setItems] = useState<TickerItem[]>([]);
+  const [items, setItems] = useState<TickerItem[]>(() => loadCache());
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState(false);
   const { openDrawer } = useAICoach();
@@ -23,7 +34,7 @@ export function MarketTicker() {
     <button
       onClick={openDrawer}
       title="Open AI Coach"
-      className="shrink-0 ml-3 mr-4 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
+      className="shrink-0 ml-3 mr-3 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
     >
       <Sparkles className="h-3.5 w-3.5 text-primary" />
       <span>AI Coach</span>
@@ -34,8 +45,18 @@ export function MarketTicker() {
     try {
       const { data, error: fnError } = await supabase.functions.invoke('market-ticker');
       if (fnError) throw fnError;
-      if (data?.data) {
-        setItems(data.data);
+      if (data?.data && Array.isArray(data.data)) {
+        // Only overwrite with rows that actually have a price; preserve last good
+        // value for any pair the API returned as 0 (rate-limit / outage).
+        setItems(prev => {
+          const next = data.data.map((fresh: TickerItem) => {
+            if (fresh.price > 0) return fresh;
+            const cached = prev.find(p => p.symbol === fresh.symbol);
+            return cached && cached.price > 0 ? cached : fresh;
+          });
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
+          return next;
+        });
         setError(false);
       }
     } catch (e) {
@@ -43,6 +64,7 @@ export function MarketTicker() {
       setError(true);
     }
   }, []);
+
 
   useEffect(() => {
     fetchPrices();
