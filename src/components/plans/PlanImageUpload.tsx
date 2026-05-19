@@ -74,11 +74,11 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
     <div className="space-y-2">
       <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>
       {value ? (
-        <div className="relative group rounded-xl overflow-hidden border border-border/50">
+        <div className="relative group rounded-xl overflow-hidden border border-border/50 bg-background">
           <img
             src={value}
             alt={label}
-            className="w-full max-h-[420px] object-contain bg-muted/10 cursor-pointer"
+            className="w-full max-h-[640px] object-contain cursor-pointer"
             onClick={() => { setZoom(1); setViewerOpen(true); }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
