@@ -13,8 +13,19 @@ interface TickerItem {
   decimals: number;
 }
 
+const CACHE_KEY = 'market-ticker-cache-v1';
+
+function loadCache(): TickerItem[] {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
 export function MarketTicker() {
-  const [items, setItems] = useState<TickerItem[]>([]);
+  const [items, setItems] = useState<TickerItem[]>(() => loadCache());
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState(false);
   const { openDrawer } = useAICoach();
@@ -23,7 +34,7 @@ export function MarketTicker() {
     <button
       onClick={openDrawer}
       title="Open AI Coach"
-      className="shrink-0 ml-3 mr-4 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
+      className="shrink-0 ml-3 mr-3 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
     >
       <Sparkles className="h-3.5 w-3.5 text-primary" />
       <span>AI Coach</span>
@@ -34,8 +45,18 @@ export function MarketTicker() {
     try {
       const { data, error: fnError } = await supabase.functions.invoke('market-ticker');
       if (fnError) throw fnError;
-      if (data?.data) {
-        setItems(data.data);
+      if (data?.data && Array.isArray(data.data)) {
+        // Only overwrite with rows that actually have a price; preserve last good
+        // value for any pair the API returned as 0 (rate-limit / outage).
+        setItems(prev => {
+          const next = data.data.map((fresh: TickerItem) => {
+            if (fresh.price > 0) return fresh;
+            const cached = prev.find(p => p.symbol === fresh.symbol);
+            return cached && cached.price > 0 ? cached : fresh;
+          });
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
+          return next;
+        });
         setError(false);
       }
     } catch (e) {
@@ -44,11 +65,16 @@ export function MarketTicker() {
     }
   }, []);
 
+
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(fetchPrices, 300000); // 5 min to respect API rate limits
-    return () => clearInterval(interval);
-  }, [fetchPrices]);
+    const interval = setInterval(fetchPrices, 300000); // 5 min normal poll
+    // Faster retry while we still have any missing prices (rate-limit recovery)
+    const retry = setInterval(() => {
+      if (items.some(i => i.price === 0) || items.length === 0) fetchPrices();
+    }, 30000);
+    return () => { clearInterval(interval); clearInterval(retry); };
+  }, [fetchPrices, items]);
 
   const formatPrice = (price: number, decimals: number) => {
     return price.toFixed(decimals);
@@ -91,18 +117,22 @@ export function MarketTicker() {
               <span className="text-sm font-bold text-foreground tracking-wide">
                 {item.symbol}
               </span>
-              <span className="text-sm font-mono text-foreground/80">
-                {item.price > 0 ? formatPrice(item.price, item.decimals) : '—'}
-              </span>
-              {item.price > 0 && (
-                <span
-                  className={cn(
-                    "text-xs font-semibold font-mono",
-                    item.changePercent >= 0 ? "text-success" : "text-destructive"
-                  )}
-                >
-                  {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
-                </span>
+              {item.price > 0 ? (
+                <>
+                  <span className="text-sm font-mono text-foreground/80">
+                    {formatPrice(item.price, item.decimals)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-semibold font-mono",
+                      item.changePercent >= 0 ? "text-success" : "text-destructive"
+                    )}
+                  >
+                    {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
+                  </span>
+                </>
+              ) : (
+                <span className="h-3 w-16 rounded bg-muted/40 animate-pulse" />
               )}
             </div>
           ))}

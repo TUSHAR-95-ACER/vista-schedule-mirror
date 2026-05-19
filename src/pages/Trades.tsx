@@ -96,7 +96,7 @@ export default function Trades() {
   const hasActiveFilters = filterPair !== 'all' || filterResult !== 'all';
 
   return (
-    <div className="p-6 mx-auto w-full">
+    <div className="px-3 sm:px-4 py-3 w-full">
       <PageHeader title="Trades" subtitle={`${filtered.length} of ${trades.length} trades`}>
         <ThemeToggle />
         <Button onClick={() => { setEditTrade(null); setShowGate(true); }} size="sm" className="gap-1.5">
