@@ -32,11 +32,11 @@ export function AICoachTriggerButton() {
   return (
     <button
       onClick={openDrawer}
-      title="AI Copilot"
+      title="AI Coach"
       className="fixed top-3 right-4 z-40 h-8 px-3 rounded-md border border-primary/40 bg-card/90 backdrop-blur text-foreground hover:bg-primary/10 transition-colors flex items-center gap-1.5 shadow-sm text-[11px] font-semibold uppercase tracking-wider"
     >
       <Sparkles className="h-3.5 w-3.5 text-primary" />
-      <span>Copilot</span>
+      <span>AI Coach</span>
     </button>
   );
 }
@@ -158,7 +158,7 @@ export function AICoachDrawer() {
             <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
             </div>
-            <span className="text-[12px] font-heading font-bold uppercase tracking-widest">AI Copilot</span>
+            <span className="text-[12px] font-heading font-bold uppercase tracking-widest">AI Coach</span>
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
@@ -212,7 +212,7 @@ export function AICoachDrawer() {
                 <div className="mx-auto h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
                   <Sparkles className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-sm font-heading font-bold uppercase tracking-wider mb-1">Trading Copilot</p>
+                <p className="text-sm font-heading font-bold uppercase tracking-wider mb-1">Trading AI Coach</p>
                 <p className="text-xs text-muted-foreground max-w-[320px] mx-auto leading-relaxed">
                   I see your full journal. Ask anything, or start with one of these.
                 </p>
