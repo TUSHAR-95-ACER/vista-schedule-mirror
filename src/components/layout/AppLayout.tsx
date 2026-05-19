@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { Sidebar } from './Sidebar';
 import { MarketTicker } from '@/components/news/MarketTicker';
 import { AICoachProvider, useAICoach } from '@/contexts/AICoachContext';
-import { AICoachDrawer, AICoachTriggerButton } from '@/components/ai/AICoachDrawer';
+import { AICoachDrawer } from '@/components/ai/AICoachDrawer';
 
 const PATH_LABELS: Record<string, string> = {
   '/': 'Dashboard',
