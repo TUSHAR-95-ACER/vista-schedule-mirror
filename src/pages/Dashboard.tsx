@@ -68,10 +68,8 @@ export default function Dashboard() {
   }, [validTrades]);
 
   return (
-    <div className="p-3 sm:p-5 w-full">
-      <PageHeader title="Master Dashboard" subtitle="Trading operating system overview">
-        <ThemeToggle />
-      </PageHeader>
+    <div className="px-3 sm:px-4 py-3 w-full">
+      <PageHeader title="Master Dashboard" subtitle="Trading operating system overview" />
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 mb-4 sm:mb-6">
