@@ -17,6 +17,18 @@ export function MarketTicker() {
   const [items, setItems] = useState<TickerItem[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState(false);
+  const { openDrawer } = useAICoach();
+
+  const AICoachPill = () => (
+    <button
+      onClick={openDrawer}
+      title="Open AI Coach"
+      className="shrink-0 ml-3 mr-4 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
+    >
+      <Sparkles className="h-3.5 w-3.5 text-primary" />
+      <span>AI Coach</span>
+    </button>
+  );
 
   const fetchPrices = useCallback(async () => {
     try {
