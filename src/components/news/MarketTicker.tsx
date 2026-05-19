@@ -68,9 +68,13 @@ export function MarketTicker() {
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(fetchPrices, 300000); // 5 min to respect API rate limits
-    return () => clearInterval(interval);
-  }, [fetchPrices]);
+    const interval = setInterval(fetchPrices, 300000); // 5 min normal poll
+    // Faster retry while we still have any missing prices (rate-limit recovery)
+    const retry = setInterval(() => {
+      if (items.some(i => i.price === 0) || items.length === 0) fetchPrices();
+    }, 30000);
+    return () => { clearInterval(interval); clearInterval(retry); };
+  }, [fetchPrices, items]);
 
   const formatPrice = (price: number, decimals: number) => {
     return price.toFixed(decimals);
