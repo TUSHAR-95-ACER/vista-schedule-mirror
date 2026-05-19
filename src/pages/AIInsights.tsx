@@ -137,7 +137,7 @@ export default function AIInsights() {
   }, [valid]);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="AI Insights" subtitle="Intelligent trading recommendations">
         <ThemeToggle />
       </PageHeader>

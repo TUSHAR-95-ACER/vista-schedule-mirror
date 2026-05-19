@@ -131,7 +131,7 @@ export default function Mistakes() {
   }, [valid, totalMistakeLoss]);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Mistakes" subtitle="Advanced behavioral analytics & mistake intelligence">
         <ThemeToggle />
       </PageHeader>

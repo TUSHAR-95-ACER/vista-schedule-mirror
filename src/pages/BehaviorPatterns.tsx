@@ -165,7 +165,7 @@ export default function BehaviorPatterns() {
   }, [disciplineScore, overtradingIndex, revengePatterns, fearExits, mistakeBySession]);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Behavior Patterns" subtitle="Detect behavioral flaws & recurring patterns">
         <ThemeToggle />
       </PageHeader>

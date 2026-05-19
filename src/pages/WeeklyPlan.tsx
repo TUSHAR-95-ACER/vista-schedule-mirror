@@ -185,7 +185,7 @@ export default function WeeklyPlanPage() {
   // List view
   if (!activeId) {
     return (
-      <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-6 pb-20">
+      <div className="p-4 sm:p-6 w-full space-y-6 pb-20">
         <PlanListHeader title="Weekly Plans" subtitle="Strategic market analysis & bias journal" onNew={startNew} newLabel="New Week" />
 
         {/* Stats Bar */}
@@ -227,7 +227,7 @@ export default function WeeklyPlanPage() {
   if (!localPlan) return null;
 
   return (
-    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto space-y-5 pb-28">
+    <div className="p-4 sm:p-6 w-full space-y-5 pb-28">
       <PlanDetailHeader onBack={() => { setActiveId(null); setLocalPlan(null); }} backLabel="All weeks" />
 
       {/* Hero Banner */}

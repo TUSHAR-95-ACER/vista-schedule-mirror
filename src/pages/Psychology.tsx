@@ -117,7 +117,7 @@ export default function Psychology() {
 
   if (valid.length === 0) {
     return (
-      <div className="p-6 max-w-[1600px] mx-auto">
+      <div className="p-6 w-full">
         <PageHeader title="Psychology" subtitle="Behavioral analysis">
           <ThemeToggle />
         </PageHeader>
@@ -129,7 +129,7 @@ export default function Psychology() {
   }
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Psychology" subtitle="Behavioral analysis">
         <ThemeToggle />
       </PageHeader>

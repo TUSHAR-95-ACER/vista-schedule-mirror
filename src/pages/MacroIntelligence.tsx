@@ -525,7 +525,7 @@ export default function MacroIntelligence() {
   /* ---------- render ---------- */
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-background/50">
-      <div className="mx-auto max-w-[1400px] px-6 py-8 space-y-6">
+      <div className="w-full px-6 py-8 space-y-6">
         {/* HEADER */}
         <GlassCard className="p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

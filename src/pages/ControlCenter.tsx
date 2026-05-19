@@ -137,7 +137,7 @@ export default function ControlCenter() {
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="p-6 w-full">
       <PageHeader title="Control Center" subtitle="Master control for all system dropdowns & selectable fields">
         <ThemeToggle />
       </PageHeader>
