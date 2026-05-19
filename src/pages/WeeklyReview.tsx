@@ -172,7 +172,7 @@ export default function WeeklyReview() {
   }, [latest, weeklyData]);
 
   return (
-    <div className="p-6 mx-auto w-full space-y-6">
+    <div className="px-3 sm:px-4 py-3 w-full space-y-6">
       <PageHeader title="Weekly Review" subtitle="Auto-generated weekly performance reports with behavioral insights">
         <ThemeToggle />
       </PageHeader>

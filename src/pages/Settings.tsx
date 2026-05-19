@@ -460,7 +460,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-4 sm:p-6 w-full">
+    <div className="px-3 sm:px-4 py-3 w-full">
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
           <SettingsIcon className="h-5 w-5 text-primary" />
