@@ -68,13 +68,9 @@ export default function Dashboard() {
   }, [validTrades]);
 
   return (
-    <div className="p-3 sm:p-6 max-w-[1600px] mx-auto">
+    <div className="p-3 sm:p-5 w-full">
       <PageHeader title="Master Dashboard" subtitle="Trading operating system overview">
         <ThemeToggle />
-        <div className="flex items-center gap-1.5 text-xs font-medium text-success">
-          <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-          LIVE
-        </div>
       </PageHeader>
 
       {/* Metrics Grid */}
