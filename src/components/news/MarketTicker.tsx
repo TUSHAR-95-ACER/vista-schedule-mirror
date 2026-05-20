@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useAICoach } from '@/contexts/AICoachContext';
 
 interface TickerItem {
   symbol: string;
@@ -28,18 +26,7 @@ export function MarketTicker() {
   const [items, setItems] = useState<TickerItem[]>(() => loadCache());
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState(false);
-  const { openDrawer } = useAICoach();
 
-  const AICoachPill = () => (
-    <button
-      onClick={openDrawer}
-      title="Open AI Coach"
-      className="shrink-0 ml-3 mr-3 h-7 px-3 rounded-full border border-primary/40 bg-card text-foreground hover:bg-primary/10 hover:border-primary/60 transition-colors flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm"
-    >
-      <Sparkles className="h-3.5 w-3.5 text-primary" />
-      <span>AI Coach</span>
-    </button>
-  );
 
   const fetchPrices = useCallback(async () => {
     try {
@@ -82,15 +69,15 @@ export function MarketTicker() {
 
   if (items.length === 0) {
     return (
-      <div className="w-full h-10 border-b border-border/50 bg-background flex items-center justify-between pl-4 pr-1">
+      <div className="w-full h-10 border-b border-border/50 bg-background flex items-center pl-4 pr-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
           {error ? 'Market data unavailable' : 'Loading market data...'}
         </div>
-        <AICoachPill />
       </div>
     );
   }
+
 
   const doubled = [...items, ...items];
 
@@ -138,9 +125,7 @@ export function MarketTicker() {
           ))}
         </div>
       </div>
-      <div className="shrink-0 border-l border-border/50 bg-background pl-1 flex items-center h-full">
-        <AICoachPill />
-      </div>
     </div>
   );
+
 }
