@@ -75,27 +75,26 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
       <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>
       {value ? (
         <div className="relative group rounded-xl overflow-hidden border border-border/50 bg-background w-full">
-          <div className="relative w-full inline-block">
-            <img
-              src={value}
-              alt={label}
-              className="block w-full h-auto object-contain cursor-pointer"
+          <img
+            src={value}
+            alt={label}
+            style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
+            className="block object-contain cursor-pointer"
+            onClick={() => { setZoom(1); setViewerOpen(true); }}
+          />
+          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+            <button
               onClick={() => { setZoom(1); setViewerOpen(true); }}
-            />
-            <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
-              <button
-                onClick={() => { setZoom(1); setViewerOpen(true); }}
-                className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-primary/10 hover:border-primary/30"
-              >
-                <Maximize2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => onChange('')}
-                className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
+              className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-primary/10 hover:border-primary/30"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onChange('')}
+              className="h-8 w-8 rounded-lg bg-background/90 border border-border/50 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
