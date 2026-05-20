@@ -124,7 +124,8 @@ export function MarketTicker() {
             </div>
           ))}
         </div>
+      </div>
     </div>
-
   );
+
 }
