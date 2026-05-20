@@ -218,12 +218,12 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             </a>
           ) : (
-            /* Image preview */
+            /* Image preview — full-width, intrinsic aspect ratio */
             <img
               src={value}
               alt={label}
-              className="w-full object-contain bg-muted/10 cursor-pointer"
-              style={{ maxHeight: maxPreviewHeight }}
+              style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
+              className="block bg-muted/10 cursor-pointer"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"
             />
