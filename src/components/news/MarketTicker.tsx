@@ -124,10 +124,7 @@ export function MarketTicker() {
             </div>
           ))}
         </div>
-      </div>
-      <div className="shrink-0 border-l border-border/50 bg-background pl-1 flex items-center h-full">
-        <AICoachPill />
-      </div>
     </div>
+
   );
 }
