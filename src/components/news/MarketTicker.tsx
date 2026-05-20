@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { useAICoach } from '@/contexts/AICoachContext';
 
 interface TickerItem {
   symbol: string;
