@@ -46,7 +46,10 @@ function PageContextRegistrar() {
 function HeaderUtilityColumn() {
   const { openDrawer } = useAICoach();
   return (
-    <div className="absolute top-12 right-4 z-30 flex flex-col items-end gap-2 pointer-events-none">
+    <div className="absolute top-12 right-4 z-30 flex flex-row items-center gap-2 pointer-events-none">
+      <div className="pointer-events-auto rounded-full border border-border/50 bg-card/95 backdrop-blur shadow-sm">
+        <ThemeToggle />
+      </div>
       <button
         onClick={openDrawer}
         title="Open AI Coach"
@@ -55,9 +58,6 @@ function HeaderUtilityColumn() {
         <Sparkles className="h-3.5 w-3.5 text-primary" />
         <span>AI Coach</span>
       </button>
-      <div className="pointer-events-auto rounded-full border border-border/50 bg-card/95 backdrop-blur shadow-sm">
-        <ThemeToggle />
-      </div>
     </div>
   );
 }
