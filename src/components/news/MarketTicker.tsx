@@ -69,15 +69,15 @@ export function MarketTicker() {
 
   if (items.length === 0) {
     return (
-      <div className="w-full h-10 border-b border-border/50 bg-background flex items-center justify-between pl-4 pr-1">
+      <div className="w-full h-10 border-b border-border/50 bg-background flex items-center pl-4 pr-4">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
           {error ? 'Market data unavailable' : 'Loading market data...'}
         </div>
-        <AICoachPill />
       </div>
     );
   }
+
 
   const doubled = [...items, ...items];
 
