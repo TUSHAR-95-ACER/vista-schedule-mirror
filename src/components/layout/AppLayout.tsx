@@ -1,9 +1,12 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { MarketTicker } from '@/components/news/MarketTicker';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { AICoachProvider, useAICoach } from '@/contexts/AICoachContext';
 import { AICoachDrawer } from '@/components/ai/AICoachDrawer';
+
 
 const PATH_LABELS: Record<string, string> = {
   '/': 'Dashboard',
