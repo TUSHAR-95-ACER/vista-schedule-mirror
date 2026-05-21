@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus } from 'lucide-react';
 
@@ -19,13 +19,12 @@ export function PlanListHeader({ title, subtitle, onNew, newLabel = 'New Plan' }
         </h1>
         <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
+      <HeaderActions>
         <Button onClick={onNew} size="sm" className="gap-2 rounded-xl font-semibold shadow-sm">
           <Plus className="h-4 w-4" />
           {newLabel}
         </Button>
-      </div>
+      </HeaderActions>
     </div>
   );
 }
@@ -46,10 +45,7 @@ export function PlanDetailHeader({ onBack, backLabel = 'Back to plans', children
         <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         {backLabel}
       </button>
-      <div className="flex items-center gap-3">
-        {children}
-        <ThemeToggle />
-      </div>
+      <HeaderActions>{children}</HeaderActions>
     </div>
   );
 }
