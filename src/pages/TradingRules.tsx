@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader } from '@/components/shared/MetricCard';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,7 +61,7 @@ export default function TradingRules() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Trading Rules" subtitle={`${rules.length} rules · ${compliance}% active`}>
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

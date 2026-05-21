@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-export type AICoachScope = 'page' | 'trade' | 'note';
+export type AICoachScope = 'page' | 'trade' | 'note' | 'full';
 
 export interface AICoachContextSnapshot {
   /** Short label shown in the drawer (e.g. "Trade • GBPUSD • 23 Apr 2026"). */
@@ -41,7 +41,6 @@ export function AICoachProvider({ children }: { children: React.ReactNode }) {
     setPageDetail(snap.detail);
   }, []);
 
-  // Auto-promote scope when a trade/note is registered, demote when cleared
   const setTrade = useCallback((snap: AICoachContextSnapshot | null) => {
     setTradeState(snap);
     if (snap) setScope('trade');
@@ -56,6 +55,14 @@ export function AICoachProvider({ children }: { children: React.ReactNode }) {
   const getActiveContext = useCallback((): AICoachContextSnapshot => {
     if (scope === 'trade' && trade) return trade;
     if (scope === 'note' && note) return note;
+    if (scope === 'full') {
+      return {
+        label: 'Entire Journal',
+        detail: 'Deep mentor mode: you have access to the trader\'s full journal — trades, plans, weekly reviews, psychology, mistakes, notebook, macro, analytics, and behavior patterns. Answer holistically using cross-section patterns and concrete numbers.',
+      };
+    }
+    if (scope === 'trade' && !trade) return { label: 'No trade open', detail: 'The trader has no trade currently open. Ask them to open a trade card first, or switch scope.' };
+    if (scope === 'note' && !note) return { label: 'No note open', detail: 'The trader has no notebook entry currently open. Ask them to open a note first, or switch scope.' };
     return { label: pageLabel, detail: pageDetail };
   }, [scope, trade, note, pageLabel, pageDetail]);
 

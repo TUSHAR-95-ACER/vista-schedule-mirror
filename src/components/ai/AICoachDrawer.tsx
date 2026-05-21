@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, X, Sparkles, Paperclip, FileText, BookOpen, ArrowLeftRight, Square } from 'lucide-react';
+import { Send, Sparkles, Paperclip, FileText, BookOpen, ArrowLeftRight, Square, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -12,34 +12,21 @@ import { cn } from '@/lib/utils';
 type Msg = { role: 'user' | 'assistant'; content: string };
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
-const SCOPE_META: Record<AICoachScope, { label: string; icon: any }> = {
-  page: { label: 'Page', icon: FileText },
-  trade: { label: 'Trade', icon: ArrowLeftRight },
-  note: { label: 'Note', icon: BookOpen },
+const SCOPE_META: Record<AICoachScope, { label: string; icon: any; placeholder: string }> = {
+  page:  { label: 'Page',         icon: FileText,      placeholder: 'Ask about this page…' },
+  trade: { label: 'Trade',        icon: ArrowLeftRight, placeholder: 'Ask about this trade…' },
+  note:  { label: 'Note',         icon: BookOpen,      placeholder: 'Ask about this note…' },
+  full:  { label: 'Full Journal', icon: Database,      placeholder: 'Ask anything across your whole journal…' },
 };
 
 const QUICK_PROMPTS: { label: string; prompt: string }[] = [
-  { label: 'Biggest leak this month', prompt: 'What is my single biggest recurring leak this month? Be specific with mistake tag, count, and one concrete fix.' },
+  { label: 'Biggest leak', prompt: 'What is my single biggest recurring leak this month? Be specific with mistake tag, count, and one concrete fix.' },
   { label: 'Best setup', prompt: 'Which setup has the highest win-rate and average RR for me? Give numbers.' },
   { label: 'Emotional pattern', prompt: 'What emotional pattern shows up most in my journal? Reference specific trades.' },
-  { label: 'Am I overtrading?', prompt: 'Am I overtrading? Check days I exceeded planned max_trades and any loss clusters.' },
-  { label: 'Plan vs execution', prompt: 'Where am I deviating most from my daily/weekly plans? Bias mismatches, skipped setups, or risk breaches.' },
-  { label: 'Best/worst session', prompt: 'Which session is my strongest and weakest by win-rate and RR?' },
+  { label: 'Overtrading?', prompt: 'Am I overtrading? Check days I exceeded planned max_trades and any loss clusters.' },
+  { label: 'Plan vs execution', prompt: 'Where am I deviating most from my daily/weekly plans?' },
+  { label: 'London vs NY', prompt: 'Compare my London vs NY session performance — win-rate, RR, and net P/L.' },
 ];
-
-export function AICoachTriggerButton() {
-  const { openDrawer } = useAICoach();
-  return (
-    <button
-      onClick={openDrawer}
-      title="AI Coach"
-      className="fixed top-3 right-4 z-40 h-8 px-3 rounded-md border border-primary/40 bg-card/90 backdrop-blur text-foreground hover:bg-primary/10 transition-colors flex items-center gap-1.5 shadow-sm text-[11px] font-semibold uppercase tracking-wider"
-    >
-      <Sparkles className="h-3.5 w-3.5 text-primary" />
-      <span>AI Coach</span>
-    </button>
-  );
-}
 
 export function AICoachDrawer() {
   const { open, closeDrawer, scope, setScope, trade, note, getActiveContext } = useAICoach();
@@ -143,8 +130,7 @@ export function AICoachDrawer() {
 
   const stop = () => { abortRef.current?.abort(); abortRef.current = null; setLoading(false); };
 
-  const scopes: AICoachScope[] = ['page', 'trade', 'note'];
-  const isScopeAvailable = (s: AICoachScope) => s === 'page' || (s === 'trade' ? !!trade : !!note);
+  const scopes: AICoachScope[] = ['page', 'trade', 'note', 'full'];
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeDrawer()}>
@@ -152,13 +138,13 @@ export function AICoachDrawer() {
         side="right"
         className="p-0 w-[560px] sm:w-[560px] max-w-[95vw] flex flex-col gap-0 border-l border-border"
       >
-        {/* Header */}
-        <div className="h-12 border-b border-border px-4 flex items-center justify-between shrink-0">
+        {/* Header — relies on Sheet's built-in close button (top-right X) */}
+        <div className="h-11 border-b border-border pl-4 pr-12 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <div className="h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-3 w-3 text-primary" />
             </div>
-            <span className="text-[12px] font-heading font-bold uppercase tracking-widest">AI Coach</span>
+            <span className="text-[11px] font-heading font-bold uppercase tracking-widest">AI Coach</span>
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
@@ -168,29 +154,24 @@ export function AICoachDrawer() {
               </button>
             )}
           </div>
-          <button onClick={closeDrawer} className="h-7 w-7 rounded-md hover:bg-accent flex items-center justify-center">
-            <X className="h-4 w-4" />
-          </button>
         </div>
 
         {/* Scope segmented */}
-        <div className="px-4 py-2 border-b border-border bg-muted/10 shrink-0">
-          <div className="inline-flex p-0.5 rounded-md bg-muted/40 border border-border">
+        <div className="px-3 py-1.5 border-b border-border bg-muted/10 shrink-0">
+          <div className="inline-flex p-0.5 rounded-md bg-muted/40 border border-border w-full">
             {scopes.map((s) => {
               const meta = SCOPE_META[s];
               const Icon = meta.icon;
               const active = scope === s;
-              const available = isScopeAvailable(s);
               return (
                 <button
                   key={s}
-                  onClick={() => available && setScope(s)}
-                  disabled={!available}
+                  onClick={() => setScope(s)}
                   className={cn(
-                    'flex items-center gap-1.5 px-2.5 h-6 rounded text-[10.5px] font-semibold uppercase tracking-wider transition-colors',
+                    'flex-1 flex items-center justify-center gap-1 px-1.5 h-6 rounded text-[10px] font-semibold uppercase tracking-wider transition-colors',
                     active
                       ? 'bg-background text-foreground shadow-sm'
-                      : available ? 'text-muted-foreground hover:text-foreground' : 'text-muted-foreground/40 cursor-not-allowed'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <Icon className="h-3 w-3" />
@@ -199,30 +180,31 @@ export function AICoachDrawer() {
               );
             })}
           </div>
-          <div className="mt-1.5 text-[10px] text-muted-foreground truncate">
+          <div className="mt-1 text-[10px] text-muted-foreground truncate">
             <span className="text-primary font-semibold">↳ </span>{activeCtx.label}
           </div>
         </div>
 
         {/* Chat scroll area */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {messages.length === 0 ? (
-            <div className="py-6">
-              <div className="text-center mb-5">
-                <div className="mx-auto h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                </div>
-                <p className="text-sm font-heading font-bold uppercase tracking-wider mb-1">Trading AI Coach</p>
-                <p className="text-xs text-muted-foreground max-w-[320px] mx-auto leading-relaxed">
-                  I see your full journal. Ask anything, or start with one of these.
+            <div className="py-2">
+              <div className="text-center mb-3">
+                <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-foreground/80">
+                  {scope === 'full' ? 'Deep Mentor Mode' : 'Trading AI Coach'}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {scope === 'full'
+                    ? 'Full journal access — trades, plans, psychology, macro, notebook.'
+                    : `Ask about ${SCOPE_META[scope].label.toLowerCase()} or pick a quick prompt.`}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-1.5 justify-center max-w-[440px] mx-auto">
+              <div className="flex flex-wrap gap-1 justify-center">
                 {QUICK_PROMPTS.map((q) => (
                   <button
                     key={q.label}
                     onClick={() => send(q.prompt)}
-                    className="px-2.5 h-7 rounded-full border border-border bg-card hover:bg-accent text-[11px] font-medium text-foreground/80 hover:text-foreground transition-colors"
+                    className="px-2 h-6 rounded-full border border-border bg-card hover:bg-accent text-[10.5px] font-medium text-foreground/80 hover:text-foreground transition-colors"
                   >
                     {q.label}
                   </button>
@@ -233,7 +215,7 @@ export function AICoachDrawer() {
             messages.map((m, i) => (
               <div key={i} className={cn('flex animate-fade-in', m.role === 'user' ? 'justify-end' : 'justify-start')}>
                 {m.role === 'user' ? (
-                  <div className="max-w-[88%] rounded-2xl rounded-tr-md px-3.5 py-2 bg-primary text-primary-foreground text-[13px] leading-relaxed whitespace-pre-wrap shadow-sm">
+                  <div className="max-w-[88%] rounded-2xl rounded-tr-md px-3 py-1.5 bg-primary text-primary-foreground text-[13px] leading-relaxed whitespace-pre-wrap shadow-sm">
                     {m.content}
                   </div>
                 ) : (
@@ -270,13 +252,13 @@ export function AICoachDrawer() {
         {pendingImages.length > 0 && (
           <div className="border-t border-border px-3 pt-2 flex gap-2 flex-wrap shrink-0">
             {pendingImages.map((src, i) => (
-              <div key={i} className="relative w-14 h-14 rounded-md overflow-hidden border border-border">
+              <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-border">
                 <img src={src} alt="attachment" className="w-full h-full object-cover" />
                 <button
                   onClick={() => setPendingImages(prev => prev.filter((_, idx) => idx !== i))}
-                  className="absolute top-0 right-0 bg-background/80 rounded-bl p-0.5 hover:bg-background"
+                  className="absolute top-0 right-0 bg-background/80 rounded-bl px-1 text-[10px] hover:bg-background"
                 >
-                  <X className="w-3 h-3" />
+                  ×
                 </button>
               </div>
             ))}
@@ -284,7 +266,7 @@ export function AICoachDrawer() {
         )}
 
         {/* Composer */}
-        <div className="border-t border-border p-3 shrink-0 bg-card/50">
+        <div className="border-t border-border p-2.5 shrink-0 bg-card/50">
           <input
             ref={fileInputRef}
             type="file"
@@ -314,8 +296,8 @@ export function AICoachDrawer() {
                 }
               }}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder={`Ask about ${SCOPE_META[scope].label.toLowerCase()}…`}
-              className="resize-none min-h-[44px] max-h-[160px] rounded-lg border-0 bg-transparent text-sm pr-20 pl-3 pt-2.5 focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder={SCOPE_META[scope].placeholder}
+              className="resize-none min-h-[40px] max-h-[140px] rounded-lg border-0 bg-transparent text-sm pr-20 pl-3 pt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={2}
             />
             <div className="absolute right-1.5 bottom-1.5 flex items-center gap-1">
@@ -346,8 +328,8 @@ export function AICoachDrawer() {
               )}
             </div>
           </div>
-          <div className="mt-1.5 text-[10px] text-muted-foreground/70 px-1 flex justify-between">
-            <span>Enter to send · Shift+Enter for newline · Paste images</span>
+          <div className="mt-1 text-[10px] text-muted-foreground/70 px-1 flex justify-between">
+            <span>Enter to send · Shift+Enter newline · Paste images</span>
             {messages.length > 0 && <span>{messages.length} msg</span>}
           </div>
         </div>

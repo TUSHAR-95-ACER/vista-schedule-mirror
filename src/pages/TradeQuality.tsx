@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell, ScatterChart, Scatter, ZAxis } from 'recharts';
 import { cn } from '@/lib/utils';
 import { formatCurrency, calcAvgRR } from '@/lib/calculations';
@@ -123,7 +123,7 @@ export default function TradeQuality() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Trade Quality" subtitle="Quality scoring & execution analysis">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">

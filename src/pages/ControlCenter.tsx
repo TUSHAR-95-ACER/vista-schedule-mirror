@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +139,7 @@ export default function ControlCenter() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Control Center" subtitle="Master control for all system dropdowns & selectable fields">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       {/* Summary Bar */}

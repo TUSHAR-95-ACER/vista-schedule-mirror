@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell } from 'recharts';
 import { formatCurrency, formatPercent, calcWinRate } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
@@ -139,7 +139,7 @@ export default function AIInsights() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="AI Insights" subtitle="Intelligent trading recommendations">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       {/* Top Metrics */}
