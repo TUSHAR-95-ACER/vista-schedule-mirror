@@ -75,7 +75,7 @@ export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
         <h1 className="font-heading text-xl sm:text-2xl font-bold uppercase tracking-[0.12em]">{title}</h1>
         {subtitle && <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>}
       </div>
-      {children && <div className="flex items-center gap-2">{children}</div>}
+      <HeaderActions>{children}</HeaderActions>
     </div>
   );
 }
