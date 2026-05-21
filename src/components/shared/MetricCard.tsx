@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 import { InfoTooltip } from './InfoTooltip';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 
 /** Format large numbers compactly: 10000 → 10K, 1000000 → 1M */
 export function formatCompactNumber(value: string | number): string {
