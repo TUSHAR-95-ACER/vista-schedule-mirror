@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { formatCurrency, calcAvgRR } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +37,7 @@ export default function SetupPlaybook() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Setup Playbook" subtitle="Performance analytics for each trading setup">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

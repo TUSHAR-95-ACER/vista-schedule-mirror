@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
@@ -174,7 +174,7 @@ export default function WeeklyReview() {
   return (
     <div className="px-3 sm:px-4 py-3 w-full space-y-6">
       <PageHeader title="Weekly Review" subtitle="Auto-generated weekly performance reports with behavioral insights">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       {latest ? (

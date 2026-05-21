@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { HeaderActions } from '@/components/layout/HeaderActions';
 import { RRDistributionChart } from '@/components/dashboard/RRDistributionChart';
 import { Trade } from '@/types/trading';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ export default function SystemAnalytics() {
   return (
     <div className="p-3 sm:p-6 w-full space-y-6">
       <PageHeader title="System Analytics" subtitle="Trade system metrics, RR distribution & performance insights">
-        <ThemeToggle />
+        <HeaderActions />
       </PageHeader>
 
       {/* Key Metrics Grid */}
