@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { Plus, Trash2, Wallet, BarChart3, ArrowUpRight, TrendingUp, Pencil, Archive } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -506,7 +505,6 @@ export default function Accounts() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Accounts" subtitle="All accounts combined">
-        <HeaderActions />
         <Button size="sm" className="gap-1.5 bg-success hover:bg-success/90 text-success-foreground" onClick={openNew}>
           <Plus className="h-4 w-4" /> Add Account
         </Button>

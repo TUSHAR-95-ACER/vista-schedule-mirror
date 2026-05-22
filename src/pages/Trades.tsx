@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Plus, Trash2, Edit, ExternalLink, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 const TradeFormDialog = lazy(() => import('@/components/trades/TradeFormDialog').then(m => ({ default: m.TradeFormDialog })));
 const TradeDetailSheet = lazy(() => import('@/components/trades/TradeDetailSheet').then(m => ({ default: m.TradeDetailSheet })));
@@ -98,7 +97,6 @@ export default function Trades() {
   return (
     <div className="px-3 sm:px-4 py-3 w-full">
       <PageHeader title="Trades" subtitle={`${filtered.length} of ${trades.length} trades`}>
-        <HeaderActions />
         <Button onClick={() => { setEditTrade(null); setShowGate(true); }} size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" /> Log Trade
         </Button>

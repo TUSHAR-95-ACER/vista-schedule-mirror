@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { ChartHeader, InfoTooltip } from '@/components/shared/InfoTooltip';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -119,7 +118,6 @@ export default function Psychology() {
     return (
       <div className="p-6 w-full">
         <PageHeader title="Psychology" subtitle="Behavioral analysis">
-          <HeaderActions />
         </PageHeader>
         <div className="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
           No psychology data available. Log trades with psychology fields to see insights.
@@ -131,7 +129,6 @@ export default function Psychology() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Psychology" subtitle="Behavioral analysis">
-        <HeaderActions />
       </PageHeader>
 
       {/* Key Metrics */}

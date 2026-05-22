@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { CalendarDays, LayoutGrid, List, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
@@ -163,7 +162,6 @@ export default function CalendarPage() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Calendar" subtitle="Trading activity overview">
-        <HeaderActions />
       </PageHeader>
 
       {/* View Mode Tabs + Controls */}

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { Lightbulb, TrendingUp, TrendingDown, Target, Activity, BarChart3, Crosshair, Clock, AlertTriangle, Zap, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
@@ -253,7 +252,6 @@ export default function BiasAnalytics() {
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
       <PageHeader title="Bias Performance" subtitle="Track your prediction accuracy and identify patterns">
-        <HeaderActions />
       </PageHeader>
 
       {/* Hero Score */}
