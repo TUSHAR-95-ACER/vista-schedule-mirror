@@ -19,74 +19,40 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 /**
- * Groups trades into calendar-row-based weeks.
- * Week 1 = first row of the calendar grid (starts at day 1, ends at first Saturday).
- * Subsequent weeks follow row boundaries.
+ * Computes calendar-row week-of-month for an ISO date (YYYY-MM-DD).
+ * Week 1 = first calendar row (day 1 → first Saturday) of that date's month.
  */
-function getCalendarRowWeeks(year: number, month: number) {
-  const firstDayOffset = new Date(year, month, 1).getDay(); // 0=Sun..6=Sat
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const weeks: { name: string; days: number[] }[] = [];
-  let currentDay = 1;
-
-  // First row: day 1 to first Saturday
-  const firstRowDays: number[] = [];
-  const remainingInFirstRow = 7 - firstDayOffset;
-  for (let i = 0; i < remainingInFirstRow && currentDay <= daysInMonth; i++) {
-    firstRowDays.push(currentDay++);
-  }
-  weeks.push({ name: 'Week 1', days: firstRowDays });
-
-  // Subsequent full rows (Sun-Sat)
-  let weekNum = 2;
-  while (currentDay <= daysInMonth) {
-    const rowDays: number[] = [];
-    for (let i = 0; i < 7 && currentDay <= daysInMonth; i++) {
-      rowDays.push(currentDay++);
-    }
-    weeks.push({ name: `Week ${weekNum}`, days: rowDays });
-    weekNum++;
-  }
-
-  return weeks;
+function weekOfMonth(iso: string): number {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return 1;
+  const firstDayOffset = new Date(y, m - 1, 1).getDay(); // 0=Sun..6=Sat
+  return Math.floor((d + firstDayOffset - 1) / 7) + 1;
 }
 
-export function WeeklyPerformanceChart({ trades, month, year }: { trades: Trade[]; month?: number; year?: number }) {
+export function WeeklyPerformanceChart({ trades }: { trades: Trade[]; month?: number; year?: number }) {
   const data = useMemo(() => {
-    // Determine the month to analyze
-    let targetYear: number;
-    let targetMonth: number;
+    // GLOBAL aggregation: combine trades by week-of-month bucket across ALL months.
+    const buckets = new Map<number, { pl: number; trades: number }>();
+    for (let i = 1; i <= 6; i++) buckets.set(i, { pl: 0, trades: 0 });
 
-    if (year !== undefined && month !== undefined) {
-      targetYear = year;
-      targetMonth = month;
-    } else {
-      // Infer from trades or use current date
-      const now = new Date();
-      targetYear = now.getFullYear();
-      targetMonth = now.getMonth();
+    for (const t of trades) {
+      const w = weekOfMonth(t.date);
+      const b = buckets.get(w);
+      if (!b) continue;
+      b.pl += t.profitLoss || 0;
+      b.trades += 1;
     }
 
-    const monthPrefix = `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}`;
-    const monthTrades = trades.filter(t => t.date.startsWith(monthPrefix));
-
-    const weeks = getCalendarRowWeeks(targetYear, targetMonth);
-
-    return weeks.map(w => {
-      const daySet = new Set(w.days);
-      const weekTrades = monthTrades.filter(t => {
-        const day = parseInt(t.date.split('-')[2], 10);
-        return daySet.has(day);
-      });
-
-      return {
-        name: w.name,
-        pl: Math.round(weekTrades.reduce((s, t) => s + t.profitLoss, 0) * 100) / 100,
-        trades: weekTrades.length,
-      };
-    });
-  }, [trades, month, year]);
+    const all = Array.from(buckets.entries()).map(([w, v]) => ({
+      name: `Week ${w}`,
+      pl: Math.round(v.pl * 100) / 100,
+      trades: v.trades,
+    }));
+    // Always keep Weeks 1-4; drop trailing empty 5/6.
+    let end = all.length;
+    while (end > 4 && all[end - 1].trades === 0) end--;
+    return all.slice(0, end);
+  }, [trades]);
 
   if (data.every(d => d.trades === 0)) {
     return <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No trades logged</div>;
