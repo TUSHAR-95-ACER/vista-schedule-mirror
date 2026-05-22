@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
@@ -133,7 +132,6 @@ export default function Mistakes() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Mistakes" subtitle="Advanced behavioral analytics & mistake intelligence">
-        <HeaderActions />
       </PageHeader>
 
       {/* Metric Cards */}

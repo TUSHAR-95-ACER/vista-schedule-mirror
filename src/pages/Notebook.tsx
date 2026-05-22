@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -176,7 +175,6 @@ export default function Notebook() {
         <Button onClick={openNew} className="gap-1.5 rounded-xl h-9">
           <Plus className="h-4 w-4" /> New Notebook Entry
         </Button>
-        <HeaderActions />
       </PageHeader>
 
       {/* Stats */}

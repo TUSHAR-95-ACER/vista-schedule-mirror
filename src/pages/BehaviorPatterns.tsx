@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Lightbulb } from 'lucide-react';
 
@@ -167,7 +166,6 @@ export default function BehaviorPatterns() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Behavior Patterns" subtitle="Detect behavioral flaws & recurring patterns">
-        <HeaderActions />
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">

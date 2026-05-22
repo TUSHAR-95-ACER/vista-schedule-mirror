@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -464,7 +463,6 @@ export default function ResearchLab() {
   return (
     <div className="p-6 w-full">
       <PageHeader title="Research Lab" subtitle="Test tools and strategies before real trading">
-        <HeaderActions />
       </PageHeader>
 
       <Tabs defaultValue="tools" className="w-full">

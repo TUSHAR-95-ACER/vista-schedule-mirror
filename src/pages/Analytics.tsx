@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
-import { HeaderActions } from '@/components/layout/HeaderActions';
 import {
   calcWinRate, calcProfitFactor, calcAvgRR, calcMaxDrawdown,
   calcEdgeScore, calcExpectancy, formatPercent, getDayOfWeek,
@@ -279,7 +278,6 @@ export default function Analytics() {
           <h1 className="text-xl font-heading font-bold">Analytics Intelligence</h1>
           <p className="text-xs text-muted-foreground">Power BI–style performance analytics</p>
         </div>
-        <HeaderActions />
       </div>
 
       {/* ─── Global Filters ──────────────────────────────────────── */}
