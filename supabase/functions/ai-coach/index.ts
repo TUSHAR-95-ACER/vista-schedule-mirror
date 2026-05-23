@@ -220,9 +220,9 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "AI Gateway not configured (LOVABLE_API_KEY missing)" }), {
+    // Bedrock API key check
+    if (!Deno.env.get("BEDROCK_API_KEY")) {
+      return new Response(JSON.stringify({ error: "Bedrock not configured (BEDROCK_API_KEY missing)" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
