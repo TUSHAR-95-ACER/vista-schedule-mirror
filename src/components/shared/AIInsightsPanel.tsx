@@ -95,9 +95,12 @@ export function AIInsightsPanel({ page, payload, title = 'Mentor Review', classN
           )}
 
           {error && (
-            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 text-sm text-foreground/80 flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+              <div className="space-y-1">
+                <p className="font-medium text-foreground">Mentor review unavailable</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{error} The rest of your dashboard is still fully functional — try again in a moment.</p>
+              </div>
             </div>
           )}
 

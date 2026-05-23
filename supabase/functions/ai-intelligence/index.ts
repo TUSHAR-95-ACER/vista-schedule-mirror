@@ -1,5 +1,10 @@
+// Trading intelligence brief + panels — routed through Bedrock Claude.
+//  - "brief"  -> Sonnet (short markdown weekly brief)
+//  - "panels" -> Sonnet via tool calling (structured 6-panel JSON)
+//  - mode "deep" -> Opus (premium full analysis)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { bedrockChat, bedrockErrorResponse, type ClaudeTier } from "../_shared/bedrock.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,11 +17,9 @@ function safeParseJson(v: any) {
   if (typeof v === "string") { try { return JSON.parse(v); } catch { return v; } }
   return v;
 }
-
 function fmtDate(d: string) {
-  try { const x = new Date(d); return x.toISOString().split("T")[0]; } catch { return d; }
+  try { return new Date(d).toISOString().split("T")[0]; } catch { return d; }
 }
-
 async function fetchData(supabase: any, userId: string) {
   const out: Record<string, any> = {};
   await Promise.all(TABLES.map(async (t) => {
@@ -25,7 +28,6 @@ async function fetchData(supabase: any, userId: string) {
   }));
   return out;
 }
-
 function buildContext(d: Record<string, any>): string {
   const trades = (d.trades || []).slice(0, 60).map((t: any) => ({
     date: fmtDate(t.date),
@@ -44,13 +46,12 @@ function buildContext(d: Record<string, any>): string {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
   try {
     const auth = req.headers.get("Authorization");
     if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
-    const KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!KEY) return new Response(JSON.stringify({ error: "AI key missing" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!Deno.env.get("BEDROCK_API_KEY")) {
+      return new Response(JSON.stringify({ error: "Bedrock not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const url = Deno.env.get("SUPABASE_URL")!;
     const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -61,55 +62,60 @@ serve(async (req) => {
     const userId = claims.claims.sub;
 
     const supabase = createClient(url, svc);
-    const { mode = "brief", model } = await req.json().catch(() => ({}));
+    const { mode = "brief" } = await req.json().catch(() => ({}));
     const data = await fetchData(supabase, userId);
     const context = buildContext(data);
 
-    const briefPrompt = `You are a senior trading performance analyst. Based on this trader's journal data, produce a CONCISE weekly performance brief (5-7 bullet points). Focus on what changed, leaks, edges, behavioral patterns, and the single most important focus. No fluff. Reference real numbers/pairs/sessions when possible. Output as markdown bullets only.\n\nDATA:\n${context}`;
+    const tier: ClaudeTier = mode === "deep" ? "opus" : "sonnet";
+
+    const briefPrompt = `You are a senior trading performance analyst. Based on this trader's journal data, produce a CONCISE weekly performance brief (5-7 bullet points). Focus on what changed, leaks, edges, behavioral patterns, and the single most important focus. No fluff. Reference real numbers/pairs/sessions. Output as markdown bullets only.\n\nDATA:\n${context}`;
 
     const panelsPrompt = `You are a trading analyst. From this journal data, produce JSON with exactly these keys, each a SHORT (max 2 sentences) data-grounded insight: biggest_leak, best_edge, behavior_pattern, execution_flaw, risk_profile, this_week_focus. Reference real pairs/sessions/numbers.\n\nDATA:\n${context}`;
 
-    const ALLOWED_MODELS = ["google/gemini-2.5-flash", "google/gemini-2.5-pro"];
-    const defaultModel = mode === "deep" ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
-    const useModel = ALLOWED_MODELS.includes(model) ? model : defaultModel;
-
     if (mode === "panels") {
-      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: useModel,
+      try {
+        const r = await bedrockChat({
+          tier,
+          max_tokens: 1500,
           messages: [{ role: "user", content: panelsPrompt }],
-          tools: [{ type: "function", function: { name: "intelligence_panels", description: "Trading intelligence panels", parameters: { type: "object", properties: {
-            biggest_leak: { type: "string" }, best_edge: { type: "string" },
-            behavior_pattern: { type: "string" }, execution_flaw: { type: "string" },
-            risk_profile: { type: "string" }, this_week_focus: { type: "string" },
-          }, required: ["biggest_leak","best_edge","behavior_pattern","execution_flaw","risk_profile","this_week_focus"] } } }],
+          tools: [{
+            type: "function",
+            function: {
+              name: "intelligence_panels",
+              description: "Trading intelligence panels",
+              parameters: {
+                type: "object",
+                properties: {
+                  biggest_leak: { type: "string" }, best_edge: { type: "string" },
+                  behavior_pattern: { type: "string" }, execution_flaw: { type: "string" },
+                  risk_profile: { type: "string" }, this_week_focus: { type: "string" },
+                },
+                required: ["biggest_leak","best_edge","behavior_pattern","execution_flaw","risk_profile","this_week_focus"],
+              },
+            },
+          }],
           tool_choice: { type: "function", function: { name: "intelligence_panels" } },
-        }),
-      });
-      if (!r.ok) {
-        const text = await r.text(); console.error(text);
-        return new Response(JSON.stringify({ error: r.status === 429 ? "Rate limited" : r.status === 402 ? "Add credits" : "AI error" }), { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        });
+        const args = r.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+        const parsed = args ? JSON.parse(args) : {};
+        return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch (e) {
+        return bedrockErrorResponse(e, corsHeaders);
       }
-      const j = await r.json();
-      const args = j.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-      const parsed = args ? JSON.parse(args) : {};
-      return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // brief (non-streaming, simple)
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: useModel, messages: [{ role: "user", content: briefPrompt }] }),
-    });
-    if (!r.ok) {
-      return new Response(JSON.stringify({ error: r.status === 429 ? "Rate limited" : r.status === 402 ? "Add credits" : "AI error" }), { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // brief
+    try {
+      const r = await bedrockChat({
+        tier,
+        max_tokens: 1200,
+        messages: [{ role: "user", content: briefPrompt }],
+      });
+      const text = r.choices?.[0]?.message?.content || "";
+      return new Response(JSON.stringify({ brief: text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    } catch (e) {
+      return bedrockErrorResponse(e, corsHeaders);
     }
-    const j = await r.json();
-    const text = j.choices?.[0]?.message?.content || "";
-    return new Response(JSON.stringify({ brief: text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error(e);
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
