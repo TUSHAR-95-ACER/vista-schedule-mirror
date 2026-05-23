@@ -175,8 +175,7 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return new Response(JSON.stringify({ error: "No auth" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) return new Response(JSON.stringify({ error: "AI Gateway not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!Deno.env.get("BEDROCK_API_KEY")) return new Response(JSON.stringify({ error: "Bedrock not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
