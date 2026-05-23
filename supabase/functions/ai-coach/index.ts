@@ -430,40 +430,24 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
       }
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: useVision ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
-        messages: finalMessages,
+    // Route tier: Opus only for deep "full journal" scope; Sonnet otherwise (vision included).
+    const scope = (pageContext && typeof pageContext === "object" && typeof pageContext.scope === "string")
+      ? pageContext.scope : "page";
+    const tier: ClaudeTier = scope === "full" ? "opus" : "sonnet";
+
+    try {
+      return new Response((await bedrockStream({
+        tier,
+        messages: finalMessages as any,
+        max_tokens: useVision ? 2500 : 1800,
         stream: true,
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Please wait a moment and try again." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Workspace → Usage." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: `AI service error (${response.status})` }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })).body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
+    } catch (e) {
+      if (e instanceof BedrockError) return bedrockErrorResponse(e, corsHeaders);
+      throw e;
     }
-
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
   } catch (e) {
     console.error("ai-coach error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error" }), {
