@@ -13,7 +13,9 @@
 
 export type ClaudeTier = "haiku" | "sonnet" | "opus";
 
-const REGION = Deno.env.get("BEDROCK_REGION") || "us-east-1";
+const RAW_REGION = (Deno.env.get("BEDROCK_REGION") || "").trim().toLowerCase();
+// Guard against invalid values like "global" / empty — Bedrock needs a real AWS region.
+const REGION = /^[a-z]{2}-[a-z]+-\d+$/.test(RAW_REGION) ? RAW_REGION : "us-east-1";
 const BEDROCK_API_KEY = Deno.env.get("BEDROCK_API_KEY");
 
 // Pick a cross-region inference profile prefix matching the region.
