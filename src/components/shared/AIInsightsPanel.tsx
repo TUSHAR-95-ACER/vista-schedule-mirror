@@ -70,7 +70,7 @@ export function AIInsightsPanel({ page, payload, title = 'Page Intelligence', cl
             </div>
             <div>
               <h3 className="text-base font-heading font-semibold text-foreground tracking-tight">{title}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">A mentor-style read of your journal — paragraph by paragraph.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Five-bullet read of this page — fast, concise, actionable.</p>
             </div>
           </div>
           <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', open && 'rotate-180')} />
