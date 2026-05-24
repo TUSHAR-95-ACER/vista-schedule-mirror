@@ -28,10 +28,14 @@ type Mode =
   | "full-journal";
 
 // Inference profile IDs (cross-region). Use prefixed IDs for broader availability.
+const REGION_FOR_PREFIX = Deno.env.get("BEDROCK_REGION") || "us-east-1";
+const PREFIX = REGION_FOR_PREFIX.startsWith("eu-") ? "eu"
+  : REGION_FOR_PREFIX.startsWith("ap-") ? "apac" : "us";
+
 const MODEL_MAP: Record<"haiku" | "sonnet" | "opus", string> = {
-  haiku: "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-  sonnet: "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-  opus: "us.anthropic.claude-opus-4-20250514-v1:0",
+  haiku:  `${PREFIX}.anthropic.claude-3-5-haiku-20241022-v1:0`,
+  sonnet: `${PREFIX}.anthropic.claude-3-7-sonnet-20250219-v1:0`,
+  opus:   `${PREFIX}.anthropic.claude-opus-4-20250514-v1:0`,
 };
 
 function pickModel(mode: Mode): { id: string; tier: string; maxTokens: number } {
@@ -128,14 +132,18 @@ serve(async (req) => {
 
     if (!resp.ok) {
       const errText = await resp.text();
-      console.error("Bedrock error", resp.status, errText);
-      if (resp.status === 429) {
-        return json({ error: "Rate limited by Bedrock. Try again shortly." }, 429);
-      }
-      if (resp.status === 401 || resp.status === 403) {
-        return json({ error: "Bedrock auth failed. Check API key & region." }, 502);
-      }
-      return json({ error: `Bedrock error (${resp.status})` }, 502);
+      console.error("Bedrock error", resp.status, "model=", modelId, "region=", REGION, errText);
+      return json({
+        error: `Bedrock error (${resp.status})`,
+        detail: errText.slice(0, 1500),
+        model: modelId,
+        region: REGION,
+        hint: resp.status === 403 || resp.status === 401
+          ? "Verify BEDROCK_API_KEY is valid and model access is granted in this region. For eu-north-1 use the 'eu.' inference profile prefix."
+          : resp.status === 404
+          ? "Model/profile not available in this region. Check BEDROCK_REGION and model availability."
+          : undefined,
+      }, resp.status >= 400 && resp.status < 600 ? resp.status : 502);
     }
 
     const data = await resp.json();

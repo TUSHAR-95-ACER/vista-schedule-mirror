@@ -13,14 +13,24 @@
 
 export type ClaudeTier = "haiku" | "sonnet" | "opus";
 
-const MODEL_BY_TIER: Record<ClaudeTier, string> = {
-  haiku:  "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-  sonnet: "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-  opus:   "us.anthropic.claude-opus-4-20250514-v1:0",
-};
-
 const REGION = Deno.env.get("BEDROCK_REGION") || "us-east-1";
 const BEDROCK_API_KEY = Deno.env.get("BEDROCK_API_KEY");
+
+// Pick a cross-region inference profile prefix matching the region.
+// Bedrock inference profiles are region-grouped: us.*, eu.*, apac.*
+function regionPrefix(): "us" | "eu" | "apac" {
+  if (REGION.startsWith("eu-")) return "eu";
+  if (REGION.startsWith("ap-")) return "apac";
+  return "us";
+}
+const P = regionPrefix();
+
+// NOTE: Sonnet pinned to 3.7 (user request). Haiku/Opus kept on widely-available IDs.
+const MODEL_BY_TIER: Record<ClaudeTier, string> = {
+  haiku:  `${P}.anthropic.claude-3-5-haiku-20241022-v1:0`,
+  sonnet: `${P}.anthropic.claude-3-7-sonnet-20250219-v1:0`,
+  opus:   `${P}.anthropic.claude-opus-4-20250514-v1:0`,
+};
 
 // ---------- OpenAI-shape input types we accept ----------
 export type OAITextPart  = { type: "text"; text: string };
@@ -272,15 +282,18 @@ export async function bedrockStream(req: BedrockChatRequest): Promise<Response> 
 export function bedrockErrorResponse(e: unknown, corsHeaders: Record<string, string>) {
   const status = e instanceof BedrockError ? e.status : 500;
   let msg = "AI service error";
+  let detail: string | undefined;
   if (e instanceof BedrockError) {
-    if (status === 401 || status === 403) msg = "Bedrock auth failed. Check BEDROCK_API_KEY.";
+    detail = e.message?.slice(0, 1200);
+    if (status === 401 || status === 403) msg = "Bedrock auth failed. Check BEDROCK_API_KEY and that model access is granted in this region.";
+    else if (status === 404) msg = "Model/endpoint not found. Check model ID + region (BEDROCK_REGION).";
     else if (status === 429) msg = "Bedrock rate limit reached. Try again shortly.";
     else if (status >= 500) msg = "Bedrock temporarily unavailable. Try again.";
     else msg = `Bedrock error (${status})`;
   } else if (e instanceof Error) {
     msg = e.message;
   }
-  return new Response(JSON.stringify({ error: msg }), {
+  return new Response(JSON.stringify({ error: msg, detail, region: Deno.env.get("BEDROCK_REGION") || "us-east-1" }), {
     status: status >= 400 && status < 600 ? status : 500,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
