@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { ChevronDown, Sparkles, RefreshCw, Loader2, AlertCircle } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
