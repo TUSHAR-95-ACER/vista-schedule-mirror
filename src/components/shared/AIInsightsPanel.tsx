@@ -109,30 +109,28 @@ export function AIInsightsPanel({ page, payload, title = 'Page Intelligence', cl
           )}
 
           {insights && insights.length > 0 && (
-            <div className="flex flex-col gap-7 max-w-3xl">
+            <ul className="flex flex-col gap-2.5 max-w-3xl">
               {insights.map((ins, i) => {
                 const sev = ins.severity || 'info';
                 const body = ins.body || ins.description || '';
                 return (
-                  <article
+                  <li
                     key={i}
                     className={cn(
-                      'relative pl-5 animate-in fade-in slide-in-from-bottom-2 duration-500',
-                      'before:content-[""] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-full',
+                      'relative flex gap-3 pl-4 py-1 animate-in fade-in slide-in-from-bottom-1 duration-300',
+                      'before:content-[""] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[2px] before:rounded-full',
                       sevAccent[sev],
                     )}
-                    style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}
+                    style={{ animationDelay: `${i * 50}ms`, animationFillMode: 'both' }}
                   >
-                    <h4 className="text-lg font-heading font-semibold text-foreground tracking-tight leading-snug mb-2.5">
-                      {ins.title}
-                    </h4>
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/85 leading-[1.75] [&_p]:my-2 [&_strong]:text-foreground [&_strong]:font-semibold">
-                      <ReactMarkdown>{body}</ReactMarkdown>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">{ins.title}</div>
+                      <div className="text-sm text-foreground/90 leading-snug">{body}</div>
                     </div>
-                  </article>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </div>
       </CollapsibleContent>
