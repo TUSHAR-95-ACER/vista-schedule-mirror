@@ -28,7 +28,8 @@ type Mode =
   | "full-journal";
 
 // Inference profile IDs (cross-region). Use prefixed IDs for broader availability.
-const REGION_FOR_PREFIX = Deno.env.get("BEDROCK_REGION") || "us-east-1";
+const _RAW_REGION = (Deno.env.get("BEDROCK_REGION") || "").trim().toLowerCase();
+const REGION_FOR_PREFIX = /^[a-z]{2}-[a-z]+-\d+$/.test(_RAW_REGION) ? _RAW_REGION : "us-east-1";
 const PREFIX = REGION_FOR_PREFIX.startsWith("eu-") ? "eu"
   : REGION_FOR_PREFIX.startsWith("ap-") ? "apac" : "us";
 
