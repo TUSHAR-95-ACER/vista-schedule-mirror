@@ -282,15 +282,18 @@ export async function bedrockStream(req: BedrockChatRequest): Promise<Response> 
 export function bedrockErrorResponse(e: unknown, corsHeaders: Record<string, string>) {
   const status = e instanceof BedrockError ? e.status : 500;
   let msg = "AI service error";
+  let detail: string | undefined;
   if (e instanceof BedrockError) {
-    if (status === 401 || status === 403) msg = "Bedrock auth failed. Check BEDROCK_API_KEY.";
+    detail = e.message?.slice(0, 1200);
+    if (status === 401 || status === 403) msg = "Bedrock auth failed. Check BEDROCK_API_KEY and that model access is granted in this region.";
+    else if (status === 404) msg = "Model/endpoint not found. Check model ID + region (BEDROCK_REGION).";
     else if (status === 429) msg = "Bedrock rate limit reached. Try again shortly.";
     else if (status >= 500) msg = "Bedrock temporarily unavailable. Try again.";
     else msg = `Bedrock error (${status})`;
   } else if (e instanceof Error) {
     msg = e.message;
   }
-  return new Response(JSON.stringify({ error: msg }), {
+  return new Response(JSON.stringify({ error: msg, detail, region: Deno.env.get("BEDROCK_REGION") || "us-east-1" }), {
     status: status >= 400 && status < 600 ? status : 500,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
