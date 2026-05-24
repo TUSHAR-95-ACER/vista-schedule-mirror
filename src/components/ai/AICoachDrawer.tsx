@@ -131,7 +131,7 @@ export function AICoachDrawer() {
 
   const stop = () => { abortRef.current?.abort(); abortRef.current = null; setLoading(false); };
 
-  const scopes: AICoachScope[] = ['page', 'trade', 'note', 'full'];
+  const scopes: AICoachScope[] = ['page', 'full'];
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeDrawer()}>
