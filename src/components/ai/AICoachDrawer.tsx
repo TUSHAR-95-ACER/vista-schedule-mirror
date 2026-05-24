@@ -131,7 +131,7 @@ export function AICoachDrawer() {
 
   const stop = () => { abortRef.current?.abort(); abortRef.current = null; setLoading(false); };
 
-  const scopes: AICoachScope[] = ['page', 'trade', 'note', 'full'];
+  const scopes: AICoachScope[] = ['page', 'full'];
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeDrawer()}>
@@ -347,10 +347,11 @@ export function AICoachDrawer() {
               )}
             </div>
           </div>
-          <div className="mt-1 text-[10px] text-muted-foreground/70 px-1 flex justify-between">
-            <span>Enter to send · Shift+Enter newline · Paste images</span>
-            {messages.length > 0 && <span>{messages.length} msg</span>}
-          </div>
+          {messages.length > 0 && (
+            <div className="mt-1 text-[10px] text-muted-foreground/70 px-1 flex justify-end">
+              <span>{messages.length} msg</span>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

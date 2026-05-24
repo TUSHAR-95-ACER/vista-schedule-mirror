@@ -43,13 +43,9 @@ export function AICoachProvider({ children }: { children: React.ReactNode }) {
 
   const setTrade = useCallback((snap: AICoachContextSnapshot | null) => {
     setTradeState(snap);
-    if (snap) setScope('trade');
-    else setScope((s) => (s === 'trade' ? 'page' : s));
   }, []);
   const setNote = useCallback((snap: AICoachContextSnapshot | null) => {
     setNoteState(snap);
-    if (snap) setScope('note');
-    else setScope((s) => (s === 'note' ? 'page' : s));
   }, []);
 
   const getActiveContext = useCallback((): AICoachContextSnapshot => {
