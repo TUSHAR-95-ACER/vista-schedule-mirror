@@ -38,28 +38,28 @@ serve(async (req) => {
       });
     }
 
-    const sys = `You are an elite institutional trading mentor — part performance coach, part trading psychologist, part prop-firm risk manager. The user is reviewing their "${String(page).slice(0, 80)}" page and wants you to read their journal data like a real coach would.
+    const sys = `You are a sharp trading coach producing PAGE INTELLIGENCE for the "${String(page).slice(0, 80)}" page.
 
-VOICE
-- Talk to the trader directly, second person ("you", "your"). Calm, strict, deeply observant.
-- No corporate dashboard tone, no motivational filler, no emoji headers, no labels like RISK/EDGE/LEAK.
-- Write like a mentor reviewing their journal aloud — psychologically aware, emotionally intelligent, brutally honest, never robotic.
+OUTPUT RULES (STRICT):
+- Return EXACTLY 5 bullets. No more, no less.
+- Each bullet: ONE short sentence, max ~18 words. No paragraphs, no preamble, no markdown.
+- Second person ("you", "your"). Direct, specific, reference real numbers/pairs/sessions from the data.
+- The 5 bullets MUST cover, in this order:
+  1. What happened (key result/pattern on this page)
+  2. Biggest mistake
+  3. Strongest behavior
+  4. What to avoid next
+  5. Next action (one concrete step)
+- If data is too thin for a slot, say "Not enough data yet" for that bullet. Never invent.`;
 
-WHAT TO PRODUCE
-- 3 to 4 long-form insights. Each one is a meaningful paragraph (4 to 7 sentences), not a one-liner.
-- Each insight has:
-  • a "title": a sentence-form human observation, e.g. "Your execution is better than your patience". Never use single-word labels.
-  • a "body": flowing paragraph that does five things in order — observation, behavioural cause, evidence cited from the journal data (real numbers, pairs, sessions, dates, setups, mistakes, psychology entries), correction, future focus.
-- Reference real data. Never invent. If data is too thin for an insight, write fewer insights rather than padding.
-- Severity is internal only: "good" for genuine strengths, "warn" for leaks, "critical" for serious risk, "info" otherwise.`;
-
-    const userText = `JOURNAL DATA FOR THIS PAGE (JSON):\n${JSON.stringify(payload).slice(0, 14000)}`;
+    const userText = `JOURNAL DATA FOR THIS PAGE (JSON):\n${JSON.stringify(payload).slice(0, 12000)}`;
 
     let result;
     try {
       result = await bedrockChat({
-        tier: "sonnet",
-        max_tokens: 2500,
+        tier: "haiku",
+        max_tokens: 600,
+        temperature: 0.4,
         messages: [
           { role: "system", content: sys },
           { role: "user", content: userText },
@@ -68,17 +68,19 @@ WHAT TO PRODUCE
           type: "function",
           function: {
             name: "emit_insights",
-            description: "Return mentor-style insights about the trader's journal.",
+            description: "Return exactly 5 concise page-intelligence bullets.",
             parameters: {
               type: "object",
               properties: {
                 insights: {
                   type: "array",
+                  minItems: 5,
+                  maxItems: 5,
                   items: {
                     type: "object",
                     properties: {
-                      title: { type: "string", description: "Sentence-form observation, never a single label." },
-                      body: { type: "string", description: "Long-form paragraph: observation, cause, evidence, correction, future focus." },
+                      title: { type: "string", description: "Slot label: What happened | Biggest mistake | Strongest behavior | What to avoid | Next action" },
+                      body: { type: "string", description: "ONE short sentence, max ~18 words." },
                       severity: { type: "string", enum: ["info", "good", "warn", "critical"] },
                     },
                     required: ["title", "body"],
@@ -102,11 +104,11 @@ WHAT TO PRODUCE
 
     insights = insights
       .filter((i: any) => i && typeof i.title === "string" && typeof i.body === "string")
-      .slice(0, 4)
+      .slice(0, 5)
       .map((i: any) => ({
-        title: String(i.title).slice(0, 140),
-        body: String(i.body).slice(0, 1400),
-        description: String(i.body).slice(0, 1400),
+        title: String(i.title).slice(0, 60),
+        body: String(i.body).slice(0, 220),
+        description: String(i.body).slice(0, 220),
         severity: ["info", "good", "warn", "critical"].includes(i.severity) ? i.severity : "info",
       }));
 
