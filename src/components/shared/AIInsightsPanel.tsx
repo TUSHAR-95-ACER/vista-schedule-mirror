@@ -27,7 +27,7 @@ const sevAccent: Record<string, string> = {
   info: 'before:bg-primary',
 };
 
-export function AIInsightsPanel({ page, payload, title = 'Mentor Review', className }: AIInsightsPanelProps) {
+export function AIInsightsPanel({ page, payload, title = 'Page Intelligence', className }: AIInsightsPanelProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<AIInsight[] | null>(null);
