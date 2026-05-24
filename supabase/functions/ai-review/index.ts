@@ -84,7 +84,7 @@ serve(async (req) => {
 
     // ── Secrets ─────────────────────────────────────────────────────────
     const BEDROCK_API_KEY = Deno.env.get("BEDROCK_API_KEY");
-    const REGION = Deno.env.get("BEDROCK_REGION") || "us-east-1";
+    const REGION = REGION_FOR_PREFIX;
     if (!BEDROCK_API_KEY) {
       return json({ error: "Bedrock not configured" }, 500);
     }
