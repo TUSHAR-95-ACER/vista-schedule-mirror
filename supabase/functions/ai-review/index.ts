@@ -34,9 +34,9 @@ const PREFIX = REGION_FOR_PREFIX.startsWith("eu-") ? "eu"
   : REGION_FOR_PREFIX.startsWith("ap-") ? "apac" : "us";
 
 const MODEL_MAP: Record<"haiku" | "sonnet" | "opus", string> = {
-  haiku:  `${PREFIX}.anthropic.claude-3-5-haiku-20241022-v1:0`,
-  sonnet: `${PREFIX}.anthropic.claude-3-7-sonnet-20250219-v1:0`,
-  opus:   `${PREFIX}.anthropic.claude-opus-4-20250514-v1:0`,
+  haiku:  `${PREFIX}.anthropic.claude-haiku-4-5-20251001-v1:0`,
+  sonnet: `${PREFIX}.anthropic.claude-sonnet-4-5-20250929-v1:0`,
+  opus:   `${PREFIX}.anthropic.claude-opus-4-1-20250805-v1:0`,
 };
 
 function pickModel(mode: Mode): { id: string; tier: string; maxTokens: number } {
