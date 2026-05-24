@@ -28,10 +28,14 @@ type Mode =
   | "full-journal";
 
 // Inference profile IDs (cross-region). Use prefixed IDs for broader availability.
+const REGION_FOR_PREFIX = Deno.env.get("BEDROCK_REGION") || "us-east-1";
+const PREFIX = REGION_FOR_PREFIX.startsWith("eu-") ? "eu"
+  : REGION_FOR_PREFIX.startsWith("ap-") ? "apac" : "us";
+
 const MODEL_MAP: Record<"haiku" | "sonnet" | "opus", string> = {
-  haiku: "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-  sonnet: "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-  opus: "us.anthropic.claude-opus-4-20250514-v1:0",
+  haiku:  `${PREFIX}.anthropic.claude-3-5-haiku-20241022-v1:0`,
+  sonnet: `${PREFIX}.anthropic.claude-3-7-sonnet-20250219-v1:0`,
+  opus:   `${PREFIX}.anthropic.claude-opus-4-20250514-v1:0`,
 };
 
 function pickModel(mode: Mode): { id: string; tier: string; maxTokens: number } {
