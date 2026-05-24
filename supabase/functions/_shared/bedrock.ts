@@ -13,14 +13,24 @@
 
 export type ClaudeTier = "haiku" | "sonnet" | "opus";
 
-const MODEL_BY_TIER: Record<ClaudeTier, string> = {
-  haiku:  "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-  sonnet: "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-  opus:   "us.anthropic.claude-opus-4-20250514-v1:0",
-};
-
 const REGION = Deno.env.get("BEDROCK_REGION") || "us-east-1";
 const BEDROCK_API_KEY = Deno.env.get("BEDROCK_API_KEY");
+
+// Pick a cross-region inference profile prefix matching the region.
+// Bedrock inference profiles are region-grouped: us.*, eu.*, apac.*
+function regionPrefix(): "us" | "eu" | "apac" {
+  if (REGION.startsWith("eu-")) return "eu";
+  if (REGION.startsWith("ap-")) return "apac";
+  return "us";
+}
+const P = regionPrefix();
+
+// NOTE: Sonnet pinned to 3.7 (user request). Haiku/Opus kept on widely-available IDs.
+const MODEL_BY_TIER: Record<ClaudeTier, string> = {
+  haiku:  `${P}.anthropic.claude-3-5-haiku-20241022-v1:0`,
+  sonnet: `${P}.anthropic.claude-3-7-sonnet-20250219-v1:0`,
+  opus:   `${P}.anthropic.claude-opus-4-20250514-v1:0`,
+};
 
 // ---------- OpenAI-shape input types we accept ----------
 export type OAITextPart  = { type: "text"; text: string };
