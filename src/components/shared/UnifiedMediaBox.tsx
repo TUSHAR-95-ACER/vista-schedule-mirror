@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2, Video, Link2, Loader2, Globe, ExternalLink, Play } from 'lucide-react';
+import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2, Video, Link2, Loader2, Globe, ExternalLink, CalendarDays } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';
