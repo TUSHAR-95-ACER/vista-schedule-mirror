@@ -163,6 +163,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+
     if (contentType.includes('text/html')) {
       const html = await response.text();
       const title = extractMeta(html, 'title') || html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() || '';
@@ -175,15 +177,25 @@ Deno.serve(async (req) => {
 
       const siteName = extractMeta(html, 'site_name');
 
+      // Published date: <meta property="article:published_time"> or <time datetime="…">
+      let publishedAt = '';
+      const pubMeta = html.match(/<meta[^>]*property=["']article:published_time["'][^>]*content=["']([^"']*)["']/i)
+        || html.match(/<meta[^>]*name=["'](?:date|pubdate|publish-date)["'][^>]*content=["']([^"']*)["']/i);
+      if (pubMeta) publishedAt = pubMeta[1];
+      if (!publishedAt) {
+        const timeTag = html.match(/<time[^>]*datetime=["']([^"']+)["']/i);
+        if (timeTag) publishedAt = timeTag[1];
+      }
+
       return new Response(JSON.stringify({
         success: true, type: title || description ? 'article' : 'link',
-        url: finalUrl, domain, title, description, image, siteName,
+        url: finalUrl, domain, title, description, image, siteName, favicon, publishedAt,
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     return new Response(JSON.stringify({
       success: true, type: 'link', url: finalUrl, domain,
-      title: '', description: '', image: '',
+      title: '', description: '', image: '', favicon,
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {

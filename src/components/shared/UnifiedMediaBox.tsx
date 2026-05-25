@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2, Video, Link2, Loader2, Globe, ExternalLink, Play } from 'lucide-react';
+import { ImagePlus, X, Upload, ZoomIn, ZoomOut, Maximize2, Video, Link2, Loader2, Globe, ExternalLink, CalendarDays } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';
@@ -44,27 +45,47 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const [zoom, setZoom] = useState(1);
   const [urlInput, setUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlMeta, setUrlMeta] = useState<MediaItem['meta'] | null>(null);
+  const [urlMeta, setUrlMeta] = useState<LinkMeta | null>(null);
   const [urlLoading, setUrlLoading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'url' | null>(null);
+  const [screenshotFailed, setScreenshotFailed] = useState(false);
+
+  // Real URL to use for opening / embedding (strips meta encoding).
+  const decoded = value ? decodeLinkMeta(value) : null;
+  const rawUrl = decoded ? decoded.url : value || '';
 
   // Detect type from current value
   useEffect(() => {
+    setScreenshotFailed(false);
     if (!value) { setMediaType(null); setUrlMeta(null); return; }
-    if (value.startsWith('data:image') || value.startsWith('blob:')) {
-      // Check if it was a video blob
-      setMediaType(value.startsWith('data:image') ? 'image' : 'video');
-    } else if (isImageUrl(value)) {
-      setMediaType('image');
-    } else if (isVideoUrl(value)) {
-      setMediaType('video');
-    } else if (value.startsWith('http')) {
+    if (decoded) { setMediaType('url'); setUrlMeta(decoded); return; }
+    if (value.startsWith('data:image')) { setMediaType('image'); setUrlMeta(null); return; }
+    if (value.startsWith('data:video') || value.startsWith('blob:')) { setMediaType('video'); setUrlMeta(null); return; }
+    if (isImageUrl(value)) { setMediaType('image'); setUrlMeta(null); return; }
+    if (isVideoUrl(value)) { setMediaType('video'); setUrlMeta(null); return; }
+    if (value.startsWith('http')) {
       setMediaType('url');
-    } else if (value.startsWith('data:video')) {
-      setMediaType('video');
-    } else {
-      setMediaType('image'); // fallback for data URLs
+      setUrlMeta(null);
+      // Auto-rehydrate metadata for legacy plain URLs so cards survive reload.
+      (async () => {
+        try {
+          const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: value } });
+          if (data?.success) {
+            const meta: LinkMeta = {
+              url: data.url || value, title: data.title, description: data.description,
+              image: data.image, domain: data.domain, siteName: data.siteName,
+              favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+              publishedAt: data.publishedAt,
+            };
+            setUrlMeta(meta);
+            onChange(encodeLinkMeta(meta));
+          }
+        } catch { /* keep raw URL fallback */ }
+      })();
+      return;
     }
+    setMediaType('image'); // fallback for any other data URLs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const readFileAsDataUrl = (file: File): Promise<string> =>
@@ -151,8 +172,14 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
     try {
       const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: finalUrl } });
       if (data?.success) {
-        setUrlMeta({ title: data.title, description: data.description, image: data.image, domain: data.domain, youtubeId: data.youtubeId });
-        onChange(data.url || finalUrl);
+        const meta: LinkMeta = {
+          url: data.url || finalUrl, title: data.title, description: data.description,
+          image: data.image, domain: data.domain, siteName: data.siteName,
+          favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+          publishedAt: data.publishedAt,
+        };
+        setUrlMeta(meta);
+        onChange(encodeLinkMeta(meta));
       } else {
         onChange(finalUrl);
       }
@@ -170,57 +197,115 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
     ...(accept.includes('video') ? ['video/mp4', 'video/webm'] : []),
   ].join(',');
 
-  const ytId = value ? getYouTubeId(value) : null;
+  const ytId = rawUrl ? getYouTubeId(rawUrl) : null;
+  const isTruthSocial = !!urlMeta?.domain && /truthsocial\.com$/i.test(urlMeta.domain);
+  const thumbCandidate = urlMeta?.image
+    || (urlMeta && !screenshotFailed ? screenshotFor(urlMeta.url) : '')
+    || (urlMeta?.favicon || (urlMeta?.domain ? faviconFor(urlMeta.domain) : ''));
+  const showAsArtwork = !!urlMeta?.image; // real OG; otherwise screenshot/favicon
 
   // ── PREVIEW ──────────────────────────────────
   if (value) {
     return (
       <div className="space-y-2">
         <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>
-        <div className="relative group rounded-xl overflow-hidden border border-border/50 bg-muted/5">
+        <div className="relative group rounded-2xl overflow-hidden border border-border/60 bg-card shadow-sm">
 
           {/* YouTube embed */}
           {ytId ? (
             <div className="aspect-video">
               <iframe src={`https://www.youtube.com/embed/${ytId}`} className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
             </div>
-          ) : mediaType === 'video' || value.startsWith('blob:') || value.startsWith('data:video') ? (
-            <video src={value} controls className="w-full rounded-xl bg-black" style={{ maxHeight: maxPreviewHeight }} />
+          ) : mediaType === 'video' || rawUrl.startsWith('blob:') || rawUrl.startsWith('data:video') ? (
+            <video src={rawUrl} controls className="w-full rounded-xl bg-black" style={{ maxHeight: maxPreviewHeight }} />
           ) : mediaType === 'url' && urlMeta ? (
-            /* Rich URL preview card */
-            <a href={value} target="_blank" rel="noopener noreferrer" className="flex overflow-hidden hover:bg-muted/10 transition-colors">
-              {urlMeta.image && (
-                <div className="w-32 h-28 shrink-0 bg-muted/20">
-                  <img src={urlMeta.image} alt="" className="w-full h-full object-cover" loading="lazy" />
+            /* Rich news / link card — institutional research board aesthetic */
+            <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
+              {thumbCandidate && (
+                <div className={cn(
+                  'relative w-full bg-muted/20 border-b border-border/40 overflow-hidden',
+                  showAsArtwork ? 'aspect-[16/9]' : 'aspect-[16/7] flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/10',
+                )}>
+                  {showAsArtwork ? (
+                    <img
+                      src={thumbCandidate}
+                      alt={urlMeta.title || urlMeta.domain || ''}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        if (!screenshotFailed && urlMeta) {
+                          setScreenshotFailed(true);
+                          (e.currentTarget as HTMLImageElement).src = urlMeta.favicon || faviconFor(urlMeta.domain || '');
+                          (e.currentTarget as HTMLImageElement).className = 'h-16 w-16 m-auto object-contain';
+                        }
+                      }}
+                    />
+                  ) : (
+                    <img src={thumbCandidate} alt="" className="h-16 w-16 object-contain opacity-80" />
+                  )}
+                  {isTruthSocial && (
+                    <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-background/90 text-[10px] font-semibold tracking-wide border border-border/60">
+                      TRUTH SOCIAL
+                    </div>
+                  )}
                 </div>
               )}
-              <div className="flex-1 min-w-0 p-4 flex flex-col justify-center gap-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                  <Globe className="h-3 w-3" /> {urlMeta.domain}
+              <div className="p-5 space-y-2">
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  {urlMeta.favicon ? (
+                    <img src={urlMeta.favicon} alt="" className="h-3.5 w-3.5 rounded-sm" />
+                  ) : (
+                    <Globe className="h-3 w-3" />
+                  )}
+                  <span>{urlMeta.siteName || urlMeta.domain}</span>
+                  {urlMeta.publishedAt && (
+                    <>
+                      <span className="text-muted-foreground/40">·</span>
+                      <CalendarDays className="h-3 w-3" />
+                      <span className="font-normal normal-case tracking-normal">
+                        {(() => { try { return new Date(urlMeta.publishedAt!).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); } catch { return urlMeta.publishedAt; } })()}
+                      </span>
+                    </>
+                  )}
                 </div>
-                {urlMeta.title && <p className="text-sm font-semibold text-foreground line-clamp-2">{urlMeta.title}</p>}
-                {urlMeta.description && <p className="text-xs text-muted-foreground line-clamp-2">{urlMeta.description}</p>}
-              </div>
-              <div className="shrink-0 flex items-center px-3">
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                {urlMeta.title ? (
+                  <p className="text-base font-bold text-foreground leading-snug line-clamp-3">{urlMeta.title}</p>
+                ) : (
+                  <p className="text-sm font-semibold text-foreground line-clamp-2 break-all">{urlMeta.url}</p>
+                )}
+                {urlMeta.description && (
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{urlMeta.description}</p>
+                )}
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline">
+                    Open article <ExternalLink className="h-3 w-3" />
+                  </span>
+                </div>
               </div>
             </a>
           ) : mediaType === 'url' ? (
-            /* Simple URL card */
-            <a href={value} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 hover:bg-muted/10 transition-colors">
-              <div className="h-10 w-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
-                <Link2 className="h-4 w-4 text-muted-foreground" />
+            /* Loading / fallback — favicon + clickable URL while metadata hydrates */
+            <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-5 hover:bg-muted/10 transition-colors">
+              <div className="h-12 w-12 rounded-xl bg-muted/40 flex items-center justify-center shrink-0">
+                {(() => {
+                  try {
+                    const d = new URL(rawUrl).hostname.replace(/^www\./, '');
+                    return <img src={faviconFor(d)} alt="" className="h-7 w-7" />;
+                  } catch {
+                    return <Link2 className="h-4 w-4 text-muted-foreground" />;
+                  }
+                })()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{value}</p>
-                <p className="text-[10px] text-muted-foreground">Click to open</p>
+                <p className="text-sm font-semibold text-foreground truncate">{(() => { try { return new URL(rawUrl).hostname.replace(/^www\./, ''); } catch { return rawUrl; } })()}</p>
+                <p className="text-[11px] text-muted-foreground truncate">{rawUrl}</p>
               </div>
-              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <Loader2 className="h-3.5 w-3.5 text-muted-foreground shrink-0 animate-spin" />
             </a>
           ) : (
             /* Image preview — full-width, intrinsic aspect ratio */
             <img
-              src={value}
+              src={rawUrl}
               alt={label}
               style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
               className="block bg-muted/10 cursor-pointer"
