@@ -172,8 +172,14 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
     try {
       const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: finalUrl } });
       if (data?.success) {
-        setUrlMeta({ title: data.title, description: data.description, image: data.image, domain: data.domain, youtubeId: data.youtubeId });
-        onChange(data.url || finalUrl);
+        const meta: LinkMeta = {
+          url: data.url || finalUrl, title: data.title, description: data.description,
+          image: data.image, domain: data.domain, siteName: data.siteName,
+          favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+          publishedAt: data.publishedAt,
+        };
+        setUrlMeta(meta);
+        onChange(encodeLinkMeta(meta));
       } else {
         onChange(finalUrl);
       }
