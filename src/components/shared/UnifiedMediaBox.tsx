@@ -45,27 +45,47 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const [zoom, setZoom] = useState(1);
   const [urlInput, setUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlMeta, setUrlMeta] = useState<MediaItem['meta'] | null>(null);
+  const [urlMeta, setUrlMeta] = useState<LinkMeta | null>(null);
   const [urlLoading, setUrlLoading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'url' | null>(null);
+  const [screenshotFailed, setScreenshotFailed] = useState(false);
+
+  // Real URL to use for opening / embedding (strips meta encoding).
+  const decoded = value ? decodeLinkMeta(value) : null;
+  const rawUrl = decoded ? decoded.url : value || '';
 
   // Detect type from current value
   useEffect(() => {
+    setScreenshotFailed(false);
     if (!value) { setMediaType(null); setUrlMeta(null); return; }
-    if (value.startsWith('data:image') || value.startsWith('blob:')) {
-      // Check if it was a video blob
-      setMediaType(value.startsWith('data:image') ? 'image' : 'video');
-    } else if (isImageUrl(value)) {
-      setMediaType('image');
-    } else if (isVideoUrl(value)) {
-      setMediaType('video');
-    } else if (value.startsWith('http')) {
+    if (decoded) { setMediaType('url'); setUrlMeta(decoded); return; }
+    if (value.startsWith('data:image')) { setMediaType('image'); setUrlMeta(null); return; }
+    if (value.startsWith('data:video') || value.startsWith('blob:')) { setMediaType('video'); setUrlMeta(null); return; }
+    if (isImageUrl(value)) { setMediaType('image'); setUrlMeta(null); return; }
+    if (isVideoUrl(value)) { setMediaType('video'); setUrlMeta(null); return; }
+    if (value.startsWith('http')) {
       setMediaType('url');
-    } else if (value.startsWith('data:video')) {
-      setMediaType('video');
-    } else {
-      setMediaType('image'); // fallback for data URLs
+      setUrlMeta(null);
+      // Auto-rehydrate metadata for legacy plain URLs so cards survive reload.
+      (async () => {
+        try {
+          const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: value } });
+          if (data?.success) {
+            const meta: LinkMeta = {
+              url: data.url || value, title: data.title, description: data.description,
+              image: data.image, domain: data.domain, siteName: data.siteName,
+              favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+              publishedAt: data.publishedAt,
+            };
+            setUrlMeta(meta);
+            onChange(encodeLinkMeta(meta));
+          }
+        } catch { /* keep raw URL fallback */ }
+      })();
+      return;
     }
+    setMediaType('image'); // fallback for any other data URLs
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const readFileAsDataUrl = (file: File): Promise<string> =>
