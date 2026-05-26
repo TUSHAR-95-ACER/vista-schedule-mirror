@@ -65,22 +65,40 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
     if (isVideoUrl(value)) { setMediaType('video'); setUrlMeta(null); return; }
     if (value.startsWith('http')) {
       setMediaType('url');
-      setUrlMeta(null);
-      // Auto-rehydrate metadata for legacy plain URLs so cards survive reload.
+      // Build minimal meta immediately so we never render a naked URL row.
+      let domain = '';
+      try { domain = new URL(value).hostname.replace(/^www\./, ''); } catch { /* noop */ }
+      const minimalMeta: LinkMeta = {
+        url: value, domain, siteName: domain,
+        favicon: domain ? faviconFor(domain) : undefined,
+        type: /truthsocial\.com/i.test(domain) ? 'article' : 'link',
+      };
+      setUrlMeta(minimalMeta);
+      // Try to enrich and persist; on any failure, still persist the minimal meta
+      // so reload doesn't keep re-fetching and the card stays consistent.
       (async () => {
         try {
           const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: value } });
           if (data?.success) {
             const meta: LinkMeta = {
-              url: data.url || value, title: data.title, description: data.description,
-              image: data.image, domain: data.domain, siteName: data.siteName,
-              favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+              url: data.url || value,
+              title: data.title || undefined,
+              description: data.description || undefined,
+              image: data.image || undefined,
+              domain: data.domain || domain,
+              siteName: data.siteName || data.domain || domain,
+              favicon: data.favicon || minimalMeta.favicon,
+              youtubeId: data.youtubeId,
+              type: data.type || minimalMeta.type,
               publishedAt: data.publishedAt,
             };
             setUrlMeta(meta);
             onChange(encodeLinkMeta(meta));
+            return;
           }
-        } catch { /* keep raw URL fallback */ }
+        } catch { /* fall through */ }
+        // Persist minimal meta so we don't refetch on every reload.
+        onChange(encodeLinkMeta(minimalMeta));
       })();
       return;
     }
