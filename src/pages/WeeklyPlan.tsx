@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BiasBadge, BiasSelectContent } from '@/components/shared/BiasBadge';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
