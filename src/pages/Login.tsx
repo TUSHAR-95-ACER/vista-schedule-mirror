@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Mail, Lock, User, LogIn } from 'lucide-react';
+import { RouteSeo } from '@/components/seo/RouteSeo';
 
 export default function Login() {
   const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
