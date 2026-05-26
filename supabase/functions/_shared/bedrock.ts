@@ -295,7 +295,7 @@ export function bedrockErrorResponse(e: unknown, corsHeaders: Record<string, str
   } else if (e instanceof Error) {
     msg = e.message;
   }
-  return new Response(JSON.stringify({ error: msg, detail, region: Deno.env.get("BEDROCK_REGION") || "us-east-1" }), {
+  return new Response(JSON.stringify({ error: msg }), {
     status: status >= 400 && status < 600 ? status : 500,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
