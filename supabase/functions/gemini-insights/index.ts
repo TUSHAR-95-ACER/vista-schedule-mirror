@@ -117,7 +117,7 @@ OUTPUT RULES (STRICT):
     });
   } catch (e) {
     console.error("gemini-insights error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Internal server error", insights: [] }), {
+    return new Response(JSON.stringify({ error: "Internal server error", insights: [] }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
