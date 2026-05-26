@@ -43,23 +43,7 @@ function formatFullDate(date: string): string {
 }
 
 function BiasTag({ bias }: { bias: string }) {
-  if (bias === 'Neutral') return null;
-  return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
-      bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
-      bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
-      bias === 'Sideways' && 'bg-warning/10 text-warning border-warning/25',
-    )}>
-      <span className={cn(
-        'h-1.5 w-1.5 rounded-full',
-        bias === 'Bullish' && 'bg-success',
-        bias === 'Bearish' && 'bg-destructive',
-        bias === 'Sideways' && 'bg-warning',
-      )} />
-      {bias}
-    </span>
-  );
+  return <BiasBadge bias={bias} hideNeutral />;
 }
 
 function SectionCard({ title, icon, accent = 'primary', badge, children, className }: {
@@ -364,25 +348,14 @@ export default function DailyPlanPage() {
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
                 <Select value={pp.bias} onValueChange={v => updatePair(pp.id, { bias: v as any })}>
                   <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Bullish">Bullish</SelectItem>
-                    <SelectItem value="Bearish">Bearish</SelectItem>
-                    <SelectItem value="Sideways">Sideways</SelectItem>
-                    <SelectItem value="Neutral">Neutral</SelectItem>
-                  </SelectContent>
+                  <BiasSelectContent />
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
                 <Select value={pp.actualBias || 'none'} onValueChange={v => updatePair(pp.id, { actualBias: v === 'none' ? '' : v as DailyPairPlan['actualBias'] })}>
                   <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">—</SelectItem>
-                    <SelectItem value="Bullish">Bullish</SelectItem>
-                    <SelectItem value="Bearish">Bearish</SelectItem>
-                    <SelectItem value="Sideways">Sideways</SelectItem>
-                    <SelectItem value="Neutral">Neutral</SelectItem>
-                  </SelectContent>
+                  <BiasSelectContent includeNone />
                 </Select>
               </div>
               {pp.pair !== 'DXY' && (
