@@ -151,13 +151,8 @@ serve(async (req) => {
       ? data.content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim()
       : "";
 
-    return json({
-      text,
-      model: modelId,
-      tier,
-      mode,
-      usage: data?.usage ?? null,
-    }, 200);
+    console.info("ai-review ok", { mode, tier, model: modelId, usage: data?.usage ?? null });
+    return json({ text, mode, tier }, 200);
   } catch (e) {
     console.error("ai-review error", e);
     return json(
