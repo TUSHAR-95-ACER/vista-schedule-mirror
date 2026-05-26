@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://master-journal-tg.lovable.app/sitemap.xml

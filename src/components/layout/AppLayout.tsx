@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { MarketTicker } from '@/components/news/MarketTicker';
 import { AICoachProvider, useAICoach } from '@/contexts/AICoachContext';
 import { AICoachDrawer } from '@/components/ai/AICoachDrawer';
+import { RouteSeo } from '@/components/seo/RouteSeo';
 
 
 const PATH_LABELS: Record<string, string> = {
@@ -53,6 +54,7 @@ function ShellInner() {
       </div>
       <AICoachDrawer />
       <PageContextRegistrar />
+      <RouteSeo />
     </div>
   );
 }

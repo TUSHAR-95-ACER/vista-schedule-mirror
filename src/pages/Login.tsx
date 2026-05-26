@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Mail, Lock, User, LogIn } from 'lucide-react';
+import { RouteSeo } from '@/components/seo/RouteSeo';
 
 export default function Login() {
   const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
@@ -71,6 +72,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      <RouteSeo />
       <div className="w-full max-w-md mx-auto px-6">
         <div className="bg-card border border-border rounded-2xl p-8 shadow-xl space-y-6">
           {/* Brand */}
