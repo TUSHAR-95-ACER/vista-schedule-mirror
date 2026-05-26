@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 
 // Apply persisted journal font instantly to avoid a flash of unstyled typography.
@@ -14,9 +15,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TradingProvider } from "@/contexts/TradingContext";
 
 createRoot(document.getElementById("root")!).render(
-  <AuthProvider>
-    <TradingProvider>
-      <App />
-    </TradingProvider>
-  </AuthProvider>
+  <HelmetProvider>
+    <AuthProvider>
+      <TradingProvider>
+        <App />
+      </TradingProvider>
+    </AuthProvider>
+  </HelmetProvider>
 );
