@@ -94,7 +94,6 @@ serve(async (req) => {
     const mode: Mode = body.mode || "review";
     const prompt: string = (body.prompt || "").toString().slice(0, 16000);
     const payload = body.payload ?? null;
-    const systemOverride: string | undefined = body.system;
 
     if (!prompt) {
       return json({ error: "prompt is required" }, 400);
@@ -109,10 +108,11 @@ serve(async (req) => {
       }`
       : prompt;
 
+    // System prompt is server-controlled only; never honor client overrides.
     const bedrockBody = {
       anthropic_version: "bedrock-2023-05-31",
       max_tokens: maxTokens,
-      system: systemOverride || SYSTEM_PROMPT,
+      system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     };
 
