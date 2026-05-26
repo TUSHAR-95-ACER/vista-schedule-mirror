@@ -303,9 +303,24 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                 </div>
                 {urlMeta.title ? (
                   <p className="text-base font-bold text-foreground leading-snug line-clamp-3">{urlMeta.title}</p>
-                ) : (
-                  <p className="text-sm font-semibold text-foreground line-clamp-2 break-all">{urlMeta.url}</p>
-                )}
+                ) : (() => {
+                  // Derive a human title from the URL slug when scraping returned nothing.
+                  let derived = '';
+                  try {
+                    const u = new URL(urlMeta.url);
+                    const seg = u.pathname.split('/').filter(Boolean).pop() || '';
+                    derived = decodeURIComponent(seg)
+                      .replace(/[-_]+/g, ' ')
+                      .replace(/\.(html?|php|aspx?)$/i, '')
+                      .replace(/\b\w/g, (c) => c.toUpperCase())
+                      .trim();
+                  } catch { /* noop */ }
+                  return (
+                    <p className="text-base font-bold text-foreground leading-snug line-clamp-3">
+                      {derived || `Article on ${urlMeta.siteName || urlMeta.domain || 'this site'}`}
+                    </p>
+                  );
+                })()}
                 {urlMeta.description && (
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{urlMeta.description}</p>
                 )}
