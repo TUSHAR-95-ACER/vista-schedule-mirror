@@ -185,24 +185,39 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
       return;
     }
 
-    // Fetch metadata for article URLs
+    // Fetch metadata for article URLs — always persist as urlmeta so we never store a raw URL.
     setUrlLoading(true);
+    let domain = '';
+    try { domain = new URL(finalUrl).hostname.replace(/^www\./, ''); } catch { /* noop */ }
+    const minimalMeta: LinkMeta = {
+      url: finalUrl, domain, siteName: domain,
+      favicon: domain ? faviconFor(domain) : undefined,
+      type: /truthsocial\.com/i.test(domain) ? 'article' : 'link',
+    };
     try {
       const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: finalUrl } });
       if (data?.success) {
         const meta: LinkMeta = {
-          url: data.url || finalUrl, title: data.title, description: data.description,
-          image: data.image, domain: data.domain, siteName: data.siteName,
-          favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+          url: data.url || finalUrl,
+          title: data.title || undefined,
+          description: data.description || undefined,
+          image: data.image || undefined,
+          domain: data.domain || domain,
+          siteName: data.siteName || data.domain || domain,
+          favicon: data.favicon || minimalMeta.favicon,
+          youtubeId: data.youtubeId,
+          type: data.type || minimalMeta.type,
           publishedAt: data.publishedAt,
         };
         setUrlMeta(meta);
         onChange(encodeLinkMeta(meta));
       } else {
-        onChange(finalUrl);
+        setUrlMeta(minimalMeta);
+        onChange(encodeLinkMeta(minimalMeta));
       }
     } catch {
-      onChange(finalUrl);
+      setUrlMeta(minimalMeta);
+      onChange(encodeLinkMeta(minimalMeta));
     } finally {
       setUrlLoading(false);
       setUrlInput('');
