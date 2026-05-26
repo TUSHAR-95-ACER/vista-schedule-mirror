@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BiasBadge, BiasSelectContent } from '@/components/shared/BiasBadge';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { useTrading } from '@/contexts/TradingContext';
 import { Button } from '@/components/ui/button';
@@ -50,23 +51,7 @@ function formatWeekRange(weekStart: string): string {
 }
 
 function BiasTag({ bias }: { bias: string }) {
-  if (bias === 'Neutral') return null;
-  return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border',
-      bias === 'Bullish' && 'bg-success/10 text-success border-success/25',
-      bias === 'Bearish' && 'bg-destructive/10 text-destructive border-destructive/25',
-      bias === 'Sideways' && 'bg-warning/10 text-warning border-warning/25',
-    )}>
-      <span className={cn(
-        'h-1.5 w-1.5 rounded-full',
-        bias === 'Bullish' && 'bg-success',
-        bias === 'Bearish' && 'bg-destructive',
-        bias === 'Sideways' && 'bg-warning',
-      )} />
-      {bias}
-    </span>
-  );
+  return <BiasBadge bias={bias} hideNeutral />;
 }
 
 function SectionCard({ title, icon, accent = 'primary', badge, children, className }: {
@@ -331,25 +316,14 @@ export default function WeeklyPlanPage() {
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
                 <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as PairAnalysis['bias'] })}>
                   <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Bullish">Bullish</SelectItem>
-                    <SelectItem value="Bearish">Bearish</SelectItem>
-                    <SelectItem value="Sideways">Sideways</SelectItem>
-                    <SelectItem value="Neutral">Neutral</SelectItem>
-                  </SelectContent>
+                  <BiasSelectContent />
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
                 <Select value={pa.actualBias || 'none'} onValueChange={v => updatePair(pa.id, { actualBias: v === 'none' ? '' : v as PairAnalysis['actualBias'] })}>
                   <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">—</SelectItem>
-                    <SelectItem value="Bullish">Bullish</SelectItem>
-                    <SelectItem value="Bearish">Bearish</SelectItem>
-                    <SelectItem value="Sideways">Sideways</SelectItem>
-                    <SelectItem value="Neutral">Neutral</SelectItem>
-                  </SelectContent>
+                  <BiasSelectContent includeNone />
                 </Select>
               </div>
             </div>

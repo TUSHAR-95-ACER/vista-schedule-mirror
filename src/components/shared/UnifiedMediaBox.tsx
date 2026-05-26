@@ -65,22 +65,40 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
     if (isVideoUrl(value)) { setMediaType('video'); setUrlMeta(null); return; }
     if (value.startsWith('http')) {
       setMediaType('url');
-      setUrlMeta(null);
-      // Auto-rehydrate metadata for legacy plain URLs so cards survive reload.
+      // Build minimal meta immediately so we never render a naked URL row.
+      let domain = '';
+      try { domain = new URL(value).hostname.replace(/^www\./, ''); } catch { /* noop */ }
+      const minimalMeta: LinkMeta = {
+        url: value, domain, siteName: domain,
+        favicon: domain ? faviconFor(domain) : undefined,
+        type: /truthsocial\.com/i.test(domain) ? 'article' : 'link',
+      };
+      setUrlMeta(minimalMeta);
+      // Try to enrich and persist; on any failure, still persist the minimal meta
+      // so reload doesn't keep re-fetching and the card stays consistent.
       (async () => {
         try {
           const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: value } });
           if (data?.success) {
             const meta: LinkMeta = {
-              url: data.url || value, title: data.title, description: data.description,
-              image: data.image, domain: data.domain, siteName: data.siteName,
-              favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+              url: data.url || value,
+              title: data.title || undefined,
+              description: data.description || undefined,
+              image: data.image || undefined,
+              domain: data.domain || domain,
+              siteName: data.siteName || data.domain || domain,
+              favicon: data.favicon || minimalMeta.favicon,
+              youtubeId: data.youtubeId,
+              type: data.type || minimalMeta.type,
               publishedAt: data.publishedAt,
             };
             setUrlMeta(meta);
             onChange(encodeLinkMeta(meta));
+            return;
           }
-        } catch { /* keep raw URL fallback */ }
+        } catch { /* fall through */ }
+        // Persist minimal meta so we don't refetch on every reload.
+        onChange(encodeLinkMeta(minimalMeta));
       })();
       return;
     }
@@ -167,24 +185,39 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
       return;
     }
 
-    // Fetch metadata for article URLs
+    // Fetch metadata for article URLs — always persist as urlmeta so we never store a raw URL.
     setUrlLoading(true);
+    let domain = '';
+    try { domain = new URL(finalUrl).hostname.replace(/^www\./, ''); } catch { /* noop */ }
+    const minimalMeta: LinkMeta = {
+      url: finalUrl, domain, siteName: domain,
+      favicon: domain ? faviconFor(domain) : undefined,
+      type: /truthsocial\.com/i.test(domain) ? 'article' : 'link',
+    };
     try {
       const { data } = await supabase.functions.invoke('fetch-url-metadata', { body: { url: finalUrl } });
       if (data?.success) {
         const meta: LinkMeta = {
-          url: data.url || finalUrl, title: data.title, description: data.description,
-          image: data.image, domain: data.domain, siteName: data.siteName,
-          favicon: data.favicon, youtubeId: data.youtubeId, type: data.type,
+          url: data.url || finalUrl,
+          title: data.title || undefined,
+          description: data.description || undefined,
+          image: data.image || undefined,
+          domain: data.domain || domain,
+          siteName: data.siteName || data.domain || domain,
+          favicon: data.favicon || minimalMeta.favicon,
+          youtubeId: data.youtubeId,
+          type: data.type || minimalMeta.type,
           publishedAt: data.publishedAt,
         };
         setUrlMeta(meta);
         onChange(encodeLinkMeta(meta));
       } else {
-        onChange(finalUrl);
+        setUrlMeta(minimalMeta);
+        onChange(encodeLinkMeta(minimalMeta));
       }
     } catch {
-      onChange(finalUrl);
+      setUrlMeta(minimalMeta);
+      onChange(encodeLinkMeta(minimalMeta));
     } finally {
       setUrlLoading(false);
       setUrlInput('');
@@ -270,9 +303,24 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                 </div>
                 {urlMeta.title ? (
                   <p className="text-base font-bold text-foreground leading-snug line-clamp-3">{urlMeta.title}</p>
-                ) : (
-                  <p className="text-sm font-semibold text-foreground line-clamp-2 break-all">{urlMeta.url}</p>
-                )}
+                ) : (() => {
+                  // Derive a human title from the URL slug when scraping returned nothing.
+                  let derived = '';
+                  try {
+                    const u = new URL(urlMeta.url);
+                    const seg = u.pathname.split('/').filter(Boolean).pop() || '';
+                    derived = decodeURIComponent(seg)
+                      .replace(/[-_]+/g, ' ')
+                      .replace(/\.(html?|php|aspx?)$/i, '')
+                      .replace(/\b\w/g, (c) => c.toUpperCase())
+                      .trim();
+                  } catch { /* noop */ }
+                  return (
+                    <p className="text-base font-bold text-foreground leading-snug line-clamp-3">
+                      {derived || `Article on ${urlMeta.siteName || urlMeta.domain || 'this site'}`}
+                    </p>
+                  );
+                })()}
                 {urlMeta.description && (
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{urlMeta.description}</p>
                 )}
