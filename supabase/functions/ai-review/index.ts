@@ -134,17 +134,15 @@ serve(async (req) => {
     if (!resp.ok) {
       const errText = await resp.text();
       console.error("Bedrock error", resp.status, "model=", modelId, "region=", REGION, errText);
-      return json({
-        error: `Bedrock error (${resp.status})`,
-        detail: errText.slice(0, 1500),
-        model: modelId,
-        region: REGION,
-        hint: resp.status === 403 || resp.status === 401
-          ? "Verify BEDROCK_API_KEY is valid and model access is granted in this region. For eu-north-1 use the 'eu.' inference profile prefix."
-          : resp.status === 404
-          ? "Model/profile not available in this region. Check BEDROCK_REGION and model availability."
-          : undefined,
-      }, resp.status >= 400 && resp.status < 600 ? resp.status : 502);
+      const status = resp.status >= 400 && resp.status < 600 ? resp.status : 502;
+      const userMsg = status === 401 || status === 403
+        ? "AI service unavailable."
+        : status === 404
+        ? "AI model unavailable."
+        : status === 429
+        ? "AI service is busy. Try again shortly."
+        : "AI service error.";
+      return json({ error: userMsg }, status);
     }
 
     const data = await resp.json();
