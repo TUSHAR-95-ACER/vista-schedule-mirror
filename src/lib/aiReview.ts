@@ -20,8 +20,6 @@ export interface AIReviewRequest {
   prompt: string;
   /** Optional JSON payload (trades, plan, psychology snapshot, etc.). */
   payload?: unknown;
-  /** Optional system prompt override. */
-  system?: string;
 }
 
 export interface AIReviewResponse {
