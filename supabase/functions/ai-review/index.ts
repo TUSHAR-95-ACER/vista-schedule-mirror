@@ -161,7 +161,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("ai-review error", e);
     return json(
-      { error: e instanceof Error ? e.message : "Internal error" },
+      { error: "Internal server error" },
       500,
     );
   }
