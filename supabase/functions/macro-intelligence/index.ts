@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { bedrockChat, bedrockErrorResponse } from "../_shared/bedrock.ts";
+import { aiChat, aiErrorResponse } from "../_shared/bedrock.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -248,7 +248,7 @@ Emit the structured macro intelligence snapshot now. Use SIMPLE language.`;
 
     let data;
     try {
-      data = await bedrockChat({
+      data = await aiChat({
         tier: "sonnet",
         max_tokens: 3500,
         messages: [
@@ -259,7 +259,7 @@ Emit the structured macro intelligence snapshot now. Use SIMPLE language.`;
         tool_choice: { type: "function", function: { name: "emit_macro_intelligence" } },
       });
     } catch (e) {
-      return bedrockErrorResponse(e, corsHeaders);
+      return aiErrorResponse(e, corsHeaders);
     }
 
     const toolCall = data?.choices?.[0]?.message?.tool_calls?.[0];

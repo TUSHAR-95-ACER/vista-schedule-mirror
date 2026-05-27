@@ -66,7 +66,7 @@ serve(async (req) => {
     const data = await fetchData(supabase, userId);
     const context = buildContext(data);
 
-    const tier: ClaudeTier = mode === "deep" ? "opus" : "sonnet";
+    const tier: AiTier = mode === "deep" ? "opus" : "sonnet";
 
     const briefPrompt = `You are a senior trading performance analyst. Based on this trader's journal data, produce a CONCISE weekly performance brief (5-7 bullet points). Focus on what changed, leaks, edges, behavioral patterns, and the single most important focus. No fluff. Reference real numbers/pairs/sessions. Output as markdown bullets only.\n\nDATA:\n${context}`;
 
@@ -74,7 +74,7 @@ serve(async (req) => {
 
     if (mode === "panels") {
       try {
-        const r = await bedrockChat({
+        const r = await aiChat({
           tier,
           max_tokens: 1500,
           messages: [{ role: "user", content: panelsPrompt }],
@@ -100,13 +100,13 @@ serve(async (req) => {
         const parsed = args ? JSON.parse(args) : {};
         return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       } catch (e) {
-        return bedrockErrorResponse(e, corsHeaders);
+        return aiErrorResponse(e, corsHeaders);
       }
     }
 
     // brief
     try {
-      const r = await bedrockChat({
+      const r = await aiChat({
         tier,
         max_tokens: 1200,
         messages: [{ role: "user", content: briefPrompt }],
@@ -114,7 +114,7 @@ serve(async (req) => {
       const text = r.choices?.[0]?.message?.content || "";
       return new Response(JSON.stringify({ brief: text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (e) {
-      return bedrockErrorResponse(e, corsHeaders);
+      return aiErrorResponse(e, corsHeaders);
     }
   } catch (e) {
     console.error(e);
