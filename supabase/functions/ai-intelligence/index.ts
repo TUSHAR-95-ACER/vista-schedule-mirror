@@ -49,8 +49,8 @@ serve(async (req) => {
   try {
     const auth = req.headers.get("Authorization");
     if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!Deno.env.get("BEDROCK_API_KEY")) {
-      return new Response(JSON.stringify({ error: "Bedrock not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!Deno.env.get("LOVABLE_API_KEY")) {
+      return new Response(JSON.stringify({ error: "AI service not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const url = Deno.env.get("SUPABASE_URL")!;
