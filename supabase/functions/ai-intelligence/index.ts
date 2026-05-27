@@ -1,10 +1,10 @@
-// Trading intelligence brief + panels — routed through Bedrock Claude.
-//  - "brief"  -> Sonnet (short markdown weekly brief)
-//  - "panels" -> Sonnet via tool calling (structured 6-panel JSON)
-//  - mode "deep" -> Opus (premium full analysis)
+// Trading intelligence brief + panels — routed through Lovable AI Gateway (Gemini).
+//  - "brief"  -> Flash (short markdown weekly brief)
+//  - "panels" -> Flash via tool calling (structured 6-panel JSON)
+//  - mode "deep" -> Pro (premium full analysis)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { bedrockChat, bedrockErrorResponse, type ClaudeTier } from "../_shared/bedrock.ts";
+import { aiChat, aiErrorResponse, type AiTier } from "../_shared/lovable-ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
