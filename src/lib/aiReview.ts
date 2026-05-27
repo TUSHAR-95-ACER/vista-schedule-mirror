@@ -1,6 +1,6 @@
 /**
- * Client helper for the `ai-review` edge function (AWS Bedrock / Claude).
- * The Bedrock API key lives only in the edge function — never imported here.
+ * Client helper for the `ai-review` edge function (Lovable AI Gateway / Gemini).
+ * The API key lives only in the edge function — never imported here.
  */
 import { supabase } from '@/integrations/supabase/client';
 
