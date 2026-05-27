@@ -47,8 +47,6 @@ export class AiError extends Error {
   status: number;
   constructor(status: number, message: string) { super(message); this.status = status; }
 }
-// Back-compat alias
-export const BedrockError = AiError;
 
 function buildBody(req: AiChatRequest, stream = false) {
   const body: any = {
@@ -88,8 +86,6 @@ export async function aiChat(req: AiChatRequest) {
   }
   return await resp.json();
 }
-// Back-compat alias
-export const bedrockChat = aiChat;
 
 export async function aiStream(req: AiChatRequest): Promise<Response> {
   const resp = await callGateway(buildBody(req, true), "text/event-stream");
@@ -103,7 +99,6 @@ export async function aiStream(req: AiChatRequest): Promise<Response> {
     headers: { "Content-Type": "text/event-stream" },
   });
 }
-export const bedrockStream = aiStream;
 
 export function aiErrorResponse(e: unknown, corsHeaders: Record<string, string>) {
   const status = e instanceof AiError ? e.status : 500;
@@ -123,4 +118,3 @@ export function aiErrorResponse(e: unknown, corsHeaders: Record<string, string>)
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
-export const bedrockErrorResponse = aiErrorResponse;
