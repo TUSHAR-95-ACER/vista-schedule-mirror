@@ -57,6 +57,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
 
   // Detect type from current value
   useEffect(() => {
+    setOgImageFailed(false);
     setScreenshotFailed(false);
     if (!value) { setMediaType(null); setUrlMeta(null); return; }
     if (decoded) { setMediaType('url'); setUrlMeta(decoded); return; }
