@@ -430,13 +430,13 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
       }
     }
 
-    // Route tier: Opus only for deep "full journal" scope; Sonnet otherwise (vision included).
+    // Route tier: Pro only for deep "full journal" scope; Flash otherwise (vision included).
     const scope = (pageContext && typeof pageContext === "object" && typeof pageContext.scope === "string")
       ? pageContext.scope : "page";
-    const tier: ClaudeTier = scope === "full" ? "opus" : "sonnet";
+    const tier: AiTier = scope === "full" ? "opus" : "sonnet";
 
     try {
-      return new Response((await bedrockStream({
+      return new Response((await aiStream({
         tier,
         messages: finalMessages as any,
         max_tokens: useVision ? 2500 : 1800,
@@ -445,7 +445,7 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
         headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
     } catch (e) {
-      if (e instanceof BedrockError) return bedrockErrorResponse(e, corsHeaders);
+      if (e instanceof AiError) return aiErrorResponse(e, corsHeaders);
       throw e;
     }
   } catch (e) {
