@@ -1,6 +1,5 @@
 // Shared Lovable AI Gateway client (Google Gemini) for all journal AI features.
-// OpenAI Chat Completions–compatible. Tier names are preserved from the old
-// Bedrock helper so existing call sites work without large refactors.
+// OpenAI Chat Completions–compatible.
 //
 // Auth: LOVABLE_API_KEY (auto-provisioned by Lovable Cloud, never exposed to client).
 //
