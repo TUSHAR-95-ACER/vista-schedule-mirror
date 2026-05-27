@@ -48,6 +48,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const [urlMeta, setUrlMeta] = useState<LinkMeta | null>(null);
   const [urlLoading, setUrlLoading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'url' | null>(null);
+  const [ogImageFailed, setOgImageFailed] = useState(false);
   const [screenshotFailed, setScreenshotFailed] = useState(false);
 
   // Real URL to use for opening / embedding (strips meta encoding).
