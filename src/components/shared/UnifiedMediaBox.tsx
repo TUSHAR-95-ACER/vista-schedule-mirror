@@ -276,28 +276,16 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
           ) : mediaType === 'url' && urlMeta ? (
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
-              {thumbCandidate && (
-                <div className={cn(
-                  'relative w-full bg-muted/20 border-b border-border/40 overflow-hidden',
-                  showAsArtwork ? 'aspect-[16/9]' : 'aspect-[16/7] flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/10',
-                )}>
-                  {showAsArtwork ? (
-                    <img
-                      src={thumbCandidate}
-                      alt={urlMeta.title || urlMeta.domain || ''}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        if (!screenshotFailed && urlMeta) {
-                          setScreenshotFailed(true);
-                          (e.currentTarget as HTMLImageElement).src = urlMeta.favicon || faviconFor(urlMeta.domain || '');
-                          (e.currentTarget as HTMLImageElement).className = 'h-16 w-16 m-auto object-contain';
-                        }
-                      }}
-                    />
-                  ) : (
-                    <img src={thumbCandidate} alt="" className="h-16 w-16 object-contain opacity-80" />
-                  )}
+              {hasHero && (
+                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[180px] sm:h-[240px] md:h-[280px]">
+                  <img
+                    src={heroImage}
+                    alt={urlMeta.title || urlMeta.domain || ''}
+                    className="w-full h-full object-cover object-center"
+                    loading="lazy"
+                    onLoad={handleHeroLoad}
+                    onError={handleHeroError}
+                  />
                   {isTruthSocial && (
                     <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-background/90 text-[10px] font-semibold tracking-wide border border-border/60">
                       TRUTH SOCIAL
