@@ -1,10 +1,10 @@
-// Trading intelligence brief + panels — routed through Bedrock Claude.
-//  - "brief"  -> Sonnet (short markdown weekly brief)
-//  - "panels" -> Sonnet via tool calling (structured 6-panel JSON)
-//  - mode "deep" -> Opus (premium full analysis)
+// Trading intelligence brief + panels — routed through Lovable AI Gateway (Gemini).
+//  - "brief"  -> Flash (short markdown weekly brief)
+//  - "panels" -> Flash via tool calling (structured 6-panel JSON)
+//  - mode "deep" -> Pro (premium full analysis)
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { bedrockChat, bedrockErrorResponse, type ClaudeTier } from "../_shared/bedrock.ts";
+import { aiChat, aiErrorResponse, type AiTier } from "../_shared/lovable-ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,8 +49,8 @@ serve(async (req) => {
   try {
     const auth = req.headers.get("Authorization");
     if (!auth) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!Deno.env.get("BEDROCK_API_KEY")) {
-      return new Response(JSON.stringify({ error: "Bedrock not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!Deno.env.get("LOVABLE_API_KEY")) {
+      return new Response(JSON.stringify({ error: "AI service not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const url = Deno.env.get("SUPABASE_URL")!;
@@ -66,7 +66,7 @@ serve(async (req) => {
     const data = await fetchData(supabase, userId);
     const context = buildContext(data);
 
-    const tier: ClaudeTier = mode === "deep" ? "opus" : "sonnet";
+    const tier: AiTier = mode === "deep" ? "opus" : "sonnet";
 
     const briefPrompt = `You are a senior trading performance analyst. Based on this trader's journal data, produce a CONCISE weekly performance brief (5-7 bullet points). Focus on what changed, leaks, edges, behavioral patterns, and the single most important focus. No fluff. Reference real numbers/pairs/sessions. Output as markdown bullets only.\n\nDATA:\n${context}`;
 
@@ -74,7 +74,7 @@ serve(async (req) => {
 
     if (mode === "panels") {
       try {
-        const r = await bedrockChat({
+        const r = await aiChat({
           tier,
           max_tokens: 1500,
           messages: [{ role: "user", content: panelsPrompt }],
@@ -100,13 +100,13 @@ serve(async (req) => {
         const parsed = args ? JSON.parse(args) : {};
         return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       } catch (e) {
-        return bedrockErrorResponse(e, corsHeaders);
+        return aiErrorResponse(e, corsHeaders);
       }
     }
 
     // brief
     try {
-      const r = await bedrockChat({
+      const r = await aiChat({
         tier,
         max_tokens: 1200,
         messages: [{ role: "user", content: briefPrompt }],
@@ -114,7 +114,7 @@ serve(async (req) => {
       const text = r.choices?.[0]?.message?.content || "";
       return new Response(JSON.stringify({ brief: text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     } catch (e) {
-      return bedrockErrorResponse(e, corsHeaders);
+      return aiErrorResponse(e, corsHeaders);
     }
   } catch (e) {
     console.error(e);

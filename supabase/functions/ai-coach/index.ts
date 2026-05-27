@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { bedrockStream, bedrockErrorResponse, BedrockError, type ClaudeTier } from "../_shared/bedrock.ts";
+import { aiStream, aiErrorResponse, AiError, type AiTier } from "../_shared/lovable-ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -220,9 +220,9 @@ serve(async (req) => {
       });
     }
 
-    // Bedrock API key check
-    if (!Deno.env.get("BEDROCK_API_KEY")) {
-      return new Response(JSON.stringify({ error: "Bedrock not configured (BEDROCK_API_KEY missing)" }), {
+    // Lovable AI key check
+    if (!Deno.env.get("LOVABLE_API_KEY")) {
+      return new Response(JSON.stringify({ error: "AI service not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -430,13 +430,13 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
       }
     }
 
-    // Route tier: Opus only for deep "full journal" scope; Sonnet otherwise (vision included).
+    // Route tier: Pro only for deep "full journal" scope; Flash otherwise (vision included).
     const scope = (pageContext && typeof pageContext === "object" && typeof pageContext.scope === "string")
       ? pageContext.scope : "page";
-    const tier: ClaudeTier = scope === "full" ? "opus" : "sonnet";
+    const tier: AiTier = scope === "full" ? "opus" : "sonnet";
 
     try {
-      return new Response((await bedrockStream({
+      return new Response((await aiStream({
         tier,
         messages: finalMessages as any,
         max_tokens: useVision ? 2500 : 1800,
@@ -445,7 +445,7 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
         headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
     } catch (e) {
-      if (e instanceof BedrockError) return bedrockErrorResponse(e, corsHeaders);
+      if (e instanceof AiError) return aiErrorResponse(e, corsHeaders);
       throw e;
     }
   } catch (e) {

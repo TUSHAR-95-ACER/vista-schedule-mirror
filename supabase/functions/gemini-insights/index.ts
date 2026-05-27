@@ -1,8 +1,7 @@
-// Mentor-style insights — now routed through AWS Bedrock Claude Sonnet via the
-// shared bedrock helper. Replaces previous Lovable AI Gateway dependency.
+// Mentor-style insights — routed through Lovable AI Gateway (Google Gemini).
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { bedrockChat, bedrockErrorResponse } from "../_shared/bedrock.ts";
+import { aiChat, aiErrorResponse } from "../_shared/lovable-ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,7 +55,7 @@ OUTPUT RULES (STRICT):
 
     let result;
     try {
-      result = await bedrockChat({
+      result = await aiChat({
         tier: "haiku",
         max_tokens: 600,
         temperature: 0.4,
@@ -94,7 +93,7 @@ OUTPUT RULES (STRICT):
         tool_choice: { type: "function", function: { name: "emit_insights" } },
       });
     } catch (e) {
-      return bedrockErrorResponse(e, corsHeaders);
+      return aiErrorResponse(e, corsHeaders);
     }
 
     const argsStr = result?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}";

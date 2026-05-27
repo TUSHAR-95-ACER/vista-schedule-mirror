@@ -1,15 +1,14 @@
-// AWS Bedrock Claude integration for trading journal AI reviews.
+// Lovable AI Gateway (Google Gemini) integration for trading journal AI reviews.
 // Multi-model routing:
-//   - mode "quick" | "summary" | "psychology"  -> Claude Haiku (cheap, fast)
-//   - mode "review" | "mentor"                  -> Claude Sonnet (balanced)
-//   - mode "deep" | "full-journal"              -> Claude Opus (premium, deep)
+//   - mode "quick" | "summary" | "psychology"  -> Flash Lite (cheap, fast)
+//   - mode "review" | "mentor"                  -> Flash (balanced)
+//   - mode "deep" | "full-journal"              -> Pro (premium, deep)
 //
-// Auth: Bedrock long-lived API key (bearer token) via BEDROCK_API_KEY secret.
-// Region via BEDROCK_REGION (default us-east-1).
-// API key NEVER leaves the edge function.
+// Auth: LOVABLE_API_KEY (auto-provisioned by Lovable Cloud).
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { aiChat, aiErrorResponse, type AiTier } from "../_shared/lovable-ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,28 +26,16 @@ type Mode =
   | "deep"
   | "full-journal";
 
-// Inference profile IDs (cross-region). Use prefixed IDs for broader availability.
-const _RAW_REGION = (Deno.env.get("BEDROCK_REGION") || "").trim().toLowerCase();
-const REGION_FOR_PREFIX = /^[a-z]{2}-[a-z]+-\d+$/.test(_RAW_REGION) ? _RAW_REGION : "us-east-1";
-const PREFIX = REGION_FOR_PREFIX.startsWith("eu-") ? "eu"
-  : REGION_FOR_PREFIX.startsWith("ap-") ? "apac" : "us";
-
-const MODEL_MAP: Record<"haiku" | "sonnet" | "opus", string> = {
-  haiku:  `${PREFIX}.anthropic.claude-haiku-4-5-20251001-v1:0`,
-  sonnet: `${PREFIX}.anthropic.claude-sonnet-4-5-20250929-v1:0`,
-  opus:   `${PREFIX}.anthropic.claude-opus-4-1-20250805-v1:0`,
-};
-
-function pickModel(mode: Mode): { id: string; tier: string; maxTokens: number } {
+function pickTier(mode: Mode): { tier: AiTier; maxTokens: number } {
   switch (mode) {
     case "deep":
     case "full-journal":
-      return { id: MODEL_MAP.opus, tier: "opus", maxTokens: 4000 };
+      return { tier: "opus", maxTokens: 4000 };
     case "review":
     case "mentor":
-      return { id: MODEL_MAP.sonnet, tier: "sonnet", maxTokens: 2000 };
+      return { tier: "sonnet", maxTokens: 2000 };
     default:
-      return { id: MODEL_MAP.haiku, tier: "haiku", maxTokens: 1200 };
+      return { tier: "haiku", maxTokens: 1200 };
   }
 }
 
@@ -75,18 +62,13 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
     const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsErr } = await supabase.auth.getClaims(
-      token,
-    );
+    const { data: claims, error: claimsErr } = await supabase.auth.getClaims(token);
     if (claimsErr || !claims?.claims) {
       return json({ error: "Unauthorized" }, 401);
     }
 
-    // ── Secrets ─────────────────────────────────────────────────────────
-    const BEDROCK_API_KEY = Deno.env.get("BEDROCK_API_KEY");
-    const REGION = REGION_FOR_PREFIX;
-    if (!BEDROCK_API_KEY) {
-      return json({ error: "Bedrock not configured" }, 500);
+    if (!Deno.env.get("LOVABLE_API_KEY")) {
+      return json({ error: "AI service not configured" }, 500);
     }
 
     // ── Input ───────────────────────────────────────────────────────────
@@ -99,66 +81,32 @@ serve(async (req) => {
       return json({ error: "prompt is required" }, 400);
     }
 
-    const { id: modelId, tier, maxTokens } = pickModel(mode);
+    const { tier, maxTokens } = pickTier(mode);
 
-    // ── Build messages ──────────────────────────────────────────────────
     const userContent = payload
-      ? `${prompt}\n\nJOURNAL DATA (JSON):\n${
-        JSON.stringify(payload).slice(0, 14000)
-      }`
+      ? `${prompt}\n\nJOURNAL DATA (JSON):\n${JSON.stringify(payload).slice(0, 14000)}`
       : prompt;
 
-    // System prompt is server-controlled only; never honor client overrides.
-    const bedrockBody = {
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: maxTokens,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userContent }],
-    };
-
-    // ── Call Bedrock InvokeModel ────────────────────────────────────────
-    const url = `https://bedrock-runtime.${REGION}.amazonaws.com/model/${
-      encodeURIComponent(modelId)
-    }/invoke`;
-
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${BEDROCK_API_KEY}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(bedrockBody),
-    });
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error("Bedrock error", resp.status, "model=", modelId, "region=", REGION, errText);
-      const status = resp.status >= 400 && resp.status < 600 ? resp.status : 502;
-      const userMsg = status === 401 || status === 403
-        ? "AI service unavailable."
-        : status === 404
-        ? "AI model unavailable."
-        : status === 429
-        ? "AI service is busy. Try again shortly."
-        : "AI service error.";
-      return json({ error: userMsg }, status);
+    let data: any;
+    try {
+      data = await aiChat({
+        tier,
+        max_tokens: maxTokens,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userContent },
+        ],
+      });
+    } catch (e) {
+      return aiErrorResponse(e, corsHeaders);
     }
 
-    const data = await resp.json();
-    // Anthropic-on-Bedrock response shape: { content: [{type:"text", text:"..."}], usage: {...} }
-    const text = Array.isArray(data?.content)
-      ? data.content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("\n").trim()
-      : "";
-
-    console.info("ai-review ok", { mode, tier, model: modelId, usage: data?.usage ?? null });
+    const text = (data?.choices?.[0]?.message?.content || "").trim();
+    console.info("ai-review ok", { mode, tier, usage: data?.usage ?? null });
     return json({ text, mode, tier }, 200);
   } catch (e) {
     console.error("ai-review error", e);
-    return json(
-      { error: "Internal server error" },
-      500,
-    );
+    return json({ error: "Internal server error" }, 500);
   }
 });
 

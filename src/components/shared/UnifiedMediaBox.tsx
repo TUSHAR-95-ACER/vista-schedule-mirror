@@ -48,6 +48,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const [urlMeta, setUrlMeta] = useState<LinkMeta | null>(null);
   const [urlLoading, setUrlLoading] = useState(false);
   const [mediaType, setMediaType] = useState<'image' | 'video' | 'url' | null>(null);
+  const [ogImageFailed, setOgImageFailed] = useState(false);
   const [screenshotFailed, setScreenshotFailed] = useState(false);
 
   // Real URL to use for opening / embedding (strips meta encoding).
@@ -56,6 +57,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
 
   // Detect type from current value
   useEffect(() => {
+    setOgImageFailed(false);
     setScreenshotFailed(false);
     if (!value) { setMediaType(null); setUrlMeta(null); return; }
     if (decoded) { setMediaType('url'); setUrlMeta(decoded); return; }
@@ -232,10 +234,30 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
 
   const ytId = rawUrl ? getYouTubeId(rawUrl) : null;
   const isTruthSocial = !!urlMeta?.domain && /truthsocial\.com$/i.test(urlMeta.domain);
-  const thumbCandidate = urlMeta?.image
-    || (urlMeta && !screenshotFailed ? screenshotFor(urlMeta.url) : '')
-    || (urlMeta?.favicon || (urlMeta?.domain ? faviconFor(urlMeta.domain) : ''));
-  const showAsArtwork = !!urlMeta?.image; // real OG; otherwise screenshot/favicon
+
+  // Decide what image to show in the news card hero area.
+  // Priority: real OG image (if not failed) -> page screenshot (if not failed) -> none (compact card).
+  const heroImage = urlMeta
+    ? (urlMeta.image && !ogImageFailed
+        ? urlMeta.image
+        : (!screenshotFailed ? screenshotFor(urlMeta.url) : ''))
+    : '';
+  const hasHero = !!heroImage;
+
+  // Validate loaded image is not microscopic (e.g. NYTimes generic placeholder).
+  // Collapses the hero area into compact mode when image is too small.
+  const handleHeroLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth > 0 && img.naturalWidth < 200 && img.naturalHeight < 200) {
+      if (urlMeta?.image && !ogImageFailed) setOgImageFailed(true);
+      else if (!screenshotFailed) setScreenshotFailed(true);
+    }
+  };
+  const handleHeroError = () => {
+    if (urlMeta?.image && !ogImageFailed) setOgImageFailed(true);
+    else if (!screenshotFailed) setScreenshotFailed(true);
+  };
+
 
   // ── PREVIEW ──────────────────────────────────
   if (value) {
@@ -254,28 +276,16 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
           ) : mediaType === 'url' && urlMeta ? (
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
-              {thumbCandidate && (
-                <div className={cn(
-                  'relative w-full bg-muted/20 border-b border-border/40 overflow-hidden',
-                  showAsArtwork ? 'aspect-[16/9]' : 'aspect-[16/7] flex items-center justify-center bg-gradient-to-br from-muted/40 to-muted/10',
-                )}>
-                  {showAsArtwork ? (
-                    <img
-                      src={thumbCandidate}
-                      alt={urlMeta.title || urlMeta.domain || ''}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        if (!screenshotFailed && urlMeta) {
-                          setScreenshotFailed(true);
-                          (e.currentTarget as HTMLImageElement).src = urlMeta.favicon || faviconFor(urlMeta.domain || '');
-                          (e.currentTarget as HTMLImageElement).className = 'h-16 w-16 m-auto object-contain';
-                        }
-                      }}
-                    />
-                  ) : (
-                    <img src={thumbCandidate} alt="" className="h-16 w-16 object-contain opacity-80" />
-                  )}
+              {hasHero && (
+                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[180px] sm:h-[240px] md:h-[280px]">
+                  <img
+                    src={heroImage}
+                    alt={urlMeta.title || urlMeta.domain || ''}
+                    className="w-full h-full object-cover object-center"
+                    loading="lazy"
+                    onLoad={handleHeroLoad}
+                    onError={handleHeroError}
+                  />
                   {isTruthSocial && (
                     <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md bg-background/90 text-[10px] font-semibold tracking-wide border border-border/60">
                       TRUTH SOCIAL
