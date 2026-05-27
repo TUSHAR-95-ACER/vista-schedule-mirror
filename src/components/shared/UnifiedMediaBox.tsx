@@ -234,10 +234,30 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
 
   const ytId = rawUrl ? getYouTubeId(rawUrl) : null;
   const isTruthSocial = !!urlMeta?.domain && /truthsocial\.com$/i.test(urlMeta.domain);
-  const thumbCandidate = urlMeta?.image
-    || (urlMeta && !screenshotFailed ? screenshotFor(urlMeta.url) : '')
-    || (urlMeta?.favicon || (urlMeta?.domain ? faviconFor(urlMeta.domain) : ''));
-  const showAsArtwork = !!urlMeta?.image; // real OG; otherwise screenshot/favicon
+
+  // Decide what image to show in the news card hero area.
+  // Priority: real OG image (if not failed) -> page screenshot (if not failed) -> none (compact card).
+  const heroImage = urlMeta
+    ? (urlMeta.image && !ogImageFailed
+        ? urlMeta.image
+        : (!screenshotFailed ? screenshotFor(urlMeta.url) : ''))
+    : '';
+  const hasHero = !!heroImage;
+
+  // Validate loaded image is not microscopic (e.g. NYTimes generic placeholder).
+  // Collapses the hero area into compact mode when image is too small.
+  const handleHeroLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.naturalWidth > 0 && img.naturalWidth < 200 && img.naturalHeight < 200) {
+      if (urlMeta?.image && !ogImageFailed) setOgImageFailed(true);
+      else if (!screenshotFailed) setScreenshotFailed(true);
+    }
+  };
+  const handleHeroError = () => {
+    if (urlMeta?.image && !ogImageFailed) setOgImageFailed(true);
+    else if (!screenshotFailed) setScreenshotFailed(true);
+  };
+
 
   // ── PREVIEW ──────────────────────────────────
   if (value) {
