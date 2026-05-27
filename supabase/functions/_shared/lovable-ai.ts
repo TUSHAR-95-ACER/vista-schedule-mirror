@@ -10,8 +10,6 @@
 //   "opus"   -> google/gemini-2.5-pro         (deep / full-journal only)
 
 export type AiTier = "haiku" | "sonnet" | "opus";
-// Back-compat alias for code paths that imported the old name.
-export type ClaudeTier = AiTier;
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
