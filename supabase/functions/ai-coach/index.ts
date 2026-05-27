@@ -220,9 +220,9 @@ serve(async (req) => {
       });
     }
 
-    // Bedrock API key check
-    if (!Deno.env.get("BEDROCK_API_KEY")) {
-      return new Response(JSON.stringify({ error: "Bedrock not configured (BEDROCK_API_KEY missing)" }), {
+    // Lovable AI key check
+    if (!Deno.env.get("LOVABLE_API_KEY")) {
+      return new Response(JSON.stringify({ error: "AI service not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
