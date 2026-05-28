@@ -35,7 +35,7 @@ export default function Trades() {
   const [filterPair, setFilterPair] = useState<string>('all');
   const [filterResult, setFilterResult] = useState<string>('all');
 
-  const uniquePairs = useMemo(() => [...new Set(trades.map(t => t.asset))].sort(), [trades]);
+  const uniquePairs = useMemo(() => [...new Set(trades.map(t => t.asset).filter((a): a is string => !!a && a.trim() !== ''))].sort(), [trades]);
 
   const filtered = useMemo(() => {
     return trades.filter(t => {
