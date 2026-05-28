@@ -108,9 +108,10 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
 export default function WeeklyPlanPage() {
   const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan } = useTrading();
+  const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
-  
+  const restoredRef = useRef<Set<string>>(new Set());
 
   const startNew = () => {
     const plan: WeeklyPlan = {
@@ -136,7 +137,17 @@ export default function WeeklyPlanPage() {
     const plan = weeklyPlans.find(p => p.id === id);
     if (plan) {
       setActiveId(id);
-      setLocalPlan({ ...plan, pairAnalyses: plan.pairAnalyses.map(pa => ({ ...pa })) });
+      const base: WeeklyPlan = { ...plan, pairAnalyses: plan.pairAnalyses.map(pa => ({ ...pa })) };
+      if (authUser?.id && !restoredRef.current.has(id)) {
+        const draft = loadDraft<WeeklyPlan>('weeklyPlan', authUser.id, id);
+        restoredRef.current.add(id);
+        if (draft) {
+          setLocalPlan({ ...draft.data, pairAnalyses: draft.data.pairAnalyses?.map(pa => ({ ...pa })) || [] });
+          toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
+          return;
+        }
+      }
+      setLocalPlan(base);
     }
   };
 
@@ -163,10 +174,27 @@ export default function WeeklyPlanPage() {
     update({ pairAnalyses: localPlan.pairAnalyses.filter(p => p.id !== id) });
   };
 
-  const handleSave = () => {
-    if (!localPlan) return;
-    updateWeeklyPlan(localPlan);
-    toast({ title: '✅ Saved!', description: 'Weekly plan saved successfully.' });
+  const { status: saveStatus } = useAutosave<WeeklyPlan | null>({
+    value: localPlan,
+    enabled: !!localPlan && !!authUser?.id,
+    debounceMs: 1200,
+    onSave: async (val) => {
+      if (!val || !authUser?.id) return;
+      saveDraft('weeklyPlan', authUser.id, val, val.id);
+      await Promise.resolve(updateWeeklyPlan(val));
+    },
+    onSaved: (val) => {
+      if (val && authUser?.id) clearDraft('weeklyPlan', authUser.id, val.id);
+    },
+  });
+
+  useEffect(() => {
+    if (!localPlan || !authUser?.id) return;
+    const t = setTimeout(() => saveDraft('weeklyPlan', authUser.id, localPlan, localPlan.id), 400);
+    return () => clearTimeout(t);
+  }, [localPlan, authUser?.id]);
+
+  const handleClose = () => {
     setActiveId(null);
     setLocalPlan(null);
   };
