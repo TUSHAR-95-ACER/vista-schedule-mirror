@@ -196,7 +196,19 @@ export default function Trades() {
                     >
                       <td className="px-3 py-1.5 font-mono text-xs">{trade.date}</td>
                       <td className="px-3 py-1.5 text-xs text-muted-foreground">{getDayOfWeek(trade.date).slice(0, 3)}</td>
-                      <td className="px-3 py-1.5 font-medium text-xs">{trade.asset}</td>
+                      <td className="px-3 py-1.5 font-medium text-xs">
+                        <span className="inline-flex items-center gap-1.5">
+                          {trade.asset}
+                          {trade.status && trade.status !== 'Complete' && (
+                            <span className={cn(
+                              'text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full border',
+                              trade.status === 'Draft' && 'border-muted-foreground/30 text-muted-foreground bg-muted/30',
+                              trade.status === 'Incomplete' && 'border-warning/40 text-warning bg-warning/10',
+                              trade.status === 'Needs Review' && 'border-primary/40 text-primary bg-primary/10',
+                            )}>{trade.status}</span>
+                          )}
+                        </span>
+                      </td>
                       <td className="px-3 py-1.5 text-xs">{trade.setup}</td>
                       <td className="px-3 py-1.5 text-xs text-muted-foreground">{trade.session}</td>
                       <td className="px-3 py-1.5 text-xs">
