@@ -101,9 +101,11 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
 export default function DailyPlanPage() {
   const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions, loadingDailyPlans, hydrateDailyPlanMedia } = useTrading();
+  const { user } = useTrading() as any; // not used here
+  const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
-  
+  const restoredRef = useRef<Set<string>>(new Set());
 
   const startNew = () => {
     const plan: DailyPlan = {
@@ -127,8 +129,23 @@ export default function DailyPlanPage() {
     const plan = dailyPlans.find(p => p.id === id);
     if (plan) {
       setActiveId(id);
-      setLocalPlan({ ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) });
-      // Hydrate heavy media (e.g. result chart image) for this single plan.
+      const base: DailyPlan = { ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) };
+      // Try to restore an unsaved draft from a previous crash/refresh.
+      if (authUser?.id && !restoredRef.current.has(id)) {
+        const draft = loadDraft<DailyPlan>('dailyPlan', authUser.id, id);
+        if (draft && draft.savedAt > (Date.parse((plan as any).updated_at || '') || 0)) {
+          setLocalPlan({ ...draft.data, pairs: draft.data.pairs?.map(pp => ({ ...pp })) || [] });
+          toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
+          restoredRef.current.add(id);
+          hydrateDailyPlanMedia(id).then(full => {
+            if (!full) return;
+            setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: prev.resultChartImage || full.resultChartImage } : prev);
+          });
+          return;
+        }
+        restoredRef.current.add(id);
+      }
+      setLocalPlan(base);
       hydrateDailyPlanMedia(id).then(full => {
         if (!full) return;
         setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: full.resultChartImage ?? prev.resultChartImage } : prev);
@@ -159,10 +176,29 @@ export default function DailyPlanPage() {
     update({ pairs: localPlan.pairs.filter(p => p.id !== id) });
   };
 
-  const handleSave = () => {
-    if (!localPlan) return;
-    updateDailyPlan(localPlan);
-    toast({ title: '✅ Saved!', description: 'Daily plan saved successfully.' });
+  // Autosave: persists to backend (debounced) and snapshots to localStorage for crash recovery.
+  const { status: saveStatus } = useAutosave<DailyPlan | null>({
+    value: localPlan,
+    enabled: !!localPlan && !!authUser?.id,
+    debounceMs: 1200,
+    onSave: async (val) => {
+      if (!val || !authUser?.id) return;
+      saveDraft('dailyPlan', authUser.id, val, val.id);
+      await Promise.resolve(updateDailyPlan(val));
+    },
+    onSaved: (val) => {
+      if (val && authUser?.id) clearDraft('dailyPlan', authUser.id, val.id);
+    },
+  });
+
+  // Snapshot drafts continuously while typing (independent of debounce).
+  useEffect(() => {
+    if (!localPlan || !authUser?.id) return;
+    const t = setTimeout(() => saveDraft('dailyPlan', authUser.id, localPlan, localPlan.id), 400);
+    return () => clearTimeout(t);
+  }, [localPlan, authUser?.id]);
+
+  const handleClose = () => {
     setActiveId(null);
     setLocalPlan(null);
   };
