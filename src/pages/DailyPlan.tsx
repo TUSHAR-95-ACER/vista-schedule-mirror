@@ -101,7 +101,6 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
 export default function DailyPlanPage() {
   const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions, loadingDailyPlans, hydrateDailyPlanMedia } = useTrading();
-  const { user } = useTrading() as any; // not used here
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
