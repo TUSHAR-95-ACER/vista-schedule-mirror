@@ -16,6 +16,9 @@ export type AccountStatus = 'Evaluation' | 'Funded' | 'Active' | 'Disabled';
 
 export type TradeGrade = 'A+' | 'A' | 'B' | 'C';
 
+export type TradeStatus = 'Complete' | 'Draft' | 'Incomplete' | 'Needs Review';
+export const TRADE_STATUSES: TradeStatus[] = ['Complete', 'Draft', 'Incomplete', 'Needs Review'];
+
 export type TradeManagement =
   | 'Moved SL to Breakeven'
   | 'Partial TP'
