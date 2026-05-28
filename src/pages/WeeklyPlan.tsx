@@ -404,11 +404,13 @@ export default function WeeklyPlanPage() {
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
 
-      {/* Sticky Save — compact */}
+      {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Button onClick={handleSave} size="sm" className="h-9 px-4 rounded-full font-heading font-semibold text-xs uppercase tracking-wider shadow-lg gap-1.5 bg-primary/95 backdrop-blur">
-            <Save className="h-3.5 w-3.5" /> Save Weekly Plan
+        <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/95 border border-border/60 shadow-lg backdrop-blur">
+          <SaveStatusIndicator status={saveStatus} />
+          <span className="h-3 w-px bg-border/60" />
+          <Button onClick={handleClose} size="sm" variant="ghost" className="h-7 px-2 text-[11px] gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back
           </Button>
         </div>
       </div>
