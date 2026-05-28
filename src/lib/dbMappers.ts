@@ -26,6 +26,7 @@ export function tradeToDb(t: Trade, userId: string) {
     curve: (t as any).curve || null,
     trade_analysis: (t as any).tradeAnalysis ? JSON.stringify((t as any).tradeAnalysis) : null,
     market_sentiment: (t as any).marketSentiment ?? null,
+    status: (t as any).status || 'Complete',
   };
 }
 
