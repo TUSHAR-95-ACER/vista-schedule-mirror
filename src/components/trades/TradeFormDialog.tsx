@@ -961,9 +961,22 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             </FormSection>
 
             {/* ── SUBMIT ─────────────────────────────────────────── */}
-            <Button onClick={handleSubmit} className="w-full h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm">
-              {editTrade ? 'Update Trade' : 'Save Trade'}
-            </Button>
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <SaveStatusIndicator status={draftStatus === 'saved' ? 'saved' : 'idle'} label="Draft auto-saved" />
+              <span className="text-[10px] text-muted-foreground/70">Your progress is saved automatically.</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2">
+              <Button
+                onClick={handleSaveDraft}
+                variant="outline"
+                className="h-11 rounded-xl font-heading font-semibold text-xs uppercase tracking-wide gap-2"
+              >
+                <FileEdit className="h-4 w-4" /> Save as Draft
+              </Button>
+              <Button onClick={handleSubmit} className="h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm">
+                {editTrade ? 'Update Trade' : 'Save Trade'}
+              </Button>
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
