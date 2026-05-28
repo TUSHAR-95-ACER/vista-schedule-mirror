@@ -84,15 +84,22 @@ export const calcPL = (entry: number, exit: number, direction: 'Long' | 'Short',
   return entry > exit ? Math.abs(pips) : -Math.abs(pips);
 };
 
+/**
+ * Drafts / incomplete / needs-review trades are excluded from every analytics
+ * calculation — they don't represent finished decisions yet. Trades with no
+ * status (legacy data) are treated as Complete.
+ */
+const isLive = (t: Trade) => !t.status || t.status === 'Complete';
+
 export const calcWinRate = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => isLive(t) && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   const wins = valid.filter(t => t.result === 'Win').length;
   return Math.round((wins / valid.length) * 100 * 10) / 10;
 };
 
 export const calcProfitFactor = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => isLive(t) && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   const grossProfit = valid.filter(t => t.profitLoss > 0).reduce((s, t) => s + t.profitLoss, 0);
   const grossLoss = Math.abs(valid.filter(t => t.profitLoss < 0).reduce((s, t) => s + t.profitLoss, 0));
   if (grossLoss === 0) return grossProfit > 0 ? Infinity : 0;
@@ -100,7 +107,7 @@ export const calcProfitFactor = (trades: Trade[]): number => {
 };
 
 export const calcExpectancy = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => isLive(t) && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   return Math.round((valid.reduce((s, t) => s + t.profitLoss, 0) / valid.length) * 100) / 100;
 };
@@ -109,7 +116,7 @@ export const calcMaxDrawdown = (trades: Trade[]): number => {
   let peak = 0;
   let maxDD = 0;
   let cumulative = 0;
-  const sorted = [...trades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sorted = [...trades].filter(isLive).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   for (const t of sorted) {
     cumulative += t.profitLoss;
     if (cumulative > peak) peak = cumulative;
@@ -125,7 +132,7 @@ export const calcEdgeScore = (winRate: number, avgRR: number, tradeCount: number
 };
 
 export const calcAvgRR = (trades: Trade[]): number => {
-  const valid = trades.filter(t => t.actualRR !== undefined && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
+  const valid = trades.filter(t => isLive(t) && t.actualRR !== undefined && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
   if (valid.length === 0) return 0;
   return Math.round((valid.reduce((s, t) => s + (t.actualRR || 0), 0) / valid.length) * 100) / 100;
 };

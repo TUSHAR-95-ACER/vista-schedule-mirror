@@ -16,6 +16,9 @@ export type AccountStatus = 'Evaluation' | 'Funded' | 'Active' | 'Disabled';
 
 export type TradeGrade = 'A+' | 'A' | 'B' | 'C';
 
+export type TradeStatus = 'Complete' | 'Draft' | 'Incomplete' | 'Needs Review';
+export const TRADE_STATUSES: TradeStatus[] = ['Complete', 'Draft', 'Incomplete', 'Needs Review'];
+
 export type TradeManagement =
   | 'Moved SL to Breakeven'
   | 'Partial TP'
@@ -129,6 +132,8 @@ export interface Trade {
   tradeAnalysis?: { text: string; media: Array<{ id: string; type: 'image' | 'video'; url: string; path?: string; name?: string; legacy?: boolean }> };
   /** Crowd sentiment for the trade's pair: long % 0-100 (short % = 100 - this). */
   marketSentiment?: number;
+  /** Lifecycle status. Drafts/incomplete trades are excluded from analytics. */
+  status?: TradeStatus;
 }
 
 export interface TradeJourneyStep {

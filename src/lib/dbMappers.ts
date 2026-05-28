@@ -26,6 +26,7 @@ export function tradeToDb(t: Trade, userId: string) {
     curve: (t as any).curve || null,
     trade_analysis: (t as any).tradeAnalysis ? JSON.stringify((t as any).tradeAnalysis) : null,
     market_sentiment: (t as any).marketSentiment ?? null,
+    status: (t as any).status || 'Complete',
   };
 }
 
@@ -60,6 +61,7 @@ export function dbToTrade(row: any): Trade {
     curve: row.curve || undefined,
     tradeAnalysis: row.trade_analysis ? (typeof row.trade_analysis === 'string' ? JSON.parse(row.trade_analysis) : row.trade_analysis) : undefined,
     marketSentiment: row.market_sentiment != null ? Number(row.market_sentiment) : undefined,
+    status: row.status || 'Complete',
   } as Trade;
 }
 

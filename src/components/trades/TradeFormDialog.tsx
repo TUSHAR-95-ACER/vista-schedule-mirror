@@ -19,14 +19,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useTrading } from '@/contexts/TradingContext';
 import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
-  TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES,
+  TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES, TradeStatus,
   ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, TrendingUp, Target, DollarSign, Brain, AlertTriangle, BarChart3, Settings2, Camera, Link, StickyNote, Briefcase } from 'lucide-react';
+import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, TrendingUp, Target, DollarSign, Brain, AlertTriangle, BarChart3, Settings2, Camera, Link, StickyNote, Briefcase, FileEdit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
+import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
 
@@ -386,41 +389,62 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     ? calcActualRR(numericEntry, numericStop, numericExit, form.direction) : 0;
   const previewResult = isMissedOrCancelled ? form.result : calcResult(previewNetPL);
 
-  const handleSubmit = () => {
-    if (!form.grade) {
-      toast({ title: 'Grade required', description: 'Please select a grade before saving.', variant: 'destructive' });
-      return;
+  const { user: authUser } = useAuth();
+  const [draftStatus, setDraftStatus] = useState<'idle' | 'saved'>('idle');
+  const draftIdRef = useRef<string>(editTrade?.id || crypto.randomUUID());
+
+  // Reset draft id whenever the dialog opens fresh / switches trade.
+  useEffect(() => {
+    if (open) draftIdRef.current = editTrade?.id || crypto.randomUUID();
+  }, [open, editTrade?.id]);
+
+  // Restore an in-progress draft once when a NEW-trade dialog opens.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (!open) { restoredRef.current = false; return; }
+    if (editTrade || restoredRef.current || !authUser?.id) return;
+    const draft = loadDraft<typeof defaultForm>('tradeForm', authUser.id, 'new');
+    if (draft) {
+      restoredRef.current = true;
+      setForm(draft.data);
+      toast({ title: 'Draft restored', description: 'Your unsaved trade was recovered.' });
     }
-    if (!form.trend) {
-      toast({ title: 'Trend required', description: 'Please select a market trend before saving.', variant: 'destructive' });
-      return;
-    }
-    if (!form.curve) {
-      toast({ title: 'Curve required', description: 'Please select a curve position before saving.', variant: 'destructive' });
-      return;
-    }
+  }, [open, editTrade, authUser?.id]);
+
+  // Autosave the form to localStorage every ~1s while the dialog is open.
+  useEffect(() => {
+    if (!open || !authUser?.id) return;
+    const key = editTrade ? editTrade.id : 'new';
+    const t = setTimeout(() => {
+      saveDraft('tradeForm', authUser.id, form, key);
+      setDraftStatus('saved');
+      const r = setTimeout(() => setDraftStatus('idle'), 1200);
+      return () => clearTimeout(r);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [form, open, editTrade, authUser?.id]);
+
+  const buildTradeFromForm = (status: TradeStatus): Trade => {
     const entry = parseFloat(form.entryPrice);
     const sl = parseFloat(form.stopLoss);
     const tp = parseFloat(form.takeProfit);
     const exit = form.exitPrice ? parseFloat(form.exitPrice) : undefined;
     const quantity = parseFloat(form.quantity);
-
-    if (!isMissedOrCancelled && (!quantity || quantity <= 0)) {
-      toast({ title: 'Quantity is required', description: 'Please enter a valid position size.', variant: 'destructive' });
-      return;
-    }
-
-    const finalQuantity = isMissedOrCancelled ? (quantity || 0) : quantity;
-    const plannedRR = calcPlannedRR(entry, sl, tp);
-    const actualRR = exit ? calcActualRR(entry, sl, exit, form.direction) : undefined;
-    const grossPL = exit && finalQuantity > 0 ? calcProfitLoss(entry, exit, form.direction, finalQuantity, form.asset, form.market) : 0;
+    const finalQuantity = Number.isFinite(quantity) ? quantity : 0;
+    const plannedRR = !Number.isNaN(entry) && !Number.isNaN(sl) && !Number.isNaN(tp) ? calcPlannedRR(entry, sl, tp) : 0;
+    const actualRR = exit && !Number.isNaN(entry) && !Number.isNaN(sl) ? calcActualRR(entry, sl, exit, form.direction) : undefined;
+    const grossPL = exit && finalQuantity > 0 && !Number.isNaN(entry)
+      ? calcProfitLoss(entry, exit, form.direction, finalQuantity, form.asset, form.market) : 0;
     const finalFees = parseFloat(form.fees) || 0;
-    const profitLoss = isMissedOrCancelled ? 0 : Math.round((grossPL - finalFees) * 100) / 100;
-    const result: TradeResult = isMissedOrCancelled ? form.result as TradeResult : calcResult(profitLoss);
+    const isMissed = form.result === 'Untriggered Setup' || form.result === 'Cancelled';
+    const profitLoss = isMissed ? 0 : Math.round((grossPL - finalFees) * 100) / 100;
+    const result: TradeResult = status !== 'Complete'
+      ? (form.result || 'Untriggered Setup') as TradeResult
+      : (isMissed ? form.result as TradeResult : calcResult(profitLoss));
     const mergedConfluences = [...new Set([...form.entryConfluences, ...form.targetConfluences])];
 
-    const trade: Trade = {
-      id: editTrade?.id || crypto.randomUUID(),
+    return {
+      id: editTrade?.id || draftIdRef.current,
       date: form.date,
       entryTime: form.entryTime || undefined,
       exitTime: form.exitTime || undefined,
@@ -431,9 +455,9 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       marketCondition: form.marketCondition,
       setup: form.setup,
       quantity: finalQuantity,
-      entryPrice: entry,
-      stopLoss: sl,
-      takeProfit: tp,
+      entryPrice: Number.isFinite(entry) ? entry : 0,
+      stopLoss: Number.isFinite(sl) ? sl : 0,
+      takeProfit: Number.isFinite(tp) ? tp : 0,
       exitPrice: exit,
       result,
       plannedRR,
@@ -456,20 +480,55 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         checklist: form.checklist,
       },
       mistakes: form.mistakes,
-      grade: form.grade as TradeGrade,
+      grade: (form.grade || undefined) as TradeGrade | undefined,
       maxRRReached: form.maxRRReached ? parseFloat(form.maxRRReached) : undefined,
       maxAdverseMove: form.maxAdverseMove ? parseFloat(form.maxAdverseMove) : undefined,
       timeframe: form.timeframe || undefined,
       trend: form.trend || undefined,
       dayTags: form.dayTags,
-      curve: form.curve || undefined,
+      curve: (form.curve || undefined) as Trade['curve'],
       tradeAnalysis: form.tradeAnalysis,
       marketSentiment: form.marketSentiment,
+      status,
     };
+  };
 
-    if (editTrade) updateTrade(trade);
-    else addTrade(trade);
+  const persistAndClose = (trade: Trade) => {
+    if (editTrade) updateTrade(trade); else addTrade(trade);
+    if (authUser?.id) clearDraft('tradeForm', authUser.id, editTrade ? editTrade.id : 'new');
     onOpenChange(false);
+  };
+
+  const handleSubmit = () => {
+    // Full validation only for Complete trades.
+    if (!form.grade) {
+      toast({ title: 'Grade required', description: 'Add a grade or use "Save as Draft" to keep your progress.', variant: 'destructive' });
+      return;
+    }
+    if (!form.trend) {
+      toast({ title: 'Trend required', description: 'Add a market trend or use "Save as Draft" to keep your progress.', variant: 'destructive' });
+      return;
+    }
+    if (!form.curve) {
+      toast({ title: 'Curve required', description: 'Pick a curve position or use "Save as Draft" to keep your progress.', variant: 'destructive' });
+      return;
+    }
+    const quantity = parseFloat(form.quantity);
+    const isMissed = form.result === 'Untriggered Setup' || form.result === 'Cancelled';
+    if (!isMissed && (!quantity || quantity <= 0)) {
+      toast({ title: 'Quantity required', description: 'Enter a position size or use "Save as Draft".', variant: 'destructive' });
+      return;
+    }
+    persistAndClose(buildTradeFromForm('Complete'));
+  };
+
+  const handleSaveDraft = () => {
+    // Determine status: Draft if user clearly just started, Incomplete if mid-flight, Needs Review if has exit but missing meta.
+    const missingMeta = !form.grade || !form.trend || !form.curve;
+    const hasExit = !!form.exitPrice;
+    const status: TradeStatus = hasExit && missingMeta ? 'Needs Review' : (form.entryPrice ? 'Incomplete' : 'Draft');
+    persistAndClose(buildTradeFromForm(status));
+    toast({ title: 'Draft saved', description: `Saved as ${status}. You can finish it anytime.` });
   };
 
   return (
@@ -902,9 +961,22 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
             </FormSection>
 
             {/* ── SUBMIT ─────────────────────────────────────────── */}
-            <Button onClick={handleSubmit} className="w-full h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm">
-              {editTrade ? 'Update Trade' : 'Save Trade'}
-            </Button>
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <SaveStatusIndicator status={draftStatus === 'saved' ? 'saved' : 'idle'} label="Draft auto-saved" />
+              <span className="text-[10px] text-muted-foreground/70">Your progress is saved automatically.</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2">
+              <Button
+                onClick={handleSaveDraft}
+                variant="outline"
+                className="h-11 rounded-xl font-heading font-semibold text-xs uppercase tracking-wide gap-2"
+              >
+                <FileEdit className="h-4 w-4" /> Save as Draft
+              </Button>
+              <Button onClick={handleSubmit} className="h-11 rounded-xl font-heading font-bold text-sm uppercase tracking-wide shadow-sm">
+                {editTrade ? 'Update Trade' : 'Save Trade'}
+              </Button>
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>

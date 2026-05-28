@@ -1,14 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { BiasBadge, BiasSelectContent } from '@/components/shared/BiasBadge';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { useTrading } from '@/contexts/TradingContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft } from 'lucide-react';
 import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -20,6 +21,9 @@ import { toast } from '@/hooks/use-toast';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { adaptDailyPlan } from '@/lib/aiInsightAdapters';
+import { useAutosave } from '@/hooks/useAutosave';
+import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
 
 const emptyPairPlan = (): DailyPairPlan => ({
   id: crypto.randomUUID(),
@@ -97,9 +101,10 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
 export default function DailyPlanPage() {
   const { dailyPlans, addDailyPlan, updateDailyPlan, deleteDailyPlan, trades, sessions, loadingDailyPlans, hydrateDailyPlanMedia } = useTrading();
+  const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<DailyPlan | null>(null);
-  
+  const restoredRef = useRef<Set<string>>(new Set());
 
   const startNew = () => {
     const plan: DailyPlan = {
@@ -123,8 +128,23 @@ export default function DailyPlanPage() {
     const plan = dailyPlans.find(p => p.id === id);
     if (plan) {
       setActiveId(id);
-      setLocalPlan({ ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) });
-      // Hydrate heavy media (e.g. result chart image) for this single plan.
+      const base: DailyPlan = { ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) };
+      // Try to restore an unsaved draft from a previous crash/refresh.
+      if (authUser?.id && !restoredRef.current.has(id)) {
+        const draft = loadDraft<DailyPlan>('dailyPlan', authUser.id, id);
+        if (draft && draft.savedAt > (Date.parse((plan as any).updated_at || '') || 0)) {
+          setLocalPlan({ ...draft.data, pairs: draft.data.pairs?.map(pp => ({ ...pp })) || [] });
+          toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
+          restoredRef.current.add(id);
+          hydrateDailyPlanMedia(id).then(full => {
+            if (!full) return;
+            setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: prev.resultChartImage || full.resultChartImage } : prev);
+          });
+          return;
+        }
+        restoredRef.current.add(id);
+      }
+      setLocalPlan(base);
       hydrateDailyPlanMedia(id).then(full => {
         if (!full) return;
         setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: full.resultChartImage ?? prev.resultChartImage } : prev);
@@ -155,10 +175,29 @@ export default function DailyPlanPage() {
     update({ pairs: localPlan.pairs.filter(p => p.id !== id) });
   };
 
-  const handleSave = () => {
-    if (!localPlan) return;
-    updateDailyPlan(localPlan);
-    toast({ title: '✅ Saved!', description: 'Daily plan saved successfully.' });
+  // Autosave: persists to backend (debounced) and snapshots to localStorage for crash recovery.
+  const { status: saveStatus } = useAutosave<DailyPlan | null>({
+    value: localPlan,
+    enabled: !!localPlan && !!authUser?.id,
+    debounceMs: 1200,
+    onSave: async (val) => {
+      if (!val || !authUser?.id) return;
+      saveDraft('dailyPlan', authUser.id, val, val.id);
+      await Promise.resolve(updateDailyPlan(val));
+    },
+    onSaved: (val) => {
+      if (val && authUser?.id) clearDraft('dailyPlan', authUser.id, val.id);
+    },
+  });
+
+  // Snapshot drafts continuously while typing (independent of debounce).
+  useEffect(() => {
+    if (!localPlan || !authUser?.id) return;
+    const t = setTimeout(() => saveDraft('dailyPlan', authUser.id, localPlan, localPlan.id), 400);
+    return () => clearTimeout(t);
+  }, [localPlan, authUser?.id]);
+
+  const handleClose = () => {
     setActiveId(null);
     setLocalPlan(null);
   };
@@ -468,11 +507,13 @@ export default function DailyPlanPage() {
 
       <AIInsightsPanel page="Daily Plan" payload={adaptDailyPlan(localPlan, dayTrades)} />
 
-      {/* Sticky Save — compact */}
+      {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Button onClick={handleSave} size="sm" className="h-9 px-4 rounded-full font-heading font-semibold text-xs uppercase tracking-wider shadow-lg gap-1.5 bg-primary/95 backdrop-blur">
-            <Save className="h-3.5 w-3.5" /> Save Daily Plan
+        <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/95 border border-border/60 shadow-lg backdrop-blur">
+          <SaveStatusIndicator status={saveStatus} />
+          <span className="h-3 w-px bg-border/60" />
+          <Button onClick={handleClose} size="sm" variant="ghost" className="h-7 px-2 text-[11px] gap-1">
+            <ArrowLeft className="h-3 w-3" /> Back
           </Button>
         </div>
       </div>
