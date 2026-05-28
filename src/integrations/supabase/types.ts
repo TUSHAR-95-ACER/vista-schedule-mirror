@@ -400,6 +400,7 @@ export type Database = {
           result: string
           session: string
           setup: string
+          status: string
           stop_loss: number
           take_profit: number
           target_confluences: Json | null
@@ -446,6 +447,7 @@ export type Database = {
           result: string
           session: string
           setup: string
+          status?: string
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
@@ -492,6 +494,7 @@ export type Database = {
           result?: string
           session?: string
           setup?: string
+          status?: string
           stop_loss?: number
           take_profit?: number
           target_confluences?: Json | null
