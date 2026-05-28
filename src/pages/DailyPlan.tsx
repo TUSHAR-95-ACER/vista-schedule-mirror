@@ -1,14 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { BiasBadge, BiasSelectContent } from '@/components/shared/BiasBadge';
 import { MultiMediaBox } from '@/components/shared/MultiMediaBox';
 import { useTrading } from '@/contexts/TradingContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft } from 'lucide-react';
 import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -20,6 +21,9 @@ import { toast } from '@/hooks/use-toast';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
 import { adaptDailyPlan } from '@/lib/aiInsightAdapters';
+import { useAutosave } from '@/hooks/useAutosave';
+import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
 
 const emptyPairPlan = (): DailyPairPlan => ({
   id: crypto.randomUUID(),
