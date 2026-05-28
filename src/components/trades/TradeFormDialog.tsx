@@ -19,14 +19,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useTrading } from '@/contexts/TradingContext';
 import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
-  TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES,
+  TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES, TradeStatus,
   ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, TrendingUp, Target, DollarSign, Brain, AlertTriangle, BarChart3, Settings2, Camera, Link, StickyNote, Briefcase } from 'lucide-react';
+import { Check, ChevronDown, ImagePlus, Pencil, Trash2, Upload, X, Clock, TrendingUp, Target, DollarSign, Brain, AlertTriangle, BarChart3, Settings2, Camera, Link, StickyNote, Briefcase, FileEdit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
+import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 
 const DIRECTIONS: TradeDirection[] = ['Long', 'Short'];
 
