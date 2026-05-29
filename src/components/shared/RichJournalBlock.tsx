@@ -3,7 +3,7 @@ import { ImagePlus, Video, X, Loader2, AlertCircle, RefreshCw, Play } from 'luci
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { AutoExpandTextarea } from './AutoExpandTextarea';
+import { RichTextEditor } from './RichTextEditor';
 import {
   uploadJournalMedia,
   refreshSignedUrls,
@@ -185,15 +185,14 @@ export function RichJournalBlock({
         </div>
       </div>
 
-      <div onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
-        <AutoExpandTextarea
-          value={value.text}
-          onChange={(e) => onChange({ ...value, text: e.target.value })}
-          placeholder={placeholder}
-          minRows={3}
-          className="font-journal"
-        />
-      </div>
+      <RichTextEditor
+        value={value.text}
+        onChange={(html) => onChange({ ...value, text: html })}
+        placeholder={placeholder}
+        onPaste={onPaste}
+        onDrop={onDrop}
+        className="font-journal"
+      />
 
       {(value.media.length > 0 || pending.length > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

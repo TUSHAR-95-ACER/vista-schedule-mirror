@@ -1,6 +1,13 @@
 import type { MediaAsset, RichJournalValue } from '@/components/shared/RichJournalBlock';
+import { htmlToPlain } from '@/components/shared/RichTextEditor';
 
 export const emptyJournal = (): RichJournalValue => ({ text: '', media: [] });
+
+/** Plain-text view of a journal entry — strips Tiptap HTML for previews/AI context. */
+export function journalPlainText(v?: RichJournalValue | null): string {
+  if (!v) return '';
+  return htmlToPlain(v.text || '');
+}
 
 /** Coerce any legacy value (string narrative, single image data URL) into a RichJournalValue. */
 export function coerceRichJournal(
