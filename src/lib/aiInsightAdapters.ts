@@ -4,6 +4,7 @@
  * Keep payloads small (< 8KB) and meaningful — no UI/state cruft.
  */
 import type { Trade, WeeklyPlan, DailyPlan } from '@/types/trading';
+import { htmlToPlain } from '@/components/shared/RichTextEditor';
 
 const N = (n: number | undefined, d = 2) => (typeof n === 'number' && isFinite(n) ? Number(n.toFixed(d)) : null);
 
@@ -50,10 +51,10 @@ export function adaptWeeklyPlan(plan: WeeklyPlan | null) {
     levels: (plan.levels || '').slice(0, 400),
     pairs: (plan.pairAnalyses || []).map(p => ({
       pair: p.pair, predicted: p.bias, actual: p.actualBias || null,
-      narrative: (p.narrative || '').slice(0, 200),
+      narrative: htmlToPlain(p.narrative || '').slice(0, 200),
     })),
-    observation_text: (plan.observation?.text || '').slice(0, 600),
-    calendar_result_text: (plan.calendarResult?.text || '').slice(0, 600),
+    observation_text: htmlToPlain(plan.observation?.text || '').slice(0, 600),
+    calendar_result_text: htmlToPlain(plan.calendarResult?.text || '').slice(0, 600),
   };
 }
 
@@ -68,10 +69,10 @@ export function adaptDailyPlan(plan: DailyPlan | null, dayTrades: Trade[]) {
     took_trades: plan.tookTrades ?? null,
     pairs: (plan.pairs || []).map(p => ({
       pair: p.pair, predicted: p.bias, actual: p.actualBias || null,
-      narrative: (p.narrative || '').slice(0, 200),
+      narrative: htmlToPlain(p.narrative || '').slice(0, 200),
     })),
-    day_summary: (plan.daySummary?.text || plan.resultNarrative || '').slice(0, 500),
-    notes: (plan.notesJournal?.text || plan.note || '').slice(0, 500),
+    day_summary: htmlToPlain(plan.daySummary?.text || plan.resultNarrative || '').slice(0, 500),
+    notes: htmlToPlain(plan.notesJournal?.text || plan.note || '').slice(0, 500),
     actual_trades: dayTrades.slice(0, 10).map(t => ({
       pair: t.asset, dir: t.direction, result: t.result, pnl: N(t.profitLoss), rr: N(t.actualRR),
     })),

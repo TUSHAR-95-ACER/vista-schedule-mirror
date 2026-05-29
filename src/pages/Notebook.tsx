@@ -13,8 +13,10 @@ import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptNotebook } from '@/lib/aiInsightAdapters';
 import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
-import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
+import { coerceRichJournal, emptyJournal, serializeJournal, journalPlainText } from '@/lib/journalData';
 import { useAICoach } from '@/contexts/AICoachContext';
+import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from '@/lib/draftStorage';
+import { toast } from '@/hooks/use-toast';
 
 interface NotebookEntry {
   id: string;
@@ -64,7 +66,7 @@ export default function Notebook() {
   // Register the open notebook entry as AI Coach context
   useEffect(() => {
     if (editorOpen && (draft.pair || draft.category)) {
-      const text = coerceRichJournal(draft.journal, draft.notes, draft.image).text || '';
+      const text = journalPlainText(coerceRichJournal(draft.journal, draft.notes, draft.image));
       const lbl = `Note • ${draft.pair || 'Untitled'} • ${draft.category || 'no category'} • ${draft.date}`;
       const detail = `Open notebook entry:
 - Pair: ${draft.pair || 'n/a'}
@@ -84,8 +86,18 @@ export default function Notebook() {
     if (user) saveUserStorage(STORAGE_KEY, user.id, updated);
   };
 
+  const DRAFT_SCOPE = 'notebook-new';
+
   const openNew = () => {
-    setDraft(emptyForm());
+    let initial = emptyForm();
+    if (user) {
+      const saved = loadLocalDraft<NotebookEntry>(DRAFT_SCOPE, user.id);
+      if (saved?.data && (saved.data.pair || saved.data.category || journalPlainText(saved.data.journal))) {
+        initial = saved.data;
+        toast({ title: 'Draft restored', description: 'We recovered your unsaved notebook draft.' });
+      }
+    }
+    setDraft(initial);
     setIsEditing(false);
     setEditorOpen(true);
   };
@@ -98,6 +110,15 @@ export default function Notebook() {
     setIsEditing(true);
     setEditorOpen(true);
   };
+
+  // Auto-persist new-entry drafts to localStorage so refresh/crash never loses work.
+  useEffect(() => {
+    if (!editorOpen || isEditing || !user) return;
+    const hasContent = draft.pair || draft.category || draft.bias || journalPlainText(draft.journal);
+    if (!hasContent) return;
+    const t = setTimeout(() => saveLocalDraft(DRAFT_SCOPE, user.id, draft), 600);
+    return () => clearTimeout(t);
+  }, [draft, editorOpen, isEditing, user]);
 
   const saveDraft = () => {
     if (!draft.pair || !draft.category) return;
@@ -127,6 +148,7 @@ export default function Notebook() {
       };
       persist([entry, ...entries]);
     }
+    if (user && !isEditing) clearLocalDraft(DRAFT_SCOPE, user.id);
     setEditorOpen(false);
   };
 
@@ -165,7 +187,7 @@ export default function Notebook() {
   const previewOf = (e: NotebookEntry): { text: string; thumb?: string } => {
     const j = coerceRichJournal(e.journal, e.notes, e.image);
     const firstImg = j.media.find(m => m.type === 'image')?.url;
-    const text = (j.text || '').trim().slice(0, 220);
+    const text = journalPlainText(j).slice(0, 220);
     return { text, thumb: firstImg };
   };
 
@@ -261,7 +283,7 @@ export default function Notebook() {
           pair: e.pair,
           date: e.date,
           title: `${e.pair} ${e.category}`,
-          content: coerceRichJournal(e.journal, e.notes, e.image).text,
+          content: journalPlainText(coerceRichJournal(e.journal, e.notes, e.image)),
         })))}
       />
 
