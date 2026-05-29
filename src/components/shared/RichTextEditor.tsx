@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useEditor, EditorContent, BubbleMenu, type Editor } from '@tiptap/react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Highlight from '@tiptap/extension-highlight';
