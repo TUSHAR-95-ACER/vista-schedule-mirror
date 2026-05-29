@@ -88,8 +88,18 @@ export default function Notebook() {
     if (user) saveUserStorage(STORAGE_KEY, user.id, updated);
   };
 
+  const DRAFT_SCOPE = 'notebook-new';
+
   const openNew = () => {
-    setDraft(emptyForm());
+    let initial = emptyForm();
+    if (user) {
+      const saved = loadLocalDraft<NotebookEntry>(DRAFT_SCOPE, user.id);
+      if (saved?.data && (saved.data.pair || saved.data.category || journalPlainText(saved.data.journal))) {
+        initial = saved.data;
+        toast({ title: 'Draft restored', description: 'We recovered your unsaved notebook draft.' });
+      }
+    }
+    setDraft(initial);
     setIsEditing(false);
     setEditorOpen(true);
   };
@@ -102,6 +112,15 @@ export default function Notebook() {
     setIsEditing(true);
     setEditorOpen(true);
   };
+
+  // Auto-persist new-entry drafts to localStorage so refresh/crash never loses work.
+  useEffect(() => {
+    if (!editorOpen || isEditing || !user) return;
+    const hasContent = draft.pair || draft.category || draft.bias || journalPlainText(draft.journal);
+    if (!hasContent) return;
+    const t = setTimeout(() => saveLocalDraft(DRAFT_SCOPE, user.id, draft), 600);
+    return () => clearTimeout(t);
+  }, [draft, editorOpen, isEditing, user]);
 
   const saveDraft = () => {
     if (!draft.pair || !draft.category) return;
@@ -131,6 +150,7 @@ export default function Notebook() {
       };
       persist([entry, ...entries]);
     }
+    if (user && !isEditing) clearLocalDraft(DRAFT_SCOPE, user.id);
     setEditorOpen(false);
   };
 
