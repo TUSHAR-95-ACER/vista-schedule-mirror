@@ -15,8 +15,6 @@ import { adaptNotebook } from '@/lib/aiInsightAdapters';
 import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
 import { coerceRichJournal, emptyJournal, serializeJournal, journalPlainText } from '@/lib/journalData';
 import { useAICoach } from '@/contexts/AICoachContext';
-import { useAutosave } from '@/hooks/useAutosave';
-import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from '@/lib/draftStorage';
 import { toast } from '@/hooks/use-toast';
 
