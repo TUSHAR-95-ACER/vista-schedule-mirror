@@ -4,6 +4,7 @@
  * Keep payloads small (< 8KB) and meaningful — no UI/state cruft.
  */
 import type { Trade, WeeklyPlan, DailyPlan } from '@/types/trading';
+import { htmlToPlain } from '@/components/shared/RichTextEditor';
 
 const N = (n: number | undefined, d = 2) => (typeof n === 'number' && isFinite(n) ? Number(n.toFixed(d)) : null);
 
