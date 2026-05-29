@@ -283,7 +283,7 @@ export default function Notebook() {
           pair: e.pair,
           date: e.date,
           title: `${e.pair} ${e.category}`,
-          content: coerceRichJournal(e.journal, e.notes, e.image).text,
+          content: journalPlainText(coerceRichJournal(e.journal, e.notes, e.image)),
         })))}
       />
 
