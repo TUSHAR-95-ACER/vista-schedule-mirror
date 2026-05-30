@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trade, TradeJourneyStep } from '@/types/trading';
+import { Trade } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, TrendingUp, TrendingDown, Minus, Activity, Brain, Shield, BarChart3, Target, Clock, DollarSign } from 'lucide-react';
+import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, TrendingUp, TrendingDown, Minus, Activity, Brain, Shield, BarChart3, Target, Clock, DollarSign, AlertTriangle, Lightbulb, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
-import { TradeJourneyTimeline } from './TradeJourneyTimeline';
 import { useTrading } from '@/contexts/TradingContext';
 import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
 import { format } from 'date-fns';
