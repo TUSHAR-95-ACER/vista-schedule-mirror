@@ -170,44 +170,26 @@ export function RichTextEditor({
         <ToolbarBtn title="Quote" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="h-3.5 w-3.5" /></ToolbarBtn>
         <div className="mx-1 h-5 w-px bg-border" />
         <ToolbarBtn title="Link" active={editor.isActive('link')} onClick={setLink}><LinkIcon className="h-3.5 w-3.5" /></ToolbarBtn>
-        <div className="group/swatch relative">
-          <ToolbarBtn title="Text color" onClick={() => {}}><Palette className="h-3.5 w-3.5" /></ToolbarBtn>
-          <div className="absolute left-1/2 top-full mt-1 hidden -translate-x-1/2 group-hover/swatch:flex hover:flex gap-1 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
-            {COLOR_SWATCHES.map((c) => (
-              <button
-                key={c.label}
-                type="button"
-                title={c.label}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  if (c.value === 'inherit') editor.chain().focus().unsetColor().run();
-                  else editor.chain().focus().setColor(c.value).run();
-                }}
-                className="h-5 w-5 rounded-full border border-border"
-                style={{ background: c.value === 'inherit' ? 'transparent' : c.value }}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="group/swatch relative">
-          <ToolbarBtn title="Highlight" onClick={() => {}}><Highlighter className="h-3.5 w-3.5" /></ToolbarBtn>
-          <div className="absolute left-1/2 top-full mt-1 hidden -translate-x-1/2 group-hover/swatch:flex hover:flex gap-1 rounded-lg border border-border bg-popover p-1.5 shadow-xl">
-            {HIGHLIGHT_SWATCHES.map((c) => (
-              <button
-                key={c.label}
-                type="button"
-                title={c.label}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  if (!c.value) editor.chain().focus().unsetHighlight().run();
-                  else editor.chain().focus().setHighlight({ color: c.value }).run();
-                }}
-                className="h-5 w-5 rounded-full border border-border"
-                style={{ background: c.value || 'transparent' }}
-              />
-            ))}
-          </div>
-        </div>
+        <SwatchPopover
+          icon={<Palette className="h-3.5 w-3.5" />}
+          title="Text color"
+          swatches={COLOR_SWATCHES}
+          activeValue={(editor.getAttributes('textStyle').color as string) || 'inherit'}
+          onPick={(val) => {
+            if (val === 'inherit') editor.chain().focus().unsetColor().run();
+            else editor.chain().focus().setColor(val).run();
+          }}
+        />
+        <SwatchPopover
+          icon={<Highlighter className="h-3.5 w-3.5" />}
+          title="Highlight"
+          swatches={HIGHLIGHT_SWATCHES.map((s) => ({ label: s.label, value: s.value ?? 'inherit' }))}
+          activeValue={(editor.getAttributes('highlight').color as string) || 'inherit'}
+          onPick={(val) => {
+            if (val === 'inherit') editor.chain().focus().unsetHighlight().run();
+            else editor.chain().focus().setHighlight({ color: val }).run();
+          }}
+        />
         <div className="mx-1 h-5 w-px bg-border" />
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="h-3.5 w-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo className="h-3.5 w-3.5" /></ToolbarBtn>
