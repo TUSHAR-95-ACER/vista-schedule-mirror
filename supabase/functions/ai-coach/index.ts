@@ -256,8 +256,9 @@ serve(async (req) => {
     }
     const MAX_MESSAGES = 20;
     const MAX_CHARS = 4000;
+    // SECURITY: Never accept client-supplied "system" role messages — only user/assistant.
     const safeMessages = messages.slice(-MAX_MESSAGES).map((m: any) => ({
-      role: m?.role === "assistant" || m?.role === "system" ? m.role : "user",
+      role: m?.role === "assistant" ? "assistant" : "user",
       content: typeof m?.content === "string" ? m.content.slice(0, MAX_CHARS) : "",
     })).filter((m: any) => m.content.length > 0);
     if (safeMessages.length === 0) {
