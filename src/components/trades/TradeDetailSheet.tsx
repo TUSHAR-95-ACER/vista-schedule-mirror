@@ -453,11 +453,32 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 </a>
               )}
 
-              {/* Notes */}
-              {trade.notes && (
-                <div className="rounded-xl border border-border/60 bg-card/50 p-4">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Notes</h4>
-                  <p className="text-[11px] text-foreground/80 leading-relaxed">{trade.notes}</p>
+              {/* Structured Review Notes */}
+              {Object.keys(noteSections).length > 0 && (
+                <div className="space-y-2">
+                  {Object.entries(noteSections).map(([section, body]) => {
+                    const meta = (() => {
+                      switch (section) {
+                        case 'Mistakes':     return { icon: AlertTriangle, tone: 'border-destructive/30 bg-destructive/5', label: 'text-destructive' };
+                        case 'Lessons':      return { icon: Lightbulb,     tone: 'border-warning/30 bg-warning/5',         label: 'text-warning' };
+                        case 'Improvements': return { icon: Sparkles,      tone: 'border-primary/30 bg-primary/5',         label: 'text-primary' };
+                        case 'Strengths':    return { icon: TrendingUp,    tone: 'border-success/30 bg-success/5',         label: 'text-success' };
+                        case 'Execution':    return { icon: Activity,      tone: 'border-border/60 bg-card/50',            label: 'text-foreground' };
+                        case 'Reflection':   return { icon: Brain,         tone: 'border-border/60 bg-card/50',            label: 'text-foreground' };
+                        default:             return { icon: FileText,      tone: 'border-border/60 bg-card/50',            label: 'text-muted-foreground' };
+                      }
+                    })();
+                    const Icon = meta.icon;
+                    return (
+                      <div key={section} className={cn('rounded-xl border p-3', meta.tone)}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Icon className={cn('h-3.5 w-3.5', meta.label)} />
+                          <h4 className={cn('text-[11px] font-semibold uppercase tracking-wider', meta.label)}>{section}</h4>
+                        </div>
+                        <p className="text-[11px] text-foreground/85 leading-relaxed whitespace-pre-wrap">{body}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
