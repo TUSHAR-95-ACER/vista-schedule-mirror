@@ -199,3 +199,63 @@ export function RichTextEditor({
     </div>
   );
 }
+
+interface Swatch { label: string; value: string }
+function SwatchPopover({
+  icon, title, swatches, activeValue, onPick,
+}: { icon: React.ReactNode; title: string; swatches: Swatch[]; activeValue: string; onPick: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          title={title}
+          onMouseDown={(e) => e.preventDefault()}
+          className={cn(
+            'inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/80 hover:bg-muted hover:text-foreground transition-colors',
+            open && 'bg-primary/15 text-primary',
+          )}
+        >
+          {icon}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="bottom"
+        align="center"
+        sideOffset={6}
+        className="z-[60] w-auto p-2 rounded-xl border-border bg-popover shadow-xl"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="grid grid-cols-4 gap-1.5">
+          {swatches.map((c) => {
+            const isActive = c.value === activeValue;
+            return (
+              <button
+                key={c.label}
+                type="button"
+                title={c.label}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { onPick(c.value); }}
+                className={cn(
+                  'group relative h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted transition-colors',
+                )}
+              >
+                <span
+                  className={cn(
+                    'h-5 w-5 rounded-full border border-border/70 shadow-sm',
+                    c.value === 'inherit' && 'bg-[conic-gradient(at_top_left,_transparent,_hsl(var(--muted-foreground)/0.4))]',
+                  )}
+                  style={{ background: c.value === 'inherit' ? undefined : c.value }}
+                />
+                {isActive && (
+                  <Check className="absolute h-3 w-3 text-foreground drop-shadow-[0_0_2px_rgba(0,0,0,0.6)]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
