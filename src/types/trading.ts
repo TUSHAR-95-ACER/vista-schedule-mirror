@@ -125,6 +125,7 @@ export interface Trade {
   grade?: TradeGrade;
   timeframe?: string;
   trend?: string;
+  /** @deprecated Trade Journey feature removed. Field retained only for legacy data hydration. */
   tradeJourney?: TradeJourneyStep[];
   dayTags?: string[];
   curve?: 'Right' | 'Left' | 'Centre';

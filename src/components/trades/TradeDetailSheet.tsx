@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trade, TradeJourneyStep } from '@/types/trading';
+import { Trade } from '@/types/trading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, TrendingUp, TrendingDown, Minus, Activity, Brain, Shield, BarChart3, Target, Clock, DollarSign } from 'lucide-react';
+import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, TrendingUp, TrendingDown, Minus, Activity, Brain, Shield, BarChart3, Target, Clock, DollarSign, AlertTriangle, Lightbulb, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
-import { TradeJourneyTimeline } from './TradeJourneyTimeline';
 import { useTrading } from '@/contexts/TradingContext';
 import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
 import { format } from 'date-fns';
@@ -120,9 +119,60 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
 
   if (!trade) return null;
 
-  const handleJourneyUpdate = (journey: TradeJourneyStep[]) => {
-    updateTrade({ ...trade, tradeJourney: journey });
-  };
+  // Compact KPI tile used in the new hero row.
+  const KpiTile = ({ label, value, sub, tone }: { label: string; value: React.ReactNode; sub?: React.ReactNode; tone?: 'success' | 'destructive' | 'primary' | 'muted' }) => (
+    <div className="rounded-lg border border-border/60 bg-card/60 px-3 py-2 min-w-0">
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground truncate">{label}</div>
+      <div className={cn(
+        'mt-0.5 font-mono text-sm font-bold truncate',
+        tone === 'success' && 'text-success',
+        tone === 'destructive' && 'text-destructive',
+        tone === 'primary' && 'text-primary',
+        tone === 'muted' && 'text-muted-foreground',
+      )}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</div>}
+    </div>
+  );
+
+  // Risk / Reward in price units, derived directly from levels.
+  const risk = Math.abs(trade.entryPrice - trade.stopLoss);
+  const reward = Math.abs(trade.takeProfit - trade.entryPrice);
+  const rrRatio = risk > 0 ? reward / risk : 0;
+  const fmt = (n: number) => n >= 100 ? n.toFixed(2) : n.toFixed(4);
+
+  // Split structured review sections out of the freeform notes field.
+  // Recognises markdown-style headings (e.g. "Mistakes:", "## Lessons") so existing
+  // notes keep working but get card-style grouping.
+  const noteSections = useMemo(() => {
+    const out: Record<string, string> = {};
+    const raw = (trade.notes || '').trim();
+    if (!raw) return out;
+    const headingMap: Record<string, string> = {
+      mistake: 'Mistakes', mistakes: 'Mistakes',
+      lesson: 'Lessons', lessons: 'Lessons', 'lessons learned': 'Lessons',
+      improvement: 'Improvements', improvements: 'Improvements',
+      strength: 'Strengths', strengths: 'Strengths', 'what went well': 'Strengths',
+      execution: 'Execution', 'execution notes': 'Execution',
+      reflection: 'Reflection',
+    };
+    const lines = raw.split(/\r?\n/);
+    let current = 'Notes';
+    out[current] = '';
+    for (const line of lines) {
+      const m = line.match(/^\s*(?:#+\s*)?([A-Za-z][A-Za-z\s]{2,30}?)\s*[:\-—]\s*(.*)$/);
+      const key = m ? headingMap[m[1].trim().toLowerCase()] : null;
+      if (m && key) {
+        current = key;
+        if (!out[current]) out[current] = '';
+        if (m[2]) out[current] += m[2] + '\n';
+      } else {
+        out[current] += line + '\n';
+      }
+    }
+    Object.keys(out).forEach((k) => { out[k] = out[k].trim(); if (!out[k]) delete out[k]; });
+    return out;
+  }, [trade.notes]);
+
 
   const handleDownload = (src: string, name: string) => {
     const a = document.createElement('a');
@@ -173,6 +223,30 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
             )}
           </div>
 
+          {/* ═══════ KPI HERO ROW ═══════ */}
+          <div className="px-5 pt-4 pb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <KpiTile
+                label="Net P&L"
+                value={`${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                tone={trade.profitLoss >= 0 ? 'success' : 'destructive'}
+              />
+              <KpiTile label="Planned RR" value={trade.plannedRR.toFixed(2)} tone="primary" />
+              <KpiTile
+                label="Actual RR"
+                value={trade.actualRR !== undefined ? trade.actualRR.toFixed(2) : '—'}
+                tone={trade.actualRR !== undefined ? (trade.actualRR >= 0 ? 'success' : 'destructive') : 'muted'}
+              />
+              <KpiTile label="Grade" value={trade.grade || '—'} tone="primary" />
+              {trade.psychology && (
+                <>
+                  <KpiTile label="Discipline" value={`${trade.psychology.discipline}/5`} sub={<Progress value={trade.psychology.discipline * 20} className="h-1 mt-1" />} />
+                  <KpiTile label="Focus" value={`${trade.psychology.focus}/5`} sub={<Progress value={trade.psychology.focus * 20} className="h-1 mt-1" />} />
+                </>
+              )}
+            </div>
+          </div>
+
           {/* ═══════ TWO-COLUMN BODY ═══════ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
             
@@ -192,11 +266,28 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 <DataRow label="Quantity" value={trade.quantity} mono />
               </InfoCard>
 
-              <InfoCard icon={DollarSign} title="Prices">
-                <DataRow label="Entry" value={trade.entryPrice} mono highlight />
-                <DataRow label="Stop Loss" value={trade.stopLoss} mono />
-                <DataRow label="Take Profit" value={trade.takeProfit} mono />
-                {trade.exitPrice && <DataRow label="Exit" value={trade.exitPrice} mono highlight />}
+              <InfoCard icon={DollarSign} title="Trade Levels">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-primary">Entry</div>
+                    <div className="font-mono text-sm font-bold">{trade.entryPrice}</div>
+                  </div>
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-destructive">Stop Loss</div>
+                    <div className="font-mono text-sm font-bold">{trade.stopLoss}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Risk {fmt(risk)}</div>
+                  </div>
+                  <div className="rounded-lg border border-success/30 bg-success/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-success">Take Profit</div>
+                    <div className="font-mono text-sm font-bold">{trade.takeProfit}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Reward {fmt(reward)}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-card/60 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Exit</div>
+                    <div className="font-mono text-sm font-bold">{trade.exitPrice ?? '—'}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">RR {rrRatio.toFixed(2)}</div>
+                  </div>
+                </div>
               </InfoCard>
 
               <InfoCard icon={BarChart3} title="Performance">
@@ -362,11 +453,32 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 </a>
               )}
 
-              {/* Notes */}
-              {trade.notes && (
-                <div className="rounded-xl border border-border/60 bg-card/50 p-4">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Notes</h4>
-                  <p className="text-[11px] text-foreground/80 leading-relaxed">{trade.notes}</p>
+              {/* Structured Review Notes */}
+              {Object.keys(noteSections).length > 0 && (
+                <div className="space-y-2">
+                  {Object.entries(noteSections).map(([section, body]) => {
+                    const meta = (() => {
+                      switch (section) {
+                        case 'Mistakes':     return { icon: AlertTriangle, tone: 'border-destructive/30 bg-destructive/5', label: 'text-destructive' };
+                        case 'Lessons':      return { icon: Lightbulb,     tone: 'border-warning/30 bg-warning/5',         label: 'text-warning' };
+                        case 'Improvements': return { icon: Sparkles,      tone: 'border-primary/30 bg-primary/5',         label: 'text-primary' };
+                        case 'Strengths':    return { icon: TrendingUp,    tone: 'border-success/30 bg-success/5',         label: 'text-success' };
+                        case 'Execution':    return { icon: Activity,      tone: 'border-border/60 bg-card/50',            label: 'text-foreground' };
+                        case 'Reflection':   return { icon: Brain,         tone: 'border-border/60 bg-card/50',            label: 'text-foreground' };
+                        default:             return { icon: FileText,      tone: 'border-border/60 bg-card/50',            label: 'text-muted-foreground' };
+                      }
+                    })();
+                    const Icon = meta.icon;
+                    return (
+                      <div key={section} className={cn('rounded-xl border p-3', meta.tone)}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Icon className={cn('h-3.5 w-3.5', meta.label)} />
+                          <h4 className={cn('text-[11px] font-semibold uppercase tracking-wider', meta.label)}>{section}</h4>
+                        </div>
+                        <p className="text-[11px] text-foreground/85 leading-relaxed whitespace-pre-wrap">{body}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -433,15 +545,6 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
             </div>
           )}
 
-          {/* Trade Journey */}
-          <div className="px-5 py-3 border-t border-border/30">
-            <TradeJourneyTimeline
-              tradeDate={trade.date}
-              entryTime={trade.entryTime}
-              journey={trade.tradeJourney || []}
-              onUpdate={handleJourneyUpdate}
-            />
-          </div>
         </DialogContent>
       </Dialog>
 
