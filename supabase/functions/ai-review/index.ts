@@ -103,7 +103,7 @@ serve(async (req) => {
 
     const text = (data?.choices?.[0]?.message?.content || "").trim();
     console.info("ai-review ok", { mode, tier, usage: data?.usage ?? null });
-    return json({ text, mode, tier }, 200);
+    return json({ text, mode }, 200);
   } catch (e) {
     console.error("ai-review error", e);
     return json({ error: "Internal server error" }, 500);
