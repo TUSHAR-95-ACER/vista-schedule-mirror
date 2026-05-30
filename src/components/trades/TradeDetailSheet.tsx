@@ -119,9 +119,60 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
 
   if (!trade) return null;
 
-  const handleJourneyUpdate = (journey: TradeJourneyStep[]) => {
-    updateTrade({ ...trade, tradeJourney: journey });
-  };
+  // Compact KPI tile used in the new hero row.
+  const KpiTile = ({ label, value, sub, tone }: { label: string; value: React.ReactNode; sub?: React.ReactNode; tone?: 'success' | 'destructive' | 'primary' | 'muted' }) => (
+    <div className="rounded-lg border border-border/60 bg-card/60 px-3 py-2 min-w-0">
+      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground truncate">{label}</div>
+      <div className={cn(
+        'mt-0.5 font-mono text-sm font-bold truncate',
+        tone === 'success' && 'text-success',
+        tone === 'destructive' && 'text-destructive',
+        tone === 'primary' && 'text-primary',
+        tone === 'muted' && 'text-muted-foreground',
+      )}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</div>}
+    </div>
+  );
+
+  // Risk / Reward in price units, derived directly from levels.
+  const risk = Math.abs(trade.entryPrice - trade.stopLoss);
+  const reward = Math.abs(trade.takeProfit - trade.entryPrice);
+  const rrRatio = risk > 0 ? reward / risk : 0;
+  const fmt = (n: number) => n >= 100 ? n.toFixed(2) : n.toFixed(4);
+
+  // Split structured review sections out of the freeform notes field.
+  // Recognises markdown-style headings (e.g. "Mistakes:", "## Lessons") so existing
+  // notes keep working but get card-style grouping.
+  const noteSections = useMemo(() => {
+    const out: Record<string, string> = {};
+    const raw = (trade.notes || '').trim();
+    if (!raw) return out;
+    const headingMap: Record<string, string> = {
+      mistake: 'Mistakes', mistakes: 'Mistakes',
+      lesson: 'Lessons', lessons: 'Lessons', 'lessons learned': 'Lessons',
+      improvement: 'Improvements', improvements: 'Improvements',
+      strength: 'Strengths', strengths: 'Strengths', 'what went well': 'Strengths',
+      execution: 'Execution', 'execution notes': 'Execution',
+      reflection: 'Reflection',
+    };
+    const lines = raw.split(/\r?\n/);
+    let current = 'Notes';
+    out[current] = '';
+    for (const line of lines) {
+      const m = line.match(/^\s*(?:#+\s*)?([A-Za-z][A-Za-z\s]{2,30}?)\s*[:\-—]\s*(.*)$/);
+      const key = m ? headingMap[m[1].trim().toLowerCase()] : null;
+      if (m && key) {
+        current = key;
+        if (!out[current]) out[current] = '';
+        if (m[2]) out[current] += m[2] + '\n';
+      } else {
+        out[current] += line + '\n';
+      }
+    }
+    Object.keys(out).forEach((k) => { out[k] = out[k].trim(); if (!out[k]) delete out[k]; });
+    return out;
+  }, [trade.notes]);
+
 
   const handleDownload = (src: string, name: string) => {
     const a = document.createElement('a');
