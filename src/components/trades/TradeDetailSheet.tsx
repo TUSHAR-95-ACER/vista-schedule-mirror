@@ -266,11 +266,28 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 <DataRow label="Quantity" value={trade.quantity} mono />
               </InfoCard>
 
-              <InfoCard icon={DollarSign} title="Prices">
-                <DataRow label="Entry" value={trade.entryPrice} mono highlight />
-                <DataRow label="Stop Loss" value={trade.stopLoss} mono />
-                <DataRow label="Take Profit" value={trade.takeProfit} mono />
-                {trade.exitPrice && <DataRow label="Exit" value={trade.exitPrice} mono highlight />}
+              <InfoCard icon={DollarSign} title="Trade Levels">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-primary">Entry</div>
+                    <div className="font-mono text-sm font-bold">{trade.entryPrice}</div>
+                  </div>
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-destructive">Stop Loss</div>
+                    <div className="font-mono text-sm font-bold">{trade.stopLoss}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Risk {fmt(risk)}</div>
+                  </div>
+                  <div className="rounded-lg border border-success/30 bg-success/5 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-success">Take Profit</div>
+                    <div className="font-mono text-sm font-bold">{trade.takeProfit}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">Reward {fmt(reward)}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-card/60 px-2.5 py-1.5">
+                    <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Exit</div>
+                    <div className="font-mono text-sm font-bold">{trade.exitPrice ?? '—'}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">RR {rrRatio.toFixed(2)}</div>
+                  </div>
+                </div>
               </InfoCard>
 
               <InfoCard icon={BarChart3} title="Performance">
