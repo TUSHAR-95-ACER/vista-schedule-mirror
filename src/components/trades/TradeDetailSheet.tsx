@@ -483,15 +483,6 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
             </div>
           )}
 
-          {/* Trade Journey */}
-          <div className="px-5 py-3 border-t border-border/30">
-            <TradeJourneyTimeline
-              tradeDate={trade.date}
-              entryTime={trade.entryTime}
-              journey={trade.tradeJourney || []}
-              onUpdate={handleJourneyUpdate}
-            />
-          </div>
         </DialogContent>
       </Dialog>
 
