@@ -223,6 +223,30 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
             )}
           </div>
 
+          {/* ═══════ KPI HERO ROW ═══════ */}
+          <div className="px-5 pt-4 pb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <KpiTile
+                label="Net P&L"
+                value={`${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
+                tone={trade.profitLoss >= 0 ? 'success' : 'destructive'}
+              />
+              <KpiTile label="Planned RR" value={trade.plannedRR.toFixed(2)} tone="primary" />
+              <KpiTile
+                label="Actual RR"
+                value={trade.actualRR !== undefined ? trade.actualRR.toFixed(2) : '—'}
+                tone={trade.actualRR !== undefined ? (trade.actualRR >= 0 ? 'success' : 'destructive') : 'muted'}
+              />
+              <KpiTile label="Grade" value={trade.grade || '—'} tone="primary" />
+              {trade.psychology && (
+                <>
+                  <KpiTile label="Discipline" value={`${trade.psychology.discipline}/5`} sub={<Progress value={trade.psychology.discipline * 20} className="h-1 mt-1" />} />
+                  <KpiTile label="Focus" value={`${trade.psychology.focus}/5`} sub={<Progress value={trade.psychology.focus * 20} className="h-1 mt-1" />} />
+                </>
+              )}
+            </div>
+          </div>
+
           {/* ═══════ TWO-COLUMN BODY ═══════ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5">
             
