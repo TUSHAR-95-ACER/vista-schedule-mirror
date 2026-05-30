@@ -424,16 +424,17 @@ Speak as an institutional mentor reviewing the trader's screenshot in real time.
       ...safeMessages.slice(0, -1),
     ];
     if (lastUserMsg) {
+      const lastText = (lastUserMsg.content || "") + pageContextUserBlock;
       if (hasImages) {
         finalMessages.push({
           role: "user",
           content: [
-            { type: "text", text: lastUserMsg.content || "Analyze this chart." },
+            { type: "text", text: lastText || "Analyze this chart." },
             ...images.map(img => ({ type: "image_url", image_url: { url: img.url } })),
           ],
         });
       } else {
-        finalMessages.push(lastUserMsg);
+        finalMessages.push({ role: "user", content: lastText });
       }
     }
 
