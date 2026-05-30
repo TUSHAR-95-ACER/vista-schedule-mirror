@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    console.info('[auth] email sign-in start', { email });
+    console.info('[auth] email sign-in start', { emailDomain: email.split('@')[1] ?? 'unknown' });
     try {
       clearLocalAuthCache();
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
