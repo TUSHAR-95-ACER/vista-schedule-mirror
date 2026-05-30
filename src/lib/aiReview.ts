@@ -24,10 +24,7 @@ export interface AIReviewRequest {
 
 export interface AIReviewResponse {
   text: string;
-  model: string;
-  tier: 'haiku' | 'sonnet' | 'opus';
   mode: AIReviewMode;
-  usage?: { input_tokens?: number; output_tokens?: number } | null;
 }
 
 export async function callAIReview(req: AIReviewRequest): Promise<AIReviewResponse> {
