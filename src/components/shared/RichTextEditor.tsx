@@ -95,6 +95,28 @@ export function RichTextEditor({
           'min-h-[120px] text-sm leading-relaxed font-journal text-foreground',
         ),
       },
+      // Strip hardcoded color / background-color from pasted HTML so dark-mode text
+      // (and light-mode text) always inherits the theme palette and stays visible.
+      transformPastedHTML(html: string) {
+        if (typeof window === 'undefined' || !html) return html;
+        try {
+          const tpl = document.createElement('template');
+          tpl.innerHTML = html;
+          tpl.content.querySelectorAll<HTMLElement>('[style]').forEach((el) => {
+            // Remove just color & background-color, keep other styles (bold/size/etc).
+            el.style.removeProperty('color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('-webkit-text-fill-color');
+            if (!el.getAttribute('style')?.trim()) el.removeAttribute('style');
+          });
+          // Drop legacy <font color="..."> attributes too.
+          tpl.content.querySelectorAll('font[color]').forEach((el) => el.removeAttribute('color'));
+          return tpl.innerHTML;
+        } catch {
+          return html;
+        }
+      },
     },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();

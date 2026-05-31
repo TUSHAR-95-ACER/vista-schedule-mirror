@@ -107,7 +107,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function WeeklyPlanPage() {
-  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan } = useTrading();
+  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan, loadingWeeklyPlans } = useTrading();
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
@@ -215,7 +215,13 @@ export default function WeeklyPlanPage() {
           </div>
         )}
 
-        {weeklyPlans.length === 0 ? (
+        {loadingWeeklyPlans ? (
+          <div className="grid gap-2">
+            {[0,1,2].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-card border border-border animate-pulse" />
+            ))}
+          </div>
+        ) : weeklyPlans.length === 0 ? (
           <PlanEmptyState
             message="No weekly plans yet. Start your first analysis."
             actionLabel="Create your first plan"

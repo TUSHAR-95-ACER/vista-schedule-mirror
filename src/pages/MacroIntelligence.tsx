@@ -100,7 +100,10 @@ type Analysis = {
 /* =========================================================================
    DEFAULTS
    ========================================================================= */
-const CATEGORIES = ["Inflation", "Labor", "Growth", "Fed", "Manufacturing"] as const;
+const CATEGORIES = [
+  "Inflation", "Labor", "Fed", "Growth", "Housing",
+  "Manufacturing", "Consumer", "Energy", "Geopolitical", "Other",
+] as const;
 type Category = typeof CATEGORIES[number];
 
 const DEFAULT_TEMPLATE: { event: string; category: Category }[] = [
@@ -118,6 +121,48 @@ const DEFAULT_TEMPLATE: { event: string; category: Category }[] = [
   { event: "ISM Manufacturing", category: "Manufacturing" },
   { event: "FOMC Tone", category: "Fed" },
 ];
+
+/** Derive Surprise / Trend / Impact from numeric inputs.
+ *  Pure heuristic — used while the user is typing so the row never stays blank.
+ *  Inflation-style events are inverted (higher = bearish for risk / bullish USD-hawkish). */
+function computeEventLabels(e: { event?: string; category?: string | null; previous: number | null; forecast: number | null; actual: number | null; }):
+  { surprise: string | null; trend: string | null; impact: string | null } {
+  const { previous, forecast, actual, category, event } = e;
+  if (actual == null || (forecast == null && previous == null)) {
+    return { surprise: null, trend: null, impact: null };
+  }
+  const isInflation = category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(event || "");
+  // Surprise: forecast vs actual
+  let surprise: string | null = null;
+  if (forecast != null) {
+    const diff = actual - forecast;
+    const denom = Math.max(0.001, Math.abs(forecast));
+    const pct = Math.abs(diff) / denom;
+    if (pct < 0.02) surprise = "Neutral";
+    else if (isInflation) surprise = diff > 0 ? "High Inflation" : "Low Inflation";
+    else surprise = diff > 0 ? "Bullish USD" : "Bearish USD";
+  }
+  // Trend: previous vs actual (direction = better/worse)
+  let trend: string | null = null;
+  if (previous != null) {
+    const d = actual - previous;
+    const denom = Math.max(0.001, Math.abs(previous));
+    if (Math.abs(d) / denom < 0.01) trend = "Stable";
+    else if (isInflation) trend = d > 0 ? "Weakening" : "Improving";
+    else trend = d > 0 ? "Improving" : "Weakening";
+  }
+  // Impact: deviation magnitude vs forecast (fallback previous)
+  let impact: string | null = null;
+  const base = forecast != null ? forecast : previous;
+  if (base != null) {
+    const dev = Math.abs(actual - base) / Math.max(0.001, Math.abs(base));
+    if (dev < 0.02) impact = "Low";
+    else if (dev < 0.10) impact = "Medium";
+    else if (dev < 0.30) impact = "High";
+    else impact = "Very High";
+  }
+  return { surprise, trend, impact };
+}
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -377,7 +422,22 @@ export default function MacroIntelligence() {
   const isReadOnly = !!activeCycle && activeCycle.status === "archived";
 
   function updateEvent(idx: number, patch: Partial<MacroEvent>) {
-    setEvents(prev => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
+    setEvents(prev => prev.map((e, i) => {
+      if (i !== idx) return e;
+      const merged = { ...e, ...patch };
+      // Auto-derive Surprise / Trend / Impact whenever Previous / Forecast / Actual change.
+      // Anything the AI later returns will overwrite these, but the row never stays blank.
+      if (
+        'previous' in patch || 'forecast' in patch || 'actual' in patch ||
+        'event' in patch || 'category' in patch
+      ) {
+        const auto = computeEventLabels(merged);
+        if (auto.surprise) merged.surprise = auto.surprise;
+        if (auto.trend) merged.trend = auto.trend;
+        if (auto.impact) merged.impact = auto.impact;
+      }
+      return merged;
+    }));
   }
   function addEvent(category?: Category) {
     setEvents(prev => [...prev, { release_date: todayISO(), event: "", category: category || "Inflation", previous: null, forecast: null, actual: null, unit: "" }]);
@@ -514,7 +574,7 @@ export default function MacroIntelligence() {
     const groups: Record<string, MacroEvent[]> = {};
     for (const cat of CATEGORIES) groups[cat] = [];
     for (const e of events) {
-      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Inflation";
+      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Other";
       groups[c].push(e);
     }
     return groups;
