@@ -215,7 +215,13 @@ export default function WeeklyPlanPage() {
           </div>
         )}
 
-        {weeklyPlans.length === 0 ? (
+        {loadingWeeklyPlans ? (
+          <div className="grid gap-2">
+            {[0,1,2].map(i => (
+              <div key={i} className="h-16 rounded-xl bg-card border border-border animate-pulse" />
+            ))}
+          </div>
+        ) : weeklyPlans.length === 0 ? (
           <PlanEmptyState
             message="No weekly plans yet. Start your first analysis."
             actionLabel="Create your first plan"
