@@ -422,7 +422,22 @@ export default function MacroIntelligence() {
   const isReadOnly = !!activeCycle && activeCycle.status === "archived";
 
   function updateEvent(idx: number, patch: Partial<MacroEvent>) {
-    setEvents(prev => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
+    setEvents(prev => prev.map((e, i) => {
+      if (i !== idx) return e;
+      const merged = { ...e, ...patch };
+      // Auto-derive Surprise / Trend / Impact whenever Previous / Forecast / Actual change.
+      // Anything the AI later returns will overwrite these, but the row never stays blank.
+      if (
+        'previous' in patch || 'forecast' in patch || 'actual' in patch ||
+        'event' in patch || 'category' in patch
+      ) {
+        const auto = computeEventLabels(merged);
+        if (auto.surprise) merged.surprise = auto.surprise;
+        if (auto.trend) merged.trend = auto.trend;
+        if (auto.impact) merged.impact = auto.impact;
+      }
+      return merged;
+    }));
   }
   function addEvent(category?: Category) {
     setEvents(prev => [...prev, { release_date: todayISO(), event: "", category: category || "Inflation", previous: null, forecast: null, actual: null, unit: "" }]);
