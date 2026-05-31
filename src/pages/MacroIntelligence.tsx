@@ -574,7 +574,7 @@ export default function MacroIntelligence() {
     const groups: Record<string, MacroEvent[]> = {};
     for (const cat of CATEGORIES) groups[cat] = [];
     for (const e of events) {
-      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Inflation";
+      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Other";
       groups[c].push(e);
     }
     return groups;
