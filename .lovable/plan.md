@@ -1,57 +1,118 @@
-# Macro Intelligence v2 — Monthly Cycle System
+## Research Lab Redesign
 
-This is a large multi-area request. Breaking it into 4 focused workstreams.
+Transform Research Lab from a notes page into a strategy R&D platform with a clear workflow: **Research → Testing → Validation → Playbook**.
 
-## 1. Sidebar reorder
-- Move **Macro Intelligence** above **Weekly Plan** and **Daily Plan** in `Sidebar.tsx`.
+### 1. Data Model (localStorage, user-scoped — same pattern as today)
 
-## 2. Market Sentiment cleanup
-- Remove DXY from sentiment slider lists (DXY is an index, not a tradable pair) in `MarketSentimentSlider.tsx` consumers + `DailyPlan.tsx` / `TradeFormDialog.tsx` filter.
+Storage key: `ef_research_strategies` (replaces `ef_research_lab` + `ef_tool_testing`, old keys kept readable for migration only).
 
-## 3. Add 4 new fonts
-- Add 4 new monospace/display font presets selectable via `html[data-journal-font]` in `index.html` + journal font picker in Settings.
-- Suggest: JetBrains Mono, IBM Plex Mono, Geist Mono, Space Grotesk (or similar). Confirm with user later if needed but default add: `JetBrains Mono`, `IBM Plex Mono`, `Geist Mono`, `Space Grotesk`.
+```ts
+Strategy {
+  id, name, description, type, icon, color,
+  status: 'Testing'|'Promising'|'Validated'|'Failed'|'Archived',
+  pairs: string[],            // user-editable pair list (add/delete)
+  templateFields?: FieldSet,  // saved template structure
+  tests: Test[],
+  createdAt, updatedAt
+}
 
-## 4. Macro Intelligence — full rebuild
+Test {
+  id, date, pair, session,
+  predictedBias, actualBias,
+  dealingRange, liquidityTarget, liquidityNote, narrative,
+  drHigh, drEq, drLow,
+  breakoutQuality, fvgLocation, entryType, ltfConfirmation,
+  entryPrice, stopLoss, tp1, tp1Target, tp2, tp2Target,
+  result: 'Win'|'Loss'|'Scratch', rAchieved,
+  grade: 'A'|'B'|'C', emotionalState,
+  predictedScreenshot, actualScreenshot,
+  reflection: { wentWell, toImprove, notes },   // rich text
+  modelReview: { followedModel, narrative, differently }  // rich text
+}
+```
 
-### 4a. Database (migration)
-- New table `macro_cycles`:
-  - `id uuid pk`, `user_id uuid`, `cycle_month text` (e.g. `2026-05`), `label text`, `status text` (`active`|`archived`), `dominant_narrative text`, `narrative_drivers jsonb`, `current_story jsonb`, `forward_expectation jsonb`, `market_focus text`, `timeline jsonb`, `created_at`, `archived_at`.
-  - RLS: own-rows only.
-- Extend `macro_events`: add `cycle_id uuid`, `category text` (Inflation/Labor/Growth/Fed/Manufacturing).
-- Extend `macro_analyses`: add `cycle_id uuid`, `outcome_status text` (`worked`|`not_worked`|null) — replace boolean usage.
-- Unique `(user_id, cycle_id, analysis_date)` so re-saving updates rather than duplicates.
+### 2. Pages & Routes
 
-### 4b. Edge function `macro-intelligence` rewrite
-- Accept `cycle_id`, fetch all events for cycle + last 3 cycles' analyses for historical memory.
-- Tool schema additions: `dominant_narrative`, `narrative_drivers[]`, `current_story[]` (short bullets), `forward_expectation` `{if_high, if_low}`, `market_focus`, `coaching[]`, `historical_shift`.
-- New simple-language rules in system prompt: short sentences, swap "Hot/Cooling Inflation" → "High/Low/Neutral Inflation".
-- Upsert analysis (don't insert duplicates) — keyed on `(cycle_id, analysis_date)`.
+- `/research-lab` — strategy gallery (cards)
+- `/research-lab/:strategyId` — strategy dashboard + tests list
+- `/research-lab/:strategyId/test/:testId` — single test detail/editor
 
-### 4c. UI rewrite (`MacroIntelligence.tsx`)
-- Cycle switcher header with **Start New Macro Cycle** button + confirm dialog.
-- Archived cycles read-only.
-- Layered hierarchy:
-  - **Primary:** Dominant Narrative hero + USD/Gold/Fed/Environment/Next-Focus chips.
-  - **Current Story:** simple bullets.
-  - **Forward Expectation Engine:** two outcome cards (If High / If Low) with arrows + probability bars.
-  - **Fed spectrum bars:** Dovish↔Hawkish, Cuts↔Hikes (replace probability rings).
-  - **Smart Money / Conflict / Pricing / Positioning:** compact cards.
-  - **Coaching layer:** mentor cautions.
-  - **Economic Table:** grouped collapsible by category, compact mode, dynamic add/remove.
-  - **Timeline:** vertical macro timeline of cycle events.
-  - **Prediction History:** compact list, `Worked` / `Not Worked` toggle (no Hit/Miss buttons).
-- Executive summary default; "Deep Dive" expandable for full reasoning.
-- Glassmorphism, dark, terminal aesthetic — keep existing tokens.
+### 3. Research Lab Home (gallery)
 
-## Technical notes
-- All AI text constrained via tool schema with `maxLength` hints in prompt; system prompt enforces "simple language, short sentences".
-- Save Events upserts — uses `onConflict: 'cycle_id,analysis_date'` to prevent duplicates.
-- Outcome tracking via single `outcome_status` field with two-state toggle.
-- Cycle creation: archive current `active` row, insert new with status `active` for current `YYYY-MM`.
+- Header actions: **New Strategy**, **Import Strategy**, **Research Analytics**, **Archive**
+- Grid of strategy cards showing: name, tests completed, win rate, avg RR, bias accuracy, validation score, status pill
+- Status colors via design tokens (blue/green/emerald/red/gray)
+- Card actions: Open, Edit, Duplicate, Archive, Delete + `...` menu (Rename/Duplicate/Archive/Delete)
+- Empty state with seeded suggestions (ICT Session Narrative, EBP Candle, SMT Divergence, AMD, London Reversal)
 
-## Out of scope (will not touch)
-- AI Coach / AI Insights pages (already rebuilt earlier).
-- Trade/Plan flows beyond DXY removal.
+### 4. New Strategy Modal
 
-After approval I will execute in this order: migration → edge function → fonts/sidebar/sentiment → MacroIntelligence UI.
+Fields: Name, Description, Type (Session/Liquidity/SMT/PO3/Custom), Icon picker, Color picker, Status.
+
+### 5. Strategy Dashboard (`/research-lab/:strategyId`)
+
+- KPI row: Total Tests, Wins, Losses, Win Rate, Avg RR, Bias Accuracy, Best Session, Best Pair, A-Grade %, Validation Score (computed)
+- Charts (Recharts): Win Rate by Session, Win Rate by Pair, Grade Distribution, Bias Accuracy, Emotional State Distribution
+- **Pair manager** card: add/delete pairs for this strategy
+- Top-right actions: New Test, Edit Strategy, Save Template, Export Data, Archive, Promote to Playbook
+- Tests table below dashboard
+
+### 6. Test Entry Form (sectioned, single page)
+
+Sections with clear visual hierarchy:
+1. Basic Info (date, pair pill, session pill)
+2. HTF Bias (predicted vs actual pills)
+3. Dealing Range (Premium/Discount/EQ)
+4. Liquidity (BSL/SSL/Both/None + note)
+5. Session Narrative (textarea)
+6. DR Levels (High/EQ/Low)
+7. Breakout Quality, FVG Location, Entry Type, LTF Confirmation (pill groups)
+8. Trade Execution (entry, SL, TP1+target, TP2+target)
+9. Result + R Achieved
+10. Process Grade (large A/B/C cards)
+11. Emotional State (Process/Flow/Foggy/Revenge)
+12. Screenshots (predicted + actual, preview/zoom/fullscreen via existing image lightbox pattern)
+13. Reflection (rich text x3) using existing `RichTextEditor`
+14. **Model Review** highlighted block (3 large rich text answers)
+
+### 7. Auto-Analytics (computed, not stored)
+
+Pure functions over `tests[]`: bias accuracy, win rate by session/pair/grade/emotion/entry/liquidity. Surfaced in dashboard charts and per-test detail.
+
+### 8. Templates
+
+- "Save Template" snapshots current field config to the strategy
+- "New Strategy → Use Existing Template" copies fields from selected strategy
+
+### 9. Autosave
+
+Reuse existing `useAutosave` hook. Saves on type, blur, tab switch, beforeunload. Status pill via `SaveStatusIndicator`. No manual Save button.
+
+### 10. Design
+
+- Reuse design tokens, MetricCard, Card, Badge, Tabs from existing system
+- Status badges use semantic tokens (success/primary/destructive/muted)
+- Dark mode compatible
+- Mobile-responsive grid (1 col mobile, 2 tablet, 3 desktop)
+- Smooth hover (existing transition utilities), no new animation libs
+
+### Files
+
+**New:**
+- `src/types/research.ts` — Strategy/Test types
+- `src/lib/researchAnalytics.ts` — pure analytics fns
+- `src/lib/researchStorage.ts` — load/save/migrate
+- `src/components/research/StrategyCard.tsx`
+- `src/components/research/StrategyDialog.tsx` (new/edit modal)
+- `src/components/research/StrategyDashboard.tsx`
+- `src/components/research/TestEditor.tsx`
+- `src/components/research/PillGroup.tsx` (shared selector)
+
+**Edited:**
+- `src/pages/ResearchLab.tsx` — gallery only
+- `src/App.tsx` — add `/research-lab/:strategyId` and `/research-lab/:strategyId/test/:testId` routes
+
+**Out of scope (this round):**
+- Server-side persistence (stays localStorage to match other settings-like data; can migrate to Supabase in a follow-up)
+- Actual "Promote to Playbook" wiring beyond a stub action (will hook into existing SetupPlaybook in a follow-up)
+- Import Strategy from file (button + JSON import only)
