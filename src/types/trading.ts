@@ -214,8 +214,8 @@ export interface RichJournalDoc {
 export interface PairAnalysis {
   id: string;
   pair: string;
-  bias: 'Bullish' | 'Slightly Bullish' | 'Bearish' | 'Slightly Bearish' | 'Sideways' | 'Neutral';
-  actualBias?: 'Bullish' | 'Slightly Bullish' | 'Bearish' | 'Slightly Bearish' | 'Sideways' | 'Neutral' | '';
+  bias: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral' | '';
   setupFocus: string;
   reasons: PairReason[];
   keyLevels: string;
@@ -257,8 +257,8 @@ export interface WeeklyPlan {
 export interface DailyPairPlan {
   id: string;
   pair: string;
-  bias: 'Bullish' | 'Slightly Bullish' | 'Bearish' | 'Slightly Bearish' | 'Sideways' | 'Neutral';
-  actualBias?: 'Bullish' | 'Slightly Bullish' | 'Bearish' | 'Slightly Bearish' | 'Sideways' | 'Neutral' | '';
+  bias: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral';
+  actualBias?: 'Bullish' | 'Bearish' | 'Sideways' | 'Neutral' | '';
   setup: string;
   reasons: PairReason[];
   keyLevels: string;
