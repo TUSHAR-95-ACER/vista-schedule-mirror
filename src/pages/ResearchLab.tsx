@@ -84,7 +84,7 @@ export default function ResearchLab() {
         subtitle="Strategies are created, tested, validated, and promoted to your playbook."
       >
         <Button variant="outline" size="sm" onClick={importStrategy}><Upload className="h-4 w-4 mr-1" /> Import</Button>
-        <Button variant="outline" size="sm" onClick={() => navigate('/system-analytics')}><BarChart3 className="h-4 w-4 mr-1" /> Analytics</Button>
+        <Button variant="outline" size="sm" onClick={() => navigate('/research-lab/analytics')}><BarChart3 className="h-4 w-4 mr-1" /> Analytics</Button>
         <Button size="sm" onClick={openNew}><Plus className="h-4 w-4 mr-1" /> New Strategy</Button>
       </PageHeader>
 

@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
-import { Lightbulb, TrendingUp, TrendingDown, Target, Activity, BarChart3, Crosshair, Clock, AlertTriangle, Zap, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, Target, Activity, Crosshair, Clock, ArrowUpRight, ArrowDownRight, Minus, MoveHorizontal } from 'lucide-react';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
+import { normalizeBiasDirection } from '@/lib/bias';
 import { cn } from '@/lib/utils';
 
 function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }: {
@@ -18,7 +19,6 @@ function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }
     warning: 'bg-warning/10 text-warning',
     destructive: 'bg-destructive/10 text-destructive',
   };
-
   return (
     <div className="bg-card border border-border/60 rounded-xl p-4 flex flex-col justify-between min-h-[110px] shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-shadow">
       <div className="flex items-start justify-between mb-auto">
@@ -38,9 +38,7 @@ function StatCard({ label, value, subtitle, trend, icon: Icon, accent, tooltip }
           trend === 'up' && 'text-success',
           trend === 'down' && 'text-destructive',
           !trend && 'text-foreground',
-        )}>
-          {value}
-        </p>
+        )}>{value}</p>
         {subtitle && <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>}
       </div>
     </div>
@@ -71,53 +69,78 @@ function AccuracyBar({ label, value, total }: { label: string; value: number; to
 export default function BiasAnalytics() {
   const { weeklyPlans, dailyPlans, trades } = useTrading();
 
-  const biasStats = useMemo(() => {
-    let total = 0, correct = 0;
+  const stats = useMemo(() => {
+    // Directional accuracy ONLY counts Bullish/Bearish predictions.
+    // Neutral / Sideways calls are "stand aside" days and are tracked separately.
+    let dirTotal = 0, dirCorrect = 0;
     let bullTotal = 0, bullCorrect = 0;
     let bearTotal = 0, bearCorrect = 0;
-    let neutTotal = 0, neutCorrect = 0;
+    let standAsideDays = 0;
     const pairMap = new Map<string, { total: number; correct: number }>();
     const sessionMap = new Map<string, { total: number; correct: number }>();
+
+    let prevBias = '';
     let biasChanges = 0;
-    let lastBias = '';
+    let biasObservations = 0;
 
-    // Process weekly plan pair analyses
-    weeklyPlans.forEach(wp => {
-      wp.pairAnalyses.forEach(pa => {
-        if (!pa.pair || !pa.actualDirection) return;
-        total++;
-        const isCorrect = pa.bias === pa.actualDirection;
-        if (isCorrect) correct++;
-        if (lastBias && pa.bias !== lastBias) biasChanges++;
-        lastBias = pa.bias;
-        if (pa.bias === 'Bullish') { bullTotal++; if (isCorrect) bullCorrect++; }
-        if (pa.bias === 'Bearish') { bearTotal++; if (isCorrect) bearCorrect++; }
-        if (pa.bias === 'Neutral') { neutTotal++; if (isCorrect) neutCorrect++; }
-        const e = pairMap.get(pa.pair) || { total: 0, correct: 0 };
-        e.total++; if (isCorrect) e.correct++;
-        pairMap.set(pa.pair, e);
+    const tradeKeys = new Set(trades.map((t) => `${t.date}_${t.asset}`));
+    let executable = 0;
+    let executed = 0;
+
+    const ingest = (pair: string, predicted: string, actual: string, dateRangeStarts: string[]) => {
+      const pBias = normalizeBiasDirection(predicted);
+      const aBias = normalizeBiasDirection(actual);
+      if (!pBias) return;
+
+      biasObservations++;
+      if (prevBias && pBias !== prevBias) biasChanges++;
+      prevBias = pBias;
+
+      const directional = pBias === 'Bullish' || pBias === 'Bearish';
+      if (!directional) {
+        standAsideDays++;
+      } else if (aBias) {
+        dirTotal++;
+        const correct = pBias === aBias;
+        if (correct) dirCorrect++;
+        if (pBias === 'Bullish') { bullTotal++; if (correct) bullCorrect++; }
+        else { bearTotal++; if (correct) bearCorrect++; }
+        if (pair) {
+          const e = pairMap.get(pair) || { total: 0, correct: 0 };
+          e.total++; if (correct) e.correct++;
+          pairMap.set(pair, e);
+        }
+      }
+
+      // Execution rate: did a directional bias on a pair lead to at least one trade in the date window?
+      if (directional && pair && dateRangeStarts.length) {
+        executable++;
+        const took = dateRangeStarts.some((d) => tradeKeys.has(`${d}_${pair}`));
+        if (took) executed++;
+      }
+    };
+
+    weeklyPlans.forEach((wp) => {
+      const start = new Date(wp.weekStart);
+      const days: string[] = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        days.push(d.toISOString().split('T')[0]);
+      }
+      wp.pairAnalyses.forEach((pa) => {
+        if (!pa.pair) return;
+        ingest(pa.pair, pa.bias as string, (pa.actualDirection || (pa as any).actualBias || '') as string, days);
       });
     });
 
-    // Process daily plan pair analyses
-    dailyPlans.forEach(dp => {
-      dp.pairs.forEach(pp => {
-        if (!pp.pair || !(pp as any).actualBias) return;
-        total++;
-        const isCorrect = pp.bias === (pp as any).actualBias;
-        if (isCorrect) correct++;
-        if (lastBias && pp.bias !== lastBias) biasChanges++;
-        lastBias = pp.bias;
-        if (pp.bias === 'Bullish') { bullTotal++; if (isCorrect) bullCorrect++; }
-        if (pp.bias === 'Bearish') { bearTotal++; if (isCorrect) bearCorrect++; }
-        if (pp.bias === 'Neutral') { neutTotal++; if (isCorrect) neutCorrect++; }
-        const e = pairMap.get(pp.pair) || { total: 0, correct: 0 };
-        e.total++; if (isCorrect) e.correct++;
-        pairMap.set(pp.pair, e);
+    dailyPlans.forEach((dp) => {
+      dp.pairs.forEach((pp) => {
+        if (!pp.pair) return;
+        ingest(pp.pair, pp.bias as string, ((pp as any).actualBias || '') as string, [dp.date]);
       });
     });
 
-    trades.forEach(t => {
+    trades.forEach((t) => {
       if (t.result === 'Untriggered Setup' || t.result === 'Cancelled') return;
       const e = sessionMap.get(t.session) || { total: 0, correct: 0 };
       e.total++; if (t.result === 'Win') e.correct++;
@@ -125,253 +148,194 @@ export default function BiasAnalytics() {
     });
 
     const pairAccuracy = [...pairMap.entries()]
-      .map(([pair, { total: t, correct: c }]) => ({ pair, accuracy: t > 0 ? (c / t) * 100 : 0, total: t }))
+      .map(([pair, { total, correct }]) => ({ pair, accuracy: total > 0 ? (correct / total) * 100 : 0, total }))
       .sort((a, b) => b.accuracy - a.accuracy);
-
     const sessionAccuracy = [...sessionMap.entries()]
-      .map(([session, { total: t, correct: c }]) => ({ session, accuracy: t > 0 ? (c / t) * 100 : 0, total: t }))
+      .map(([session, { total, correct }]) => ({ session, accuracy: total > 0 ? (correct / total) * 100 : 0, total }))
       .sort((a, b) => b.accuracy - a.accuracy);
 
-    const consistency = total > 1 ? Math.round((1 - biasChanges / (total - 1)) * 100) : 100;
+    const stability = biasObservations > 1 ? Math.round((1 - biasChanges / (biasObservations - 1)) * 100) : 100;
 
     return {
-      overall: total > 0 ? (correct / total) * 100 : 0,
-      total, correct,
+      overall: dirTotal > 0 ? (dirCorrect / dirTotal) * 100 : 0,
+      dirTotal, dirCorrect,
       bullish: bullTotal > 0 ? (bullCorrect / bullTotal) * 100 : 0,
       bearish: bearTotal > 0 ? (bearCorrect / bearTotal) * 100 : 0,
-      neutral: neutTotal > 0 ? (neutCorrect / neutTotal) * 100 : 0,
-      bullTotal, bearTotal, neutTotal,
+      bullTotal, bearTotal,
+      standAsideDays,
       bestPair: pairAccuracy[0] || null,
       worstPair: pairAccuracy[pairAccuracy.length - 1] || null,
-      consistency,
       bestSession: sessionAccuracy[0] || null,
       worstSession: sessionAccuracy[sessionAccuracy.length - 1] || null,
-      pairAccuracy,
-      sessionAccuracy,
+      pairAccuracy, sessionAccuracy,
+      stability, biasChanges, biasObservations,
+      executable, executed,
+      executionRate: executable > 0 ? (executed / executable) * 100 : 0,
     };
   }, [weeklyPlans, dailyPlans, trades]);
 
-  const missedOpps = useMemo(() => {
-    // Renamed: "Opportunity Not Found" — bias was correct but no trade was taken
-    let count = 0;
-    const tradeDates = new Set(trades.map(t => t.date + '_' + t.asset));
-    weeklyPlans.forEach(wp => {
-      wp.pairAnalyses.forEach(pa => {
-        if (!pa.pair || !pa.actualDirection) return;
-        if (pa.bias !== pa.actualDirection) return;
-        const weekStart = new Date(wp.weekStart);
-        let found = false;
-        for (let d = 0; d < 7; d++) {
-          const date = new Date(weekStart);
-          date.setDate(date.getDate() + d);
-          if (tradeDates.has(date.toISOString().split('T')[0] + '_' + pa.pair)) { found = true; break; }
-        }
-        if (!found) count++;
-      });
-    });
-    return count;
-  }, [weeklyPlans, trades]);
-
-  const conversionRate = useMemo(() => {
-    let totalAnalyses = 0, converted = 0;
-    const tradeDates = new Set(trades.map(t => t.date + '_' + t.asset));
-    weeklyPlans.forEach(wp => {
-      wp.pairAnalyses.forEach(pa => {
-        if (!pa.pair) return;
-        totalAnalyses++;
-        const weekStart = new Date(wp.weekStart);
-        for (let d = 0; d < 7; d++) {
-          const date = new Date(weekStart);
-          date.setDate(date.getDate() + d);
-          if (tradeDates.has(date.toISOString().split('T')[0] + '_' + pa.pair)) { converted++; break; }
-        }
-      });
-    });
-    return totalAnalyses > 0 ? (converted / totalAnalyses) * 100 : 0;
-  }, [weeklyPlans, trades]);
-
-  const overconfidence = useMemo(() => {
-    let highConfWrong = 0, highConfTotal = 0;
-    weeklyPlans.forEach(wp => {
-      wp.pairAnalyses.forEach(pa => {
-        if (!pa.actualDirection || pa.bias === 'Neutral') return;
-        highConfTotal++;
-        if (pa.bias !== pa.actualDirection) highConfWrong++;
-      });
-    });
-    return highConfTotal > 0 ? Math.round((highConfWrong / highConfTotal) * 100) : 0;
-  }, [weeklyPlans]);
-
-  const conditionAccuracy = useMemo(() => {
-    const condMap = new Map<string, { total: number; wins: number }>();
-    trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled').forEach(t => {
-      const e = condMap.get(t.marketCondition) || { total: 0, wins: 0 };
-      e.total++; if (t.result === 'Win') e.wins++;
-      condMap.set(t.marketCondition, e);
-    });
-    return [...condMap.entries()].map(([cond, { total, wins }]) => ({
-      condition: cond, accuracy: Math.round((wins / total) * 100), total,
-    })).sort((a, b) => b.accuracy - a.accuracy);
-  }, [trades]);
-
   const insights = useMemo(() => {
-    const result: string[] = [];
-    if (biasStats.overall > 0) {
-      result.push(biasStats.overall >= 60
-        ? `Your ${biasStats.overall.toFixed(0)}% bias accuracy shows a strong analytical edge.`
-        : `At ${biasStats.overall.toFixed(0)}%, consider refining your analysis framework.`
-      );
+    const out: string[] = [];
+    if (stats.dirTotal > 0) {
+      out.push(stats.overall >= 60
+        ? `Directional bias is solid: ${stats.overall.toFixed(0)}% across ${stats.dirTotal} resolved calls.`
+        : `Directional bias is ${stats.overall.toFixed(0)}% — your read needs refining (${stats.dirTotal} resolved calls).`);
     }
-    if (biasStats.bestPair && biasStats.bestPair.total >= 2) {
-      result.push(`Strongest read on ${biasStats.bestPair.pair} — ${biasStats.bestPair.accuracy.toFixed(0)}% across ${biasStats.bestPair.total} analyses.`);
+    if (stats.bestPair && stats.bestPair.total >= 2) {
+      out.push(`Sharpest read on ${stats.bestPair.pair} — ${stats.bestPair.accuracy.toFixed(0)}% across ${stats.bestPair.total} analyses.`);
     }
-    if (missedOpps > 0) {
-      result.push(`${missedOpps} opportunities not found — you called the direction right but didn't take the trade.`);
+    if (stats.executable > 0 && stats.executionRate < 50) {
+      out.push(`Execution rate is ${stats.executionRate.toFixed(0)}% — you called the direction but only traded ${stats.executed}/${stats.executable} times.`);
     }
-    if (overconfidence > 40) {
-      result.push(`Overconfidence alert: ${overconfidence}% of strong bias calls were wrong.`);
+    if (stats.stability < 60) {
+      out.push(`Bias stability is low (${stats.stability}%) — frequent changes suggest uncertainty.`);
     }
-    if (conditionAccuracy.length > 0) {
-      const best = conditionAccuracy[0];
-      const worst = conditionAccuracy[conditionAccuracy.length - 1];
-      if (best.accuracy !== worst.accuracy) {
-        result.push(`Best in ${best.condition} markets (${best.accuracy}%), weakest in ${worst.condition} (${worst.accuracy}%).`);
-      }
+    if (stats.standAsideDays > 0) {
+      out.push(`${stats.standAsideDays} stand-aside days logged (Neutral / Sideways) — discipline counts.`);
     }
-    if (biasStats.consistency < 60) {
-      result.push(`Bias consistency is low (${biasStats.consistency}%) — frequent changes suggest uncertainty.`);
+    if (out.length === 0) {
+      out.push('Create weekly plans with pair analyses and fill in actual results to generate insights.');
     }
-    if (result.length === 0) {
-      result.push('Create weekly plans with pair analyses and fill in actual results to generate insights.');
-    }
-    return result;
-  }, [biasStats, missedOpps, overconfidence, conditionAccuracy]);
-
-  const hasData = biasStats.total > 0;
+    return out;
+  }, [stats]);
 
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
-      <PageHeader title="Bias Performance" subtitle="Track your prediction accuracy and identify patterns">
-      </PageHeader>
+      <PageHeader title="Bias Performance" subtitle="Every metric below is derived directly from logged journal data." />
 
-      {/* Hero Score */}
+      {/* Hero score */}
       <div className="relative rounded-2xl overflow-hidden border border-border/60">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-success/5" />
         <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[10px] font-mono font-semibold uppercase tracking-widest text-primary mb-2">Overall Bias Accuracy</p>
+            <p className="text-[10px] font-mono font-semibold uppercase tracking-widest text-primary mb-2 flex items-center gap-1">
+              Overall Bias Accuracy
+              <InfoTooltip text="Source: weekly + daily pair analyses where Predicted and Actual are both filled and predicted bias was directional (Bullish/Bearish). Neutral/Sideways are excluded — they are stand-aside calls." />
+            </p>
             <div className="flex items-end gap-3">
               <span className={cn(
                 'font-heading text-5xl sm:text-6xl font-black tracking-tighter',
-                biasStats.overall >= 60 ? 'text-success' : biasStats.overall >= 40 ? 'text-warning' : 'text-destructive'
-              )}>
-                {biasStats.overall.toFixed(0)}%
-              </span>
-              <span className="text-sm text-muted-foreground mb-2">{biasStats.correct}/{biasStats.total} correct</span>
+                stats.overall >= 60 ? 'text-success' : stats.overall >= 40 ? 'text-warning' : 'text-destructive',
+              )}>{stats.overall.toFixed(0)}%</span>
+              <span className="text-sm text-muted-foreground mb-2">{stats.dirCorrect}/{stats.dirTotal} directional calls correct</span>
             </div>
           </div>
           <div className="flex gap-6">
             <div className="text-center">
               <div className="flex items-center gap-1 text-success mb-1">
                 <ArrowUpRight className="h-3.5 w-3.5" />
-                <span className="font-heading text-lg font-bold">{biasStats.bullish.toFixed(0)}%</span>
+                <span className="font-heading text-lg font-bold">{stats.bullish.toFixed(0)}%</span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bullish</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bullish ({stats.bullTotal})</span>
             </div>
             <div className="text-center">
               <div className="flex items-center gap-1 text-destructive mb-1">
                 <ArrowDownRight className="h-3.5 w-3.5" />
-                <span className="font-heading text-lg font-bold">{biasStats.bearish.toFixed(0)}%</span>
+                <span className="font-heading text-lg font-bold">{stats.bearish.toFixed(0)}%</span>
               </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bearish</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Bearish ({stats.bearTotal})</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Key Metrics Grid */}
+      {/* Core metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Conversion Rate" value={`${conversionRate.toFixed(0)}%`} subtitle="Analysis → Trade" icon={Target} accent="primary" tooltip="How often your weekly analysis leads to an actual trade" />
-        <StatCard label="Opportunity Not Found" value={String(missedOpps)} subtitle="Correct bias, no trade" icon={Zap} accent="warning" trend={missedOpps > 0 ? 'down' : 'neutral'} tooltip="Times you predicted direction correctly but didn't take the trade — your bias was right but the opportunity wasn't found/acted on" />
-        <StatCard label="Bias Consistency" value={`${biasStats.consistency}%`} subtitle="How steady you stay" icon={Activity} accent={biasStats.consistency >= 60 ? 'success' : 'destructive'} trend={biasStats.consistency >= 60 ? 'up' : 'down'} tooltip="How often you stick with your bias vs changing it frequently" />
-        <StatCard label="Overconfidence" value={`${overconfidence}%`} subtitle="Strong bias but wrong" icon={AlertTriangle} accent={overconfidence > 40 ? 'destructive' : 'success'} trend={overconfidence > 40 ? 'down' : 'up'} tooltip="Percentage of strong directional bias calls that turned out wrong" />
+        <StatCard
+          label="Bullish Accuracy" value={`${stats.bullish.toFixed(0)}%`}
+          subtitle={`${stats.bullTotal} predictions`} icon={TrendingUp} accent="success"
+          tooltip="Source: Bullish predictions in weekly/daily plans where the actual direction was logged. Calculation: correct ÷ total Bullish predictions."
+        />
+        <StatCard
+          label="Bearish Accuracy" value={`${stats.bearish.toFixed(0)}%`}
+          subtitle={`${stats.bearTotal} predictions`} icon={TrendingDown} accent="destructive"
+          tooltip="Source: Bearish predictions in weekly/daily plans where the actual direction was logged. Calculation: correct ÷ total Bearish predictions."
+        />
+        <StatCard
+          label="Neutral / Stand Aside Days" value={String(stats.standAsideDays)}
+          subtitle="Neutral + Sideways calls" icon={MoveHorizontal} accent="warning"
+          tooltip="Source: count of pair analyses logged as Neutral or Sideways. These are not graded — they represent intentional stand-aside discipline."
+        />
+        <StatCard
+          label="Bias Execution Rate" value={`${stats.executionRate.toFixed(0)}%`}
+          subtitle={`${stats.executed} of ${stats.executable} acted on`} icon={Target} accent="primary"
+          tooltip="Source: directional bias entries (Bullish/Bearish) cross-referenced with the trades log. Calculation: pairs with at least one trade on the analysis date(s) ÷ total directional bias entries."
+        />
       </div>
 
-      {/* Best/Worst */}
+      {/* Stability + Best/Worst */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Best Pair" value={biasStats.bestPair?.pair || '—'} subtitle={biasStats.bestPair ? `${biasStats.bestPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingUp} accent="success" tooltip="The pair where your directional prediction is most accurate" />
-        <StatCard label="Worst Pair" value={biasStats.worstPair?.pair || '—'} subtitle={biasStats.worstPair ? `${biasStats.worstPair.accuracy.toFixed(0)}% accuracy` : ''} icon={TrendingDown} accent="destructive" tooltip="The pair where your directional prediction is least accurate" />
-        <StatCard label="Best Session" value={biasStats.bestSession?.session || '—'} subtitle={biasStats.bestSession ? `${biasStats.bestSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="success" tooltip="The trading session where you have the highest win rate" />
-        <StatCard label="Worst Session" value={biasStats.worstSession?.session || '—'} subtitle={biasStats.worstSession ? `${biasStats.worstSession.accuracy.toFixed(0)}% win rate` : ''} icon={Clock} accent="destructive" tooltip="The trading session where you have the lowest win rate" />
+        <StatCard
+          label="Bias Stability" value={`${stats.stability}%`}
+          subtitle={`${stats.biasChanges} changes / ${stats.biasObservations} obs`} icon={Activity}
+          accent={stats.stability >= 60 ? 'success' : 'destructive'}
+          trend={stats.stability >= 60 ? 'up' : 'down'}
+          tooltip="Source: sequence of logged bias calls. Calculation: 1 − (bias changes ÷ (observations − 1)). High = you stay with your read; low = frequent changes."
+        />
+        <StatCard
+          label="Best Pair" value={stats.bestPair?.pair || '—'}
+          subtitle={stats.bestPair ? `${stats.bestPair.accuracy.toFixed(0)}% over ${stats.bestPair.total} calls` : ''}
+          icon={TrendingUp} accent="success"
+          tooltip="Source: directional bias accuracy grouped by pair. Calculation: correct ÷ total directional calls per pair, ranked descending."
+        />
+        <StatCard
+          label="Worst Pair" value={stats.worstPair?.pair || '—'}
+          subtitle={stats.worstPair ? `${stats.worstPair.accuracy.toFixed(0)}% over ${stats.worstPair.total} calls` : ''}
+          icon={TrendingDown} accent="destructive"
+          tooltip="Source: same per-pair grouping as Best Pair, lowest accuracy."
+        />
+        <StatCard
+          label="Best Session" value={stats.bestSession?.session || '—'}
+          subtitle={stats.bestSession ? `${stats.bestSession.accuracy.toFixed(0)}% win rate` : ''}
+          icon={Clock} accent="success"
+          tooltip="Source: closed trades (excluding Untriggered Setup / Cancelled), grouped by session. Calculation: wins ÷ trades."
+        />
       </div>
 
-      {/* Detailed breakdowns */}
+      {/* Per-pair bars */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Pair-wise accuracy bars */}
         <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
           <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Crosshair className="h-3.5 w-3.5 text-primary" />
             </div>
-            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Pair-wise Accuracy</h3>
+            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Directional Accuracy by Pair</h3>
+            <InfoTooltip text="Bullish/Bearish predictions only. Neutral/Sideways excluded." />
           </div>
           <div className="p-5 space-y-3">
-            {biasStats.pairAccuracy.length > 0 ? (
-              biasStats.pairAccuracy.map(p => (
-                <AccuracyBar key={p.pair} label={p.pair} value={p.accuracy} total={p.total} />
-              ))
+            {stats.pairAccuracy.length > 0 ? (
+              stats.pairAccuracy.map((p) => <AccuracyBar key={p.pair} label={p.pair} value={p.accuracy} total={p.total} />)
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No pair data yet</p>
+              <p className="text-sm text-muted-foreground text-center py-6">No directional pair data yet</p>
             )}
           </div>
         </div>
 
-        {/* Market Condition Performance */}
-        <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
-          <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-warning/10 flex items-center justify-center">
-              <BarChart3 className="h-3.5 w-3.5 text-warning" />
-            </div>
-            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Market Condition Performance</h3>
-          </div>
-          <div className="p-5 space-y-3">
-            {conditionAccuracy.length > 0 ? (
-              conditionAccuracy.map(c => (
-                <AccuracyBar key={c.condition} label={c.condition} value={c.accuracy} total={c.total} />
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No market condition data yet</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Session accuracy */}
-      {biasStats.sessionAccuracy.length > 0 && (
         <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
           <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-success/10 flex items-center justify-center">
               <Clock className="h-3.5 w-3.5 text-success" />
             </div>
-            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Session Win Rate</h3>
+            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Win Rate by Session</h3>
+            <InfoTooltip text="Closed trades only (Untriggered Setup / Cancelled excluded)." />
           </div>
-          <div className="p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {biasStats.sessionAccuracy.map(s => (
-                <AccuracyBar key={s.session} label={s.session} value={s.accuracy} total={s.total} />
-              ))}
-            </div>
+          <div className="p-5 space-y-3">
+            {stats.sessionAccuracy.length > 0 ? (
+              stats.sessionAccuracy.map((s) => <AccuracyBar key={s.session} label={s.session} value={s.accuracy} total={s.total} />)
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-6">No session data yet</p>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Smart Insights */}
+      {/* Insights */}
       <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="px-5 py-3.5 border-b border-border/40 bg-gradient-to-r from-warning/10 to-transparent flex items-center gap-2.5">
           <div className="h-7 w-7 rounded-lg bg-warning/10 flex items-center justify-center">
             <Lightbulb className="h-3.5 w-3.5 text-warning" />
           </div>
-          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Smart Insights</h3>
+          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Insights</h3>
         </div>
         <div className="p-5 space-y-3">
           {insights.map((insight, i) => (
@@ -382,6 +346,9 @@ export default function BiasAnalytics() {
               <p className="text-foreground/80 leading-relaxed">{insight}</p>
             </div>
           ))}
+          <p className="text-[10px] text-muted-foreground pt-2 border-t border-border/40 mt-3 flex items-center gap-1">
+            <Minus className="h-3 w-3" /> Every figure on this page is derived from logged plans and trades — no inferred or estimated stats.
+          </p>
         </div>
       </div>
     </div>
