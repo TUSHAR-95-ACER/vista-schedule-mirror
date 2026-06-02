@@ -33,6 +33,7 @@ const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const ResearchLab = lazy(() => import("./pages/ResearchLab"));
 const ResearchStrategy = lazy(() => import("./pages/ResearchStrategy"));
 const ResearchTest = lazy(() => import("./pages/ResearchTest"));
+const ResearchAnalytics = lazy(() => import("./pages/ResearchAnalytics"));
 
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/bias-analytics" element={<Suspense fallback={<RouteFallback />}><BiasAnalytics /></Suspense>} />
               <Route path="/control-center" element={<Suspense fallback={<RouteFallback />}><ControlCenter /></Suspense>} />
               <Route path="/research-lab" element={<Suspense fallback={<RouteFallback />}><ResearchLab /></Suspense>} />
+              <Route path="/research-lab/analytics" element={<Suspense fallback={<RouteFallback />}><ResearchAnalytics /></Suspense>} />
               <Route path="/research-lab/:strategyId" element={<Suspense fallback={<RouteFallback />}><ResearchStrategy /></Suspense>} />
               <Route path="/research-lab/:strategyId/test/:testId" element={<Suspense fallback={<RouteFallback />}><ResearchTest /></Suspense>} />
               <Route path="/daily-checklist" element={<Navigate to="/" replace />} />

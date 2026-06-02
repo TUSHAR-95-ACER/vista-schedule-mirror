@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { PillGroup } from './PillGroup';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
+import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { useAutosave } from '@/hooks/useAutosave';
 import {
-  ResearchTest, Strategy, SESSIONS,
+  ResearchTest, Strategy, SESSIONS, TEMPLATE_SECTIONS, CustomSection,
 } from '@/types/research';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +22,7 @@ interface Props {
   onSave: (t: ResearchTest) => Promise<void> | void;
 }
 
-const BIAS_OPTS = ['Bullish', 'Neutral', 'Bearish'] as const;
+const BIAS_OPTS = ['Bullish', 'Bearish', 'Neutral', 'Sideways'] as const;
 const DR_OPTS = ['Premium', 'Discount', 'EQ'] as const;
 const LIQ_OPTS = ['BSL Above', 'SSL Below', 'Both', 'None'] as const;
 const BREAKOUT_OPTS = ['Strong Displacement', 'Weak Displacement', 'No Displacement'] as const;
@@ -43,13 +44,13 @@ export function TestEditor({ strategy, test, onSave }: Props) {
   const { status } = useAutosave({ value: t, onSave: saveFn, debounceMs: 800 });
 
   const upd = <K extends keyof ResearchTest>(k: K, v: ResearchTest[K]) => setT((p) => ({ ...p, [k]: v }));
+  const updCustom = (fieldId: string, value: string) =>
+    setT((p) => ({ ...p, customValues: { ...(p.customValues || {}), [fieldId]: value } }));
 
-  const handleUpload = (key: 'predictedScreenshot' | 'actualScreenshot') => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = () => upd(key, r.result as string);
-    r.readAsDataURL(f);
-  };
+  const tpl = strategy.template || 'blank';
+  const customSections: CustomSection[] = tpl === 'custom'
+    ? (strategy.customSections || [])
+    : (TEMPLATE_SECTIONS[tpl] || []);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -61,7 +62,9 @@ export function TestEditor({ strategy, test, onSave }: Props) {
           </Button>
           <div>
             <h1 className="font-heading font-bold text-lg">{strategy.name}</h1>
-            <p className="text-xs text-muted-foreground">Test entry · {t.date}</p>
+            <p className="text-xs text-muted-foreground">
+              <span className="uppercase tracking-wider mr-1">{tpl}</span>· Test entry · {t.date}
+            </p>
           </div>
         </div>
         <SaveStatusIndicator status={status} />
@@ -83,64 +86,105 @@ export function TestEditor({ strategy, test, onSave }: Props) {
 
       <Section title="HTF Bias">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><Label>Predicted Bias</Label><PillGroup options={BIAS_OPTS} value={t.predictedBias} onChange={(v) => upd('predictedBias', v)} /></div>
-          <div><Label>Actual Bias</Label><PillGroup options={BIAS_OPTS} value={t.actualBias} onChange={(v) => upd('actualBias', v)} /></div>
+          <div><Label>Predicted Bias</Label><PillGroup options={BIAS_OPTS} value={t.predictedBias} onChange={(v) => upd('predictedBias', v as any)} /></div>
+          <div><Label>Actual Bias</Label><PillGroup options={BIAS_OPTS} value={t.actualBias} onChange={(v) => upd('actualBias', v as any)} /></div>
         </div>
       </Section>
 
-      <Section title="Dealing Range">
-        <PillGroup options={DR_OPTS} value={t.dealingRange} onChange={(v) => upd('dealingRange', v)} />
-      </Section>
+      {/* DR-only blocks — never shown for ADC / EBP / SMT / Blank / Custom */}
+      {tpl === 'dr' && (
+        <>
+          <Section title="Dealing Range">
+            <PillGroup options={DR_OPTS} value={t.dealingRange} onChange={(v) => upd('dealingRange', v as any)} />
+          </Section>
+          <Section title="Liquidity" subtitle="Which liquidity pool was targeted?">
+            <PillGroup options={LIQ_OPTS} value={t.liquidityTarget} onChange={(v) => upd('liquidityTarget', v as any)} />
+            <div className="mt-3">
+              <Label>Which pool and when?</Label>
+              <Textarea value={t.liquidityNote} onChange={(e) => upd('liquidityNote', e.target.value)} placeholder="e.g. SSL swept at London open, then BSL targeted in NY..." />
+            </div>
+          </Section>
+          <Section title="Session Narrative">
+            <Textarea rows={4} value={t.narrative} onChange={(e) => upd('narrative', e.target.value)} placeholder="e.g. Expect London to run SSL and reverse toward BSL." />
+          </Section>
+          <Section title="DR Levels">
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>High</Label><Input value={t.drHigh} onChange={(e) => upd('drHigh', e.target.value)} /></div>
+              <div><Label>EQ</Label><Input value={t.drEq} onChange={(e) => upd('drEq', e.target.value)} /></div>
+              <div><Label>Low</Label><Input value={t.drLow} onChange={(e) => upd('drLow', e.target.value)} /></div>
+            </div>
+          </Section>
+          <Section title="Setup Quality">
+            <div className="space-y-4">
+              <div><Label>Breakout Quality</Label><PillGroup options={BREAKOUT_OPTS} value={t.breakoutQuality} onChange={(v) => upd('breakoutQuality', v as any)} /></div>
+              <div><Label>FVG Location</Label><PillGroup options={FVG_OPTS} value={t.fvgLocation} onChange={(v) => upd('fvgLocation', v as any)} /></div>
+              <div><Label>Entry Type</Label><PillGroup options={ENTRY_OPTS} value={t.entryType} onChange={(v) => upd('entryType', v as any)} /></div>
+              <div><Label>LTF Confirmation</Label><PillGroup options={LTF_OPTS} value={t.ltfConfirmation} onChange={(v) => upd('ltfConfirmation', v as any)} /></div>
+            </div>
+          </Section>
+        </>
+      )}
 
-      <Section title="Liquidity" subtitle="Which liquidity pool was targeted?">
-        <PillGroup options={LIQ_OPTS} value={t.liquidityTarget} onChange={(v) => upd('liquidityTarget', v)} />
-        <div className="mt-3">
-          <Label>Which pool and when?</Label>
-          <Textarea value={t.liquidityNote} onChange={(e) => upd('liquidityNote', e.target.value)} placeholder="e.g. SSL swept at London open, then BSL targeted in NY..." />
-        </div>
-      </Section>
-
-      <Section title="Session Narrative" subtitle="What is today's narrative?">
-        <Textarea
-          rows={4}
-          value={t.narrative}
-          onChange={(e) => upd('narrative', e.target.value)}
-          placeholder="e.g. Expect London to run SSL and reverse toward BSL."
-        />
-      </Section>
-
-      <Section title="DR Levels">
-        <div className="grid grid-cols-3 gap-3">
-          <div><Label>High</Label><Input value={t.drHigh} onChange={(e) => upd('drHigh', e.target.value)} /></div>
-          <div><Label>EQ</Label><Input value={t.drEq} onChange={(e) => upd('drEq', e.target.value)} /></div>
-          <div><Label>Low</Label><Input value={t.drLow} onChange={(e) => upd('drLow', e.target.value)} /></div>
-        </div>
-      </Section>
-
-      <Section title="Setup Quality">
-        <div className="space-y-4">
-          <div><Label>Breakout Quality</Label><PillGroup options={BREAKOUT_OPTS} value={t.breakoutQuality} onChange={(v) => upd('breakoutQuality', v)} /></div>
-          <div><Label>FVG Location</Label><PillGroup options={FVG_OPTS} value={t.fvgLocation} onChange={(v) => upd('fvgLocation', v)} /></div>
-          <div><Label>Entry Type</Label><PillGroup options={ENTRY_OPTS} value={t.entryType} onChange={(v) => upd('entryType', v)} /></div>
-          <div><Label>LTF Confirmation</Label><PillGroup options={LTF_OPTS} value={t.ltfConfirmation} onChange={(v) => upd('ltfConfirmation', v)} /></div>
-        </div>
-      </Section>
+      {/* Template-specific or user-defined custom sections — fully isolated per strategy */}
+      {customSections.map((sec) => (
+        <Section key={sec.id} title={sec.title} subtitle={sec.subtitle}>
+          <div className="space-y-3">
+            {sec.fields.map((f) => {
+              const val = t.customValues?.[f.id] || '';
+              if (f.type === 'rich') {
+                return (
+                  <div key={f.id}>
+                    <Label>{f.label}</Label>
+                    <RichTextEditor value={val} onChange={(v) => updCustom(f.id, v)} placeholder={f.placeholder} />
+                  </div>
+                );
+              }
+              if (f.type === 'textarea') {
+                return (
+                  <div key={f.id}>
+                    <Label>{f.label}</Label>
+                    <Textarea value={val} onChange={(e) => updCustom(f.id, e.target.value)} placeholder={f.placeholder} rows={3} />
+                  </div>
+                );
+              }
+              return (
+                <div key={f.id}>
+                  <Label>{f.label}</Label>
+                  <Input value={val} onChange={(e) => updCustom(f.id, e.target.value)} placeholder={f.placeholder} />
+                </div>
+              );
+            })}
+            {sec.fields.length === 0 && <p className="text-xs text-muted-foreground">No fields defined for this section.</p>}
+          </div>
+        </Section>
+      ))}
 
       <Section title="Trade Execution">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div><Label>Entry Price</Label><Input value={t.entryPrice} onChange={(e) => upd('entryPrice', e.target.value)} /></div>
           <div><Label>Stop Loss</Label><Input value={t.stopLoss} onChange={(e) => upd('stopLoss', e.target.value)} /></div>
           <div><Label>TP1</Label><Input value={t.tp1} onChange={(e) => upd('tp1', e.target.value)} /></div>
-          <div><Label>TP1 Liquidity Target</Label><Input value={t.tp1Target} onChange={(e) => upd('tp1Target', e.target.value)} /></div>
+          <div>
+            <Label>TP1 Liquidity Pool</Label>
+            <Input value={t.tp1Target} onChange={(e) => upd('tp1Target', e.target.value)}
+              placeholder="BSL above London High, Asia High, Equal Highs, External Range Liquidity..." />
+          </div>
           <div><Label>TP2</Label><Input value={t.tp2} onChange={(e) => upd('tp2', e.target.value)} /></div>
-          <div><Label>TP2 Liquidity Target</Label><Input value={t.tp2Target} onChange={(e) => upd('tp2Target', e.target.value)} /></div>
+          <div>
+            <Label>TP2 Liquidity Pool</Label>
+            <Input value={t.tp2Target} onChange={(e) => upd('tp2Target', e.target.value)}
+              placeholder="SSL below Asia Low, Daily Low, Sellside Pool, Weekly Low..." />
+          </div>
         </div>
       </Section>
 
       <Section title="Result">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><Label>Outcome</Label><PillGroup options={RESULT_OPTS} value={t.result} onChange={(v) => upd('result', v)} /></div>
-          <div><Label>R Achieved</Label><Input value={t.rAchieved} onChange={(e) => upd('rAchieved', e.target.value)} placeholder="e.g. 2.5" /></div>
+          <div><Label>Outcome</Label><PillGroup options={RESULT_OPTS} value={t.result} onChange={(v) => upd('result', v as any)} /></div>
+          <div>
+            <Label>RR Achieved</Label>
+            <Input value={t.rAchieved} onChange={(e) => upd('rAchieved', e.target.value)} placeholder="e.g. 2.5RR" />
+          </div>
         </div>
       </Section>
 
@@ -170,24 +214,22 @@ export function TestEditor({ strategy, test, onSave }: Props) {
       </Section>
 
       <Section title="Emotional State">
-        <PillGroup options={EMO_OPTS} value={t.emotionalState} onChange={(v) => upd('emotionalState', v)} />
+        <PillGroup options={EMO_OPTS} value={t.emotionalState} onChange={(v) => upd('emotionalState', v as any)} />
       </Section>
 
-      <Section title="Screenshots">
+      <Section title="Screenshots" subtitle="Paste with Ctrl+V, drag-and-drop, or click. Auto-saves.">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ScreenshotSlot
+          <UnifiedMediaBox
             label="Predicted Setup"
-            description="Upload chart before trade. Validate prediction quality."
-            value={t.predictedScreenshot}
-            onUpload={handleUpload('predictedScreenshot')}
-            onRemove={() => upd('predictedScreenshot', undefined)}
+            value={t.predictedScreenshot || ''}
+            onChange={(v) => upd('predictedScreenshot', v || undefined)}
+            accept={['image']}
           />
-          <ScreenshotSlot
+          <UnifiedMediaBox
             label="Actual Outcome"
-            description="Upload chart after trade. Compare prediction vs outcome."
-            value={t.actualScreenshot}
-            onUpload={handleUpload('actualScreenshot')}
-            onRemove={() => upd('actualScreenshot', undefined)}
+            value={t.actualScreenshot || ''}
+            onChange={(v) => upd('actualScreenshot', v || undefined)}
+            accept={['image']}
           />
         </div>
       </Section>
@@ -237,32 +279,5 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
       </div>
       {children}
     </Card>
-  );
-}
-
-function ScreenshotSlot({ label, description, value, onUpload, onRemove }: {
-  label: string; description: string; value?: string;
-  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void; onRemove: () => void;
-}) {
-  return (
-    <div className="border border-border rounded-lg p-3">
-      <Label>{label}</Label>
-      <p className="text-xs text-muted-foreground mb-2">{description}</p>
-      {value ? (
-        <div className="relative group">
-          <img src={value} alt={label} className="w-full rounded-md border border-border cursor-zoom-in"
-            onClick={() => window.open(value, '_blank')} />
-          <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100" onClick={onRemove}>
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      ) : (
-        <label className="flex flex-col items-center justify-center h-32 rounded-md border-2 border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors">
-          <Upload className="h-5 w-5 text-muted-foreground mb-1" />
-          <span className="text-xs text-muted-foreground">Click to upload</span>
-          <input type="file" accept="image/*" className="hidden" onChange={onUpload} />
-        </label>
-      )}
-    </div>
   );
 }
