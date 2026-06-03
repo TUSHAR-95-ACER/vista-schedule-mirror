@@ -11,8 +11,11 @@ import Placeholder from '@tiptap/extension-placeholder';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Code, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Link as LinkIcon, Highlighter, Palette, Undo, Redo, Check,
+  Sparkles, Loader2, Wand2,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -76,6 +79,7 @@ export function RichTextEditor({
   onEditorReady,
 }: RichTextEditorProps) {
   const lastEmittedRef = useRef<string>(value);
+  const [aiBusy, setAiBusy] = useState<null | 'improve' | 'polish'>(null);
 
   const editor = useEditor({
     extensions: [
@@ -170,6 +174,33 @@ export function RichTextEditor({
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const runAiRewrite = async (mode: 'improve' | 'polish') => {
+    if (aiBusy) return;
+    const html = editor.getHTML();
+    const plain = htmlToPlain(html);
+    if (!plain) {
+      toast({ title: 'Nothing to rewrite', description: 'Write some text first.' });
+      return;
+    }
+    setAiBusy(mode);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-rewrite', { body: { mode, html } });
+      if (error) throw error;
+      const next = (data as { html?: string })?.html?.trim();
+      if (!next) throw new Error('Empty AI response');
+      editor.commands.setContent(next, { emitUpdate: true });
+      toast({
+        title: mode === 'improve' ? '✨ Notes improved' : '🧠 Journal polished',
+        description: 'Updated in place. Undo (⌘Z) to revert.',
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'AI request failed';
+      toast({ title: 'AI rewrite failed', description: msg.slice(0, 140), variant: 'destructive' });
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
   return (
     <div className={cn('relative', className)} onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
       <BubbleMenu
@@ -215,6 +246,21 @@ export function RichTextEditor({
         <div className="mx-1 h-5 w-px bg-border" />
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="h-3.5 w-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo className="h-3.5 w-3.5" /></ToolbarBtn>
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarBtn
+          title="✨ Improve Notes — fix grammar, keep your voice"
+          active={aiBusy === 'improve'}
+          onClick={() => runAiRewrite('improve')}
+        >
+          {aiBusy === 'improve' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+        </ToolbarBtn>
+        <ToolbarBtn
+          title="🧠 Journal Polish — restructure for readability"
+          active={aiBusy === 'polish'}
+          onClick={() => runAiRewrite('polish')}
+        >
+          {aiBusy === 'polish' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+        </ToolbarBtn>
       </BubbleMenu>
 
       <EditorContent editor={editor} />

@@ -254,6 +254,8 @@ export interface WeeklyPlan {
 }
 
 // Daily Plan
+export type DailyPairMarketCondition = 'Trending' | 'Volatile' | 'Sideways';
+
 export interface DailyPairPlan {
   id: string;
   pair: string;
@@ -271,6 +273,8 @@ export interface DailyPairPlan {
   note?: string;
   /** Crowd sentiment slider: long % 0-100 (short % = 100 - this). */
   marketSentiment?: number;
+  /** Predicted market condition for the day (used by analytics). */
+  marketCondition?: DailyPairMarketCondition;
 }
 
 export interface DailyPlan {

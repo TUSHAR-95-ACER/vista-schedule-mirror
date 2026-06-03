@@ -14,6 +14,7 @@ import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptNotebook } from '@/lib/aiInsightAdapters';
 import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
 import { coerceRichJournal, emptyJournal, serializeJournal, journalPlainText } from '@/lib/journalData';
+import { refreshSignedUrls } from '@/lib/journalUpload';
 import { useAICoach } from '@/contexts/AICoachContext';
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from '@/lib/draftStorage';
 import { toast } from '@/hooks/use-toast';
@@ -60,7 +61,27 @@ export default function Notebook() {
 
   useEffect(() => {
     if (!user) { setEntries([]); return; }
-    setEntries(loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []));
+    const loaded = loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []);
+    setEntries(loaded);
+
+    // Re-sign expired Supabase Storage URLs so historical notebook thumbnails render
+    // instead of breaking. Runs once per mount; legacy data-URL images are untouched.
+    let cancelled = false;
+    (async () => {
+      const refreshed = await Promise.all(loaded.map(async (e) => {
+        const j = coerceRichJournal(e.journal, e.notes, e.image);
+        const needsRefresh = j.media.some(m => m.path && !m.legacy);
+        if (!needsRefresh) return e;
+        try {
+          const media = await refreshSignedUrls(j.media);
+          return { ...e, journal: { text: j.text, media } };
+        } catch {
+          return e;
+        }
+      }));
+      if (!cancelled) setEntries(refreshed);
+    })();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Register the open notebook entry as AI Coach context
@@ -233,8 +254,32 @@ export default function Notebook() {
                 className="group cursor-pointer bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all"
               >
                 {thumb ? (
-                  <div className="aspect-[16/9] bg-muted overflow-hidden">
-                    <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" />
+                  <div className="aspect-[16/9] bg-muted overflow-hidden relative">
+                    <img
+                      src={thumb}
+                      alt=""
+                      className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        // Try legacy fallback first, then hide and show placeholder.
+                        if (entry.image && img.src !== entry.image) {
+                          img.src = entry.image;
+                          return;
+                        }
+                        // eslint-disable-next-line no-console
+                        console.warn('[Notebook] image failed to load', { id: entry.id, src: thumb });
+                        img.style.display = 'none';
+                        const parent = img.parentElement;
+                        if (parent && !parent.querySelector('[data-fallback]')) {
+                          const fb = document.createElement('div');
+                          fb.setAttribute('data-fallback', '');
+                          fb.className = 'absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground bg-muted/40';
+                          fb.textContent = 'Image unavailable';
+                          parent.appendChild(fb);
+                        }
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, type LinkMeta } from '@/lib/mediaSlot';
+import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';
@@ -236,16 +236,21 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const isTruthSocial = !!urlMeta?.domain && /truthsocial\.com$/i.test(urlMeta.domain);
 
   // Decide what image to show in the news card hero area.
-  // Priority: real OG image (if not failed) -> page screenshot (if not failed) -> none (compact card).
+  // Priority: real OG image (if not failed) -> page screenshot (if not failed/blocked) -> none.
+  const screenshotUrl = urlMeta ? screenshotFor(urlMeta.url) : '';
   const heroImage = urlMeta
     ? (urlMeta.image && !ogImageFailed
         ? urlMeta.image
-        : (!screenshotFailed ? screenshotFor(urlMeta.url) : ''))
+        : (!screenshotFailed && screenshotUrl ? screenshotUrl : ''))
     : '';
   const hasHero = !!heroImage;
+  // Show explicit "Screenshot unavailable" state when we have no OG image AND
+  // screenshot is either blocked (anti-bot domain) or has failed to load.
+  const showUnavailable = !!urlMeta && !urlMeta.image && !heroImage &&
+    (isScreenshotBlocked(urlMeta.url) || screenshotFailed);
 
-  // Validate loaded image is not microscopic (e.g. NYTimes generic placeholder).
-  // Collapses the hero area into compact mode when image is too small.
+  // Validate loaded image is not microscopic (e.g. NYTimes generic placeholder)
+  // and detect anti-bot pages (mshots returns a tiny grey thumbnail for blocked sites).
   const handleHeroLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     if (img.naturalWidth > 0 && img.naturalWidth < 200 && img.naturalHeight < 200) {
@@ -256,6 +261,13 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const handleHeroError = () => {
     if (urlMeta?.image && !ogImageFailed) setOgImageFailed(true);
     else if (!screenshotFailed) setScreenshotFailed(true);
+  };
+
+  const retryScreenshot = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOgImageFailed(false);
+    setScreenshotFailed(false);
   };
 
 
@@ -276,7 +288,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
           ) : mediaType === 'url' && urlMeta ? (
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
-              {hasHero && (
+              {hasHero ? (
                 <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[180px] sm:h-[240px] md:h-[280px]">
                   <img
                     src={heroImage}
@@ -292,7 +304,21 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                     </div>
                   )}
                 </div>
-              )}
+              ) : showUnavailable ? (
+                <div className="relative w-full bg-muted/30 border-b border-border/40 h-[140px] sm:h-[160px] flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <Globe className="h-6 w-6 opacity-50" />
+                  <p className="text-[11px] font-semibold uppercase tracking-wider">Screenshot unavailable</p>
+                  {!isScreenshotBlocked(urlMeta.url) && (
+                    <button
+                      type="button"
+                      onClick={retryScreenshot}
+                      className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-background border border-border/60 hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      Retry screenshot
+                    </button>
+                  )}
+                </div>
+              ) : null}
               <div className="p-5 space-y-2">
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                   {urlMeta.favicon ? (

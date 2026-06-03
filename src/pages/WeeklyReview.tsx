@@ -1,13 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
-import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3 } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -147,7 +148,19 @@ export default function WeeklyReview() {
       });
   }, [valid, weeklyPlans]);
 
-  const latest = weeklyData[weeklyData.length - 1];
+  // Selected week index — defaults to the most recent week. Lets the trader
+  // step back through prior weeks for review without losing chart context.
+  const [selectedIdx, setSelectedIdx] = useState<number>(-1);
+  useEffect(() => {
+    if (weeklyData.length === 0) { setSelectedIdx(-1); return; }
+    // Snap to the latest week when data is first loaded or when new weeks arrive.
+    setSelectedIdx(prev => (prev < 0 || prev >= weeklyData.length ? weeklyData.length - 1 : prev));
+  }, [weeklyData.length]);
+
+  const latest = selectedIdx >= 0 ? weeklyData[selectedIdx] : weeklyData[weeklyData.length - 1];
+  const prevWeek = selectedIdx > 0 ? weeklyData[selectedIdx - 1] : undefined;
+  const canPrev = selectedIdx > 0;
+  const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
 
   // Insights
@@ -161,14 +174,13 @@ export default function WeeklyReview() {
     if (latest.bestSetup && latest.bestSetup.pl > 0) result.push(`✅ Best setup: "${latest.bestSetup.name}" with ${formatCurrency(latest.bestSetup.pl)} profit.`);
     if (latest.worstSetup && latest.worstSetup.pl < 0) result.push(`❌ Worst setup: "${latest.worstSetup.name}" with ${formatCurrency(latest.worstSetup.pl)}. Review or stop trading it.`);
 
-    if (weeklyData.length >= 2) {
-      const prev = weeklyData[weeklyData.length - 2];
-      if (latest.pl > prev.pl) result.push(`📈 P/L improved from ${formatCurrency(prev.pl)} to ${formatCurrency(latest.pl)} compared to last week.`);
-      if (latest.winRate > prev.winRate) result.push(`📊 Win rate improved: ${prev.winRate}% → ${latest.winRate}%`);
+    if (prevWeek) {
+      if (latest.pl > prevWeek.pl) result.push(`📈 P/L improved from ${formatCurrency(prevWeek.pl)} to ${formatCurrency(latest.pl)} compared to the previous week.`);
+      if (latest.winRate > prevWeek.winRate) result.push(`📊 Win rate improved: ${prevWeek.winRate}% → ${latest.winRate}%`);
     }
 
     return result;
-  }, [latest, weeklyData]);
+  }, [latest, prevWeek]);
 
   return (
     <div className="px-3 sm:px-4 py-3 w-full space-y-6">
@@ -177,6 +189,37 @@ export default function WeeklyReview() {
 
       {latest ? (
         <>
+          {/* Week navigator — step through previous weeks for review */}
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              disabled={!canPrev}
+              onClick={() => setSelectedIdx(i => Math.max(0, (i < 0 ? weeklyData.length - 1 : i) - 1))}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" /> Previous week
+            </Button>
+            <div className="text-center">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Viewing</p>
+              <p className="text-sm font-bold font-heading">
+                {latest.weekName}
+                {selectedIdx === weeklyData.length - 1 && (
+                  <span className="ml-2 text-[10px] font-mono font-semibold uppercase tracking-widest text-primary">Current</span>
+                )}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              disabled={!canNext}
+              onClick={() => setSelectedIdx(i => Math.min(weeklyData.length - 1, (i < 0 ? weeklyData.length - 1 : i) + 1))}
+            >
+              Next week <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
           {/* Top Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <MetricCard label="Total Trades" value={latest.trades} tooltip="Number of trades taken this week" />
@@ -344,9 +387,19 @@ export default function WeeklyReview() {
                     </tr>
                   </thead>
                   <tbody>
-                    {weeklyData.slice().reverse().map(w => (
-                      <tr key={w.week} className="border-b border-border/50 hover:bg-accent/50 transition-colors">
-                        <td className="px-3 py-2.5 text-xs font-medium">{w.weekName}</td>
+                    {weeklyData.slice().reverse().map(w => {
+                      const idx = weeklyData.findIndex(x => x.week === w.week);
+                      const isSelected = idx === selectedIdx;
+                      return (
+                      <tr
+                        key={w.week}
+                        onClick={() => setSelectedIdx(idx)}
+                        className={cn(
+                          'border-b border-border/50 hover:bg-accent/50 transition-colors cursor-pointer',
+                          isSelected && 'bg-primary/5'
+                        )}
+                      >
+                        <td className="px-3 py-2.5 text-xs font-medium">{w.weekName}{isSelected && <span className="ml-2 text-[9px] text-primary font-mono">●</span>}</td>
                         <td className="px-3 py-2.5 font-mono text-xs">{w.trades}</td>
                         <td className={cn('px-3 py-2.5 font-mono text-xs', w.winRate >= 50 ? 'text-success' : 'text-destructive')}>{w.winRate}%</td>
                         <td className={cn('px-3 py-2.5 font-mono text-xs', w.pl >= 0 ? 'text-success' : 'text-destructive')}>{formatCurrency(w.pl)}</td>
@@ -356,7 +409,8 @@ export default function WeeklyReview() {
                         <td className="px-3 py-2.5 text-xs">{w.bestSetup?.name || '-'}</td>
                         <td className="px-3 py-2.5 text-xs">{w.mistakeCount > 0 ? `${w.mistakeCount} (${w.topMistake})` : '-'}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
