@@ -1,13 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
-import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3 } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
