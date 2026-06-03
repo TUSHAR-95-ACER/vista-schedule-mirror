@@ -189,6 +189,37 @@ export default function WeeklyReview() {
 
       {latest ? (
         <>
+          {/* Week navigator — step through previous weeks for review */}
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              disabled={!canPrev}
+              onClick={() => setSelectedIdx(i => Math.max(0, (i < 0 ? weeklyData.length - 1 : i) - 1))}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" /> Previous week
+            </Button>
+            <div className="text-center">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Viewing</p>
+              <p className="text-sm font-bold font-heading">
+                {latest.weekName}
+                {selectedIdx === weeklyData.length - 1 && (
+                  <span className="ml-2 text-[10px] font-mono font-semibold uppercase tracking-widest text-primary">Current</span>
+                )}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              disabled={!canNext}
+              onClick={() => setSelectedIdx(i => Math.min(weeklyData.length - 1, (i < 0 ? weeklyData.length - 1 : i) + 1))}
+            >
+              Next week <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
           {/* Top Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <MetricCard label="Total Trades" value={latest.trades} tooltip="Number of trades taken this week" />
