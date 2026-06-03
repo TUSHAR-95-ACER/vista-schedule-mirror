@@ -254,8 +254,32 @@ export default function Notebook() {
                 className="group cursor-pointer bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all"
               >
                 {thumb ? (
-                  <div className="aspect-[16/9] bg-muted overflow-hidden">
-                    <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform" />
+                  <div className="aspect-[16/9] bg-muted overflow-hidden relative">
+                    <img
+                      src={thumb}
+                      alt=""
+                      className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform"
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        // Try legacy fallback first, then hide and show placeholder.
+                        if (entry.image && img.src !== entry.image) {
+                          img.src = entry.image;
+                          return;
+                        }
+                        // eslint-disable-next-line no-console
+                        console.warn('[Notebook] image failed to load', { id: entry.id, src: thumb });
+                        img.style.display = 'none';
+                        const parent = img.parentElement;
+                        if (parent && !parent.querySelector('[data-fallback]')) {
+                          const fb = document.createElement('div');
+                          fb.setAttribute('data-fallback', '');
+                          fb.className = 'absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground bg-muted/40';
+                          fb.textContent = 'Image unavailable';
+                          parent.appendChild(fb);
+                        }
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="aspect-[16/9] bg-muted/30 flex items-center justify-center">
