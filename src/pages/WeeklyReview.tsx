@@ -148,7 +148,19 @@ export default function WeeklyReview() {
       });
   }, [valid, weeklyPlans]);
 
-  const latest = weeklyData[weeklyData.length - 1];
+  // Selected week index — defaults to the most recent week. Lets the trader
+  // step back through prior weeks for review without losing chart context.
+  const [selectedIdx, setSelectedIdx] = useState<number>(-1);
+  useEffect(() => {
+    if (weeklyData.length === 0) { setSelectedIdx(-1); return; }
+    // Snap to the latest week when data is first loaded or when new weeks arrive.
+    setSelectedIdx(prev => (prev < 0 || prev >= weeklyData.length ? weeklyData.length - 1 : prev));
+  }, [weeklyData.length]);
+
+  const latest = selectedIdx >= 0 ? weeklyData[selectedIdx] : weeklyData[weeklyData.length - 1];
+  const prevWeek = selectedIdx > 0 ? weeklyData[selectedIdx - 1] : undefined;
+  const canPrev = selectedIdx > 0;
+  const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
 
   // Insights
