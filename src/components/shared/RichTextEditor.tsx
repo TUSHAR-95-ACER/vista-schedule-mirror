@@ -174,6 +174,33 @@ export function RichTextEditor({
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 
+  const runAiRewrite = async (mode: 'improve' | 'polish') => {
+    if (aiBusy) return;
+    const html = editor.getHTML();
+    const plain = htmlToPlain(html);
+    if (!plain) {
+      toast({ title: 'Nothing to rewrite', description: 'Write some text first.' });
+      return;
+    }
+    setAiBusy(mode);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-rewrite', { body: { mode, html } });
+      if (error) throw error;
+      const next = (data as { html?: string })?.html?.trim();
+      if (!next) throw new Error('Empty AI response');
+      editor.commands.setContent(next, { emitUpdate: true });
+      toast({
+        title: mode === 'improve' ? '✨ Notes improved' : '🧠 Journal polished',
+        description: 'Updated in place. Undo (⌘Z) to revert.',
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'AI request failed';
+      toast({ title: 'AI rewrite failed', description: msg.slice(0, 140), variant: 'destructive' });
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
   return (
     <div className={cn('relative', className)} onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
       <BubbleMenu
