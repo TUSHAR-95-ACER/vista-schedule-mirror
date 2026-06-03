@@ -405,6 +405,35 @@ export default function DailyPlanPage() {
                 </div>
               )}
             </div>
+
+            {/* Market Condition pills — per pair, feeds analytics */}
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Condition</Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { val: 'Trending' as const, emoji: '📈', label: 'Trending' },
+                  { val: 'Volatile' as const, emoji: '🌊', label: 'Volatile' },
+                  { val: 'Sideways' as const, emoji: '➡️', label: 'Sideways' },
+                ].map(opt => {
+                  const active = pp.marketCondition === opt.val;
+                  return (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => updatePair(pp.id, { marketCondition: active ? undefined : opt.val })}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
+                        active
+                          ? 'bg-primary/10 border-primary/40 text-primary'
+                          : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
+                      )}
+                    >
+                      <span>{opt.emoji}</span> {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </SectionCard>
 
           {/* Prediction Chart - Notion-style notes */}
