@@ -79,6 +79,7 @@ export function RichTextEditor({
   onEditorReady,
 }: RichTextEditorProps) {
   const lastEmittedRef = useRef<string>(value);
+  const [aiBusy, setAiBusy] = useState<null | 'improve' | 'polish'>(null);
 
   const editor = useEditor({
     extensions: [
