@@ -246,6 +246,21 @@ export function RichTextEditor({
         <div className="mx-1 h-5 w-px bg-border" />
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="h-3.5 w-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo className="h-3.5 w-3.5" /></ToolbarBtn>
+        <div className="mx-1 h-5 w-px bg-border" />
+        <ToolbarBtn
+          title="✨ Improve Notes — fix grammar, keep your voice"
+          active={aiBusy === 'improve'}
+          onClick={() => runAiRewrite('improve')}
+        >
+          {aiBusy === 'improve' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+        </ToolbarBtn>
+        <ToolbarBtn
+          title="🧠 Journal Polish — restructure for readability"
+          active={aiBusy === 'polish'}
+          onClick={() => runAiRewrite('polish')}
+        >
+          {aiBusy === 'polish' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+        </ToolbarBtn>
       </BubbleMenu>
 
       <EditorContent editor={editor} />
