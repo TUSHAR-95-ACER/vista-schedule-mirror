@@ -174,14 +174,13 @@ export default function WeeklyReview() {
     if (latest.bestSetup && latest.bestSetup.pl > 0) result.push(`✅ Best setup: "${latest.bestSetup.name}" with ${formatCurrency(latest.bestSetup.pl)} profit.`);
     if (latest.worstSetup && latest.worstSetup.pl < 0) result.push(`❌ Worst setup: "${latest.worstSetup.name}" with ${formatCurrency(latest.worstSetup.pl)}. Review or stop trading it.`);
 
-    if (weeklyData.length >= 2) {
-      const prev = weeklyData[weeklyData.length - 2];
-      if (latest.pl > prev.pl) result.push(`📈 P/L improved from ${formatCurrency(prev.pl)} to ${formatCurrency(latest.pl)} compared to last week.`);
-      if (latest.winRate > prev.winRate) result.push(`📊 Win rate improved: ${prev.winRate}% → ${latest.winRate}%`);
+    if (prevWeek) {
+      if (latest.pl > prevWeek.pl) result.push(`📈 P/L improved from ${formatCurrency(prevWeek.pl)} to ${formatCurrency(latest.pl)} compared to the previous week.`);
+      if (latest.winRate > prevWeek.winRate) result.push(`📊 Win rate improved: ${prevWeek.winRate}% → ${latest.winRate}%`);
     }
 
     return result;
-  }, [latest, weeklyData]);
+  }, [latest, prevWeek]);
 
   return (
     <div className="px-3 sm:px-4 py-3 w-full space-y-6">
