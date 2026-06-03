@@ -61,7 +61,27 @@ export default function Notebook() {
 
   useEffect(() => {
     if (!user) { setEntries([]); return; }
-    setEntries(loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []));
+    const loaded = loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []);
+    setEntries(loaded);
+
+    // Re-sign expired Supabase Storage URLs so historical notebook thumbnails render
+    // instead of breaking. Runs once per mount; legacy data-URL images are untouched.
+    let cancelled = false;
+    (async () => {
+      const refreshed = await Promise.all(loaded.map(async (e) => {
+        const j = coerceRichJournal(e.journal, e.notes, e.image);
+        const needsRefresh = j.media.some(m => m.path && !m.legacy);
+        if (!needsRefresh) return e;
+        try {
+          const media = await refreshSignedUrls(j.media);
+          return { ...e, journal: { text: j.text, media } };
+        } catch {
+          return e;
+        }
+      }));
+      if (!cancelled) setEntries(refreshed);
+    })();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Register the open notebook entry as AI Coach context
