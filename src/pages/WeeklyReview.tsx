@@ -387,9 +387,19 @@ export default function WeeklyReview() {
                     </tr>
                   </thead>
                   <tbody>
-                    {weeklyData.slice().reverse().map(w => (
-                      <tr key={w.week} className="border-b border-border/50 hover:bg-accent/50 transition-colors">
-                        <td className="px-3 py-2.5 text-xs font-medium">{w.weekName}</td>
+                    {weeklyData.slice().reverse().map(w => {
+                      const idx = weeklyData.findIndex(x => x.week === w.week);
+                      const isSelected = idx === selectedIdx;
+                      return (
+                      <tr
+                        key={w.week}
+                        onClick={() => setSelectedIdx(idx)}
+                        className={cn(
+                          'border-b border-border/50 hover:bg-accent/50 transition-colors cursor-pointer',
+                          isSelected && 'bg-primary/5'
+                        )}
+                      >
+                        <td className="px-3 py-2.5 text-xs font-medium">{w.weekName}{isSelected && <span className="ml-2 text-[9px] text-primary font-mono">●</span>}</td>
                         <td className="px-3 py-2.5 font-mono text-xs">{w.trades}</td>
                         <td className={cn('px-3 py-2.5 font-mono text-xs', w.winRate >= 50 ? 'text-success' : 'text-destructive')}>{w.winRate}%</td>
                         <td className={cn('px-3 py-2.5 font-mono text-xs', w.pl >= 0 ? 'text-success' : 'text-destructive')}>{formatCurrency(w.pl)}</td>
@@ -399,7 +409,8 @@ export default function WeeklyReview() {
                         <td className="px-3 py-2.5 text-xs">{w.bestSetup?.name || '-'}</td>
                         <td className="px-3 py-2.5 text-xs">{w.mistakeCount > 0 ? `${w.mistakeCount} (${w.topMistake})` : '-'}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
