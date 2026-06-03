@@ -59,7 +59,26 @@ export function faviconFor(domain: string, size = 128): string {
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=${size}`;
 }
 
-/** Fallback page screenshot service (no auth) for sites without OG images. */
+/**
+ * Domains that aggressively block headless screenshot services (mshots, etc).
+ * The fallback service returns an anti-bot page for these — never useful, so we
+ * skip it and surface a clean "Screenshot unavailable" state instead.
+ */
+const SCREENSHOT_BLOCKED_DOMAINS = [
+  'reuters.com', 'wsj.com', 'bloomberg.com', 'ft.com',
+  'nytimes.com', 'economist.com', 'barrons.com', 'cnbc.com',
+];
+
+export function isScreenshotBlocked(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    return SCREENSHOT_BLOCKED_DOMAINS.some(d => host === d || host.endsWith('.' + d));
+  } catch { return false; }
+}
+
+/** Fallback page screenshot service (no auth) for sites without OG images. Returns '' for blocked domains. */
 export function screenshotFor(url: string, width = 800): string {
+  if (isScreenshotBlocked(url)) return '';
+  // Cache-bust query so retry actually re-requests the service.
   return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=${width}`;
 }
