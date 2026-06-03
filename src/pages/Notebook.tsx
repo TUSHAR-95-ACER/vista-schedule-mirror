@@ -14,6 +14,7 @@ import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptNotebook } from '@/lib/aiInsightAdapters';
 import { RichJournalBlock, type RichJournalValue } from '@/components/shared/RichJournalBlock';
 import { coerceRichJournal, emptyJournal, serializeJournal, journalPlainText } from '@/lib/journalData';
+import { refreshSignedUrls } from '@/lib/journalUpload';
 import { useAICoach } from '@/contexts/AICoachContext';
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from '@/lib/draftStorage';
 import { toast } from '@/hooks/use-toast';
