@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, type LinkMeta } from '@/lib/mediaSlot';
+import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';
