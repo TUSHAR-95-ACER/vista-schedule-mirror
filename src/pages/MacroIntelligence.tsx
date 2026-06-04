@@ -101,8 +101,7 @@ type Analysis = {
    DEFAULTS
    ========================================================================= */
 const CATEGORIES = [
-  "Inflation", "Labor", "Fed", "Growth", "Housing",
-  "Manufacturing", "Consumer", "Energy", "Geopolitical", "Other",
+  "Inflation", "Labor", "Growth", "Manufacturing", "Fed",
 ] as const;
 type Category = typeof CATEGORIES[number];
 
@@ -574,7 +573,7 @@ export default function MacroIntelligence() {
     const groups: Record<string, MacroEvent[]> = {};
     for (const cat of CATEGORIES) groups[cat] = [];
     for (const e of events) {
-      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Other";
+      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Inflation";
       groups[c].push(e);
     }
     return groups;
@@ -833,14 +832,8 @@ export default function MacroIntelligence() {
           <SectionHeader
             icon={<Activity className="h-4 w-4" />}
             title="Economic Data Input"
-            subtitle="Grouped by category • Previous / Forecast / Actual"
-            right={
-              !isReadOnly ? (
-                <Button variant="outline" size="sm" onClick={() => addEvent()} className="gap-1">
-                  <Plus className="h-3.5 w-3.5" /> Add row
-                </Button>
-              ) : null
-            }
+            subtitle="Grouped by category • Use + Add Event to expand any category"
+            right={null}
           />
           <div className="mt-4 space-y-3">
             {loading ? (
@@ -905,15 +898,6 @@ export default function MacroIntelligence() {
               })
             )}
           </div>
-          {!isReadOnly && (
-            <div className="mt-4">
-              <Textarea
-                placeholder="Optional context: yield action, FOMC week, geopolitical backdrop..."
-                value={context} onChange={e => setContext(e.target.value)}
-                className="min-h-[60px] bg-transparent border-border/40 text-sm"
-              />
-            </div>
-          )}
         </GlassCard>
 
         {/* TIMELINE + PREDICTION HISTORY */}
