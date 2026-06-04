@@ -387,6 +387,45 @@ export default function BiasAnalytics() {
         </div>
       </div>
 
+      {/* Market Condition Performance */}
+      <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
+        <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Activity className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Market Condition Performance</h3>
+          <InfoTooltip text="Source: market condition tag (Trending / Volatile / Sideways) on each pair inside daily plans, cross-referenced with predicted vs actual bias. Accuracy = correct directional calls ÷ resolved directional calls in that condition." />
+        </div>
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {stats.conditionStats.map((c) => (
+            <div key={c.key} className="rounded-xl border border-border/60 bg-background/40 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold flex items-center gap-1.5">
+                  <span>{conditionIcon(c.key)}</span> {c.key}
+                </span>
+                <span className={cn(
+                  'text-xs font-mono font-bold',
+                  c.graded === 0 ? 'text-muted-foreground' : c.accuracy >= 60 ? 'text-success' : c.accuracy >= 40 ? 'text-warning' : 'text-destructive',
+                )}>{c.graded === 0 ? '—' : `${c.accuracy.toFixed(0)}%`}</span>
+              </div>
+              <div className="text-[11px] text-muted-foreground space-y-0.5">
+                <div>{c.analyses} analyses</div>
+                <div>{c.graded === 0 ? 'no resolved directional calls yet' : `${c.graded} resolved · bias accuracy`}</div>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted/50 mt-3 overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all duration-500', c.accuracy >= 60 ? 'bg-success' : c.accuracy >= 40 ? 'bg-warning' : 'bg-destructive')}
+                  style={{ width: `${Math.min(100, Math.max(0, c.accuracy))}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        {stats.conditionStats.every((c) => c.analyses === 0) && (
+          <p className="px-5 pb-5 text-xs text-muted-foreground italic">Tag a market condition on your daily plan pairs (📈 Trending / 🌊 Volatile / ➡️ Sideways) to populate this section.</p>
+        )}
+      </div>
+
       {/* Insights */}
       <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="px-5 py-3.5 border-b border-border/40 bg-gradient-to-r from-warning/10 to-transparent flex items-center gap-2.5">
