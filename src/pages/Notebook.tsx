@@ -398,6 +398,10 @@ export default function Notebook() {
           })}
         </div>
       )}
+        </>
+      )}
+
+
 
       <AIInsightsPanel
         page="Notebook"
