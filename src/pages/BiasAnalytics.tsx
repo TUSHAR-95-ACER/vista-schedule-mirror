@@ -78,6 +78,9 @@ export default function BiasAnalytics() {
     let standAsideDays = 0;
     const pairMap = new Map<string, { total: number; correct: number }>();
     const sessionMap = new Map<string, { total: number; correct: number }>();
+    // Market condition buckets — populated ONLY from daily plans where the user
+    // explicitly tagged a condition (Trending / Volatile / Sideways).
+    const conditionMap = new Map<string, { total: number; correct: number; analyses: number }>();
 
     let prevBias = '';
     let biasChanges = 0;
@@ -87,7 +90,13 @@ export default function BiasAnalytics() {
     let executable = 0;
     let executed = 0;
 
-    const ingest = (pair: string, predicted: string, actual: string, dateRangeStarts: string[]) => {
+    const ingest = (
+      pair: string,
+      predicted: string,
+      actual: string,
+      dateRangeStarts: string[],
+      condition?: string,
+    ) => {
       const pBias = normalizeBiasDirection(predicted);
       const aBias = normalizeBiasDirection(actual);
       if (!pBias) return;
@@ -97,6 +106,18 @@ export default function BiasAnalytics() {
       prevBias = pBias;
 
       const directional = pBias === 'Bullish' || pBias === 'Bearish';
+
+      // Track market condition for every analysis where condition is set.
+      if (condition) {
+        const c = conditionMap.get(condition) || { total: 0, correct: 0, analyses: 0 };
+        c.analyses++;
+        if (directional && aBias) {
+          c.total++;
+          if (pBias === aBias) c.correct++;
+        }
+        conditionMap.set(condition, c);
+      }
+
       if (!directional) {
         standAsideDays++;
       } else if (aBias) {
@@ -136,7 +157,13 @@ export default function BiasAnalytics() {
     dailyPlans.forEach((dp) => {
       dp.pairs.forEach((pp) => {
         if (!pp.pair) return;
-        ingest(pp.pair, pp.bias as string, ((pp as any).actualBias || '') as string, [dp.date]);
+        ingest(
+          pp.pair,
+          pp.bias as string,
+          ((pp as any).actualBias || '') as string,
+          [dp.date],
+          (pp as any).marketCondition as string | undefined,
+        );
       });
     });
 
@@ -154,6 +181,19 @@ export default function BiasAnalytics() {
       .map(([session, { total, correct }]) => ({ session, accuracy: total > 0 ? (correct / total) * 100 : 0, total }))
       .sort((a, b) => b.accuracy - a.accuracy);
 
+    // Materialise market condition rows in a fixed order so the section
+    // always shows all three categories even when one has no data.
+    const CONDITION_ORDER = ['Trending', 'Volatile', 'Sideways'] as const;
+    const conditionStats = CONDITION_ORDER.map((key) => {
+      const v = conditionMap.get(key);
+      return {
+        key,
+        analyses: v?.analyses ?? 0,
+        accuracy: v && v.total > 0 ? (v.correct / v.total) * 100 : 0,
+        graded: v?.total ?? 0,
+      };
+    });
+
     const stability = biasObservations > 1 ? Math.round((1 - biasChanges / (biasObservations - 1)) * 100) : 100;
 
     return {
@@ -168,6 +208,7 @@ export default function BiasAnalytics() {
       bestSession: sessionAccuracy[0] || null,
       worstSession: sessionAccuracy[sessionAccuracy.length - 1] || null,
       pairAccuracy, sessionAccuracy,
+      conditionStats,
       stability, biasChanges, biasObservations,
       executable, executed,
       executionRate: executable > 0 ? (executed / executable) * 100 : 0,
