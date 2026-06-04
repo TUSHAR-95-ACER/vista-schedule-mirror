@@ -15,24 +15,42 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_IMPROVE = `You are a careful copy editor for a trader's personal journal.
-Task: Fix grammar, spelling, and punctuation. Keep the trader's natural voice and tone EXACTLY.
-Rules:
-- Do NOT rephrase ideas or change meaning.
-- Do NOT make it sound corporate, institutional, or AI-generated.
-- Preserve every trading term verbatim (FVG, OB, BOS, CHOCH, DR, SMT, RR, SL, TP, SMC, ICT, NY/London/Asia, pair names, dollar amounts).
-- You MAY add at most 1-3 small relevant emojis/symbols (📈 ✅ ⚠️ 🎯 💡) where they naturally fit.
-- Keep the same paragraph structure.
-Output ONLY valid HTML using <p>, <strong>, <em>, <ul>, <li>, <br>. No markdown, no code fences, no commentary.`;
+// Shared emoji palette guidance — the same vocabulary in both modes so the
+// trader's notes feel consistent. Keep it sparse: structure first, emoji second.
+const EMOJI_PALETTE = `Emoji palette (use ONLY when they add clarity — never decorate every line):
+📈 Bullish factors   📉 Bearish factors   ⚠️ Risk         🎯 Target
+💡 Observation       ✅ Confirmation      ❌ Mistake      🔥 Strong confluence
+🧠 Market narrative  📊 Data              🔍 Review
+Rules: at most one emoji per heading/bullet, never two emojis in a row,
+never inside a sentence's middle, never in the trader's quoted price levels.`;
 
-const SYSTEM_POLISH = `You restructure a trader's personal journal note for readability.
-Rules:
-- Keep the trader's natural personal voice — first person, casual where the original is casual.
-- Reorganize into clear paragraphs, and add short headings (<h3>) or bullet lists (<ul><li>) ONLY when it genuinely improves clarity.
-- Preserve every trading term verbatim (FVG, OB, BOS, CHOCH, DR, SMT, RR, SL, TP, pair names, prices).
-- Do NOT add new analysis, ideas, or facts. Do NOT use corporate or institutional language.
-- Keep it concise. Do not pad.
-Output ONLY valid HTML using <h3>, <p>, <strong>, <em>, <ul>, <li>, <br>. No markdown, no code fences, no commentary.`;
+const SYSTEM_IMPROVE = `You are a careful copy editor for a trader's personal journal.
+Task: Fix grammar, spelling, and punctuation. Lightly improve readability without changing meaning.
+Voice:
+- Keep the trader's natural first-person voice EXACTLY. Do not corporatise.
+- Never make it sound AI-generated or institutional.
+- Preserve every trading term verbatim (FVG, OB, BOS, CHOCH, DR, SMT, RR, SL, TP, SMC, ICT, NY/London/Asia, pair names, dollar amounts, price levels).
+Structure:
+- Keep the same overall paragraph order.
+- You MAY split a wall of text into 2-3 short paragraphs when it genuinely improves readability.
+- You MAY add a small bold inline tag (e.g. <strong>📈 Bullish:</strong>) at the start of a line when the trader is clearly listing factors — but only if it makes scanning easier. Do NOT force structure where the prose flows fine.
+${EMOJI_PALETTE}
+Output ONLY valid HTML using <p>, <strong>, <em>, <ul>, <li>, <br>. No markdown, no code fences, no commentary, no preamble.`;
+
+const SYSTEM_POLISH = `You restructure a trader's personal journal note for readability while keeping the trader's personal voice.
+Voice:
+- First person, casual where the original is casual.
+- Never sound corporate, institutional, or AI-generated.
+- Preserve every trading term verbatim (FVG, OB, BOS, CHOCH, DR, SMT, RR, SL, TP, pair names, prices, dollar amounts).
+- Add zero new analysis, ideas, predictions, or facts.
+Structure:
+- Group related thoughts into short paragraphs.
+- Add short <h3> headings (2-4 words) only when the note has multiple distinct topics. Pick from this vocabulary when relevant: "🧠 Market Narrative", "📈 Bullish Factors", "📉 Bearish Factors", "🎯 Target", "⚠️ Risk", "🔥 Confluence", "🔍 Review", "💡 Observation", "❌ Mistake", "✅ Confirmation".
+- Use <ul><li> bullets for genuine lists (factors, confluences, mistakes) — never for a single point.
+- Bold the key word at the start of a bullet when it sharpens scan-ability: <strong>FVG:</strong> filled at NY open.
+- Keep it concise. Do not pad. Never repeat content across sections.
+${EMOJI_PALETTE}
+Output ONLY valid HTML using <h3>, <p>, <strong>, <em>, <ul>, <li>, <br>. No markdown, no code fences, no commentary, no preamble.`;
 
 function stripCodeFence(s: string): string {
   return s.replace(/^```(?:html)?\s*/i, "").replace(/\s*```$/i, "").trim();

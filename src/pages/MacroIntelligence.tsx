@@ -101,8 +101,7 @@ type Analysis = {
    DEFAULTS
    ========================================================================= */
 const CATEGORIES = [
-  "Inflation", "Labor", "Fed", "Growth", "Housing",
-  "Manufacturing", "Consumer", "Energy", "Geopolitical", "Other",
+  "Inflation", "Labor", "Growth", "Manufacturing", "Fed",
 ] as const;
 type Category = typeof CATEGORIES[number];
 
@@ -574,7 +573,7 @@ export default function MacroIntelligence() {
     const groups: Record<string, MacroEvent[]> = {};
     for (const cat of CATEGORIES) groups[cat] = [];
     for (const e of events) {
-      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Other";
+      const c = (e.category && (CATEGORIES as readonly string[]).includes(e.category)) ? e.category : "Inflation";
       groups[c].push(e);
     }
     return groups;
@@ -833,14 +832,8 @@ export default function MacroIntelligence() {
           <SectionHeader
             icon={<Activity className="h-4 w-4" />}
             title="Economic Data Input"
-            subtitle="Grouped by category • Previous / Forecast / Actual"
-            right={
-              !isReadOnly ? (
-                <Button variant="outline" size="sm" onClick={() => addEvent()} className="gap-1">
-                  <Plus className="h-3.5 w-3.5" /> Add row
-                </Button>
-              ) : null
-            }
+            subtitle="Grouped by category • Use + Add Event to expand any category"
+            right={null}
           />
           <div className="mt-4 space-y-3">
             {loading ? (
@@ -848,19 +841,16 @@ export default function MacroIntelligence() {
             ) : (
               CATEGORIES.map(cat => {
                 const rows = eventsByCategory[cat];
+                const onAdd = isReadOnly ? undefined : () => addEvent(cat);
                 if (!rows || rows.length === 0) {
                   return (
-                    <CategoryGroup key={cat} category={cat} count={0}>
-                      {!isReadOnly && (
-                        <button onClick={() => addEvent(cat)} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 px-2 py-1">
-                          <Plus className="h-3 w-3" /> Add {cat} event
-                        </button>
-                      )}
+                    <CategoryGroup key={cat} category={cat} count={0} onAdd={onAdd}>
+                      <p className="text-xs text-muted-foreground italic px-3 py-2">No events yet — click <span className="font-medium text-foreground">+ Add Event</span> above.</p>
                     </CategoryGroup>
                   );
                 }
                 return (
-                  <CategoryGroup key={cat} category={cat} count={rows.length} defaultOpen>
+                  <CategoryGroup key={cat} category={cat} count={rows.length} defaultOpen onAdd={onAdd}>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
@@ -869,8 +859,8 @@ export default function MacroIntelligence() {
                             <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
                             <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
                             <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-32">Surprise</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-24">Trend</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-32">Market Signal</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-32">Economic Direction</th>
                             <th className="text-left font-medium px-2 py-1.5 w-20">Impact</th>
                             {!isReadOnly && <th className="w-8"></th>}
                           </tr>
@@ -905,15 +895,6 @@ export default function MacroIntelligence() {
               })
             )}
           </div>
-          {!isReadOnly && (
-            <div className="mt-4">
-              <Textarea
-                placeholder="Optional context: yield action, FOMC week, geopolitical backdrop..."
-                value={context} onChange={e => setContext(e.target.value)}
-                className="min-h-[60px] bg-transparent border-border/40 text-sm"
-              />
-            </div>
-          )}
         </GlassCard>
 
         {/* TIMELINE + PREDICTION HISTORY */}
@@ -1041,21 +1022,30 @@ function ForwardCard({ variant, label, probability, outcomes }: {
   );
 }
 
-function CategoryGroup({ category, count, children, defaultOpen = false }: {
-  category: string; count: number; children: React.ReactNode; defaultOpen?: boolean;
+function CategoryGroup({ category, count, children, defaultOpen = false, onAdd }: {
+  category: string; count: number; children: React.ReactNode; defaultOpen?: boolean; onAdd?: () => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <button className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border/50 bg-background/30 hover:bg-accent/30 transition-colors">
-          <div className="flex items-center gap-2">
+      <div className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border/50 bg-background/30 hover:bg-accent/30 transition-colors">
+        <CollapsibleTrigger asChild>
+          <button className="flex-1 flex items-center gap-2 text-left">
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-0" : "-rotate-90"}`} />
             <span className="text-xs font-semibold uppercase tracking-wider">{category}</span>
             <Badge variant="outline" className="text-[10px] h-5">{count}</Badge>
-          </div>
-        </button>
-      </CollapsibleTrigger>
+          </button>
+        </CollapsibleTrigger>
+        {onAdd && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onAdd(); }}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 px-2 py-1 rounded-md hover:bg-primary/10 transition-colors"
+          >
+            <Plus className="h-3 w-3" /> Add Event
+          </button>
+        )}
+      </div>
       <CollapsibleContent className="pt-2 px-1">{children}</CollapsibleContent>
     </Collapsible>
   );

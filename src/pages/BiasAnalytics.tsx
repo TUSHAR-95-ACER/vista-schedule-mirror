@@ -78,6 +78,9 @@ export default function BiasAnalytics() {
     let standAsideDays = 0;
     const pairMap = new Map<string, { total: number; correct: number }>();
     const sessionMap = new Map<string, { total: number; correct: number }>();
+    // Market condition buckets — populated ONLY from daily plans where the user
+    // explicitly tagged a condition (Trending / Volatile / Sideways).
+    const conditionMap = new Map<string, { total: number; correct: number; analyses: number }>();
 
     let prevBias = '';
     let biasChanges = 0;
@@ -87,7 +90,13 @@ export default function BiasAnalytics() {
     let executable = 0;
     let executed = 0;
 
-    const ingest = (pair: string, predicted: string, actual: string, dateRangeStarts: string[]) => {
+    const ingest = (
+      pair: string,
+      predicted: string,
+      actual: string,
+      dateRangeStarts: string[],
+      condition?: string,
+    ) => {
       const pBias = normalizeBiasDirection(predicted);
       const aBias = normalizeBiasDirection(actual);
       if (!pBias) return;
@@ -97,6 +106,18 @@ export default function BiasAnalytics() {
       prevBias = pBias;
 
       const directional = pBias === 'Bullish' || pBias === 'Bearish';
+
+      // Track market condition for every analysis where condition is set.
+      if (condition) {
+        const c = conditionMap.get(condition) || { total: 0, correct: 0, analyses: 0 };
+        c.analyses++;
+        if (directional && aBias) {
+          c.total++;
+          if (pBias === aBias) c.correct++;
+        }
+        conditionMap.set(condition, c);
+      }
+
       if (!directional) {
         standAsideDays++;
       } else if (aBias) {
@@ -136,7 +157,13 @@ export default function BiasAnalytics() {
     dailyPlans.forEach((dp) => {
       dp.pairs.forEach((pp) => {
         if (!pp.pair) return;
-        ingest(pp.pair, pp.bias as string, ((pp as any).actualBias || '') as string, [dp.date]);
+        ingest(
+          pp.pair,
+          pp.bias as string,
+          ((pp as any).actualBias || '') as string,
+          [dp.date],
+          (pp as any).marketCondition as string | undefined,
+        );
       });
     });
 
@@ -154,6 +181,19 @@ export default function BiasAnalytics() {
       .map(([session, { total, correct }]) => ({ session, accuracy: total > 0 ? (correct / total) * 100 : 0, total }))
       .sort((a, b) => b.accuracy - a.accuracy);
 
+    // Materialise market condition rows in a fixed order so the section
+    // always shows all three categories even when one has no data.
+    const CONDITION_ORDER = ['Trending', 'Volatile', 'Sideways'] as const;
+    const conditionStats = CONDITION_ORDER.map((key) => {
+      const v = conditionMap.get(key);
+      return {
+        key,
+        analyses: v?.analyses ?? 0,
+        accuracy: v && v.total > 0 ? (v.correct / v.total) * 100 : 0,
+        graded: v?.total ?? 0,
+      };
+    });
+
     const stability = biasObservations > 1 ? Math.round((1 - biasChanges / (biasObservations - 1)) * 100) : 100;
 
     return {
@@ -168,6 +208,7 @@ export default function BiasAnalytics() {
       bestSession: sessionAccuracy[0] || null,
       worstSession: sessionAccuracy[sessionAccuracy.length - 1] || null,
       pairAccuracy, sessionAccuracy,
+      conditionStats,
       stability, biasChanges, biasObservations,
       executable, executed,
       executionRate: executable > 0 ? (executed / executable) * 100 : 0,
@@ -178,26 +219,43 @@ export default function BiasAnalytics() {
     const out: string[] = [];
     if (stats.dirTotal > 0) {
       out.push(stats.overall >= 60
-        ? `Directional bias is solid: ${stats.overall.toFixed(0)}% across ${stats.dirTotal} resolved calls.`
-        : `Directional bias is ${stats.overall.toFixed(0)}% — your read needs refining (${stats.dirTotal} resolved calls).`);
+        ? `✅ Directional bias is solid: ${stats.overall.toFixed(0)}% across ${stats.dirTotal} resolved calls.`
+        : `⚠️ Directional bias is ${stats.overall.toFixed(0)}% — your read needs refining (${stats.dirTotal} resolved calls).`);
     }
     if (stats.bestPair && stats.bestPair.total >= 2) {
-      out.push(`Sharpest read on ${stats.bestPair.pair} — ${stats.bestPair.accuracy.toFixed(0)}% across ${stats.bestPair.total} analyses.`);
+      out.push(`🎯 Sharpest read on ${stats.bestPair.pair} — ${stats.bestPair.accuracy.toFixed(0)}% across ${stats.bestPair.total} analyses.`);
+    }
+    // Market condition insights — only from explicitly tagged daily analyses.
+    const gradedConds = stats.conditionStats.filter((c) => c.graded >= 2);
+    if (gradedConds.length > 0) {
+      const best = [...gradedConds].sort((a, b) => b.accuracy - a.accuracy)[0];
+      const worst = [...gradedConds].sort((a, b) => a.accuracy - b.accuracy)[0];
+      if (best && best.accuracy >= 60) {
+        out.push(`✅ Your highest bias accuracy occurs in ${best.key} markets (${best.accuracy.toFixed(0)}%).`);
+      }
+      if (worst && worst !== best && worst.accuracy < 50) {
+        out.push(`⚠️ ${worst.key} conditions reduce your bias accuracy to ${worst.accuracy.toFixed(0)}%.`);
+      }
+      if (best && worst && best !== worst) {
+        out.push(`🎯 Focus more on ${best.key} environments and reduce conviction during ${worst.key} conditions.`);
+      }
     }
     if (stats.executable > 0 && stats.executionRate < 50) {
-      out.push(`Execution rate is ${stats.executionRate.toFixed(0)}% — you called the direction but only traded ${stats.executed}/${stats.executable} times.`);
+      out.push(`❌ Execution rate is ${stats.executionRate.toFixed(0)}% — you called the direction but only traded ${stats.executed}/${stats.executable} times.`);
     }
     if (stats.stability < 60) {
-      out.push(`Bias stability is low (${stats.stability}%) — frequent changes suggest uncertainty.`);
+      out.push(`⚠️ Bias stability is low (${stats.stability}%) — frequent changes suggest uncertainty.`);
     }
     if (stats.standAsideDays > 0) {
-      out.push(`${stats.standAsideDays} stand-aside days logged (Neutral / Sideways) — discipline counts.`);
+      out.push(`🧠 ${stats.standAsideDays} stand-aside days logged (Neutral / Sideways) — discipline counts.`);
     }
     if (out.length === 0) {
-      out.push('Create weekly plans with pair analyses and fill in actual results to generate insights.');
+      out.push('💡 Create weekly plans with pair analyses and fill in actual results to generate insights.');
     }
     return out;
   }, [stats]);
+
+  const conditionIcon = (c: string) => c === 'Trending' ? '📈' : c === 'Volatile' ? '🌊' : '➡️';
 
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
@@ -327,6 +385,45 @@ export default function BiasAnalytics() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Market Condition Performance */}
+      <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
+        <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Activity className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Market Condition Performance</h3>
+          <InfoTooltip text="Source: market condition tag (Trending / Volatile / Sideways) on each pair inside daily plans, cross-referenced with predicted vs actual bias. Accuracy = correct directional calls ÷ resolved directional calls in that condition." />
+        </div>
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {stats.conditionStats.map((c) => (
+            <div key={c.key} className="rounded-xl border border-border/60 bg-background/40 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold flex items-center gap-1.5">
+                  <span>{conditionIcon(c.key)}</span> {c.key}
+                </span>
+                <span className={cn(
+                  'text-xs font-mono font-bold',
+                  c.graded === 0 ? 'text-muted-foreground' : c.accuracy >= 60 ? 'text-success' : c.accuracy >= 40 ? 'text-warning' : 'text-destructive',
+                )}>{c.graded === 0 ? '—' : `${c.accuracy.toFixed(0)}%`}</span>
+              </div>
+              <div className="text-[11px] text-muted-foreground space-y-0.5">
+                <div>{c.analyses} analyses</div>
+                <div>{c.graded === 0 ? 'no resolved directional calls yet' : `${c.graded} resolved · bias accuracy`}</div>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted/50 mt-3 overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all duration-500', c.accuracy >= 60 ? 'bg-success' : c.accuracy >= 40 ? 'bg-warning' : 'bg-destructive')}
+                  style={{ width: `${Math.min(100, Math.max(0, c.accuracy))}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        {stats.conditionStats.every((c) => c.analyses === 0) && (
+          <p className="px-5 pb-5 text-xs text-muted-foreground italic">Tag a market condition on your daily plan pairs (📈 Trending / 🌊 Volatile / ➡️ Sideways) to populate this section.</p>
+        )}
       </div>
 
       {/* Insights */}

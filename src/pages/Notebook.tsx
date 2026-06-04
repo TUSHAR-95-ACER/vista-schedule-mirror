@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Trash2, BookOpen, Edit, Check, TrendingUp, TrendingDown, Minus, FileText, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, BookOpen, Edit, Check, TrendingUp, TrendingDown, Minus, FileText, ImageIcon, ArrowLeft, Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
@@ -53,7 +53,7 @@ export default function Notebook() {
   const { user } = useAuth();
   const { notebookCategories } = useTrading();
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [filterCat, setFilterCat] = useState('all');
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [draft, setDraft] = useState<NotebookEntry>(emptyForm());
   const [isEditing, setIsEditing] = useState(false);
@@ -175,7 +175,29 @@ export default function Notebook() {
 
   const deleteEntry = (id: string) => persist(entries.filter(e => e.id !== id));
 
-  const filtered = filterCat === 'all' ? entries : entries.filter(e => e.category === filterCat);
+  const filtered = openCategory ? entries.filter(e => e.category === openCategory) : entries;
+
+  // Library data: group entries by category (only categories that actually have entries
+  // OR are user-defined in notebookCategories — fully dynamic, zero hardcoded covers).
+  const library = useMemo(() => {
+    const byCat = new Map<string, NotebookEntry[]>();
+    notebookCategories.forEach(c => byCat.set(c, []));
+    entries.forEach(e => {
+      const list = byCat.get(e.category) || [];
+      list.push(e);
+      byCat.set(e.category, list);
+    });
+    return [...byCat.entries()]
+      .map(([category, list]) => {
+        const sorted = [...list].sort((a, b) => (b.createdAt || b.date).localeCompare(a.createdAt || a.date));
+        const lastUpdated = sorted[0]?.createdAt || sorted[0]?.date || '';
+        const cover = sorted.map(e => previewOf(e).thumb).find(Boolean);
+        return { category, count: list.length, lastUpdated, cover };
+      })
+      // Show all defined categories so users see the cover even before adding notes,
+      // but sort the ones with notes to the front.
+      .sort((a, b) => (b.count - a.count) || a.category.localeCompare(b.category));
+  }, [entries, notebookCategories]);
 
   const stats = useMemo(() => {
     const catCount = new Map<string, number>();
@@ -228,20 +250,76 @@ export default function Notebook() {
         <MetricCard label="Categories" value={notebookCategories.length} />
       </div>
 
-      {/* Filter chips */}
-      <div className="flex gap-2 flex-wrap mb-5">
-        <Button variant={filterCat === 'all' ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat('all')}>All</Button>
-        {notebookCategories.map(c => (
-          <Button key={c} variant={filterCat === c ? 'default' : 'outline'} size="sm" className="text-xs h-8 rounded-xl" onClick={() => setFilterCat(c)}>{c}</Button>
-        ))}
-      </div>
+      {/* LEVEL 1 — Notebook Library (covers grid). LEVEL 2 — open a single notebook's notes. */}
+      {!openCategory ? (
+        library.length === 0 ? (
+          <div className="bg-card border border-border rounded-2xl p-16 text-center text-muted-foreground">
+            <Library className="h-10 w-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm mb-4">No notebooks yet. Add a category in Control Center, then create your first entry.</p>
+            <Button onClick={openNew} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Notebook Entry</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+            {library.map(({ category, count, lastUpdated, cover }) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setOpenCategory(category)}
+                className="group relative text-left rounded-xl overflow-hidden bg-gradient-to-br from-card via-card to-muted/30 border border-border/60 shadow-[0_4px_20px_-8px_hsl(var(--foreground)/0.15)] hover:shadow-[0_12px_40px_-12px_hsl(var(--primary)/0.35)] hover:-translate-y-1 hover:border-primary/40 transition-all duration-300 aspect-[3/4] flex flex-col"
+              >
+                {/* spine */}
+                <span className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary/70 via-primary/40 to-primary/70 shadow-[2px_0_8px_-2px_hsl(var(--primary)/0.6)]" />
+                {/* cover image */}
+                <div className="relative flex-1 bg-muted/40 overflow-hidden">
+                  {cover ? (
+                    <img src={cover} alt="" className="w-full h-full object-cover opacity-90 group-hover:scale-[1.04] transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <BookOpen className="h-12 w-12 text-muted-foreground/30" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+                  <span className={cn('absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md', categoryColor(category))}>
+                    {count} {count === 1 ? 'note' : 'notes'}
+                  </span>
+                </div>
+                {/* spine label */}
+                <div className="p-3.5 pl-5">
+                  <h3 className="font-heading font-bold text-sm leading-tight tracking-tight line-clamp-2">{category}</h3>
+                  <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+                    {lastUpdated ? `Updated ${new Date(lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No notes yet'}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )
+      ) : (
+        <>
+          {/* LEVEL 2 header */}
+          <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setOpenCategory(null)} className="gap-1.5">
+                <ArrowLeft className="h-4 w-4" /> Library
+              </Button>
+              <div>
+                <h2 className="font-heading text-lg font-bold tracking-tight flex items-center gap-2">
+                  <span className={cn('px-2 py-0.5 rounded-md text-[11px] font-bold border', categoryColor(openCategory))}>{openCategory}</span>
+                </h2>
+                <p className="text-xs text-muted-foreground">{filtered.length} {filtered.length === 1 ? 'note' : 'notes'} in this notebook</p>
+              </div>
+            </div>
+            <Button onClick={() => { setDraft({ ...emptyForm(), category: openCategory }); setIsEditing(false); setEditorOpen(true); }} className="gap-1.5 rounded-xl h-9" size="sm">
+              <Plus className="h-4 w-4" /> Add to {openCategory}
+            </Button>
+          </div>
 
-      {/* Entries grid */}
+      {/* Entries grid (LEVEL 2 → click a note opens LEVEL 3 editor) */}
       {filtered.length === 0 ? (
         <div className="bg-card border border-border rounded-2xl p-16 text-center text-muted-foreground">
           <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm mb-4">No entries yet. Start documenting your research.</p>
-          <Button onClick={openNew} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Notebook Entry</Button>
+          <p className="text-sm mb-4">No notes in this notebook yet.</p>
+          <Button onClick={() => { setDraft({ ...emptyForm(), category: openCategory }); setIsEditing(false); setEditorOpen(true); }} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Note</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
@@ -320,6 +398,10 @@ export default function Notebook() {
           })}
         </div>
       )}
+        </>
+      )}
+
+
 
       <AIInsightsPanel
         page="Notebook"
