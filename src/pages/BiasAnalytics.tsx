@@ -219,26 +219,43 @@ export default function BiasAnalytics() {
     const out: string[] = [];
     if (stats.dirTotal > 0) {
       out.push(stats.overall >= 60
-        ? `Directional bias is solid: ${stats.overall.toFixed(0)}% across ${stats.dirTotal} resolved calls.`
-        : `Directional bias is ${stats.overall.toFixed(0)}% — your read needs refining (${stats.dirTotal} resolved calls).`);
+        ? `✅ Directional bias is solid: ${stats.overall.toFixed(0)}% across ${stats.dirTotal} resolved calls.`
+        : `⚠️ Directional bias is ${stats.overall.toFixed(0)}% — your read needs refining (${stats.dirTotal} resolved calls).`);
     }
     if (stats.bestPair && stats.bestPair.total >= 2) {
-      out.push(`Sharpest read on ${stats.bestPair.pair} — ${stats.bestPair.accuracy.toFixed(0)}% across ${stats.bestPair.total} analyses.`);
+      out.push(`🎯 Sharpest read on ${stats.bestPair.pair} — ${stats.bestPair.accuracy.toFixed(0)}% across ${stats.bestPair.total} analyses.`);
+    }
+    // Market condition insights — only from explicitly tagged daily analyses.
+    const gradedConds = stats.conditionStats.filter((c) => c.graded >= 2);
+    if (gradedConds.length > 0) {
+      const best = [...gradedConds].sort((a, b) => b.accuracy - a.accuracy)[0];
+      const worst = [...gradedConds].sort((a, b) => a.accuracy - b.accuracy)[0];
+      if (best && best.accuracy >= 60) {
+        out.push(`✅ Your highest bias accuracy occurs in ${best.key} markets (${best.accuracy.toFixed(0)}%).`);
+      }
+      if (worst && worst !== best && worst.accuracy < 50) {
+        out.push(`⚠️ ${worst.key} conditions reduce your bias accuracy to ${worst.accuracy.toFixed(0)}%.`);
+      }
+      if (best && worst && best !== worst) {
+        out.push(`🎯 Focus more on ${best.key} environments and reduce conviction during ${worst.key} conditions.`);
+      }
     }
     if (stats.executable > 0 && stats.executionRate < 50) {
-      out.push(`Execution rate is ${stats.executionRate.toFixed(0)}% — you called the direction but only traded ${stats.executed}/${stats.executable} times.`);
+      out.push(`❌ Execution rate is ${stats.executionRate.toFixed(0)}% — you called the direction but only traded ${stats.executed}/${stats.executable} times.`);
     }
     if (stats.stability < 60) {
-      out.push(`Bias stability is low (${stats.stability}%) — frequent changes suggest uncertainty.`);
+      out.push(`⚠️ Bias stability is low (${stats.stability}%) — frequent changes suggest uncertainty.`);
     }
     if (stats.standAsideDays > 0) {
-      out.push(`${stats.standAsideDays} stand-aside days logged (Neutral / Sideways) — discipline counts.`);
+      out.push(`🧠 ${stats.standAsideDays} stand-aside days logged (Neutral / Sideways) — discipline counts.`);
     }
     if (out.length === 0) {
-      out.push('Create weekly plans with pair analyses and fill in actual results to generate insights.');
+      out.push('💡 Create weekly plans with pair analyses and fill in actual results to generate insights.');
     }
     return out;
   }, [stats]);
+
+  const conditionIcon = (c: string) => c === 'Trending' ? '📈' : c === 'Volatile' ? '🌊' : '➡️';
 
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
