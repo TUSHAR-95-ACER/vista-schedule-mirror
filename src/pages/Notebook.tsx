@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Trash2, BookOpen, Edit, Check, TrendingUp, TrendingDown, Minus, FileText, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, BookOpen, Edit, Check, TrendingUp, TrendingDown, Minus, FileText, ImageIcon, ArrowLeft, Library } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
@@ -53,7 +53,7 @@ export default function Notebook() {
   const { user } = useAuth();
   const { notebookCategories } = useTrading();
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [filterCat, setFilterCat] = useState('all');
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [draft, setDraft] = useState<NotebookEntry>(emptyForm());
   const [isEditing, setIsEditing] = useState(false);
