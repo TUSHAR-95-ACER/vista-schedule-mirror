@@ -190,8 +190,6 @@ export function createEmptyTest(pair = ''): ResearchTest {
     session: '',
     predictedBias: '',
     actualBias: '',
-    predictedBias: '',
-    actualBias: '',
     marketCondition: '',
     dealingRange: '',
     liquidityTarget: '',
