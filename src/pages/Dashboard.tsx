@@ -22,7 +22,6 @@ import {
   calcAvgRR,
 } from '@/lib/calculations';
 import { EquityCurveChart } from '@/components/dashboard/EquityCurveChart';
-import { WinLossChart } from '@/components/dashboard/WinLossChart';
 import { PerformanceByPairChart } from '@/components/dashboard/PerformanceByPairChart';
 import { SessionChart } from '@/components/dashboard/SessionChart';
 import { WeeklyPerformanceChart } from '@/components/dashboard/WeeklyPerformanceChart';
@@ -83,15 +82,35 @@ export default function Dashboard() {
       </div>
 
 
-      {/* Equity Curve + Win/Loss */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
+      {/* Equity Curve (70%) + Performance Summary (30%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-3 sm:gap-4 mb-3 sm:mb-4">
+        <div className="lg:col-span-7 bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
           <ChartHeader title="Equity Curve" tooltip="Shows how your total account value has changed over time based on cumulative P/L" />
-          <div className="h-[220px] sm:h-[280px]"><EquityCurveChart trades={trades} /></div>
+          <div className="h-[260px] sm:h-[340px]"><EquityCurveChart trades={trades} /></div>
         </div>
-        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
-          <ChartHeader title="Win / Loss" tooltip="Visual breakdown of your winning vs losing trades" />
-          <div className="h-[220px] sm:h-[280px]"><WinLossChart trades={trades} /></div>
+        <div className="lg:col-span-3 bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm overflow-hidden flex flex-col">
+          <ChartHeader title="Performance Summary" tooltip="Key performance metrics derived from your logged trades" />
+          {(() => {
+            const wins = validTrades.filter(t => t.result === 'Win').length;
+            const losses = validTrades.filter(t => t.result === 'Loss').length;
+            const rows: { label: string; value: string; tone?: 'up' | 'down' }[] = [
+              { label: 'Win Rate', value: formatPercent(metrics.winRate), tone: metrics.winRate >= 50 ? 'up' : 'down' },
+              { label: 'Wins', value: String(wins), tone: 'up' },
+              { label: 'Losses', value: String(losses), tone: 'down' },
+              { label: 'Average RR', value: metrics.avgRR ? metrics.avgRR.toFixed(2) : '—' },
+              { label: 'Profit Factor', value: metrics.profitFactor === Infinity ? '∞' : metrics.profitFactor.toFixed(2), tone: metrics.profitFactor >= 1.5 ? 'up' : 'down' },
+            ];
+            return (
+              <div className="flex-1 flex flex-col justify-between divide-y divide-border/60 mt-2">
+                {rows.map((r) => (
+                  <div key={r.label} className="flex items-center justify-between py-3">
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{r.label}</span>
+                    <span className={`font-heading text-lg font-bold tabular-nums ${r.tone === 'up' ? 'text-success' : r.tone === 'down' ? 'text-destructive' : 'text-foreground'}`}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
