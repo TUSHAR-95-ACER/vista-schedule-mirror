@@ -287,6 +287,30 @@ function NumInput({ value, onChange }: { value: number | null; onChange: (v: num
   );
 }
 
+/* Manual dropdown choices — used when the user wants to set Market Signal / Direction / Impact
+   explicitly (and ALWAYS used for Fed events which have no numeric data). */
+const MARKET_SIGNAL_OPTIONS = [
+  '🟢 Bullish USD', '🔴 Bearish USD', '🟢 Bullish Gold', '🔴 Bearish Gold', '🟡 Neutral',
+] as const;
+const ECON_DIRECTION_OPTIONS = ['Improving', 'Weakening', 'Stable'] as const;
+const IMPACT_OPTIONS = ['Low', 'Medium', 'High', 'Very High'] as const;
+const FED_TONE_OPTIONS = ['Hawkish', 'Neutral', 'Dovish'] as const;
+
+function MiniSelect({ value, onChange, options, placeholder, disabled }: {
+  value?: string | null; onChange: (v: string) => void; options: readonly string[]; placeholder?: string; disabled?: boolean;
+}) {
+  return (
+    <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger className="h-8 text-xs bg-transparent border-border/40">
+        <SelectValue placeholder={placeholder || '—'} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function LabelPill({ value, tone }: { value?: string | null; tone: "emerald" | "rose" | "amber" | "muted" }) {
   if (!value) return <span className="text-xs text-muted-foreground">—</span>;
   const cls = {
@@ -300,8 +324,8 @@ function LabelPill({ value, tone }: { value?: string | null; tone: "emerald" | "
 
 function surpriseTone(s?: string | null): "emerald" | "rose" | "amber" | "muted" {
   if (!s) return "muted";
-  if (/Bullish|Low Inflation/i.test(s)) return "emerald";
-  if (/Bearish|High Inflation/i.test(s)) return "rose";
+  if (/Bullish|Low Inflation|Dovish/i.test(s)) return "emerald";
+  if (/Bearish|High Inflation|Hawkish/i.test(s)) return "rose";
   return "muted";
 }
 
@@ -856,18 +880,47 @@ export default function MacroIntelligence() {
                         <thead>
                           <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
                             <th className="text-left font-medium px-2 py-1.5">Event</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-32">Market Signal</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-32">Economic Direction</th>
-                            <th className="text-left font-medium px-2 py-1.5 w-20">Impact</th>
+                            {cat === 'Fed' ? (
+                              <>
+                                <th className="text-left font-medium px-2 py-1.5 w-32">Fed Tone</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
+                              </>
+                            ) : (
+                              <>
+                                <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-44">Market Signal</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-36">Economic Direction</th>
+                                <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
+                              </>
+                            )}
                             {!isReadOnly && <th className="w-8"></th>}
                           </tr>
                         </thead>
                         <tbody>
                           {rows.map((e) => {
                             const i = events.indexOf(e);
+                            if (cat === 'Fed') {
+                              return (
+                                <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
+                                  <td className="px-2 py-1.5">
+                                    <Input disabled={isReadOnly} value={e.event} onChange={ev => updateEvent(i, { event: ev.target.value })} className="h-8 bg-transparent border-border/40" placeholder="e.g. FOMC Statement" />
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <MiniSelect disabled={isReadOnly} value={e.surprise} options={FED_TONE_OPTIONS} placeholder="Tone" onChange={v => updateEvent(i, { surprise: v, trend: 'Stable' })} />
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} />
+                                  </td>
+                                  {!isReadOnly && (
+                                    <td className="px-2 py-1.5">
+                                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            }
                             return (
                               <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
                                 <td className="px-2 py-1.5">
@@ -876,9 +929,15 @@ export default function MacroIntelligence() {
                                 <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
                                 <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
                                 <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
-                                <td className="px-2 py-1.5"><LabelPill value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
-                                <td className="px-2 py-1.5"><LabelPill value={e.trend} tone={e.trend === "Improving" ? "emerald" : e.trend === "Weakening" ? "rose" : "muted"} /></td>
-                                <td className="px-2 py-1.5"><LabelPill value={e.impact} tone={e.impact === "Very High" || e.impact === "High" ? "rose" : e.impact === "Medium" ? "amber" : "muted"} /></td>
+                                <td className="px-2 py-1.5">
+                                  <MiniSelect disabled={isReadOnly} value={e.surprise} options={MARKET_SIGNAL_OPTIONS} placeholder="Signal" onChange={v => updateEvent(i, { surprise: v })} />
+                                </td>
+                                <td className="px-2 py-1.5">
+                                  <MiniSelect disabled={isReadOnly} value={e.trend} options={ECON_DIRECTION_OPTIONS} placeholder="Direction" onChange={v => updateEvent(i, { trend: v })} />
+                                </td>
+                                <td className="px-2 py-1.5">
+                                  <MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} />
+                                </td>
                                 {!isReadOnly && (
                                   <td className="px-2 py-1.5">
                                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>

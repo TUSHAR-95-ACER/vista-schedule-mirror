@@ -391,6 +391,7 @@ export type Database = {
           max_rr_reached: number | null
           mistakes: Json | null
           notes: string | null
+          order_type: string | null
           pips: number | null
           planned_rr: number
           prediction_image: string | null
@@ -438,6 +439,7 @@ export type Database = {
           max_rr_reached?: number | null
           mistakes?: Json | null
           notes?: string | null
+          order_type?: string | null
           pips?: number | null
           planned_rr?: number
           prediction_image?: string | null
@@ -485,6 +487,7 @@ export type Database = {
           max_rr_reached?: number | null
           mistakes?: Json | null
           notes?: string | null
+          order_type?: string | null
           pips?: number | null
           planned_rr?: number
           prediction_image?: string | null

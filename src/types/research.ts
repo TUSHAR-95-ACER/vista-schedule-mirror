@@ -11,6 +11,8 @@ export type LTFConfirmation = 'Bullish MSS' | 'Bearish MSS' | 'Wick Rejection' |
 export type TestResult = 'Win' | 'Loss' | 'Scratch';
 export type ProcessGrade = 'A' | 'B' | 'C';
 export type EmotionalState = 'Process' | 'Flow' | 'Foggy' | 'Revenge';
+export type ResearchMarketCondition = 'Trending' | 'Volatile' | 'Sideways';
+export const RESEARCH_MARKET_CONDITIONS: ResearchMarketCondition[] = ['Trending', 'Volatile', 'Sideways'];
 
 export const SESSIONS = [
   'Asia',
@@ -49,6 +51,8 @@ export interface ResearchTest {
   session: ResearchSession | '';
   predictedBias: Bias | '';
   actualBias: Bias | '';
+  /** Market condition this test was executed in — used by Research Analytics. */
+  marketCondition?: ResearchMarketCondition | '';
   // DR-specific (only rendered when strategy.template === 'dr')
   dealingRange: DealingRange | '';
   liquidityTarget: LiquidityTarget | '';
@@ -186,6 +190,7 @@ export function createEmptyTest(pair = ''): ResearchTest {
     session: '',
     predictedBias: '',
     actualBias: '',
+    marketCondition: '',
     dealingRange: '',
     liquidityTarget: '',
     liquidityNote: '',

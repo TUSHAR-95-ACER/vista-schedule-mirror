@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Strategy } from '@/types/research';
 import { loadStrategies } from '@/lib/researchStorage';
-import { computeKPIs } from '@/lib/researchAnalytics';
+import { computeKPIs, conditionStats } from '@/lib/researchAnalytics';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
 export default function ResearchAnalytics() {
@@ -47,6 +47,15 @@ export default function ResearchAnalytics() {
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([month, count]) => ({ month, count }));
   }, [strategies]);
 
+  // Aggregate market condition performance across ALL tests (every strategy).
+  const conditions = useMemo(() => {
+    const allTests = strategies.flatMap((s) => s.tests);
+    return conditionStats(allTests);
+  }, [strategies]);
+  const graded = conditions.filter((c) => c.total >= 1);
+  const bestCond = [...graded].sort((a, b) => b.winRate - a.winRate)[0];
+  const worstCond = [...graded].sort((a, b) => a.winRate - b.winRate)[0];
+
   const rankChart = ranked.slice(0, 12).map((r) => ({ key: r.strategy.name, winRate: Math.round(r.kpi.winRate) }));
 
   return (
@@ -68,6 +77,47 @@ export default function ResearchAnalytics() {
         <MetricCard label="Highest Win Rate" value={highest ? `${highest.strategy.name} · ${highest.kpi.winRate.toFixed(0)}%` : '—'} trend="up" />
         <MetricCard label="Lowest Win Rate" value={lowest && lowest !== highest ? `${lowest.strategy.name} · ${lowest.kpi.winRate.toFixed(0)}%` : '—'} trend="down" />
       </div>
+
+      <Card className="p-5">
+        <h3 className="font-heading font-semibold mb-1">Market Condition Performance</h3>
+        <p className="text-xs text-muted-foreground mb-4">Wins ÷ resolved tests tagged with each market condition. Drives Best / Worst recommendations below.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {conditions.map((c) => {
+            const icon = c.key === 'Trending' ? '📈' : c.key === 'Volatile' ? '🌊' : '➡️';
+            return (
+              <div key={c.key} className="rounded-xl border border-border/60 bg-background/40 p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold">{icon} {c.key}</span>
+                  <span className="font-mono text-xs font-bold">{c.total === 0 ? '—' : `${c.winRate.toFixed(0)}%`}</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">{c.wins}W / {c.losses}L · {c.total} resolved</p>
+                <div className="h-1.5 rounded-full bg-muted/50 mt-3 overflow-hidden">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, c.winRate)}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {graded.length > 0 && (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {bestCond && (
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-emerald-500 font-semibold">Best Market Condition</p>
+                <p className="font-heading text-lg font-bold mt-1">{bestCond.key} · {bestCond.winRate.toFixed(0)}% Success</p>
+              </div>
+            )}
+            {worstCond && worstCond !== bestCond && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                <p className="text-[10px] uppercase tracking-wider text-destructive font-semibold">Worst Market Condition</p>
+                <p className="font-heading text-lg font-bold mt-1">{worstCond.key} · {worstCond.winRate.toFixed(0)}% Success</p>
+              </div>
+            )}
+          </div>
+        )}
+        {graded.length === 0 && (
+          <p className="text-xs text-muted-foreground italic mt-4">Tag a market condition on your strategy tests (Trending / Volatile / Sideways) to populate this section.</p>
+        )}
+      </Card>
 
       <Card className="p-5">
         <h3 className="font-heading font-semibold mb-3">Strategy Performance Ranking</h3>

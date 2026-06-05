@@ -12,7 +12,7 @@ import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { useAutosave } from '@/hooks/useAutosave';
 import {
-  ResearchTest, Strategy, SESSIONS, TEMPLATE_SECTIONS, CustomSection,
+  ResearchTest, Strategy, SESSIONS, TEMPLATE_SECTIONS, CustomSection, RESEARCH_MARKET_CONDITIONS,
 } from '@/types/research';
 import { cn } from '@/lib/utils';
 
@@ -90,6 +90,15 @@ export function TestEditor({ strategy, test, onSave }: Props) {
           <div><Label>Actual Bias</Label><PillGroup options={BIAS_OPTS} value={t.actualBias} onChange={(v) => upd('actualBias', v as any)} /></div>
         </div>
       </Section>
+
+      <Section title="Market Condition" subtitle="Tag the environment this test ran in. Feeds into Research Analytics.">
+        <PillGroup
+          options={RESEARCH_MARKET_CONDITIONS as unknown as string[]}
+          value={t.marketCondition || ''}
+          onChange={(v) => upd('marketCondition', v as any)}
+        />
+      </Section>
+
 
       {/* DR-only blocks — never shown for ADC / EBP / SMT / Blank / Custom */}
       {tpl === 'dr' && (

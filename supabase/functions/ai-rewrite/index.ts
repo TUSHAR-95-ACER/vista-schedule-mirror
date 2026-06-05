@@ -17,12 +17,9 @@ const corsHeaders = {
 
 // Shared emoji palette guidance — the same vocabulary in both modes so the
 // trader's notes feel consistent. Keep it sparse: structure first, emoji second.
-const EMOJI_PALETTE = `Emoji palette (use ONLY when they add clarity — never decorate every line):
-📈 Bullish factors   📉 Bearish factors   ⚠️ Risk         🎯 Target
-💡 Observation       ✅ Confirmation      ❌ Mistake      🔥 Strong confluence
-🧠 Market narrative  📊 Data              🔍 Review
-Rules: at most one emoji per heading/bullet, never two emojis in a row,
-never inside a sentence's middle, never in the trader's quoted price levels.`;
+const EMOJI_PALETTE = `Emoji palette (use SPARINGLY — at most one emoji every few sentences, never two in a row):
+📈 📉 🎯 ⚠️ 🧠 🔍 ✅ ❌
+Rules: maximum one emoji per heading/bullet. The result must read like a trader wrote it, NOT like AI wrote it. No emoji spam. No emoji inside the middle of a sentence. No emoji on price levels.`;
 
 const SYSTEM_IMPROVE = `You are a careful copy editor for a trader's personal journal.
 Task: Fix grammar, spelling, and punctuation. Lightly improve readability without changing meaning.

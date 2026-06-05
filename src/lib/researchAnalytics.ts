@@ -1,4 +1,18 @@
-import { ResearchTest, Strategy } from '@/types/research';
+import { ResearchTest, Strategy, ResearchMarketCondition } from '@/types/research';
+
+export interface ConditionStat { key: ResearchMarketCondition; wins: number; losses: number; total: number; winRate: number }
+
+export function conditionStats(tests: ResearchTest[]): ConditionStat[] {
+  const keys: ResearchMarketCondition[] = ['Trending', 'Volatile', 'Sideways'];
+  return keys.map((key) => {
+    const subset = tests.filter((t) => t.marketCondition === key && (t.result === 'Win' || t.result === 'Loss'));
+    const wins = subset.filter((t) => t.result === 'Win').length;
+    const losses = subset.filter((t) => t.result === 'Loss').length;
+    const total = wins + losses;
+    return { key, wins, losses, total, winRate: total ? (wins / total) * 100 : 0 };
+  });
+}
+
 
 export interface StrategyKPIs {
   totalTests: number;
