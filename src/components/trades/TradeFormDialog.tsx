@@ -21,6 +21,7 @@ import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
   TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES, TradeStatus,
   ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
+  OrderType, ORDER_TYPES,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -141,6 +142,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     entryTime: '', exitTime: '',
     market: 'Forex' as Market,
     asset: '', direction: 'Long' as TradeDirection,
+    orderType: 'Market Order' as OrderType,
     session: 'New York' as Session,
     marketCondition: 'Trending' as MarketCondition,
     setup: '',
@@ -204,6 +206,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         market: editTrade.market,
         asset: editTrade.asset,
         direction: editTrade.direction,
+        orderType: (editTrade as any).orderType || 'Market Order',
         session: editTrade.session,
         marketCondition: editTrade.marketCondition,
         setup: editTrade.setup,
@@ -451,6 +454,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
       market: form.market,
       asset: form.asset,
       direction: form.direction,
+      orderType: form.orderType,
       session: form.session,
       marketCondition: form.marketCondition,
       setup: form.setup,
@@ -582,7 +586,15 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                     ))}
                   </div>
                 </div>
+                <div className="space-y-1">
+                  <FieldLabel>Order Type</FieldLabel>
+                  <Select value={form.orderType} onValueChange={v => set('orderType', v)}>
+                    <SelectTrigger className="h-9 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                    <SelectContent>{ORDER_TYPES.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
               </div>
+
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div className="space-y-1">
