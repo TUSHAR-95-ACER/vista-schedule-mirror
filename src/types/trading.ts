@@ -8,6 +8,9 @@ export type TradeDirection = 'Long' | 'Short';
 
 export type TradeResult = 'Win' | 'Loss' | 'Breakeven' | 'Untriggered Setup' | 'Cancelled';
 
+export type OrderType = 'Market Order' | 'Limit Order';
+export const ORDER_TYPES: OrderType[] = ['Market Order', 'Limit Order'];
+
 export type AccountType = 'Personal' | 'Prop Firm' | 'Funded' | 'Demo';
 
 export type PropFirmStage = 'Phase 1' | 'Phase 2' | 'Phase 3' | 'Funded' | 'Scale Up';
@@ -95,6 +98,7 @@ export interface Trade {
   market: Market;
   asset: string;
   direction: TradeDirection;
+  orderType?: OrderType;
   session: Session;
   marketCondition: MarketCondition;
   setup: string;
