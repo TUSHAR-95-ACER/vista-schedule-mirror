@@ -88,7 +88,7 @@ const DEFAULT_NOTEBOOK_CATS = ['Pattern', 'Missed Trade', 'Opportunity Not Taken
 // hydrateTradeMedia(id) when the user opens the gallery card or detail sheet.
 const TRADE_LITE_COLUMNS = [
   'id','user_id','date','entry_time','exit_time','market','asset','direction','session',
-  'market_condition','setup','quantity','entry_price','stop_loss','take_profit','exit_price',
+  'market_condition','setup','quantity','entry_price','stop_loss','take_profit','exit_price','order_type',
   'result','planned_rr','actual_rr','max_rr_reached','max_adverse_move','pips','profit_loss',
   'fees','notes','accounts','management','confluences','entry_confluences','target_confluences',
   'chart_link','psychology','mistakes','grade','timeframe','trend','trade_journey','day_tags',
