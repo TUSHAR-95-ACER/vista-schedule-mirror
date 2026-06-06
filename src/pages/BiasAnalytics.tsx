@@ -80,7 +80,7 @@ export default function BiasAnalytics() {
     const sessionMap = new Map<string, { total: number; correct: number }>();
     // Market condition buckets — populated ONLY from daily plans where the user
     // explicitly tagged a condition (Trending / Volatile / Sideways).
-    const conditionMap = new Map<string, { total: number; correct: number; analyses: number }>();
+    const conditionMap = new Map<string, { bullTotal: number; bullCorrect: number; bearTotal: number; bearCorrect: number }>();
 
     let prevBias = '';
     let biasChanges = 0;
@@ -107,14 +107,12 @@ export default function BiasAnalytics() {
 
       const directional = pBias === 'Bullish' || pBias === 'Bearish';
 
-      // Track market condition for every analysis where condition is set.
-      if (condition) {
-        const c = conditionMap.get(condition) || { total: 0, correct: 0, analyses: 0 };
-        c.analyses++;
-        if (directional && aBias) {
-          c.total++;
-          if (pBias === aBias) c.correct++;
-        }
+      // Track market condition: count bullish / bearish accuracy separately.
+      if (condition && directional && aBias) {
+        const c = conditionMap.get(condition) || { bullTotal: 0, bullCorrect: 0, bearTotal: 0, bearCorrect: 0 };
+        const correct = pBias === aBias;
+        if (pBias === 'Bullish') { c.bullTotal++; if (correct) c.bullCorrect++; }
+        else { c.bearTotal++; if (correct) c.bearCorrect++; }
         conditionMap.set(condition, c);
       }
 
@@ -181,16 +179,23 @@ export default function BiasAnalytics() {
       .map(([session, { total, correct }]) => ({ session, accuracy: total > 0 ? (correct / total) * 100 : 0, total }))
       .sort((a, b) => b.accuracy - a.accuracy);
 
-    // Materialise market condition rows in a fixed order so the section
-    // always shows all three categories even when one has no data.
+    // Materialise market condition rows in a fixed order. For each condition
+    // we expose bullish accuracy, bearish accuracy, and combined total accuracy.
     const CONDITION_ORDER = ['Trending', 'Volatile', 'Sideways'] as const;
     const conditionStats = CONDITION_ORDER.map((key) => {
-      const v = conditionMap.get(key);
+      const v = conditionMap.get(key) || { bullTotal: 0, bullCorrect: 0, bearTotal: 0, bearCorrect: 0 };
+      const total = v.bullTotal + v.bearTotal;
+      const correct = v.bullCorrect + v.bearCorrect;
       return {
         key,
-        analyses: v?.analyses ?? 0,
-        accuracy: v && v.total > 0 ? (v.correct / v.total) * 100 : 0,
-        graded: v?.total ?? 0,
+        bullTotal: v.bullTotal,
+        bullCorrect: v.bullCorrect,
+        bearTotal: v.bearTotal,
+        bearCorrect: v.bearCorrect,
+        bullAccuracy: v.bullTotal > 0 ? (v.bullCorrect / v.bullTotal) * 100 : 0,
+        bearAccuracy: v.bearTotal > 0 ? (v.bearCorrect / v.bearTotal) * 100 : 0,
+        totalAccuracy: total > 0 ? (correct / total) * 100 : 0,
+        graded: total,
       };
     });
 
@@ -228,13 +233,13 @@ export default function BiasAnalytics() {
     // Market condition insights — only from explicitly tagged daily analyses.
     const gradedConds = stats.conditionStats.filter((c) => c.graded >= 2);
     if (gradedConds.length > 0) {
-      const best = [...gradedConds].sort((a, b) => b.accuracy - a.accuracy)[0];
-      const worst = [...gradedConds].sort((a, b) => a.accuracy - b.accuracy)[0];
-      if (best && best.accuracy >= 60) {
-        out.push(`✅ Your highest bias accuracy occurs in ${best.key} markets (${best.accuracy.toFixed(0)}%).`);
+      const best = [...gradedConds].sort((a, b) => b.totalAccuracy - a.totalAccuracy)[0];
+      const worst = [...gradedConds].sort((a, b) => a.totalAccuracy - b.totalAccuracy)[0];
+      if (best && best.totalAccuracy >= 60) {
+        out.push(`✅ Your highest bias accuracy occurs in ${best.key} markets (${best.totalAccuracy.toFixed(0)}%).`);
       }
-      if (worst && worst !== best && worst.accuracy < 50) {
-        out.push(`⚠️ ${worst.key} conditions reduce your bias accuracy to ${worst.accuracy.toFixed(0)}%.`);
+      if (worst && worst !== best && worst.totalAccuracy < 50) {
+        out.push(`⚠️ ${worst.key} conditions reduce your bias accuracy to ${worst.totalAccuracy.toFixed(0)}%.`);
       }
       if (best && worst && best !== worst) {
         out.push(`🎯 Focus more on ${best.key} environments and reduce conviction during ${worst.key} conditions.`);
@@ -351,7 +356,7 @@ export default function BiasAnalytics() {
       </div>
 
       {/* Per-pair bars */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5">
         <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
           <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -368,61 +373,54 @@ export default function BiasAnalytics() {
             )}
           </div>
         </div>
-
-        <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
-          <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-success/10 flex items-center justify-center">
-              <Clock className="h-3.5 w-3.5 text-success" />
-            </div>
-            <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Win Rate by Session</h3>
-            <InfoTooltip text="Closed trades only (Untriggered Setup / Cancelled excluded)." />
-          </div>
-          <div className="p-5 space-y-3">
-            {stats.sessionAccuracy.length > 0 ? (
-              stats.sessionAccuracy.map((s) => <AccuracyBar key={s.session} label={s.session} value={s.accuracy} total={s.total} />)
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">No session data yet</p>
-            )}
-          </div>
-        </div>
       </div>
 
-      {/* Market Condition Performance */}
+      {/* Bias Accuracy By Market Condition — bullish / bearish / total per environment */}
       <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
         <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20 flex items-center gap-2.5">
           <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
             <Activity className="h-3.5 w-3.5 text-primary" />
           </div>
-          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Market Condition Performance</h3>
-          <InfoTooltip text="Source: market condition tag (Trending / Volatile / Sideways) on each pair inside daily plans, cross-referenced with predicted vs actual bias. Accuracy = correct directional calls ÷ resolved directional calls in that condition." />
+          <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">Bias Accuracy by Market Condition</h3>
+          <InfoTooltip text="Source: market condition tag (Trending / Volatile / Sideways) on each pair inside daily plans, cross-referenced with predicted vs actual bias. Bullish/Bearish/Total accuracy = correct calls ÷ total directional calls in that condition." />
         </div>
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stats.conditionStats.map((c) => (
             <div key={c.key} className="rounded-xl border border-border/60 bg-background/40 p-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold flex items-center gap-1.5">
                   <span>{conditionIcon(c.key)}</span> {c.key}
                 </span>
                 <span className={cn(
-                  'text-xs font-mono font-bold',
-                  c.graded === 0 ? 'text-muted-foreground' : c.accuracy >= 60 ? 'text-success' : c.accuracy >= 40 ? 'text-warning' : 'text-destructive',
-                )}>{c.graded === 0 ? '—' : `${c.accuracy.toFixed(0)}%`}</span>
+                  'text-2xl font-heading font-black tabular-nums',
+                  c.graded === 0 ? 'text-muted-foreground' : c.totalAccuracy >= 60 ? 'text-success' : c.totalAccuracy >= 40 ? 'text-warning' : 'text-destructive',
+                )}>{c.graded === 0 ? '—' : `${c.totalAccuracy.toFixed(0)}%`}</span>
               </div>
-              <div className="text-[11px] text-muted-foreground space-y-0.5">
-                <div>{c.analyses} analyses</div>
-                <div>{c.graded === 0 ? 'no resolved directional calls yet' : `${c.graded} resolved · bias accuracy`}</div>
+              <div className="space-y-2 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-success flex items-center gap-1"><ArrowUpRight className="h-3 w-3" /> Bullish Calls Correct</span>
+                  <span className="font-mono font-bold">{c.bullTotal === 0 ? '—' : `${c.bullAccuracy.toFixed(0)}%`} <span className="text-muted-foreground font-normal">({c.bullCorrect}/{c.bullTotal})</span></span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-destructive flex items-center gap-1"><ArrowDownRight className="h-3 w-3" /> Bearish Calls Correct</span>
+                  <span className="font-mono font-bold">{c.bearTotal === 0 ? '—' : `${c.bearAccuracy.toFixed(0)}%`} <span className="text-muted-foreground font-normal">({c.bearCorrect}/{c.bearTotal})</span></span>
+                </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-border/40">
+                  <span className="text-foreground font-semibold">Total Accuracy</span>
+                  <span className="font-mono font-bold">{c.graded === 0 ? '—' : `${c.totalAccuracy.toFixed(0)}%`}</span>
+                </div>
               </div>
               <div className="h-1.5 rounded-full bg-muted/50 mt-3 overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all duration-500', c.accuracy >= 60 ? 'bg-success' : c.accuracy >= 40 ? 'bg-warning' : 'bg-destructive')}
-                  style={{ width: `${Math.min(100, Math.max(0, c.accuracy))}%` }}
+                  className={cn('h-full rounded-full transition-all duration-500', c.totalAccuracy >= 60 ? 'bg-success' : c.totalAccuracy >= 40 ? 'bg-warning' : 'bg-destructive')}
+                  style={{ width: `${Math.min(100, Math.max(0, c.totalAccuracy))}%` }}
                 />
               </div>
             </div>
           ))}
         </div>
-        {stats.conditionStats.every((c) => c.analyses === 0) && (
-          <p className="px-5 pb-5 text-xs text-muted-foreground italic">Tag a market condition on your daily plan pairs (📈 Trending / 🌊 Volatile / ➡️ Sideways) to populate this section.</p>
+        {stats.conditionStats.every((c) => c.graded === 0) && (
+          <p className="px-5 pb-5 text-xs text-muted-foreground italic">Tag a market condition on your daily plan pairs (📈 Trending / 🌊 Volatile / ➡️ Sideways) and log the actual direction to populate this section.</p>
         )}
       </div>
 
