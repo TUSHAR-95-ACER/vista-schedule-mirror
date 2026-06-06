@@ -80,6 +80,7 @@ export type Database = {
       macro_analyses: {
         Row: {
           actual_outcome: string | null
+          ai_enriched: Json | null
           analysis_date: string
           confidence_level: string | null
           conflict_signals: Json | null
@@ -119,6 +120,7 @@ export type Database = {
         }
         Insert: {
           actual_outcome?: string | null
+          ai_enriched?: Json | null
           analysis_date?: string
           confidence_level?: string | null
           conflict_signals?: Json | null
@@ -158,6 +160,7 @@ export type Database = {
         }
         Update: {
           actual_outcome?: string | null
+          ai_enriched?: Json | null
           analysis_date?: string
           confidence_level?: string | null
           conflict_signals?: Json | null

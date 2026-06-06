@@ -177,26 +177,33 @@ export default function Notebook() {
 
   const filtered = openCategory ? entries.filter(e => e.category === openCategory) : entries;
 
-  // Library data: group entries by category (only categories that actually have entries
-  // OR are user-defined in notebookCategories — fully dynamic, zero hardcoded covers).
+  // Library data: group entries by category. Guarded so a single malformed
+  // journal entry can never blank-screen the whole page.
   const library = useMemo(() => {
-    const byCat = new Map<string, NotebookEntry[]>();
-    notebookCategories.forEach(c => byCat.set(c, []));
-    entries.forEach(e => {
-      const list = byCat.get(e.category) || [];
-      list.push(e);
-      byCat.set(e.category, list);
-    });
-    return [...byCat.entries()]
-      .map(([category, list]) => {
-        const sorted = [...list].sort((a, b) => (b.createdAt || b.date).localeCompare(a.createdAt || a.date));
-        const lastUpdated = sorted[0]?.createdAt || sorted[0]?.date || '';
-        const cover = sorted.map(e => previewOf(e).thumb).find(Boolean);
-        return { category, count: list.length, lastUpdated, cover };
-      })
-      // Show all defined categories so users see the cover even before adding notes,
-      // but sort the ones with notes to the front.
-      .sort((a, b) => (b.count - a.count) || a.category.localeCompare(b.category));
+    try {
+      const cats = Array.isArray(notebookCategories) ? notebookCategories : [];
+      const byCat = new Map<string, NotebookEntry[]>();
+      cats.forEach(c => byCat.set(c, []));
+      entries.forEach(e => {
+        const list = byCat.get(e.category) || [];
+        list.push(e);
+        byCat.set(e.category, list);
+      });
+      return [...byCat.entries()]
+        .map(([category, list]) => {
+          const sorted = [...list].sort((a, b) => (b.createdAt || b.date).localeCompare(a.createdAt || a.date));
+          const lastUpdated = sorted[0]?.createdAt || sorted[0]?.date || '';
+          let cover: string | undefined;
+          for (const e of sorted) {
+            try { const p = previewOf(e); if (p.thumb) { cover = p.thumb; break; } } catch { /* skip broken entries */ }
+          }
+          return { category, count: list.length, lastUpdated, cover };
+        })
+        .sort((a, b) => (b.count - a.count) || a.category.localeCompare(b.category));
+    } catch (err) {
+      console.warn('[Notebook] library compute failed', err);
+      return [] as { category: string; count: number; lastUpdated: string; cover?: string }[];
+    }
   }, [entries, notebookCategories]);
 
   const stats = useMemo(() => {
