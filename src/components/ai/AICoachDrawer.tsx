@@ -1,43 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-import { Send, Sparkles, Paperclip, FileText, BookOpen, ArrowLeftRight, Square, Database, Zap, Brain, TrendingUp, Target } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Send, Sparkles, Paperclip, Square, Compass, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
-import { useAICoach, type AICoachScope } from '@/contexts/AICoachContext';
+import { useAICoach } from '@/contexts/AICoachContext';
 import { cn } from '@/lib/utils';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
+type SearchMode = 'normal' | 'deep';
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-coach`;
 
-const SCOPE_META: Record<AICoachScope, { label: string; icon: any; placeholder: string; hint: string }> = {
-  page:  { label: 'Page',    icon: FileText,       placeholder: 'Ask about this page…',                  hint: 'Scoped to the visible page' },
-  trade: { label: 'Trade',   icon: ArrowLeftRight, placeholder: 'Ask about this trade…',                 hint: 'Single trade analysis' },
-  note:  { label: 'Note',    icon: BookOpen,       placeholder: 'Ask about this note…',                  hint: 'Single notebook entry' },
-  full:  { label: 'Journal', icon: Database,       placeholder: 'Ask anything across your journal…',     hint: 'Deep mentor · full history' },
-};
-
-const QUICK_PROMPTS: { label: string; prompt: string; icon: any }[] = [
-  { label: 'Biggest leak',       icon: Zap,        prompt: 'What is my single biggest recurring leak this month? Be specific with mistake tag, count, and one concrete fix.' },
-  { label: 'Best setup',         icon: Target,     prompt: 'Which setup has the highest win-rate and average RR for me? Give numbers.' },
-  { label: 'Emotional pattern',  icon: Brain,      prompt: 'What emotional pattern shows up most in my journal? Reference specific trades.' },
-  { label: 'Overtrading?',       icon: TrendingUp, prompt: 'Am I overtrading? Check days I exceeded planned max_trades and any loss clusters.' },
-  { label: 'Plan vs execution',  icon: FileText,   prompt: 'Where am I deviating most from my daily/weekly plans?' },
-  { label: 'London vs NY',       icon: ArrowLeftRight, prompt: 'Compare my London vs NY session performance — win-rate, RR, and net P/L.' },
-];
-
 export function AICoachDrawer() {
-  const { open, closeDrawer, scope, setScope, getActiveContext } = useAICoach();
+  const { open, closeDrawer, setScope, getActiveContext, trade, note, pageLabel, pageDetail } = useAICoach();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<SearchMode>('normal');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keep underlying scope in sync so backend prompt builder can reason about it.
+  useEffect(() => { setScope(mode === 'deep' ? 'full' : 'page'); }, [mode, setScope]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -46,6 +35,24 @@ export function AICoachDrawer() {
   useEffect(() => {
     if (open) setTimeout(() => textareaRef.current?.focus(), 150);
   }, [open]);
+
+  // Auto-compose context: AI always knows current page + any open trade + any open note.
+  // Deep mode additionally signals full-journal access in the detail blob.
+  const composedContext = useMemo(() => {
+    const parts: string[] = [];
+    if (pageLabel || pageDetail) parts.push(`# Current page\n${pageLabel}\n${pageDetail}`);
+    if (trade) parts.push(`# Open trade\n${trade.label}\n${trade.detail}`);
+    if (note) parts.push(`# Open notebook entry\n${note.label}\n${note.detail}`);
+    if (mode === 'deep') {
+      parts.push(`# Mode: Deep Analysis\nUse the trader's entire journal history (trades, plans, weekly reviews, psychology, mistakes, notebook, macro, behaviour patterns) for cross-section pattern detection. Reference concrete numbers and dates.`);
+    } else {
+      parts.push(`# Mode: Normal Analysis\nScope answers to what the trader is currently viewing.`);
+    }
+    return {
+      label: trade?.label || note?.label || pageLabel || 'Current page',
+      detail: parts.join('\n\n'),
+    };
+  }, [pageLabel, pageDetail, trade, note, mode]);
 
   const filesToDataUrls = async (files: FileList | File[]): Promise<string[]> => {
     const arr = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, 3);
@@ -56,9 +63,6 @@ export function AICoachDrawer() {
       r.readAsDataURL(f);
     })));
   };
-
-  const activeCtx = getActiveContext();
-  const ScopeIcon = SCOPE_META[scope].icon;
 
   const send = async (overrideText?: string) => {
     const text = (overrideText ?? input).trim();
@@ -82,7 +86,7 @@ export function AICoachDrawer() {
         body: JSON.stringify({
           messages: [...messages, userMsg],
           attachments: sentImages,
-          pageContext: { scope, label: activeCtx.label, detail: activeCtx.detail },
+          pageContext: { scope: mode === 'deep' ? 'full' : 'page', label: composedContext.label, detail: composedContext.detail },
         }),
         signal: ctrl.signal,
       });
@@ -131,15 +135,13 @@ export function AICoachDrawer() {
 
   const stop = () => { abortRef.current?.abort(); abortRef.current = null; setLoading(false); };
 
-  const scopes: AICoachScope[] = ['page', 'full'];
-
   return (
     <Sheet open={open} onOpenChange={(o) => !o && closeDrawer()}>
       <SheetContent
         side="right"
         className="p-0 w-[580px] sm:w-[580px] max-w-[96vw] flex flex-col gap-0 border-l border-border bg-gradient-to-b from-background via-background to-muted/20"
       >
-        {/* HEADER — premium gradient strip */}
+        {/* HEADER */}
         <div className="relative shrink-0 border-b border-border/60 bg-gradient-to-r from-primary/[0.08] via-background to-background overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_60%)] pointer-events-none" />
           <div className="relative h-12 pl-4 pr-12 flex items-center justify-between">
@@ -152,7 +154,9 @@ export function AICoachDrawer() {
               </div>
               <div className="leading-tight">
                 <div className="text-[11px] font-heading font-bold uppercase tracking-[0.18em] text-foreground">AI Coach</div>
-                <div className="text-[9.5px] uppercase tracking-wider text-muted-foreground/80">{SCOPE_META[scope].hint}</div>
+                <div className="text-[9.5px] uppercase tracking-wider text-muted-foreground/80">
+                  {mode === 'deep' ? 'Deep · Full Journal' : 'Normal · This Page'}
+                </div>
               </div>
             </div>
             {messages.length > 0 && (
@@ -166,65 +170,55 @@ export function AICoachDrawer() {
           </div>
         </div>
 
-        {/* SCOPE — segmented pill */}
+        {/* SEARCH MODE — Normal vs Deep */}
         <div className="px-3 pt-2 pb-2 shrink-0">
+          <div className="text-[9.5px] uppercase tracking-[0.18em] text-muted-foreground/80 mb-1.5 px-1">Search Mode</div>
           <div className="inline-flex p-1 rounded-xl bg-muted/40 border border-border/60 w-full backdrop-blur-sm">
-            {scopes.map((s) => {
-              const meta = SCOPE_META[s];
-              const Icon = meta.icon;
-              const active = scope === s;
+            {([
+              { id: 'normal' as const, label: 'Normal Analysis', icon: Compass, hint: 'Current page context' },
+              { id: 'deep' as const, label: 'Deep Analysis', icon: Layers, hint: 'Full journal + history' },
+            ]).map((m) => {
+              const Icon = m.icon;
+              const active = mode === m.id;
               return (
                 <button
-                  key={s}
-                  onClick={() => setScope(s)}
+                  key={m.id}
+                  onClick={() => setMode(m.id)}
                   className={cn(
-                    'flex-1 flex items-center justify-center gap-1.5 px-2 h-7 rounded-lg text-[10.5px] font-semibold uppercase tracking-wider transition-all',
+                    'flex-1 flex items-center justify-center gap-1.5 px-2 h-8 rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all',
                     active
                       ? 'bg-background text-foreground shadow-sm ring-1 ring-border/80'
                       : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                   )}
+                  title={m.hint}
                 >
                   <Icon className="h-3 w-3" />
-                  {meta.label}
+                  {m.label}
                 </button>
               );
             })}
           </div>
-          <div className="mt-1.5 px-1 flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-            <ScopeIcon className="h-3 w-3 text-primary shrink-0" />
-            <span className="truncate"><span className="text-primary font-semibold">↳ </span>{activeCtx.label}</span>
+          <div className="mt-1.5 px-1 text-[10.5px] text-muted-foreground truncate">
+            <span className="text-primary font-semibold">↳ </span>
+            {mode === 'deep'
+              ? 'AI uses your full journal: trades, plans, psychology, macro, notebook.'
+              : `AI sees: ${composedContext.label}`}
           </div>
         </div>
 
         {/* CHAT */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {messages.length === 0 ? (
-            <div className="pt-1">
-              <div className="text-center mb-3.5">
-                <p className="text-[12px] font-heading font-bold uppercase tracking-[0.14em] bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
-                  {scope === 'full' ? 'Deep Mentor Mode' : 'Trading AI Coach'}
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-1 px-4">
-                  {scope === 'full'
-                    ? 'Full journal access — trades, plans, psychology, macro & notebook.'
-                    : `Ask about ${SCOPE_META[scope].label.toLowerCase()} or tap a prompt below.`}
-                </p>
+            <div className="h-full flex flex-col items-center justify-center text-center px-6">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center mb-3">
+                <Sparkles className="h-5 w-5 text-primary" />
               </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {QUICK_PROMPTS.map((q) => {
-                  const Icon = q.icon;
-                  return (
-                    <button
-                      key={q.label}
-                      onClick={() => send(q.prompt)}
-                      className="group relative flex items-center gap-2 px-2.5 py-2 rounded-lg border border-border/60 bg-card/60 hover:bg-card hover:border-primary/40 hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.2)] text-left transition-all"
-                    >
-                      <Icon className="h-3.5 w-3.5 text-primary/70 group-hover:text-primary shrink-0" />
-                      <span className="text-[11px] font-medium text-foreground/85 group-hover:text-foreground truncate">{q.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="text-[12px] font-heading font-bold uppercase tracking-[0.14em] bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
+                {mode === 'deep' ? 'Deep Analysis Ready' : 'Trading AI Coach'}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+                Ask anything. The AI automatically reads the page, trade, or note you are looking at — no prompt buttons needed.
+              </p>
             </div>
           ) : (
             messages.map((m, i) => (
@@ -264,7 +258,9 @@ export function AICoachDrawer() {
                 <span className="w-1.5 h-1.5 rounded-full bg-primary/80 animate-bounce" style={{ animationDelay: '150ms' }} />
                 <span className="w-1.5 h-1.5 rounded-full bg-primary/80 animate-bounce" style={{ animationDelay: '300ms' }} />
               </span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Analyzing journal</span>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                {mode === 'deep' ? 'Analyzing full journal' : 'Analyzing page'}
+              </span>
             </div>
           )}
         </div>
@@ -315,7 +311,7 @@ export function AICoachDrawer() {
                 }
               }}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-              placeholder={SCOPE_META[scope].placeholder}
+              placeholder={mode === 'deep' ? 'Ask anything across your journal…' : 'Ask about what you are viewing…'}
               className="resize-none min-h-[42px] max-h-[140px] rounded-xl border-0 bg-transparent text-sm pr-20 pl-3.5 pt-2.5 focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={2}
             />
@@ -347,11 +343,6 @@ export function AICoachDrawer() {
               )}
             </div>
           </div>
-          {messages.length > 0 && (
-            <div className="mt-1 text-[10px] text-muted-foreground/70 px-1 flex justify-end">
-              <span>{messages.length} msg</span>
-            </div>
-          )}
         </div>
       </SheetContent>
     </Sheet>

@@ -396,7 +396,12 @@ export default function MacroIntelligence() {
       }));
     }
     setEvents(evs as MacroEvent[]);
-    const ans = (an as Analysis[]) || [];
+    // Spread ai_enriched JSONB back onto each analysis so Market Story, Forward
+    // Expectations, Fed engine etc survive refresh.
+    const ans: Analysis[] = ((an as any[]) || []).map((row) => ({
+      ...row,
+      ...((row?.ai_enriched && typeof row.ai_enriched === 'object') ? row.ai_enriched : {}),
+    }));
     setAnalyses(ans);
     setLatest(ans[0] || null);
     setLoading(false);
@@ -517,6 +522,19 @@ export default function MacroIntelligence() {
       setEvents(updated);
 
       // Upsert (by user_id + cycle_id + analysis_date) — prevents duplicates
+      // All "extra" fields (Market Story, Forward Expectations, Fed engine narrative,
+      // coaching, etc.) get persisted into the ai_enriched JSONB column so they
+      // survive a page refresh — previously they were in-memory only and vanished.
+      const enrichedPayload = {
+        dominant_narrative: a.dominant_narrative,
+        narrative_drivers: a.narrative_drivers,
+        current_story: a.current_story,
+        next_event: a.next_event,
+        forward_expectation: a.forward_expectation,
+        market_focus_explanation: a.market_focus_explanation,
+        coaching: a.coaching,
+        historical_context: a.historical_context,
+      };
       const insertRow = {
         user_id: user.id,
         cycle_id: activeCycleId,
@@ -536,6 +554,7 @@ export default function MacroIntelligence() {
         future_probabilities: a.future_probabilities || [],
         trade_filter: a.trade_filter, confidence_level: a.confidence_level,
         predicted_outcome: (a.future_probabilities?.[0]?.outcome) || null,
+        ai_enriched: enrichedPayload,
       };
       const { data: saved, error: saveErr } = await supabase
         .from("macro_analyses")
