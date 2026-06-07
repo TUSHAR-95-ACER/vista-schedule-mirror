@@ -121,46 +121,80 @@ const DEFAULT_TEMPLATE: { event: string; category: Category }[] = [
   { event: "FOMC Tone", category: "Fed" },
 ];
 
-/** Derive Surprise / Trend / Impact from numeric inputs.
- *  Pure heuristic — used while the user is typing so the row never stays blank.
- *  Inflation-style events are inverted (higher = bearish for risk / bullish USD-hawkish). */
+/** Derive the dashboard read from raw event data only.
+ *  surprise = Market Signal, trend = Economic Direction, impact = Importance level. */
 function computeEventLabels(e: { event?: string; category?: string | null; previous: number | null; forecast: number | null; actual: number | null; }):
   { surprise: string | null; trend: string | null; impact: string | null } {
   const { previous, forecast, actual, category, event } = e;
+  if (isToneEvent(e)) {
+    const tone = getFedTone(e as MacroEvent);
+    if (tone === "Hawkish") return { surprise: "Bullish USD", trend: "Tightening", impact: "High" };
+    if (tone === "Dovish") return { surprise: "Bearish USD", trend: "Easing", impact: "High" };
+    if (tone === "Neutral") return { surprise: "Neutral", trend: "Neutral", impact: "Medium" };
+    return { surprise: null, trend: null, impact: null };
+  }
   if (actual == null || (forecast == null && previous == null)) {
     return { surprise: null, trend: null, impact: null };
   }
-  const isInflation = category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(event || "");
-  // Surprise: forecast vs actual
-  let surprise: string | null = null;
-  if (forecast != null) {
-    const diff = actual - forecast;
-    const denom = Math.max(0.001, Math.abs(forecast));
-    const pct = Math.abs(diff) / denom;
-    if (pct < 0.02) surprise = "Neutral";
-    else if (isInflation) surprise = diff > 0 ? "High Inflation" : "Low Inflation";
-    else surprise = diff > 0 ? "Bullish USD" : "Bearish USD";
-  }
-  // Trend: previous vs actual (direction = better/worse)
-  let trend: string | null = null;
-  if (previous != null) {
-    const d = actual - previous;
-    const denom = Math.max(0.001, Math.abs(previous));
-    if (Math.abs(d) / denom < 0.01) trend = "Stable";
-    else if (isInflation) trend = d > 0 ? "Weakening" : "Improving";
-    else trend = d > 0 ? "Improving" : "Weakening";
-  }
-  // Impact: deviation magnitude vs forecast (fallback previous)
-  let impact: string | null = null;
   const base = forecast != null ? forecast : previous;
-  if (base != null) {
-    const dev = Math.abs(actual - base) / Math.max(0.001, Math.abs(base));
-    if (dev < 0.02) impact = "Low";
-    else if (dev < 0.10) impact = "Medium";
-    else if (dev < 0.30) impact = "High";
-    else impact = "Very High";
-  }
+  if (base == null) return { surprise: null, trend: null, impact: null };
+  const diff = actual - base;
+  const absDiff = Math.abs(diff);
+  const insignificant = absDiff / Math.max(0.001, Math.abs(base)) < 0.005;
+  const name = event || "";
+  const isInflation = category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(name);
+  const isRate = /Federal Funds|Rate Decision|Interest Rate|Policy Rate|Funds Rate|Yield/i.test(name);
+  const isUnemployment = /Unemployment/i.test(name);
+  const surprise = insignificant ? "Neutral" : diff > 0
+    ? (isUnemployment ? "Bearish USD" : "Bullish USD")
+    : (isUnemployment ? "Bullish USD" : "Bearish USD");
+  const trend = insignificant ? "Neutral" : isRate
+    ? (diff > 0 ? "Tightening" : "Easing")
+    : isInflation
+      ? (diff > 0 ? "Higher Inflation" : "Lower Inflation")
+      : isUnemployment
+        ? (diff > 0 ? "Weaker Economy" : "Stronger Economy")
+        : (diff > 0 ? "Stronger Economy" : "Weaker Economy");
+  const impact = computeImpactLevel(name, category, absDiff, base);
   return { surprise, trend, impact };
+}
+
+const FED_TONE_OPTIONS = ['Hawkish', 'Neutral', 'Dovish'] as const;
+
+function isToneEvent(e: { event?: string; category?: string | null }) {
+  return /FOMC Tone|Fed Tone|Statement Tone/i.test(e.event || "") && !/Rate|Funds|Yield/i.test(e.event || "");
+}
+
+function getFedTone(e: MacroEvent): typeof FED_TONE_OPTIONS[number] | null {
+  const raw = String(e.unit || e.surprise || "");
+  return (FED_TONE_OPTIONS as readonly string[]).includes(raw) ? raw as typeof FED_TONE_OPTIONS[number] : null;
+}
+
+function computeImpactLevel(event: string, category: string | null | undefined, absDiff: number, base: number) {
+  const relative = absDiff / Math.max(0.001, Math.abs(base));
+  if (/Federal Funds|Rate Decision|Interest Rate|Policy Rate|Funds Rate|Yield/i.test(event)) {
+    if (absDiff >= 0.25) return "High";
+    if (absDiff >= 0.1) return "Medium";
+    return "Low";
+  }
+  if (category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(event)) {
+    if (absDiff >= 0.5 || relative >= 0.2) return "High";
+    if (absDiff >= 0.2 || relative >= 0.05) return "Medium";
+    return "Low";
+  }
+  if (/Unemployment/i.test(event)) {
+    if (absDiff >= 0.3) return "High";
+    if (absDiff >= 0.1) return "Medium";
+    return "Low";
+  }
+  if (/NFP|Payroll|JOLTS|Jobs/i.test(event)) {
+    if (absDiff >= 75 || relative >= 0.2) return "High";
+    if (absDiff >= 25 || relative >= 0.05) return "Medium";
+    return "Low";
+  }
+  if (relative >= 0.2) return "High";
+  if (relative >= 0.05) return "Medium";
+  return "Low";
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
