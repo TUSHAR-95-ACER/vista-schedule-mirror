@@ -505,6 +505,25 @@ export default function MacroIntelligence() {
     setEvents(prev => prev.filter((_, i) => i !== idx));
   }
 
+  function buildEventRows(source: MacroEvent[]) {
+    return source.filter(e => e.event?.trim()).map(e => {
+      const auto = computeEventLabels(e);
+      return ({
+        user_id: user!.id,
+        cycle_id: activeCycleId,
+        release_date: e.release_date || todayISO(),
+        event: e.event.trim(),
+        category: e.category || null,
+        previous: e.previous, forecast: e.forecast, actual: e.actual,
+        unit: e.unit || null,
+        surprise: auto.surprise,
+        trend: auto.trend,
+        impact: auto.impact,
+        notes: e.notes || null,
+      });
+    });
+  }
+
   async function saveEvents() {
     if (!user || !activeCycleId) return;
     if (isReadOnly) return toast.error("Archived cycle is read-only");
@@ -512,22 +531,7 @@ export default function MacroIntelligence() {
     if (cleaned.length === 0) return toast.error("Add at least one event");
     // Replace cycle events
     await supabase.from("macro_events").delete().eq("user_id", user.id).eq("cycle_id", activeCycleId);
-    const rows = cleaned.map(e => {
-      const auto = computeEventLabels(e);
-      return ({
-      user_id: user.id,
-      cycle_id: activeCycleId,
-      release_date: e.release_date || todayISO(),
-      event: e.event.trim(),
-      category: e.category || null,
-      previous: e.previous, forecast: e.forecast, actual: e.actual,
-      unit: e.unit || null,
-      surprise: auto.surprise,
-      trend: auto.trend,
-      impact: auto.impact,
-      notes: e.notes || null,
-    });
-    });
+    const rows = buildEventRows(cleaned);
     const { error } = await supabase.from("macro_events").insert(rows);
     if (error) return toast.error(error.message);
     toast.success("Events saved");
@@ -541,6 +545,10 @@ export default function MacroIntelligence() {
     const cleaned = withAutomaticLabels.filter(e => e.event?.trim() && (e.actual !== null && e.actual !== undefined || (isToneEvent(e) && getFedTone(e))));
     if (cleaned.length === 0) return toast.error("Enter actual values or a Fed tone for at least one event");
     setEvents(withAutomaticLabels);
+    await supabase.from("macro_events").delete().eq("user_id", user.id).eq("cycle_id", activeCycleId);
+    const eventRows = buildEventRows(cleaned);
+    const { error: eventSaveError } = await supabase.from("macro_events").insert(eventRows);
+    if (eventSaveError) return toast.error(eventSaveError.message);
     setRunning(true);
     try {
       const { data, error } = await supabase.functions.invoke("macro-intelligence", {
