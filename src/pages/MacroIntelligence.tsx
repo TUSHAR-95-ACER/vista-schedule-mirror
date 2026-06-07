@@ -321,27 +321,24 @@ function NumInput({ value, onChange }: { value: number | null; onChange: (v: num
   );
 }
 
-/* Manual dropdown choices — used when the user wants to set Market Signal / Direction / Impact
-   explicitly (and ALWAYS used for Fed events which have no numeric data). */
-const MARKET_SIGNAL_OPTIONS = [
-  '🟢 Bullish USD', '🔴 Bearish USD', '🟢 Bullish Gold', '🔴 Bearish Gold', '🟡 Neutral',
-] as const;
-const ECON_DIRECTION_OPTIONS = ['Improving', 'Weakening', 'Stable'] as const;
-const IMPACT_OPTIONS = ['Low', 'Medium', 'High', 'Very High'] as const;
-const FED_TONE_OPTIONS = ['Hawkish', 'Neutral', 'Dovish'] as const;
-
-function MiniSelect({ value, onChange, options, placeholder, disabled }: {
-  value?: string | null; onChange: (v: string) => void; options: readonly string[]; placeholder?: string; disabled?: boolean;
-}) {
+function ToneSelect({ value, onChange, disabled }: { value?: string | null; onChange: (v: string) => void; disabled?: boolean }) {
   return (
     <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className="h-8 text-xs bg-transparent border-border/40">
-        <SelectValue placeholder={placeholder || '—'} />
+        <SelectValue placeholder="Tone" />
       </SelectTrigger>
       <SelectContent>
-        {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+        {FED_TONE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
     </Select>
+  );
+}
+
+function AutoReadout({ value, tone = "muted" }: { value?: string | null; tone?: "emerald" | "rose" | "amber" | "muted" }) {
+  return (
+    <div className="flex h-8 items-center rounded-md border border-border/40 bg-background/30 px-2 text-xs">
+      <LabelPill value={value || null} tone={tone} />
+    </div>
   );
 }
 
@@ -358,8 +355,8 @@ function LabelPill({ value, tone }: { value?: string | null; tone: "emerald" | "
 
 function surpriseTone(s?: string | null): "emerald" | "rose" | "amber" | "muted" {
   if (!s) return "muted";
-  if (/Bullish|Low Inflation|Dovish/i.test(s)) return "emerald";
-  if (/Bearish|High Inflation|Hawkish/i.test(s)) return "rose";
+  if (/Bullish|Stronger|Lower Inflation|Easing|Dovish/i.test(s)) return "emerald";
+  if (/Bearish|Weaker|Higher Inflation|Tightening|Hawkish/i.test(s)) return "rose";
   return "muted";
 }
 
