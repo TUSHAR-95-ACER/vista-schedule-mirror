@@ -131,9 +131,9 @@ const TOOL = {
             type: "object",
             properties: {
               event: { type: "string" },
-              surprise: { type: "string", enum: ["Bullish USD", "Bearish USD", "Neutral", "High Inflation", "Low Inflation"] },
-              trend: { type: "string", enum: ["Improving", "Weakening", "Stable"] },
-              impact: { type: "string", enum: ["Low", "Medium", "High", "Very High"] },
+              surprise: { type: "string" },
+              trend: { type: "string" },
+              impact: { type: "string", enum: ["Low", "Medium", "High"] },
               reasoning: { type: "string", description: "ONE short sentence." },
             },
             required: ["event", "surprise", "trend", "impact", "reasoning"],
@@ -206,6 +206,9 @@ serve(async (req) => {
       previous: e.previous,
       forecast: e.forecast,
       actual: e.actual,
+      market_signal: e.surprise || null,
+      economic_direction: e.trend || null,
+      impact: e.impact || null,
       unit: e.unit || "",
       release_date: e.release_date || today,
       notes: String(e.notes || "").slice(0, 300),
@@ -222,6 +225,8 @@ CRITICAL STYLE RULES:
 
 ANALYSIS RULES:
 - Surprise = Forecast vs Actual. Trend = Previous vs Actual. Address BOTH separately.
+- The app already calculates market_signal, economic_direction, and impact from raw event data. Use those fields as the source of truth.
+- Do NOT manually reinterpret per-event Market Signal, Economic Direction, or Impact. Echo the supplied automatic values in per_event_analysis.
 - Separate ECONOMIC reading from MARKET PRICING reading (expectation_pricing).
 - Detect macro conflicts (strong jobs vs weak consumption etc.) — surface in conflict_signals.
 - Compare to prior cycles. If first analysis, narrative_shift = "" and historical_context = "".
