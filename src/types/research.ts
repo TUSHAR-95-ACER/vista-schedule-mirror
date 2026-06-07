@@ -4,10 +4,11 @@ export type StrategyType = 'Session Model' | 'Liquidity Model' | 'SMT Model' | '
 export type Bias = 'Bullish' | 'Neutral' | 'Bearish' | 'Sideways';
 export type DealingRange = 'Premium' | 'Discount' | 'EQ';
 export type LiquidityTarget = 'BSL Above' | 'SSL Below' | 'Both' | 'None';
-export type BreakoutQuality = 'Strong Displacement' | 'Weak Displacement' | 'No Displacement';
+export type BreakoutQuality = 'Strong Displacement' | 'Weak / No Displacement';
 export type FVGLocation = 'High' | '50%' | 'Low';
 export type EntryType = 'DR High' | 'DR Low' | 'Midpoint' | 'FVG' | 'S/D Zone' | 'Supply/Demand';
 export type LTFConfirmation = 'Bullish MSS' | 'Bearish MSS' | 'Wick Rejection' | 'Displacement Off Zone';
+export type DRLevel = 'High' | 'EQ' | 'Low';
 export type TestResult = 'Win' | 'Loss' | 'Scratch';
 export type ProcessGrade = 'A' | 'B' | 'C';
 export type EmotionalState = 'Process' | 'Flow' | 'Foggy' | 'Revenge';
@@ -64,7 +65,8 @@ export interface ResearchTest {
   breakoutQuality: BreakoutQuality | '';
   fvgLocation: FVGLocation | '';
   entryType: EntryType | '';
-  ltfConfirmation: LTFConfirmation | '';
+  ltfConfirmation: LTFConfirmation[];
+  drLevel: DRLevel | '';
   entryPrice: string;
   stopLoss: string;
   tp1: string;
@@ -201,7 +203,8 @@ export function createEmptyTest(pair = ''): ResearchTest {
     breakoutQuality: '',
     fvgLocation: '',
     entryType: '',
-    ltfConfirmation: '',
+    ltfConfirmation: [],
+    drLevel: '',
     entryPrice: '',
     stopLoss: '',
     tp1: '',

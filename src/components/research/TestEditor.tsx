@@ -25,10 +25,11 @@ interface Props {
 const BIAS_OPTS = ['Bullish', 'Bearish', 'Neutral', 'Sideways'] as const;
 const DR_OPTS = ['Premium', 'Discount', 'EQ'] as const;
 const LIQ_OPTS = ['BSL Above', 'SSL Below', 'Both', 'None'] as const;
-const BREAKOUT_OPTS = ['Strong Displacement', 'Weak Displacement', 'No Displacement'] as const;
+const BREAKOUT_OPTS = ['Strong Displacement', 'Weak / No Displacement'] as const;
 const FVG_OPTS = ['High', '50%', 'Low'] as const;
 const ENTRY_OPTS = ['DR High', 'DR Low', 'Midpoint', 'FVG', 'S/D Zone'] as const;
 const LTF_OPTS = ['Bullish MSS', 'Bearish MSS', 'Wick Rejection', 'Displacement Off Zone'] as const;
+const DR_LEVEL_OPTS = ['High', 'EQ', 'Low'] as const;
 const RESULT_OPTS = ['Win', 'Loss', 'Scratch'] as const;
 const EMO_OPTS = ['Process', 'Flow', 'Foggy', 'Revenge'] as const;
 
@@ -44,6 +45,13 @@ export function TestEditor({ strategy, test, onSave }: Props) {
   const { status } = useAutosave({ value: t, onSave: saveFn, debounceMs: 800 });
 
   const upd = <K extends keyof ResearchTest>(k: K, v: ResearchTest[K]) => setT((p) => ({ ...p, [k]: v }));
+  const selectedLtf = Array.isArray(t.ltfConfirmation) ? t.ltfConfirmation : (t.ltfConfirmation ? [t.ltfConfirmation as any] : []);
+  const toggleLtf = (value: typeof LTF_OPTS[number]) => {
+    const next = selectedLtf.includes(value)
+      ? selectedLtf.filter((item) => item !== value)
+      : [...selectedLtf, value];
+    upd('ltfConfirmation', next as ResearchTest['ltfConfirmation']);
+  };
   const updCustom = (fieldId: string, value: string) =>
     setT((p) => ({ ...p, customValues: { ...(p.customValues || {}), [fieldId]: value } }));
 
@@ -128,7 +136,8 @@ export function TestEditor({ strategy, test, onSave }: Props) {
               <div><Label>Breakout Quality</Label><PillGroup options={BREAKOUT_OPTS} value={t.breakoutQuality} onChange={(v) => upd('breakoutQuality', v as any)} /></div>
               <div><Label>FVG Location</Label><PillGroup options={FVG_OPTS} value={t.fvgLocation} onChange={(v) => upd('fvgLocation', v as any)} /></div>
               <div><Label>Entry Type</Label><PillGroup options={ENTRY_OPTS} value={t.entryType} onChange={(v) => upd('entryType', v as any)} /></div>
-              <div><Label>LTF Confirmation</Label><PillGroup options={LTF_OPTS} value={t.ltfConfirmation} onChange={(v) => upd('ltfConfirmation', v as any)} /></div>
+              <div><Label>LTF Confirmation</Label><MultiPillGroup options={LTF_OPTS} value={selectedLtf} onToggle={toggleLtf} /></div>
+              <div><Label>DR Level</Label><PillGroup options={DR_LEVEL_OPTS} value={t.drLevel} onChange={(v) => upd('drLevel', v as any)} /></div>
             </div>
           </Section>
         </>
@@ -288,5 +297,30 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
       </div>
       {children}
     </Card>
+  );
+}
+
+function MultiPillGroup<T extends string>({ options, value, onToggle }: { options: readonly T[]; value: T[]; onToggle: (v: T) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const active = value.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onToggle(opt)}
+            className={cn(
+              'rounded-full border px-4 py-1.5 text-sm transition-all',
+              active
+                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                : 'bg-background border-border hover:border-primary/50 hover:bg-accent',
+            )}
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
   );
 }

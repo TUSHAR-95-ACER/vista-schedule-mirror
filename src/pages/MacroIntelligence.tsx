@@ -121,46 +121,80 @@ const DEFAULT_TEMPLATE: { event: string; category: Category }[] = [
   { event: "FOMC Tone", category: "Fed" },
 ];
 
-/** Derive Surprise / Trend / Impact from numeric inputs.
- *  Pure heuristic — used while the user is typing so the row never stays blank.
- *  Inflation-style events are inverted (higher = bearish for risk / bullish USD-hawkish). */
+/** Derive the dashboard read from raw event data only.
+ *  surprise = Market Signal, trend = Economic Direction, impact = Importance level. */
 function computeEventLabels(e: { event?: string; category?: string | null; previous: number | null; forecast: number | null; actual: number | null; }):
   { surprise: string | null; trend: string | null; impact: string | null } {
   const { previous, forecast, actual, category, event } = e;
+  if (isToneEvent(e)) {
+    const tone = getFedTone(e as MacroEvent);
+    if (tone === "Hawkish") return { surprise: "Bullish USD", trend: "Tightening", impact: "High" };
+    if (tone === "Dovish") return { surprise: "Bearish USD", trend: "Easing", impact: "High" };
+    if (tone === "Neutral") return { surprise: "Neutral", trend: "Neutral", impact: "Medium" };
+    return { surprise: null, trend: null, impact: null };
+  }
   if (actual == null || (forecast == null && previous == null)) {
     return { surprise: null, trend: null, impact: null };
   }
-  const isInflation = category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(event || "");
-  // Surprise: forecast vs actual
-  let surprise: string | null = null;
-  if (forecast != null) {
-    const diff = actual - forecast;
-    const denom = Math.max(0.001, Math.abs(forecast));
-    const pct = Math.abs(diff) / denom;
-    if (pct < 0.02) surprise = "Neutral";
-    else if (isInflation) surprise = diff > 0 ? "High Inflation" : "Low Inflation";
-    else surprise = diff > 0 ? "Bullish USD" : "Bearish USD";
-  }
-  // Trend: previous vs actual (direction = better/worse)
-  let trend: string | null = null;
-  if (previous != null) {
-    const d = actual - previous;
-    const denom = Math.max(0.001, Math.abs(previous));
-    if (Math.abs(d) / denom < 0.01) trend = "Stable";
-    else if (isInflation) trend = d > 0 ? "Weakening" : "Improving";
-    else trend = d > 0 ? "Improving" : "Weakening";
-  }
-  // Impact: deviation magnitude vs forecast (fallback previous)
-  let impact: string | null = null;
   const base = forecast != null ? forecast : previous;
-  if (base != null) {
-    const dev = Math.abs(actual - base) / Math.max(0.001, Math.abs(base));
-    if (dev < 0.02) impact = "Low";
-    else if (dev < 0.10) impact = "Medium";
-    else if (dev < 0.30) impact = "High";
-    else impact = "Very High";
-  }
+  if (base == null) return { surprise: null, trend: null, impact: null };
+  const diff = actual - base;
+  const absDiff = Math.abs(diff);
+  const insignificant = absDiff / Math.max(0.001, Math.abs(base)) < 0.005;
+  const name = event || "";
+  const isInflation = category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(name);
+  const isRate = /Federal Funds|Rate Decision|Interest Rate|Policy Rate|Funds Rate|Yield/i.test(name);
+  const isUnemployment = /Unemployment/i.test(name);
+  const surprise = insignificant ? "Neutral" : diff > 0
+    ? (isUnemployment ? "Bearish USD" : "Bullish USD")
+    : (isUnemployment ? "Bullish USD" : "Bearish USD");
+  const trend = insignificant ? "Neutral" : isRate
+    ? (diff > 0 ? "Tightening" : "Easing")
+    : isInflation
+      ? (diff > 0 ? "Higher Inflation" : "Lower Inflation")
+      : isUnemployment
+        ? (diff > 0 ? "Weaker Economy" : "Stronger Economy")
+        : (diff > 0 ? "Stronger Economy" : "Weaker Economy");
+  const impact = computeImpactLevel(name, category, absDiff, base);
   return { surprise, trend, impact };
+}
+
+const FED_TONE_OPTIONS = ['Hawkish', 'Neutral', 'Dovish'] as const;
+
+function isToneEvent(e: { event?: string; category?: string | null }) {
+  return /FOMC Tone|Fed Tone|Statement Tone/i.test(e.event || "") && !/Rate|Funds|Yield/i.test(e.event || "");
+}
+
+function getFedTone(e: MacroEvent): typeof FED_TONE_OPTIONS[number] | null {
+  const raw = String(e.unit || e.surprise || "");
+  return (FED_TONE_OPTIONS as readonly string[]).includes(raw) ? raw as typeof FED_TONE_OPTIONS[number] : null;
+}
+
+function computeImpactLevel(event: string, category: string | null | undefined, absDiff: number, base: number) {
+  const relative = absDiff / Math.max(0.001, Math.abs(base));
+  if (/Federal Funds|Rate Decision|Interest Rate|Policy Rate|Funds Rate|Yield/i.test(event)) {
+    if (absDiff >= 0.25) return "High";
+    if (absDiff >= 0.1) return "Medium";
+    return "Low";
+  }
+  if (category === "Inflation" || /CPI|PPI|PCE|Inflation/i.test(event)) {
+    if (absDiff >= 0.5 || relative >= 0.2) return "High";
+    if (absDiff >= 0.2 || relative >= 0.05) return "Medium";
+    return "Low";
+  }
+  if (/Unemployment/i.test(event)) {
+    if (absDiff >= 0.3) return "High";
+    if (absDiff >= 0.1) return "Medium";
+    return "Low";
+  }
+  if (/NFP|Payroll|JOLTS|Jobs/i.test(event)) {
+    if (absDiff >= 75 || relative >= 0.2) return "High";
+    if (absDiff >= 25 || relative >= 0.05) return "Medium";
+    return "Low";
+  }
+  if (relative >= 0.2) return "High";
+  if (relative >= 0.05) return "Medium";
+  return "Low";
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -287,27 +321,24 @@ function NumInput({ value, onChange }: { value: number | null; onChange: (v: num
   );
 }
 
-/* Manual dropdown choices — used when the user wants to set Market Signal / Direction / Impact
-   explicitly (and ALWAYS used for Fed events which have no numeric data). */
-const MARKET_SIGNAL_OPTIONS = [
-  '🟢 Bullish USD', '🔴 Bearish USD', '🟢 Bullish Gold', '🔴 Bearish Gold', '🟡 Neutral',
-] as const;
-const ECON_DIRECTION_OPTIONS = ['Improving', 'Weakening', 'Stable'] as const;
-const IMPACT_OPTIONS = ['Low', 'Medium', 'High', 'Very High'] as const;
-const FED_TONE_OPTIONS = ['Hawkish', 'Neutral', 'Dovish'] as const;
-
-function MiniSelect({ value, onChange, options, placeholder, disabled }: {
-  value?: string | null; onChange: (v: string) => void; options: readonly string[]; placeholder?: string; disabled?: boolean;
-}) {
+function ToneSelect({ value, onChange, disabled }: { value?: string | null; onChange: (v: string) => void; disabled?: boolean }) {
   return (
     <Select value={value || undefined} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className="h-8 text-xs bg-transparent border-border/40">
-        <SelectValue placeholder={placeholder || '—'} />
+        <SelectValue placeholder="Tone" />
       </SelectTrigger>
       <SelectContent>
-        {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+        {FED_TONE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
     </Select>
+  );
+}
+
+function AutoReadout({ value, tone = "muted" }: { value?: string | null; tone?: "emerald" | "rose" | "amber" | "muted" }) {
+  return (
+    <div className="flex h-8 items-center rounded-md border border-border/40 bg-background/30 px-2 text-xs">
+      <LabelPill value={value || null} tone={tone} />
+    </div>
   );
 }
 
@@ -324,8 +355,8 @@ function LabelPill({ value, tone }: { value?: string | null; tone: "emerald" | "
 
 function surpriseTone(s?: string | null): "emerald" | "rose" | "amber" | "muted" {
   if (!s) return "muted";
-  if (/Bullish|Low Inflation|Dovish/i.test(s)) return "emerald";
-  if (/Bearish|High Inflation|Hawkish/i.test(s)) return "rose";
+  if (/Bullish|Stronger|Lower Inflation|Easing|Dovish/i.test(s)) return "emerald";
+  if (/Bearish|Weaker|Higher Inflation|Tightening|Hawkish/i.test(s)) return "rose";
   return "muted";
 }
 
@@ -457,12 +488,12 @@ export default function MacroIntelligence() {
       // Anything the AI later returns will overwrite these, but the row never stays blank.
       if (
         'previous' in patch || 'forecast' in patch || 'actual' in patch ||
-        'event' in patch || 'category' in patch
+        'event' in patch || 'category' in patch || 'unit' in patch
       ) {
         const auto = computeEventLabels(merged);
-        if (auto.surprise) merged.surprise = auto.surprise;
-        if (auto.trend) merged.trend = auto.trend;
-        if (auto.impact) merged.impact = auto.impact;
+        merged.surprise = auto.surprise;
+        merged.trend = auto.trend;
+        merged.impact = auto.impact;
       }
       return merged;
     }));
@@ -474,6 +505,25 @@ export default function MacroIntelligence() {
     setEvents(prev => prev.filter((_, i) => i !== idx));
   }
 
+  function buildEventRows(source: MacroEvent[]) {
+    return source.filter(e => e.event?.trim()).map(e => {
+      const auto = computeEventLabels(e);
+      return ({
+        user_id: user!.id,
+        cycle_id: activeCycleId,
+        release_date: e.release_date || todayISO(),
+        event: e.event.trim(),
+        category: e.category || null,
+        previous: e.previous, forecast: e.forecast, actual: e.actual,
+        unit: e.unit || null,
+        surprise: auto.surprise,
+        trend: auto.trend,
+        impact: auto.impact,
+        notes: e.notes || null,
+      });
+    });
+  }
+
   async function saveEvents() {
     if (!user || !activeCycleId) return;
     if (isReadOnly) return toast.error("Archived cycle is read-only");
@@ -481,19 +531,7 @@ export default function MacroIntelligence() {
     if (cleaned.length === 0) return toast.error("Add at least one event");
     // Replace cycle events
     await supabase.from("macro_events").delete().eq("user_id", user.id).eq("cycle_id", activeCycleId);
-    const rows = cleaned.map(e => ({
-      user_id: user.id,
-      cycle_id: activeCycleId,
-      release_date: e.release_date || todayISO(),
-      event: e.event.trim(),
-      category: e.category || null,
-      previous: e.previous, forecast: e.forecast, actual: e.actual,
-      unit: e.unit || null,
-      surprise: e.surprise || null,
-      trend: e.trend || null,
-      impact: e.impact || null,
-      notes: e.notes || null,
-    }));
+    const rows = buildEventRows(cleaned);
     const { error } = await supabase.from("macro_events").insert(rows);
     if (error) return toast.error(error.message);
     toast.success("Events saved");
@@ -503,8 +541,14 @@ export default function MacroIntelligence() {
   async function runAnalysis() {
     if (!user || !activeCycleId) return;
     if (isReadOnly) return toast.error("Archived cycle is read-only");
-    const cleaned = events.filter(e => e.event?.trim() && e.actual !== null && e.actual !== undefined);
-    if (cleaned.length === 0) return toast.error("Enter actual values for at least one event");
+    const withAutomaticLabels = events.map(e => ({ ...e, ...computeEventLabels(e) }));
+    const cleaned = withAutomaticLabels.filter(e => e.event?.trim() && (e.actual !== null && e.actual !== undefined || (isToneEvent(e) && getFedTone(e))));
+    if (cleaned.length === 0) return toast.error("Enter actual values or a Fed tone for at least one event");
+    setEvents(withAutomaticLabels);
+    await supabase.from("macro_events").delete().eq("user_id", user.id).eq("cycle_id", activeCycleId);
+    const eventRows = buildEventRows(cleaned);
+    const { error: eventSaveError } = await supabase.from("macro_events").insert(eventRows);
+    if (eventSaveError) return toast.error(eventSaveError.message);
     setRunning(true);
     try {
       const { data, error } = await supabase.functions.invoke("macro-intelligence", {
@@ -517,7 +561,8 @@ export default function MacroIntelligence() {
       // Apply per-event AI labels back to local rows
       const updated = events.map(e => {
         const m = (a.per_event_analysis || []).find((p: any) => p.event?.toLowerCase() === e.event?.toLowerCase());
-        return m ? { ...e, surprise: m.surprise, trend: m.trend, impact: m.impact, notes: m.reasoning } : e;
+        const auto = computeEventLabels(e);
+        return m ? { ...e, ...auto, notes: m.reasoning } : { ...e, ...auto };
       });
       setEvents(updated);
 
@@ -901,7 +946,7 @@ export default function MacroIntelligence() {
                       <div className="space-y-2">
                         {rows.map((e) => {
                           const i = events.indexOf(e);
-                          const numeric = /rate|funds|yield|balance sheet|qt|cpi|pce|inflation/i.test(e.event || '');
+                          const toneEvent = isToneEvent(e);
                           return (
                             <div key={i} className="rounded-lg border border-border/40 bg-background/30 p-2.5">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -910,18 +955,19 @@ export default function MacroIntelligence() {
                                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
                                 )}
                               </div>
-                              {numeric ? (
-                                <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2 items-center">
+                              {!toneEvent ? (
+                                <div className="mt-2 grid grid-cols-2 md:grid-cols-6 gap-2 items-center">
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Previous</div><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></div>
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Forecast</div><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></div>
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Actual</div><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal (auto)</div><MiniSelect disabled={isReadOnly} value={e.surprise} options={MARKET_SIGNAL_OPTIONS} placeholder="Signal" onChange={v => updateEvent(i, { surprise: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal</div><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Economic Direction</div><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></div>
                                 </div>
                               ) : (
-                                <div className="mt-2 grid grid-cols-2 gap-2">
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div><MiniSelect disabled={isReadOnly} value={e.surprise} options={FED_TONE_OPTIONS} placeholder="Tone" onChange={v => updateEvent(i, { surprise: v, trend: 'Stable' })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></div>
+                                <div className="mt-2 max-w-xs">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div>
+                                  <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
                                 </div>
                               )}
                             </div>
@@ -952,9 +998,9 @@ export default function MacroIntelligence() {
                                   <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
                                   <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
                                   <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.surprise} options={MARKET_SIGNAL_OPTIONS} placeholder="Signal" onChange={v => updateEvent(i, { surprise: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.trend} options={ECON_DIRECTION_OPTIONS} placeholder="Direction" onChange={v => updateEvent(i, { trend: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
                                   {!isReadOnly && (
                                     <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
                                   )}
