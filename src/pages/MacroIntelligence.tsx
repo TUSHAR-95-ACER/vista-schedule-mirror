@@ -938,7 +938,7 @@ export default function MacroIntelligence() {
                       <div className="space-y-2">
                         {rows.map((e) => {
                           const i = events.indexOf(e);
-                          const numeric = /rate|funds|yield|balance sheet|qt|cpi|pce|inflation/i.test(e.event || '');
+                          const toneEvent = isToneEvent(e);
                           return (
                             <div key={i} className="rounded-lg border border-border/40 bg-background/30 p-2.5">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -947,18 +947,19 @@ export default function MacroIntelligence() {
                                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
                                 )}
                               </div>
-                              {numeric ? (
-                                <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2 items-center">
+                              {!toneEvent ? (
+                                <div className="mt-2 grid grid-cols-2 md:grid-cols-6 gap-2 items-center">
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Previous</div><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></div>
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Forecast</div><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></div>
                                   <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Actual</div><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal (auto)</div><MiniSelect disabled={isReadOnly} value={e.surprise} options={MARKET_SIGNAL_OPTIONS} placeholder="Signal" onChange={v => updateEvent(i, { surprise: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal</div><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Economic Direction</div><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></div>
+                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></div>
                                 </div>
                               ) : (
-                                <div className="mt-2 grid grid-cols-2 gap-2">
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div><MiniSelect disabled={isReadOnly} value={e.surprise} options={FED_TONE_OPTIONS} placeholder="Tone" onChange={v => updateEvent(i, { surprise: v, trend: 'Stable' })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></div>
+                                <div className="mt-2 max-w-xs">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div>
+                                  <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
                                 </div>
                               )}
                             </div>
@@ -989,9 +990,9 @@ export default function MacroIntelligence() {
                                   <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
                                   <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
                                   <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.surprise} options={MARKET_SIGNAL_OPTIONS} placeholder="Signal" onChange={v => updateEvent(i, { surprise: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.trend} options={ECON_DIRECTION_OPTIONS} placeholder="Direction" onChange={v => updateEvent(i, { trend: v })} /></td>
-                                  <td className="px-2 py-1.5"><MiniSelect disabled={isReadOnly} value={e.impact} options={IMPACT_OPTIONS} placeholder="Impact" onChange={v => updateEvent(i, { impact: v })} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
+                                  <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
                                   {!isReadOnly && (
                                     <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
                                   )}
