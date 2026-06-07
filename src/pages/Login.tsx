@@ -71,7 +71,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <main className="min-h-screen flex items-center justify-center bg-background">
       <RouteSeo />
       <div className="w-full max-w-md mx-auto px-6">
         <div className="bg-card border border-border rounded-2xl p-8 shadow-xl space-y-6">
