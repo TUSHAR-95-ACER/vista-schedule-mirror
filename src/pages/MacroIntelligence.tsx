@@ -488,12 +488,12 @@ export default function MacroIntelligence() {
       // Anything the AI later returns will overwrite these, but the row never stays blank.
       if (
         'previous' in patch || 'forecast' in patch || 'actual' in patch ||
-        'event' in patch || 'category' in patch
+        'event' in patch || 'category' in patch || 'unit' in patch
       ) {
         const auto = computeEventLabels(merged);
-        if (auto.surprise) merged.surprise = auto.surprise;
-        if (auto.trend) merged.trend = auto.trend;
-        if (auto.impact) merged.impact = auto.impact;
+        merged.surprise = auto.surprise;
+        merged.trend = auto.trend;
+        merged.impact = auto.impact;
       }
       return merged;
     }));
@@ -512,7 +512,9 @@ export default function MacroIntelligence() {
     if (cleaned.length === 0) return toast.error("Add at least one event");
     // Replace cycle events
     await supabase.from("macro_events").delete().eq("user_id", user.id).eq("cycle_id", activeCycleId);
-    const rows = cleaned.map(e => ({
+    const rows = cleaned.map(e => {
+      const auto = computeEventLabels(e);
+      return ({
       user_id: user.id,
       cycle_id: activeCycleId,
       release_date: e.release_date || todayISO(),
@@ -520,11 +522,12 @@ export default function MacroIntelligence() {
       category: e.category || null,
       previous: e.previous, forecast: e.forecast, actual: e.actual,
       unit: e.unit || null,
-      surprise: e.surprise || null,
-      trend: e.trend || null,
-      impact: e.impact || null,
+      surprise: auto.surprise,
+      trend: auto.trend,
+      impact: auto.impact,
       notes: e.notes || null,
-    }));
+    });
+    });
     const { error } = await supabase.from("macro_events").insert(rows);
     if (error) return toast.error(error.message);
     toast.success("Events saved");
@@ -534,8 +537,10 @@ export default function MacroIntelligence() {
   async function runAnalysis() {
     if (!user || !activeCycleId) return;
     if (isReadOnly) return toast.error("Archived cycle is read-only");
-    const cleaned = events.filter(e => e.event?.trim() && e.actual !== null && e.actual !== undefined);
-    if (cleaned.length === 0) return toast.error("Enter actual values for at least one event");
+    const withAutomaticLabels = events.map(e => ({ ...e, ...computeEventLabels(e) }));
+    const cleaned = withAutomaticLabels.filter(e => e.event?.trim() && (e.actual !== null && e.actual !== undefined || (isToneEvent(e) && getFedTone(e))));
+    if (cleaned.length === 0) return toast.error("Enter actual values or a Fed tone for at least one event");
+    setEvents(withAutomaticLabels);
     setRunning(true);
     try {
       const { data, error } = await supabase.functions.invoke("macro-intelligence", {
@@ -548,7 +553,8 @@ export default function MacroIntelligence() {
       // Apply per-event AI labels back to local rows
       const updated = events.map(e => {
         const m = (a.per_event_analysis || []).find((p: any) => p.event?.toLowerCase() === e.event?.toLowerCase());
-        return m ? { ...e, surprise: m.surprise, trend: m.trend, impact: m.impact, notes: m.reasoning } : e;
+        const auto = computeEventLabels(e);
+        return m ? { ...e, ...auto, notes: m.reasoning } : { ...e, ...auto };
       });
       setEvents(updated);
 
