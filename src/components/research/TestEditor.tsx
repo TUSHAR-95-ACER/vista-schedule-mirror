@@ -220,11 +220,13 @@ export function TestEditor({ strategy, test, onSave }: Props) {
               className={cn(
                 'p-4 rounded-lg border-2 text-left transition-all',
                 t.grade === opt.g
-                  ? 'border-primary bg-primary/5 shadow-md'
+                  ? opt.g === 'A'
+                    ? 'border-[hsl(var(--gold))] bg-[hsl(var(--gold)/0.08)] shadow-[0_0_0_3px_hsl(var(--gold)/0.15)]'
+                    : 'border-primary bg-primary/5 shadow-md'
                   : 'border-border hover:border-primary/50 hover:bg-accent',
               )}
             >
-              <div className="text-2xl font-heading font-bold">{opt.label}</div>
+              <div className={cn('text-2xl font-heading font-bold', t.grade === opt.g && opt.g === 'A' && 'text-[hsl(var(--gold))]')}>{opt.label}</div>
               <div className="text-xs text-muted-foreground mt-1">{opt.desc}</div>
             </button>
           ))}
