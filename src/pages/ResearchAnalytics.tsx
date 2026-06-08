@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Strategy } from '@/types/research';
 import { loadStrategies } from '@/lib/researchStorage';
-import { computeKPIs, conditionStats } from '@/lib/researchAnalytics';
+import { computeKPIs, conditionStats, winRateByKey } from '@/lib/researchAnalytics';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
 export default function ResearchAnalytics() {
