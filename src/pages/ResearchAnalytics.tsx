@@ -58,6 +58,45 @@ export default function ResearchAnalytics() {
 
   const rankChart = ranked.slice(0, 12).map((r) => ({ key: r.strategy.name, winRate: Math.round(r.kpi.winRate) }));
 
+  // DR-template aggregate breakdowns: only tests from strategies using the DR template,
+  // so non-DR strategies don't pollute Entry Type / DR Level / FVG / Breakout / LTF stats.
+  const drStats = useMemo(() => {
+    const drTests = strategies.filter((s) => s.template === 'dr').flatMap((s) => s.tests);
+    const byEntryType = winRateByKey(drTests, (t) => t.entryType || '');
+    const byDrLevel = winRateByKey(drTests, (t) => t.drLevel || '');
+    const byFvg = winRateByKey(drTests, (t) => t.fvgLocation || '');
+    const byBreakout = winRateByKey(drTests, (t) => t.breakoutQuality || '');
+    const ltfExploded: Array<{ ltf: string; result: string }> = [];
+    drTests.forEach((t) => {
+      const arr = Array.isArray(t.ltfConfirmation) ? t.ltfConfirmation : [];
+      arr.forEach((ltf) => ltfExploded.push({ ltf, result: t.result || '' }));
+    });
+    const ltfMap = new Map<string, { wins: number; losses: number; total: number }>();
+    ltfExploded.forEach(({ ltf, result }) => {
+      if (!ltf) return;
+      const cur = ltfMap.get(ltf) || { wins: 0, losses: 0, total: 0 };
+      if (result === 'Win') cur.wins++;
+      if (result === 'Loss') cur.losses++;
+      if (result === 'Win' || result === 'Loss') cur.total++;
+      ltfMap.set(ltf, cur);
+    });
+    const byLtf = [...ltfMap.entries()].map(([key, v]) => ({ key, ...v, winRate: v.total ? (v.wins / v.total) * 100 : 0 }));
+    const best = (rows: typeof byEntryType) => {
+      const sig = rows.filter((r) => r.total >= 1);
+      if (!sig.length) return null;
+      return [...sig].sort((a, b) => b.winRate - a.winRate)[0];
+    };
+    return {
+      totalDrTests: drTests.length,
+      byEntryType, byDrLevel, byFvg, byBreakout, byLtf,
+      bestEntryType: best(byEntryType),
+      bestDrLevel: best(byDrLevel),
+      bestFvg: best(byFvg),
+      bestBreakout: best(byBreakout),
+      bestLtf: best(byLtf),
+    };
+  }, [strategies]);
+
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <PageHeader
