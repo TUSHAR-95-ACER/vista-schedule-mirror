@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 const STATUS_STYLES: Record<Strategy['status'], string> = {
   Testing:    'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
   Promising:  'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30',
-  Validated:  'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+  Validated:  'bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] border-[hsl(var(--gold)/0.45)] shadow-[0_0_0_1px_hsl(var(--gold)/0.15)_inset]',
   Failed:     'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30',
   Archived:   'bg-muted text-muted-foreground border-border',
 };
