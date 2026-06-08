@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Strategy } from '@/types/research';
 import { loadStrategies } from '@/lib/researchStorage';
-import { computeKPIs, conditionStats } from '@/lib/researchAnalytics';
+import { computeKPIs, conditionStats, winRateByKey } from '@/lib/researchAnalytics';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
 
 export default function ResearchAnalytics() {
@@ -57,6 +57,45 @@ export default function ResearchAnalytics() {
   const worstCond = [...graded].sort((a, b) => a.winRate - b.winRate)[0];
 
   const rankChart = ranked.slice(0, 12).map((r) => ({ key: r.strategy.name, winRate: Math.round(r.kpi.winRate) }));
+
+  // DR-template aggregate breakdowns: only tests from strategies using the DR template,
+  // so non-DR strategies don't pollute Entry Type / DR Level / FVG / Breakout / LTF stats.
+  const drStats = useMemo(() => {
+    const drTests = strategies.filter((s) => s.template === 'dr').flatMap((s) => s.tests);
+    const byEntryType = winRateByKey(drTests, (t) => t.entryType || '');
+    const byDrLevel = winRateByKey(drTests, (t) => t.drLevel || '');
+    const byFvg = winRateByKey(drTests, (t) => t.fvgLocation || '');
+    const byBreakout = winRateByKey(drTests, (t) => t.breakoutQuality || '');
+    const ltfExploded: Array<{ ltf: string; result: string }> = [];
+    drTests.forEach((t) => {
+      const arr = Array.isArray(t.ltfConfirmation) ? t.ltfConfirmation : [];
+      arr.forEach((ltf) => ltfExploded.push({ ltf, result: t.result || '' }));
+    });
+    const ltfMap = new Map<string, { wins: number; losses: number; total: number }>();
+    ltfExploded.forEach(({ ltf, result }) => {
+      if (!ltf) return;
+      const cur = ltfMap.get(ltf) || { wins: 0, losses: 0, total: 0 };
+      if (result === 'Win') cur.wins++;
+      if (result === 'Loss') cur.losses++;
+      if (result === 'Win' || result === 'Loss') cur.total++;
+      ltfMap.set(ltf, cur);
+    });
+    const byLtf = [...ltfMap.entries()].map(([key, v]) => ({ key, ...v, winRate: v.total ? (v.wins / v.total) * 100 : 0 }));
+    const best = (rows: typeof byEntryType) => {
+      const sig = rows.filter((r) => r.total >= 1);
+      if (!sig.length) return null;
+      return [...sig].sort((a, b) => b.winRate - a.winRate)[0];
+    };
+    return {
+      totalDrTests: drTests.length,
+      byEntryType, byDrLevel, byFvg, byBreakout, byLtf,
+      bestEntryType: best(byEntryType),
+      bestDrLevel: best(byDrLevel),
+      bestFvg: best(byFvg),
+      bestBreakout: best(byBreakout),
+      bestLtf: best(byLtf),
+    };
+  }, [strategies]);
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -118,6 +157,65 @@ export default function ResearchAnalytics() {
           <p className="text-xs text-muted-foreground italic mt-4">Tag a market condition on your strategy tests (Trending / Volatile / Sideways) to populate this section.</p>
         )}
       </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          <h3 className="font-heading font-semibold">DR Strategy Breakdown</h3>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">{drStats.totalDrTests} DR tests</span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">Aggregates every test logged under a DR-template strategy. Empty rows mean that dimension hasn&rsquo;t been tagged yet.</p>
+        {drStats.totalDrTests === 0 ? (
+          <p className="text-xs text-muted-foreground italic">Create a DR strategy and log tests with Entry Type, DR Level, FVG Location, Breakout Quality, and LTF Confirmation to populate this dashboard.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+              {[
+                { label: 'Best Entry Type', v: drStats.bestEntryType },
+                { label: 'Best DR Level', v: drStats.bestDrLevel },
+                { label: 'Best FVG Location', v: drStats.bestFvg },
+                { label: 'Best Breakout Quality', v: drStats.bestBreakout },
+                { label: 'Best LTF Confirmation', v: drStats.bestLtf },
+              ].map(({ label, v }) => (
+                <div key={label} className="rounded-lg border border-primary/25 bg-primary/5 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-primary font-semibold">{label}</p>
+                  <p className="font-heading text-sm font-bold mt-1">{v ? `${v.key} · ${v.winRate.toFixed(0)}%` : '—'}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{v ? `${v.wins}W / ${v.losses}L · ${v.total} resolved` : 'No data'}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[
+                { title: 'Win Rate by Entry Type', rows: drStats.byEntryType },
+                { title: 'Win Rate by DR Level', rows: drStats.byDrLevel },
+                { title: 'Win Rate by FVG Location', rows: drStats.byFvg },
+                { title: 'Win Rate by Breakout Quality', rows: drStats.byBreakout },
+                { title: 'Win Rate by LTF Confirmation', rows: drStats.byLtf },
+              ].map(({ title, rows }) => (
+                <div key={title} className="rounded-lg border border-border/60 bg-background/40 p-3">
+                  <p className="text-xs font-semibold mb-2">{title}</p>
+                  {rows.length === 0 ? (
+                    <p className="text-[11px] text-muted-foreground italic">No tagged tests yet.</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {rows.map((r) => (
+                        <li key={r.key} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="truncate">{r.key}</span>
+                          <span className="flex items-center gap-2 shrink-0">
+                            <span className="font-mono text-[11px] text-muted-foreground">{r.wins}W/{r.losses}L</span>
+                            <span className="font-mono font-bold">{r.total ? `${r.winRate.toFixed(0)}%` : '—'}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </Card>
+
+
 
       <Card className="p-5">
         <h3 className="font-heading font-semibold mb-3">Strategy Performance Ranking</h3>
