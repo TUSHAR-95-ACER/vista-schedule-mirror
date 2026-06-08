@@ -159,6 +159,65 @@ export default function ResearchAnalytics() {
       </Card>
 
       <Card className="p-5">
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          <h3 className="font-heading font-semibold">DR Strategy Breakdown</h3>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">{drStats.totalDrTests} DR tests</span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">Aggregates every test logged under a DR-template strategy. Empty rows mean that dimension hasn&rsquo;t been tagged yet.</p>
+        {drStats.totalDrTests === 0 ? (
+          <p className="text-xs text-muted-foreground italic">Create a DR strategy and log tests with Entry Type, DR Level, FVG Location, Breakout Quality, and LTF Confirmation to populate this dashboard.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+              {[
+                { label: 'Best Entry Type', v: drStats.bestEntryType },
+                { label: 'Best DR Level', v: drStats.bestDrLevel },
+                { label: 'Best FVG Location', v: drStats.bestFvg },
+                { label: 'Best Breakout Quality', v: drStats.bestBreakout },
+                { label: 'Best LTF Confirmation', v: drStats.bestLtf },
+              ].map(({ label, v }) => (
+                <div key={label} className="rounded-lg border border-primary/25 bg-primary/5 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-primary font-semibold">{label}</p>
+                  <p className="font-heading text-sm font-bold mt-1">{v ? `${v.key} · ${v.winRate.toFixed(0)}%` : '—'}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{v ? `${v.wins}W / ${v.losses}L · ${v.total} resolved` : 'No data'}</p>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {[
+                { title: 'Win Rate by Entry Type', rows: drStats.byEntryType },
+                { title: 'Win Rate by DR Level', rows: drStats.byDrLevel },
+                { title: 'Win Rate by FVG Location', rows: drStats.byFvg },
+                { title: 'Win Rate by Breakout Quality', rows: drStats.byBreakout },
+                { title: 'Win Rate by LTF Confirmation', rows: drStats.byLtf },
+              ].map(({ title, rows }) => (
+                <div key={title} className="rounded-lg border border-border/60 bg-background/40 p-3">
+                  <p className="text-xs font-semibold mb-2">{title}</p>
+                  {rows.length === 0 ? (
+                    <p className="text-[11px] text-muted-foreground italic">No tagged tests yet.</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {rows.map((r) => (
+                        <li key={r.key} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="truncate">{r.key}</span>
+                          <span className="flex items-center gap-2 shrink-0">
+                            <span className="font-mono text-[11px] text-muted-foreground">{r.wins}W/{r.losses}L</span>
+                            <span className="font-mono font-bold">{r.total ? `${r.winRate.toFixed(0)}%` : '—'}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </Card>
+
+
+
+      <Card className="p-5">
         <h3 className="font-heading font-semibold mb-3">Strategy Performance Ranking</h3>
         {rankChart.length === 0 ? (
           <p className="text-sm text-muted-foreground">No strategies with tests yet.</p>
