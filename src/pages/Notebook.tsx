@@ -266,39 +266,90 @@ export default function Notebook() {
             <Button onClick={openNew} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Notebook Entry</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {library.map(({ category, count, lastUpdated, cover }) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setOpenCategory(category)}
-                className="group relative text-left rounded-xl overflow-hidden bg-gradient-to-br from-card via-card to-muted/30 border border-border/60 shadow-[0_4px_20px_-8px_hsl(var(--foreground)/0.15)] hover:shadow-[0_12px_40px_-12px_hsl(var(--primary)/0.35)] hover:-translate-y-1 hover:border-primary/40 transition-all duration-300 aspect-[3/4] flex flex-col"
-              >
-                {/* spine */}
-                <span className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary/70 via-primary/40 to-primary/70 shadow-[2px_0_8px_-2px_hsl(var(--primary)/0.6)]" />
-                {/* cover image */}
-                <div className="relative flex-1 bg-muted/40 overflow-hidden">
-                  {cover ? (
-                    <img src={cover} alt="" className="w-full h-full object-cover opacity-90 group-hover:scale-[1.04] transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <BookOpen className="h-12 w-12 text-muted-foreground/30" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-7 pt-2">
+            {library.map(({ category, count, lastUpdated }) => {
+              // Deterministic cover tone per category — varied leather/linen shades
+              const palettes = [
+                'from-[#1f2a37] via-[#111827] to-[#0b1220]',         // midnight leather
+                'from-[#3b2a1f] via-[#2a1d14] to-[#1a120c]',         // burgundy leather
+                'from-[#1e3a34] via-[#13261f] to-[#0b1814]',         // forest hardcover
+                'from-[#2a1f3b] via-[#1a1428] to-[#100a1c]',         // plum leather
+                'from-[#3a2f1a] via-[#241d10] to-[#15110a]',         // tobacco leather
+                'from-[#1f3047] via-[#142236] to-[#0c1726]',         // navy hardcover
+                'from-[#3a1f2e] via-[#251420] to-[#170c14]',         // oxblood leather
+              ];
+              let h = 0; for (let i = 0; i < category.length; i++) h = (h * 31 + category.charCodeAt(i)) >>> 0;
+              const palette = palettes[h % palettes.length];
+              const updated = lastUpdated
+                ? new Date(lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : 'No entries yet';
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setOpenCategory(category)}
+                  className="group relative text-left aspect-[3/4] rounded-[6px] overflow-visible transition-all duration-300 hover:-translate-y-1.5 hover:rotate-[-0.4deg] focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--gold))]"
+                  style={{ perspective: '900px' }}
+                >
+                  {/* Pages edge (right side of book block) */}
+                  <span className="absolute -right-[3px] top-[6px] bottom-[6px] w-[3px] rounded-r-[2px] bg-gradient-to-r from-[#f5efe1] to-[#cbbf9d] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.08)]" />
+                  {/* Drop shadow under book */}
+                  <span className="absolute -bottom-3 left-3 right-3 h-3 rounded-[50%] bg-black/40 blur-md opacity-60 group-hover:opacity-80 transition" />
+
+                  {/* Hardcover */}
+                  <div className={cn(
+                    'relative h-full w-full rounded-[6px] bg-gradient-to-br shadow-[0_18px_40px_-18px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden ring-1 ring-black/40',
+                    palette,
+                  )}>
+                    {/* Leather grain texture */}
+                    <div
+                      className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none"
+                      style={{
+                        backgroundImage:
+                          'radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1.2px), radial-gradient(rgba(0,0,0,0.4) 1px, transparent 1.4px)',
+                        backgroundSize: '4px 4px, 7px 7px',
+                        backgroundPosition: '0 0, 2px 3px',
+                      }}
+                    />
+                    {/* Spine band */}
+                    <span className="absolute left-0 top-0 bottom-0 w-[14px] bg-gradient-to-r from-black/55 via-black/15 to-transparent" />
+                    <span className="absolute left-[14px] top-0 bottom-0 w-px bg-[hsl(var(--gold)/0.35)]" />
+
+                    {/* Gold embossed frame */}
+                    <span className="absolute inset-[14px] rounded-[3px] border border-[hsl(var(--gold)/0.55)] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.4)] pointer-events-none" />
+                    <span className="absolute inset-[18px] rounded-[2px] border border-[hsl(var(--gold)/0.18)] pointer-events-none" />
+
+                    {/* Count badge — gold seal */}
+                    <span className="absolute top-3 right-3 min-w-[34px] h-[22px] px-2 rounded-full bg-[hsl(var(--gold))] text-[hsl(var(--gold-foreground))] text-[10px] font-extrabold tracking-wider flex items-center justify-center shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_2px_4px_rgba(0,0,0,0.5)]">
+                      {count}
+                    </span>
+
+                    {/* Title block (gold embossed) */}
+                    <div className="absolute inset-x-[22px] top-1/2 -translate-y-1/2 text-center">
+                      <div className="text-[9px] uppercase tracking-[0.35em] text-[hsl(var(--gold)/0.7)] mb-2">Journal</div>
+                      <h3
+                        className="font-heading font-extrabold leading-[1.15] tracking-tight text-[hsl(var(--gold))] text-base sm:text-lg line-clamp-3"
+                        style={{ textShadow: '0 1px 0 rgba(0,0,0,0.55), 0 0 8px hsl(var(--gold)/0.25)' }}
+                      >
+                        {category}
+                      </h3>
+                      <div className="mx-auto mt-2 h-px w-10 bg-[hsl(var(--gold)/0.55)]" />
+                      <div className="text-[9px] uppercase tracking-[0.3em] text-[hsl(var(--gold)/0.55)] mt-2">
+                        {updated}
+                      </div>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-                  <span className={cn('absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md', categoryColor(category))}>
-                    {count} {count === 1 ? 'note' : 'notes'}
-                  </span>
-                </div>
-                {/* spine label */}
-                <div className="p-3.5 pl-5">
-                  <h3 className="font-heading font-bold text-sm leading-tight tracking-tight line-clamp-2">{category}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-1 font-mono">
-                    {lastUpdated ? `Updated ${new Date(lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'No notes yet'}
-                  </p>
-                </div>
-              </button>
-            ))}
+
+                    {/* Bottom hint */}
+                    <div className="absolute bottom-3 inset-x-0 text-center text-[9px] uppercase tracking-[0.3em] text-[hsl(var(--gold)/0.45)]">
+                      Open Notebook →
+                    </div>
+
+                    {/* Sheen on hover */}
+                    <span className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-white/0 group-hover:via-white/[0.04] transition" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )
       ) : (
