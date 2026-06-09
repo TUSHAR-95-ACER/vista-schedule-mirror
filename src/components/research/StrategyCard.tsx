@@ -7,8 +7,8 @@ import { summarizeStrategy } from '@/lib/researchAnalytics';
 import { cn } from '@/lib/utils';
 
 const STATUS_STYLES: Record<Strategy['status'], string> = {
-  Testing:    'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-  Promising:  'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30',
+  Testing:    'bg-primary/10 text-primary border-primary/30',
+  Promising:  'bg-primary/10 text-primary border-primary/30',
   Validated:  'bg-[hsl(var(--gold)/0.12)] text-[hsl(var(--gold))] border-[hsl(var(--gold)/0.45)] shadow-[0_0_0_1px_hsl(var(--gold)/0.15)_inset]',
   Failed:     'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30',
   Archived:   'bg-muted text-muted-foreground border-border',
@@ -73,7 +73,7 @@ export function StrategyCard({ strategy, onOpen, onEdit, onDuplicate, onArchive,
           <Stat label="Win Rate" value={`${kpi.winRate.toFixed(0)}%`} accent={kpi.winRate >= 50 ? 'success' : undefined} />
           <Stat label="Avg RR" value={kpi.avgRR ? kpi.avgRR.toFixed(2) : '—'} />
           <Stat label="Bias Acc" value={`${kpi.biasAccuracy.toFixed(0)}%`} />
-          <Stat label="Validation" value={`${kpi.validationScore}`} accent="primary" />
+          <Stat label="Validation" value={`${kpi.validationScore}`} accent="gold" />
           <div className="flex items-center">
             <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-medium border', STATUS_STYLES[strategy.status])}>
               {strategy.status}
@@ -89,11 +89,11 @@ export function StrategyCard({ strategy, onOpen, onEdit, onDuplicate, onArchive,
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: 'success' | 'primary' }) {
+function Stat({ label, value, accent }: { label: string; value: string; accent?: 'success' | 'primary' | 'gold' }) {
   return (
     <div className="flex flex-col">
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
-      <span className={cn('font-semibold', accent === 'success' && 'text-success', accent === 'primary' && 'text-primary')}>{value}</span>
+      <span className={cn('font-semibold', accent === 'success' && 'text-success', accent === 'primary' && 'text-primary', accent === 'gold' && 'text-gold')}>{value}</span>
     </div>
   );
 }
