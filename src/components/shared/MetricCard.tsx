@@ -78,8 +78,11 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-      <div>
-        <h1 className="font-heading text-xl sm:text-2xl font-bold uppercase tracking-[0.12em]">{title}</h1>
+      <div className="relative pl-3">
+        <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded-sm bg-gradient-to-b from-gold via-gold/70 to-primary shadow-[0_0_10px_hsl(var(--gold)/0.6)]" />
+        <h1 className="font-heading text-xl sm:text-2xl font-bold uppercase tracking-[0.12em]">
+          <span className="bg-gradient-to-r from-gold via-foreground to-foreground bg-clip-text text-transparent">{title}</span>
+        </h1>
         {subtitle && <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>}
       </div>
       <HeaderActions>{children}</HeaderActions>
