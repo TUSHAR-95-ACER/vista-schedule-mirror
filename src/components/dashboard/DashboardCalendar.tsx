@@ -194,8 +194,31 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     const trailing = Array.from({ length: trailingCount }, (_, index) => ({ type: 'empty' as const, key: `trailing-${index}` }));
     const activeDays = days.map((cell) => cell.day).filter((day) => day.tradeCount > 0);
 
+    // Weekly summaries — group by calendar row in the grid (chunks of 7 cells, Sun..Sat).
+    const allCells = [...leading, ...days, ...trailing];
+    const weeks: { weekNumber: number; tradeCount: number; totalPl: number }[] = [];
+    for (let i = 0; i < allCells.length; i += 7) {
+      const row = allCells.slice(i, i + 7);
+      let tradeCount = 0;
+      let totalPl = 0;
+      for (const c of row) {
+        if (c.type === 'day') {
+          tradeCount += c.day.tradeCount;
+          // Only count realized P/L (exclude untriggered/cancelled) — same as activeDays totals.
+          const realized = c.day.trades
+            .filter((t) => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled')
+            .reduce((s, t) => s + t.profitLoss, 0);
+          totalPl += realized;
+        }
+      }
+      weeks.push({ weekNumber: weeks.length + 1, tradeCount, totalPl });
+    }
+    // Trim trailing empty weeks (no leading/trailing-only rows with no trades).
+    while (weeks.length > 0 && weeks[weeks.length - 1].tradeCount === 0) weeks.pop();
+
     return {
-      cells: [...leading, ...days, ...trailing],
+      cells: allCells,
+      weeks,
       summary: {
         totalTrades: activeDays.reduce((sum, day) => sum + day.tradeCount, 0),
         activeDays: activeDays.length,
@@ -210,6 +233,13 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
       maxAbsPl: Math.max(...activeDays.map((day) => Math.abs(day.totalPl)), 1),
     };
   }, [month, tradeMap, year]);
+
+  // Identify the best (most-profitable) week of the month — gold treatment.
+  const bestWeekNumber = useMemo(() => {
+    const profitable = monthData.weeks.filter((w) => w.tradeCount > 0 && w.totalPl > 0);
+    if (profitable.length === 0) return null;
+    return [...profitable].sort((a, b) => b.totalPl - a.totalPl)[0].weekNumber;
+  }, [monthData.weeks]);
 
   const heatmapData = useMemo(() => {
     let maxAbsPl = 1;
