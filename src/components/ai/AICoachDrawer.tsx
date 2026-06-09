@@ -142,7 +142,7 @@ export function AICoachDrawer() {
         className="p-0 w-[580px] sm:w-[580px] max-w-[96vw] flex flex-col gap-0 border-l border-gold/25 bg-gradient-to-b from-background via-background to-muted/20"
       >
         {/* HEADER */}
-        <div className="relative shrink-0 border-b border-gold/25 bg-gradient-to-r from-gold/[0.12] via-background to-background overflow-hidden">
+        <div className="relative shrink-0 border-b border-gold/25 bg-gradient-to-r from-gold/10 via-background to-background overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--gold)/0.22),transparent_60%)] pointer-events-none" />
           <div className="relative h-12 pl-4 pr-12 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
