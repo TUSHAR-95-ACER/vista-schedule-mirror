@@ -194,8 +194,31 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     const trailing = Array.from({ length: trailingCount }, (_, index) => ({ type: 'empty' as const, key: `trailing-${index}` }));
     const activeDays = days.map((cell) => cell.day).filter((day) => day.tradeCount > 0);
 
+    // Weekly summaries — group by calendar row in the grid (chunks of 7 cells, Sun..Sat).
+    const allCells = [...leading, ...days, ...trailing];
+    const weeks: { weekNumber: number; tradeCount: number; totalPl: number }[] = [];
+    for (let i = 0; i < allCells.length; i += 7) {
+      const row = allCells.slice(i, i + 7);
+      let tradeCount = 0;
+      let totalPl = 0;
+      for (const c of row) {
+        if (c.type === 'day') {
+          tradeCount += c.day.tradeCount;
+          // Only count realized P/L (exclude untriggered/cancelled) — same as activeDays totals.
+          const realized = c.day.trades
+            .filter((t) => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled')
+            .reduce((s, t) => s + t.profitLoss, 0);
+          totalPl += realized;
+        }
+      }
+      weeks.push({ weekNumber: weeks.length + 1, tradeCount, totalPl });
+    }
+    // Trim trailing empty weeks (no leading/trailing-only rows with no trades).
+    while (weeks.length > 0 && weeks[weeks.length - 1].tradeCount === 0) weeks.pop();
+
     return {
-      cells: [...leading, ...days, ...trailing],
+      cells: allCells,
+      weeks,
       summary: {
         totalTrades: activeDays.reduce((sum, day) => sum + day.tradeCount, 0),
         activeDays: activeDays.length,
@@ -210,6 +233,13 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
       maxAbsPl: Math.max(...activeDays.map((day) => Math.abs(day.totalPl)), 1),
     };
   }, [month, tradeMap, year]);
+
+  // Identify the best (most-profitable) week of the month — gold treatment.
+  const bestWeekNumber = useMemo(() => {
+    const profitable = monthData.weeks.filter((w) => w.tradeCount > 0 && w.totalPl > 0);
+    if (profitable.length === 0) return null;
+    return [...profitable].sort((a, b) => b.totalPl - a.totalPl)[0].weekNumber;
+  }, [monthData.weeks]);
 
   const heatmapData = useMemo(() => {
     let maxAbsPl = 1;
@@ -267,51 +297,10 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     return [...(tradeMap.get(selectedDate)?.trades ?? [])].sort((a, b) => (a.entryTime ?? '').localeCompare(b.entryTime ?? ''));
   }, [selectedDate, tradeMap]);
 
-  const topSetup = useMemo(() => {
-    const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const setupMap = filteredTrades.filter((trade) => trade.date.startsWith(monthPrefix)).reduce((map, trade) => {
-      const existing = map.get(trade.setup);
-      if (existing) {
-        existing.count += 1;
-        return map;
-      }
-      map.set(trade.setup, { count: 1 });
-      return map;
-    }, new Map<string, { count: number }>());
-
-    return [...setupMap.entries()].sort((a, b) => b[1].count - a[1].count)[0]?.[0] ?? null;
-  }, [filteredTrades, month, year]);
-
   const marketOptions = useMemo(() => Array.from(new Set(trades.map((trade) => trade.market))).sort(), [trades]);
   const setupOptions = useMemo(() => Array.from(new Set([...customSetups, ...trades.map((trade) => trade.setup)])).filter(Boolean).sort(), [customSetups, trades]);
   const accountMap = useMemo(() => new Map(accounts.map((account) => [account.id, account.name])), [accounts]);
 
-  const monthlyHighlights = [
-    {
-      label: 'Best Day',
-      value: monthData.bestDay ? formatCompact(monthData.bestDay.totalPl) : '—',
-      meta: monthData.bestDay ? `Day ${monthData.bestDay.dayNumber}` : 'No trades yet',
-      tone: 'text-success',
-    },
-    {
-      label: 'Worst Day',
-      value: monthData.worstDay ? formatCompact(monthData.worstDay.totalPl) : '—',
-      meta: monthData.worstDay ? `Day ${monthData.worstDay.dayNumber}` : 'No trades yet',
-      tone: 'text-destructive',
-    },
-    {
-      label: 'Top Setup',
-      value: topSetup ?? '—',
-      meta: topSetup ? 'Most traded this month' : 'No setup data',
-      tone: 'text-foreground',
-    },
-    {
-      label: 'Avg RR',
-      value: monthData.summary.averageRR?.toFixed(2) ?? '—',
-      meta: 'Across active days',
-      tone: 'text-foreground',
-    },
-  ];
 
   const prevMonth = () => {
     if (month === 0) {
@@ -460,15 +449,49 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              {monthlyHighlights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</p>
-                  <p className={cn('mt-2 break-words font-heading text-2xl font-bold leading-tight tracking-tight', item.tone)}>{item.value}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.meta}</p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Weekly Summary
+              </div>
+              {monthData.weeks.map((w) => {
+                const isBest = bestWeekNumber === w.weekNumber;
+                const isProfit = w.totalPl > 0;
+                const isLoss = w.totalPl < 0;
+                return (
+                  <div
+                    key={w.weekNumber}
+                    className={cn(
+                      'rounded-2xl border bg-background p-3 transition-colors',
+                      isBest && 'border-gold/50 bg-[linear-gradient(135deg,hsl(var(--gold)/0.12),hsl(var(--background))_60%)] shadow-[0_0_0_1px_hsl(var(--gold)/0.18)_inset]',
+                      !isBest && isProfit && 'border-success/30',
+                      !isBest && isLoss && 'border-destructive/30',
+                      !isBest && !isProfit && !isLoss && 'border-border',
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className={cn('text-xs font-bold uppercase tracking-[0.14em]', isBest ? 'text-gold' : 'text-foreground')}>
+                        Week {w.weekNumber}
+                      </p>
+                      {isBest && (
+                        <span className="rounded-full border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-gold">
+                          Best
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      Trades: <span className="font-semibold text-foreground tabular-nums">{w.tradeCount}</span>
+                    </p>
+                    <p className={cn(
+                      'mt-0.5 font-heading text-base font-bold tabular-nums',
+                      isBest ? 'text-gold' : isProfit ? 'text-success' : isLoss ? 'text-destructive' : 'text-muted-foreground',
+                    )}>
+                      P/L: {w.totalPl > 0 ? '+' : ''}{formatCompact(w.totalPl)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
+
           </div>
         </section>
 
