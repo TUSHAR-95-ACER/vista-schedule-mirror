@@ -40,7 +40,7 @@ export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
       {data.map(row => (
         <div key={row.grade} className={cn(
           "grid grid-cols-4 gap-2 px-2 py-2.5 border-b border-border/50 text-sm",
-          row.grade === 'A+' && 'rounded-md border border-gold/35 bg-gold/8 shadow-[0_0_0_1px_hsl(var(--gold)/0.08)_inset]'
+          row.grade === 'A+' && 'rounded-md border border-gold/35 bg-gold/10 shadow-[0_0_0_1px_hsl(var(--gold)/0.08)_inset]'
         )}>
           <span className={cn('font-bold', gradeColorMap[row.grade] || 'text-foreground')}>{row.grade}</span>
           <span className="text-center text-muted-foreground">{row.trades}</span>
