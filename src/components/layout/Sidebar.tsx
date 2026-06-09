@@ -162,18 +162,18 @@ export function Sidebar() {
                           ? "h-[52px] px-1.5 py-1.5"
                           : "h-9 w-9 mx-auto border-transparent",
                         active
-                          ? "bg-primary/10 border-primary/40 text-foreground shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]"
+                          ? "bg-gradient-to-br from-primary/15 via-card to-[hsl(var(--gold)/0.12)] border-[hsl(var(--gold)/0.55)] text-foreground shadow-[inset_0_0_0_1px_hsl(var(--gold)/0.25),0_0_12px_-2px_hsl(var(--gold)/0.35)]"
                           : expanded
                             ? "bg-card border-border/60 text-foreground/75 hover:bg-accent hover:text-foreground hover:border-border"
                             : "text-foreground/70 hover:bg-accent hover:text-foreground"
                       )}
                     >
-                      <item.icon className={cn("shrink-0 transition-colors", expanded ? "h-4 w-4" : "h-4 w-4", active && "text-primary")} />
+                      <item.icon className={cn("shrink-0 transition-colors", expanded ? "h-4 w-4" : "h-4 w-4", active && "text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.6)]")} />
                       {expanded && (
-                        <span className="text-[9.5px] font-medium leading-tight tracking-tight text-center truncate w-full">{item.label}</span>
+                        <span className={cn("text-[9.5px] font-medium leading-tight tracking-tight text-center truncate w-full", active && "text-gold")}>{item.label}</span>
                       )}
                       {active && expanded && (
-                        <span className="absolute top-1 right-1 h-1 w-1 rounded-full bg-primary" />
+                        <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_6px_hsl(var(--gold)/0.8)]" />
                       )}
                     </button>
                   );
