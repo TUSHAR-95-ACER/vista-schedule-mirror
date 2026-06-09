@@ -208,15 +208,11 @@ export default function Dashboard() {
           tooltip="Gross profit ÷ gross loss. Above 1.5 is strong, below 1.0 means losing money"
           delta={hasPrev ? deltas.profitFactor!.text : null} deltaTone={hasPrev ? deltas.profitFactor!.tone : undefined} />
         <MetricCard label="Expectancy" value={formatCurrency(metrics.expectancy)} trend={metrics.expectancy >= 0 ? 'up' : 'down'}
-          tooltip="Average amount you can expect to win or lose per trade over time"
-          delta={hasPrev ? deltas.expectancy!.text : null} deltaTone={hasPrev ? deltas.expectancy!.tone : undefined} />
+          tooltip="Average expected return per trade." />
         <MetricCard label="Max Drawdown" value={formatCurrency(metrics.maxDrawdown)} icon={ArrowDown} trend="down"
-          tooltip="Largest peak-to-trough decline in your account equity"
-          delta={hasPrev ? deltas.maxDD!.text : null} deltaTone={hasPrev ? deltas.maxDD!.tone : undefined} />
+          tooltip="Largest decline from peak equity." />
         <MetricCard label="Avg Duration" value={fmtDuration(avgDurMins)} icon={Activity}
-          tooltip="Average time you hold a trade from entry to exit"
-          delta={hasPrev ? (deltas.avgDur ? deltas.avgDur.text : null) : null}
-          deltaTone={hasPrev && deltas.avgDur ? deltas.avgDur.tone : undefined} />
+          tooltip="Average trade holding time." />
       </div>
 
       {/* Equity Curve (70%) + Performance Summary (30%) */}

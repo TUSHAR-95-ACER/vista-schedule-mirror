@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { ReactNode } from 'react';
 import {
   Tooltip,
   TooltipContent,
@@ -7,18 +7,26 @@ import {
 } from '@/components/ui/tooltip';
 
 interface InfoTooltipProps {
-  text: string;
+  text?: string;
   className?: string;
+  children?: ReactNode;
 }
 
-export function InfoTooltip({ text, className }: InfoTooltipProps) {
+/**
+ * Tooltip helper.
+ * - With `children`: those children become the hover trigger (e.g. wrap an existing icon).
+ * - Without `children`: renders NOTHING (legacy "(i)" trigger has been globally removed).
+ */
+export function InfoTooltip({ text, children }: InfoTooltipProps) {
+  if (!children) return null;
+  if (!text) return <>{children}</>;
   return (
-    <TooltipProvider delayDuration={200}>
+    <TooltipProvider delayDuration={150}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Info className={`h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground cursor-help shrink-0 ${className || ''}`} />
+          <span className="inline-flex cursor-help">{children}</span>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-[220px] text-xs leading-relaxed">
+        <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed border-gold/40 bg-background/95 text-foreground shadow-[0_0_18px_-6px_hsl(var(--gold)/0.5)]">
           {text}
         </TooltipContent>
       </Tooltip>
@@ -26,13 +34,15 @@ export function InfoTooltip({ text, className }: InfoTooltipProps) {
   );
 }
 
-/** Reusable chart section header with gold accent bar + optional info tooltip */
+/** Reusable chart section header with gold accent bar. Title itself becomes the tooltip trigger. */
 export function ChartHeader({ title, tooltip }: { title: string; tooltip?: string }) {
+  const titleEl = (
+    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+  );
   return (
     <div className="flex items-center gap-2 mb-3 sm:mb-4">
       <span aria-hidden className="inline-block h-3.5 w-[3px] rounded-sm bg-gradient-to-b from-gold via-gold/70 to-primary/60 shadow-[0_0_8px_hsl(var(--gold)/0.55)]" />
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
-      {tooltip && <InfoTooltip text={tooltip} />}
+      {tooltip ? <InfoTooltip text={tooltip}>{titleEl}</InfoTooltip> : titleEl}
     </div>
   );
 }

@@ -53,9 +53,16 @@ export function MetricCard({ label, value, icon: Icon, subtitle, trend, emphasis
             "text-[10px] sm:text-xs font-medium uppercase tracking-wider truncate",
             emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground',
           )}>{label}</span>
-          {tooltip && <InfoTooltip text={tooltip} />}
         </div>
-        {Icon && <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1", emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground')} />}
+        {Icon && (
+          tooltip ? (
+            <InfoTooltip text={tooltip}>
+              <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1", emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground')} />
+            </InfoTooltip>
+          ) : (
+            <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1", emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground')} />
+          )
+        )}
       </div>
       <div className={cn(
         "font-heading font-bold tracking-tight break-words overflow-wrap-anywhere",
