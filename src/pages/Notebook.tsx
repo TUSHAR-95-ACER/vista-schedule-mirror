@@ -266,7 +266,7 @@ export default function Notebook() {
             <Button onClick={openNew} className="gap-1.5 rounded-xl"><Plus className="h-4 w-4" /> New Notebook Entry</Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-7 pt-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 pt-2">
             {library.map(({ category, count, lastUpdated }) => {
               // Deterministic cover tone per category — varied leather/linen shades
               const palettes = [
@@ -325,24 +325,26 @@ export default function Notebook() {
                     </span>
 
                     {/* Title block (gold embossed) */}
-                    <div className="absolute inset-x-[22px] top-1/2 -translate-y-1/2 text-center">
-                      <div className="text-[9px] uppercase tracking-[0.35em] text-[hsl(var(--gold)/0.7)] mb-2">Journal</div>
+                    <div className="absolute inset-x-[14px] top-1/2 -translate-y-1/2 text-center">
+                      <div className="text-[7px] uppercase tracking-[0.3em] text-[hsl(var(--gold)/0.7)] mb-1">Journal</div>
                       <h3
-                        className="font-heading font-extrabold leading-[1.15] tracking-tight text-[hsl(var(--gold))] text-base sm:text-lg line-clamp-3"
+                        className="font-heading font-extrabold leading-[1.1] tracking-tight text-[hsl(var(--gold))] text-[11px] sm:text-xs line-clamp-3"
                         style={{ textShadow: '0 1px 0 rgba(0,0,0,0.55), 0 0 8px hsl(var(--gold)/0.25)' }}
                       >
                         {category}
                       </h3>
-                      <div className="mx-auto mt-2 h-px w-10 bg-[hsl(var(--gold)/0.55)]" />
-                      <div className="text-[9px] uppercase tracking-[0.3em] text-[hsl(var(--gold)/0.55)] mt-2">
+                      <div className="mx-auto mt-1.5 h-px w-6 bg-[hsl(var(--gold)/0.55)]" />
+                      <div className="text-[7px] uppercase tracking-[0.25em] text-[hsl(var(--gold)/0.55)] mt-1.5">
                         {updated}
                       </div>
                     </div>
 
+
                     {/* Bottom hint */}
-                    <div className="absolute bottom-3 inset-x-0 text-center text-[9px] uppercase tracking-[0.3em] text-[hsl(var(--gold)/0.45)]">
-                      Open Notebook →
+                    <div className="absolute bottom-2 inset-x-0 text-center text-[7px] uppercase tracking-[0.25em] text-[hsl(var(--gold)/0.45)]">
+                      Open →
                     </div>
+
 
                     {/* Sheen on hover */}
                     <span className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-white/0 group-hover:via-white/[0.04] transition" />
