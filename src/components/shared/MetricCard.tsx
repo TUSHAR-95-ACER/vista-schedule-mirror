@@ -31,9 +31,14 @@ interface MetricCardProps {
   emphasis?: 'gold';
   className?: string;
   tooltip?: string;
+  /** Comparison vs previous period (e.g. "+12.4%", "-$42"). null = not enough data, undefined = hide */
+  delta?: string | null;
+  /** 'up' = green (good), 'down' = red (bad), 'flat' = gray */
+  deltaTone?: 'up' | 'down' | 'flat';
+  deltaLabel?: string;
 }
 
-export function MetricCard({ label, value, icon: Icon, subtitle, trend, emphasis, className, tooltip }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, subtitle, trend, emphasis, className, tooltip, delta, deltaTone, deltaLabel = 'vs last 30 days' }: MetricCardProps) {
   const displayValue = formatCompactNumber(value);
 
   return (
@@ -62,6 +67,20 @@ export function MetricCard({ label, value, icon: Icon, subtitle, trend, emphasis
         <span className="hidden sm:inline">{value}</span>
         <span className="sm:hidden">{displayValue}</span>
       </div>
+      {delta !== undefined && (
+        delta === null ? (
+          <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 mt-1.5 truncate italic">Not enough data</p>
+        ) : (
+          <p className={cn(
+            "text-[10px] sm:text-[11px] font-medium mt-1.5 truncate tabular-nums",
+            deltaTone === 'up' && 'text-success',
+            deltaTone === 'down' && 'text-destructive',
+            (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
+          )}>
+            {delta} <span className="text-muted-foreground/70 font-normal">{deltaLabel}</span>
+          </p>
+        )
+      )}
       {subtitle && (
         <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">{subtitle}</p>
       )}
