@@ -194,14 +194,14 @@ export default function AIInsights() {
                 return (
                   <div key={i} className={cn(
                     'border rounded-2xl p-4 transition-all hover:shadow-md',
-                    insight.type === 'positive' && 'bg-gold/8 border-gold/30 hover:border-gold/50',
+                    insight.type === 'positive' && 'bg-gold/10 border-gold/30 hover:border-gold/50',
                     insight.type === 'negative' && 'bg-destructive/5 border-destructive/20 hover:border-destructive/40',
                     insight.type === 'neutral' && 'bg-card border-border hover:border-primary/30',
                   )}>
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         'h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5',
-                        insight.type === 'positive' && 'bg-gold/12 border border-gold/25',
+                        insight.type === 'positive' && 'bg-gold/10 border border-gold/25',
                         insight.type === 'negative' && 'bg-destructive/10',
                         insight.type === 'neutral' && 'bg-primary/10',
                       )}>
@@ -217,7 +217,7 @@ export default function AIInsights() {
                           <h4 className="text-sm font-bold">{insight.title}</h4>
                           <span className={cn(
                             'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wider',
-                            insight.type === 'positive' && 'bg-gold/12 text-gold',
+                            insight.type === 'positive' && 'bg-gold/10 text-gold',
                             insight.type === 'negative' && 'bg-destructive/10 text-destructive',
                             insight.type === 'neutral' && 'bg-primary/10 text-primary',
                           )}>
