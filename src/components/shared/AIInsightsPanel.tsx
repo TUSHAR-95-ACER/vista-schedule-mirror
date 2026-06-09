@@ -65,7 +65,7 @@ export function AIInsightsPanel({ page, payload, title = 'Page Intelligence', cl
       <CollapsibleTrigger asChild>
         <button className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors text-left">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gold/12 text-gold border border-gold/30 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-gold/10 text-gold border border-gold/30 flex items-center justify-center">
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
