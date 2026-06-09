@@ -112,8 +112,8 @@ export default function ResearchAnalytics() {
         <MetricCard label="Total Strategies" value={rows.length} />
         <MetricCard label="Active" value={active.length} />
         <MetricCard label="Archived" value={archived.length} />
-        <MetricCard label="Most Tested" value={mostTested?.strategy.name || '—'} />
-        <MetricCard label="Highest Win Rate" value={highest ? `${highest.strategy.name} · ${highest.kpi.winRate.toFixed(0)}%` : '—'} trend="up" />
+        <MetricCard label="Most Tested" value={mostTested?.strategy.name || '—'} emphasis="gold" />
+        <MetricCard label="Highest Win Rate" value={highest ? `${highest.strategy.name} · ${highest.kpi.winRate.toFixed(0)}%` : '—'} emphasis="gold" />
         <MetricCard label="Lowest Win Rate" value={lowest && lowest !== highest ? `${lowest.strategy.name} · ${lowest.kpi.winRate.toFixed(0)}%` : '—'} trend="down" />
       </div>
 
@@ -140,8 +140,8 @@ export default function ResearchAnalytics() {
         {graded.length > 0 && (
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {bestCond && (
-              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <p className="text-[10px] uppercase tracking-wider text-emerald-500 font-semibold">Best Market Condition</p>
+              <div className="rounded-lg border border-gold/45 bg-gold/10 p-3 shadow-[0_0_0_1px_hsl(var(--gold)/0.12)_inset]">
+                <p className="text-[10px] uppercase tracking-wider text-gold font-semibold">Best Market Condition</p>
                 <p className="font-heading text-lg font-bold mt-1">{bestCond.key} · {bestCond.winRate.toFixed(0)}% Success</p>
               </div>
             )}
@@ -176,8 +176,8 @@ export default function ResearchAnalytics() {
                 { label: 'Best Breakout Quality', v: drStats.bestBreakout },
                 { label: 'Best LTF Confirmation', v: drStats.bestLtf },
               ].map(({ label, v }) => (
-                <div key={label} className="rounded-lg border border-primary/25 bg-primary/5 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-primary font-semibold">{label}</p>
+                <div key={label} className="rounded-lg border border-gold/40 bg-gold/10 p-3 shadow-[0_0_0_1px_hsl(var(--gold)/0.12)_inset]">
+                  <p className="text-[10px] uppercase tracking-wider text-gold font-semibold">{label}</p>
                   <p className="font-heading text-sm font-bold mt-1">{v ? `${v.key} · ${v.winRate.toFixed(0)}%` : '—'}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">{v ? `${v.wins}W / ${v.losses}L · ${v.total} resolved` : 'No data'}</p>
                 </div>
@@ -223,12 +223,12 @@ export default function ResearchAnalytics() {
           <p className="text-sm text-muted-foreground">No strategies with tests yet.</p>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={rankChart}>
+              <BarChart data={rankChart}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="key" stroke="hsl(var(--muted-foreground))" fontSize={11} interval={0} angle={-20} textAnchor="end" height={70} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} unit="%" />
               <Tooltip contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }} />
-              <Bar dataKey="winRate" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="winRate" fill="hsl(var(--gold))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -269,7 +269,7 @@ export default function ResearchAnalytics() {
                   <td className="py-2 pr-3 text-right font-mono">{r.kpi.validationScore}/100</td>
                   <td className="py-2 text-right">
                     {r.kpi.validationScore >= 60 && r.kpi.totalTests >= 10
-                      ? <Badge className="bg-emerald-600 text-white">Promote</Badge>
+                      ? <Badge className="bg-gold text-gold-foreground shadow-[0_0_18px_hsl(var(--gold)/0.28)]">Promote</Badge>
                       : r.kpi.totalTests >= 10 && r.kpi.winRate < 35
                         ? <Badge variant="destructive">Retire</Badge>
                         : <Badge variant="secondary">Keep testing</Badge>}
@@ -294,7 +294,7 @@ export default function ResearchAnalytics() {
               {promotionCandidates.map((r) => (
                 <li key={r.strategy.id} className="flex items-center justify-between text-sm">
                   <span>{r.strategy.icon} {r.strategy.name}</span>
-                  <span className="font-mono text-xs text-emerald-600">{r.kpi.validationScore}/100</span>
+                  <span className="font-mono text-xs text-gold">{r.kpi.validationScore}/100</span>
                 </li>
               ))}
             </ul>
@@ -328,7 +328,7 @@ export default function ResearchAnalytics() {
               <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }} />
-              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill="hsl(var(--gold))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

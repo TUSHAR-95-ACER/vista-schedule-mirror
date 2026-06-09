@@ -21,7 +21,7 @@ interface AIInsightsPanelProps {
 }
 
 const sevAccent: Record<string, string> = {
-  good: 'before:bg-success',
+  good: 'before:bg-gold',
   warn: 'before:bg-warning',
   critical: 'before:bg-destructive',
   info: 'before:bg-primary',
@@ -60,12 +60,12 @@ export function AIInsightsPanel({ page, payload, title = 'Page Intelligence', cl
     <Collapsible
       open={open}
       onOpenChange={handleOpenChange}
-      className={cn('rounded-2xl border border-border bg-card overflow-hidden', className)}
+      className={cn('rounded-2xl border border-gold/35 bg-[linear-gradient(135deg,hsl(var(--gold)/0.08),hsl(var(--card))_42%)] overflow-hidden shadow-[0_0_0_1px_hsl(var(--gold)/0.08)_inset]', className)}
     >
       <CollapsibleTrigger asChild>
         <button className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors text-left">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-gold/10 text-gold border border-gold/30 flex items-center justify-center">
               <Sparkles className="h-4 w-4" />
             </div>
             <div>

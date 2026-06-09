@@ -142,8 +142,8 @@ export default function AIInsights() {
 
       {/* Top Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <MetricCard label="Trader Score" value={`${overallScore}/100`} icon={Sparkles} trend={overallScore >= 60 ? 'up' : 'down'} />
-        <MetricCard label="Total Insights" value={insights.length} icon={Zap} />
+        <MetricCard label="Trader Score" value={`${overallScore}/100`} icon={Sparkles} emphasis="gold" />
+        <MetricCard label="Total Insights" value={insights.length} icon={Zap} emphasis="gold" />
         <MetricCard label="Positive Signals" value={insights.filter(i => i.type === 'positive').length} icon={TrendingUp} trend="up" />
         <MetricCard label="Risk Alerts" value={insights.filter(i => i.type === 'negative').length} icon={AlertTriangle} trend={insights.filter(i => i.type === 'negative').length > 2 ? 'down' : 'neutral'} />
       </div>
@@ -152,8 +152,8 @@ export default function AIInsights() {
         {/* Trader Radar */}
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Target className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center">
+              <Target className="h-4 w-4 text-gold" />
             </div>
             <div>
               <h3 className="text-xs font-bold uppercase tracking-[0.15em]">Trader Profile</h3>
@@ -166,13 +166,13 @@ export default function AIInsights() {
                 <PolarGrid stroke="hsl(var(--border))" />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
                 <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar name="Score" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+                <Radar name="Score" dataKey="value" stroke="hsl(var(--gold))" fill="hsl(var(--gold))" fillOpacity={0.16} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
           {/* Score summary */}
           <div className="flex items-center justify-center gap-3 mt-2 pt-3 border-t border-border/50">
-            <span className={cn('text-3xl font-bold', overallScore >= 70 ? 'text-success' : overallScore >= 40 ? 'text-foreground' : 'text-destructive')}>{overallScore}</span>
+            <span className={cn('text-3xl font-bold', overallScore >= 70 ? 'text-gold' : overallScore >= 40 ? 'text-foreground' : 'text-destructive')}>{overallScore}</span>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Overall Score</p>
               <p className="text-xs font-medium">{overallScore >= 70 ? 'Strong Performance' : overallScore >= 40 ? 'Room to Improve' : 'Needs Attention'}</p>
@@ -183,7 +183,7 @@ export default function AIInsights() {
         {/* Insights Cards */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-gold" />
             <h3 className="text-xs font-bold uppercase tracking-[0.15em]">AI Recommendations</h3>
             <span className="text-[10px] text-muted-foreground ml-1">({insights.length} signals)</span>
           </div>
@@ -194,20 +194,20 @@ export default function AIInsights() {
                 return (
                   <div key={i} className={cn(
                     'border rounded-2xl p-4 transition-all hover:shadow-md',
-                    insight.type === 'positive' && 'bg-success/5 border-success/20 hover:border-success/40',
+                    insight.type === 'positive' && 'bg-gold/10 border-gold/30 hover:border-gold/50',
                     insight.type === 'negative' && 'bg-destructive/5 border-destructive/20 hover:border-destructive/40',
                     insight.type === 'neutral' && 'bg-card border-border hover:border-primary/30',
                   )}>
                     <div className="flex items-start gap-3">
                       <div className={cn(
                         'h-9 w-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5',
-                        insight.type === 'positive' && 'bg-success/10',
+                        insight.type === 'positive' && 'bg-gold/10 border border-gold/25',
                         insight.type === 'negative' && 'bg-destructive/10',
                         insight.type === 'neutral' && 'bg-primary/10',
                       )}>
                         <InsightIcon className={cn(
                           'h-4 w-4',
-                          insight.type === 'positive' && 'text-success',
+                          insight.type === 'positive' && 'text-gold',
                           insight.type === 'negative' && 'text-destructive',
                           insight.type === 'neutral' && 'text-primary',
                         )} />
@@ -217,7 +217,7 @@ export default function AIInsights() {
                           <h4 className="text-sm font-bold">{insight.title}</h4>
                           <span className={cn(
                             'text-[9px] font-semibold px-1.5 py-0.5 rounded-full uppercase tracking-wider',
-                            insight.type === 'positive' && 'bg-success/10 text-success',
+                            insight.type === 'positive' && 'bg-gold/10 text-gold',
                             insight.type === 'negative' && 'bg-destructive/10 text-destructive',
                             insight.type === 'neutral' && 'bg-primary/10 text-primary',
                           )}>
@@ -245,8 +245,8 @@ export default function AIInsights() {
       {setupData.length > 0 && (
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center">
+              <Zap className="h-4 w-4 text-gold" />
             </div>
             <div>
               <h3 className="text-xs font-bold uppercase tracking-[0.15em]">Setup Performance</h3>

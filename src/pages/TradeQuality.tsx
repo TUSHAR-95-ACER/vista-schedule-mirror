@@ -125,7 +125,7 @@ export default function TradeQuality() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} trend={avgExecScore >= 70 ? 'up' : 'down'} tooltip="Average quality score across all graded trades (0-100)" />
+        <MetricCard label="Avg Execution Score" value={`${avgExecScore}/100`} emphasis="gold" tooltip="Average quality score across all graded trades (0-100)" />
         <MetricCard label="Entry Precision" value={`${entryPrecision}%`} trend={entryPrecision >= 50 ? 'up' : 'down'} tooltip="How often your entry price was close to the ideal level" />
         <MetricCard label="Hold Quality" value={`${holdQuality}%`} subtitle="Held to TP" trend={holdQuality >= 60 ? 'up' : 'down'} tooltip="Percentage of trades where you held the position until take profit was hit" />
         <MetricCard label="Exit Discipline" value={`${exitDiscipline}%`} subtitle="Reached 80% TP" trend={exitDiscipline >= 60 ? 'up' : 'down'} tooltip="Trades where you captured at least 80% of your planned take profit" />
@@ -175,8 +175,8 @@ export default function TradeQuality() {
       {insights.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="h-4 w-4 text-amber-500" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quality Insights</span>
+            <Lightbulb className="h-4 w-4 text-gold" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-gold">Quality Insights</span>
           </div>
           <div className="space-y-2">
             {insights.map((insight, i) => <p key={i} className="text-sm text-foreground/80">{insight}</p>)}
@@ -200,9 +200,9 @@ export default function TradeQuality() {
           </thead>
           <tbody>
             {gradeData.map((g, i) => (
-              <tr key={g.grade} className="border-b border-border/50 hover:bg-accent/50">
+              <tr key={g.grade} className={cn("border-b border-border/50 hover:bg-accent/50", g.grade === 'A+' && 'bg-gold/10')}>
                 <td className="px-4 py-2.5">
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono font-bold text-sm" style={{ backgroundColor: COLORS[i] + '22', color: COLORS[i] }}>{g.grade}</span>
+                  <span className={cn("inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono font-bold text-sm", g.grade === 'A+' && 'border border-gold/35 bg-gold/15 text-gold')} style={g.grade === 'A+' ? undefined : { backgroundColor: COLORS[i] + '22', color: COLORS[i] }}>{g.grade}</span>
                 </td>
                 <td className="px-4 py-2.5 font-mono text-xs">{g.count}</td>
                 <td className="px-4 py-2.5 font-mono text-xs">{g.winRate}%</td>

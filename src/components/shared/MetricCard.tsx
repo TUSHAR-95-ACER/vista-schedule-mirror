@@ -28,28 +28,34 @@ interface MetricCardProps {
   icon?: LucideIcon;
   subtitle?: string;
   trend?: 'up' | 'down' | 'neutral';
+  emphasis?: 'gold';
   className?: string;
   tooltip?: string;
 }
 
-export function MetricCard({ label, value, icon: Icon, subtitle, trend, className, tooltip }: MetricCardProps) {
+export function MetricCard({ label, value, icon: Icon, subtitle, trend, emphasis, className, tooltip }: MetricCardProps) {
   const displayValue = formatCompactNumber(value);
 
   return (
     <div className={cn(
       "bg-card border border-border rounded-lg p-3 sm:p-4 animate-fade-in overflow-hidden",
+      emphasis === 'gold' && 'border-gold/45 bg-[linear-gradient(135deg,hsl(var(--gold)/0.12),hsl(var(--card))_58%)] shadow-[0_0_0_1px_hsl(var(--gold)/0.12)_inset,0_12px_30px_-24px_hsl(var(--gold)/0.75)]',
       className
     )}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+          <span className={cn(
+            "text-[10px] sm:text-xs font-medium uppercase tracking-wider truncate",
+            emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground',
+          )}>{label}</span>
           {tooltip && <InfoTooltip text={tooltip} />}
         </div>
-        {Icon && <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0 ml-1" />}
+        {Icon && <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1", emphasis === 'gold' ? 'text-gold' : 'text-muted-foreground')} />}
       </div>
       <div className={cn(
         "font-heading font-bold tracking-tight break-words overflow-wrap-anywhere",
         "text-lg sm:text-xl lg:text-2xl",
+        emphasis === 'gold' && 'text-gold',
         trend === 'up' && 'text-success',
         trend === 'down' && 'text-destructive',
       )}>

@@ -38,10 +38,14 @@ function KPI({ label, value, sub, trend, color, tooltip }: {
   label: string; value: string; sub?: string;
   trend?: 'up' | 'down' | 'neutral'; color?: string; tooltip?: string;
 }) {
+  const isGold = color === 'text-gold';
   return (
-    <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1 hover:shadow-elevated transition-shadow">
+    <div className={cn(
+      "bg-card border rounded-lg p-4 flex flex-col gap-1 hover:shadow-elevated transition-shadow",
+      isGold ? 'border-gold/45 bg-[linear-gradient(135deg,hsl(var(--gold)/0.1),hsl(var(--card))_58%)] shadow-[0_0_0_1px_hsl(var(--gold)/0.1)_inset]' : 'border-border'
+    )}>
       <div className="flex items-center gap-1">
-        <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
+        <span className={cn("text-[11px] uppercase tracking-wider font-medium", isGold ? 'text-gold' : 'text-muted-foreground')}>{label}</span>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <div className="flex items-end gap-2">
@@ -335,7 +339,7 @@ export default function Analytics() {
         <KPI label="Win Rate" value={formatPercent(kpis.wr)} trend={kpis.wr >= 50 ? 'up' : 'down'} color={kpis.wr >= 50 ? 'text-success' : 'text-destructive'} tooltip="Percentage of winning trades out of all filtered trades" />
         <KPI label="Net P/L" value={kpis.netPL.toFixed(2)} trend={kpis.netPL >= 0 ? 'up' : 'down'} color={kpis.netPL >= 0 ? 'text-success' : 'text-destructive'} tooltip="Total profit minus total losses across filtered trades" />
         <KPI label="Avg RR" value={kpis.avgRR.toFixed(2)} trend={kpis.avgRR >= 1 ? 'up' : 'down'} tooltip="Average risk-reward ratio achieved on filtered trades" />
-        <KPI label="Best Pair" value={kpis.best} sub="Highest P/L" color="text-success" tooltip="The trading pair with the highest total profit" />
+        <KPI label="Best Pair" value={kpis.best} sub="Highest P/L" color="text-gold" tooltip="The trading pair with the highest total profit" />
         <KPI label="Worst Pair" value={kpis.worst} sub="Lowest P/L" color="text-destructive" tooltip="The trading pair with the lowest total profit" />
       </div>
 

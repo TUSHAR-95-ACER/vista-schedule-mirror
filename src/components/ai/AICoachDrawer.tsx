@@ -139,16 +139,16 @@ export function AICoachDrawer() {
     <Sheet open={open} onOpenChange={(o) => !o && closeDrawer()}>
       <SheetContent
         side="right"
-        className="p-0 w-[580px] sm:w-[580px] max-w-[96vw] flex flex-col gap-0 border-l border-border bg-gradient-to-b from-background via-background to-muted/20"
+        className="p-0 w-[580px] sm:w-[580px] max-w-[96vw] flex flex-col gap-0 border-l border-gold/25 bg-gradient-to-b from-background via-background to-muted/20"
       >
         {/* HEADER */}
-        <div className="relative shrink-0 border-b border-border/60 bg-gradient-to-r from-primary/[0.08] via-background to-background overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_60%)] pointer-events-none" />
+        <div className="relative shrink-0 border-b border-gold/25 bg-gradient-to-r from-gold/10 via-background to-background overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--gold)/0.22),transparent_60%)] pointer-events-none" />
           <div className="relative h-12 pl-4 pr-12 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-[0_0_18px_hsl(var(--primary)/0.45)]">
-                  <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center shadow-[0_0_18px_hsl(var(--gold)/0.45)]">
+                   <Sparkles className="h-3.5 w-3.5 text-gold-foreground" />
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-success ring-2 ring-background animate-pulse" />
               </div>
@@ -187,7 +187,9 @@ export function AICoachDrawer() {
                   className={cn(
                     'flex-1 flex items-center justify-center gap-1.5 px-2 h-8 rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all',
                     active
-                      ? 'bg-background text-foreground shadow-sm ring-1 ring-border/80'
+                      ? m.id === 'deep'
+                        ? 'bg-gold/10 text-gold shadow-sm ring-1 ring-gold/40'
+                        : 'bg-background text-foreground shadow-sm ring-1 ring-border/80'
                       : 'text-muted-foreground hover:text-foreground hover:bg-background/40'
                   )}
                   title={m.hint}
@@ -210,10 +212,10 @@ export function AICoachDrawer() {
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center px-6">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/30 flex items-center justify-center mb-3">
-                <Sparkles className="h-5 w-5 text-primary" />
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-gold/25 to-gold/5 border border-gold/35 flex items-center justify-center mb-3">
+                <Sparkles className="h-5 w-5 text-gold" />
               </div>
-              <p className="text-[12px] font-heading font-bold uppercase tracking-[0.14em] bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
+              <p className="text-[12px] font-heading font-bold uppercase tracking-[0.14em] bg-gradient-to-r from-gold via-foreground to-gold bg-clip-text text-transparent">
                 {mode === 'deep' ? 'Deep Analysis Ready' : 'Trading AI Coach'}
               </p>
               <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
