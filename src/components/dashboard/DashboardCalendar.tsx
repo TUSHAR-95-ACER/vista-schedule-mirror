@@ -297,51 +297,10 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     return [...(tradeMap.get(selectedDate)?.trades ?? [])].sort((a, b) => (a.entryTime ?? '').localeCompare(b.entryTime ?? ''));
   }, [selectedDate, tradeMap]);
 
-  const topSetup = useMemo(() => {
-    const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const setupMap = filteredTrades.filter((trade) => trade.date.startsWith(monthPrefix)).reduce((map, trade) => {
-      const existing = map.get(trade.setup);
-      if (existing) {
-        existing.count += 1;
-        return map;
-      }
-      map.set(trade.setup, { count: 1 });
-      return map;
-    }, new Map<string, { count: number }>());
-
-    return [...setupMap.entries()].sort((a, b) => b[1].count - a[1].count)[0]?.[0] ?? null;
-  }, [filteredTrades, month, year]);
-
   const marketOptions = useMemo(() => Array.from(new Set(trades.map((trade) => trade.market))).sort(), [trades]);
   const setupOptions = useMemo(() => Array.from(new Set([...customSetups, ...trades.map((trade) => trade.setup)])).filter(Boolean).sort(), [customSetups, trades]);
   const accountMap = useMemo(() => new Map(accounts.map((account) => [account.id, account.name])), [accounts]);
 
-  const monthlyHighlights = [
-    {
-      label: 'Best Day',
-      value: monthData.bestDay ? formatCompact(monthData.bestDay.totalPl) : '—',
-      meta: monthData.bestDay ? `Day ${monthData.bestDay.dayNumber}` : 'No trades yet',
-      tone: 'text-success',
-    },
-    {
-      label: 'Worst Day',
-      value: monthData.worstDay ? formatCompact(monthData.worstDay.totalPl) : '—',
-      meta: monthData.worstDay ? `Day ${monthData.worstDay.dayNumber}` : 'No trades yet',
-      tone: 'text-destructive',
-    },
-    {
-      label: 'Top Setup',
-      value: topSetup ?? '—',
-      meta: topSetup ? 'Most traded this month' : 'No setup data',
-      tone: 'text-foreground',
-    },
-    {
-      label: 'Avg RR',
-      value: monthData.summary.averageRR?.toFixed(2) ?? '—',
-      meta: 'Across active days',
-      tone: 'text-foreground',
-    },
-  ];
 
   const prevMonth = () => {
     if (month === 0) {
