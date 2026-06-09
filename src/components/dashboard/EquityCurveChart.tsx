@@ -54,7 +54,7 @@ export function EquityCurveChart({ trades }: EquityCurveChartProps) {
         />
         <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
         <Tooltip content={<CustomTooltip />} />
-        <Area type="monotone" dataKey="equity" stroke="hsl(142,71%,45%)" fill="url(#equityGrad)" strokeWidth={2} name="Equity" opacity={0.8} baseValue="dataMin" />
+        <Area type="monotone" dataKey="equity" stroke="hsl(var(--success))" fill="url(#equityGrad)" strokeWidth={2} name="Equity" opacity={0.85} baseValue="dataMin" />
       </AreaChart>
     </ResponsiveContainer>
   );

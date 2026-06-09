@@ -42,7 +42,7 @@ export function WeekdayChart({ trades }: { trades: Trade[] }) {
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="pl" name="P/L" radius={[4, 4, 0, 0]} opacity={0.8}>
           {data.map((entry, i) => (
-            <Cell key={i} fill={entry.pl >= 0 ? 'hsl(142,71%,45%)' : 'hsl(0,84%,60%)'} />
+            <Cell key={i} fill={entry.pl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
           ))}
         </Bar>
       </BarChart>
