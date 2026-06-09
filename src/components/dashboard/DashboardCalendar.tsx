@@ -490,15 +490,49 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              {monthlyHighlights.map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border bg-background p-4">
-                  <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</p>
-                  <p className={cn('mt-2 break-words font-heading text-2xl font-bold leading-tight tracking-tight', item.tone)}>{item.value}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.meta}</p>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Weekly Summary
+              </div>
+              {monthData.weeks.map((w) => {
+                const isBest = bestWeekNumber === w.weekNumber;
+                const isProfit = w.totalPl > 0;
+                const isLoss = w.totalPl < 0;
+                return (
+                  <div
+                    key={w.weekNumber}
+                    className={cn(
+                      'rounded-2xl border bg-background p-3 transition-colors',
+                      isBest && 'border-gold/50 bg-[linear-gradient(135deg,hsl(var(--gold)/0.12),hsl(var(--background))_60%)] shadow-[0_0_0_1px_hsl(var(--gold)/0.18)_inset]',
+                      !isBest && isProfit && 'border-success/30',
+                      !isBest && isLoss && 'border-destructive/30',
+                      !isBest && !isProfit && !isLoss && 'border-border',
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className={cn('text-xs font-bold uppercase tracking-[0.14em]', isBest ? 'text-gold' : 'text-foreground')}>
+                        Week {w.weekNumber}
+                      </p>
+                      {isBest && (
+                        <span className="rounded-full border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-gold">
+                          Best
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      Trades: <span className="font-semibold text-foreground tabular-nums">{w.tradeCount}</span>
+                    </p>
+                    <p className={cn(
+                      'mt-0.5 font-heading text-base font-bold tabular-nums',
+                      isBest ? 'text-gold' : isProfit ? 'text-success' : isLoss ? 'text-destructive' : 'text-muted-foreground',
+                    )}>
+                      P/L: {w.totalPl > 0 ? '+' : ''}{formatCompact(w.totalPl)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
+
           </div>
         </section>
 
