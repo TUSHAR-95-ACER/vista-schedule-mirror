@@ -13,6 +13,7 @@ import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
+import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { coerceRichJournal, emptyJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
@@ -334,18 +335,33 @@ export default function WeeklyPlanPage() {
             )}
           </div>
 
-          {/* Chart Analysis - Notion-style */}
-          <SectionCard title="Chart Analysis" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
-            <UnifiedMediaBox value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" />
-            <RichJournalBlock
-              title="Analysis Notes"
-              scope={`weekly/${localPlan.id}/pair-${pa.id}/analysis`}
-              value={coerceRichJournal(pa.analysisJournal, pa.narrative, undefined)}
-              onChange={v => updatePair(pa.id, { analysisJournal: serializeJournal(v), narrative: v.text })}
-              placeholder="Liquidity zones, order flow expectations, key reasoning…"
-              className="border-0 shadow-none p-0 bg-transparent"
-            />
-          </SectionCard>
+          {/* Chart Analysis - exact 50/50 desktop split */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
+              <UnifiedMediaBox value={pa.chartImage} onChange={v => updatePair(pa.id, { chartImage: v })} label="Prediction Chart" maxPreviewHeight="336px" />
+              <RichJournalBlock
+                title="Prediction Notes"
+                scope={`weekly/${localPlan.id}/pair-${pa.id}/analysis`}
+                value={coerceRichJournal(pa.analysisJournal, pa.narrative, undefined)}
+                onChange={v => updatePair(pa.id, { analysisJournal: serializeJournal(v), narrative: v.text })}
+                placeholder="Liquidity zones, order flow expectations, key reasoning…"
+                className="border-0 shadow-none p-0 bg-transparent"
+              />
+            </SectionCard>
+
+            <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
+              <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" maxPreviewHeight="336px" />
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Result Notes</Label>
+                <RichTextEditor
+                  value={pa.note || ''}
+                  onChange={v => updatePair(pa.id, { note: v })}
+                  placeholder="What actually happened…"
+                  className="font-journal"
+                />
+              </div>
+            </SectionCard>
+          </div>
 
           {/* Predicted Bias vs Actual Bias */}
           <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
@@ -367,11 +383,6 @@ export default function WeeklyPlanPage() {
             </div>
           </SectionCard>
 
-          {/* Result chart only (Actual Direction removed; lives in Actual Bias above) */}
-          <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
-            <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <AutoExpandTextarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="text-sm" minRows={2} />
-          </SectionCard>
         </div>
       ))}
 
