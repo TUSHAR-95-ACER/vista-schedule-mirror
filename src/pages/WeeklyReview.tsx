@@ -63,6 +63,7 @@ function calcExecutionScore(t: any): number {
 
 export default function WeeklyReview() {
   const { trades, weeklyPlans } = useTrading();
+  const { user } = useAuth();
   const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const weeklyData = useMemo(() => {
@@ -183,6 +184,25 @@ export default function WeeklyReview() {
   const canPrev = selectedIdx > 0;
   const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
+  const [reviewNotes, setReviewNotes] = useState<WeeklyReviewNotes>(emptyReviewNotes);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) {
+      setReviewNotes(emptyReviewNotes());
+      return;
+    }
+    setReviewNotes(loadUserStorage<WeeklyReviewNotes>(`weeklyReviewNotes:${latest.week}`, user.id, emptyReviewNotes()));
+  }, [user?.id, latest?.week]);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) return;
+    const t = setTimeout(() => saveUserStorage(`weeklyReviewNotes:${latest.week}`, user.id, reviewNotes), 300);
+    return () => clearTimeout(t);
+  }, [user?.id, latest?.week, reviewNotes]);
+
+  const updateReviewNote = (field: keyof WeeklyReviewNotes, value: string) => {
+    setReviewNotes(prev => ({ ...prev, [field]: value }));
+  };
 
   // Insights
   const insights = useMemo(() => {
