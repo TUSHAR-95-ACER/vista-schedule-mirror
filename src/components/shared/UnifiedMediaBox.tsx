@@ -289,7 +289,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
               {hasHero ? (
-                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[180px] sm:h-[240px] md:h-[280px]">
+                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[144px] sm:h-[192px] md:h-[224px]">
                   <img
                     src={heroImage}
                     alt={urlMeta.title || urlMeta.domain || ''}
