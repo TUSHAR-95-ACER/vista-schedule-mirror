@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AutoExpandTextarea } from '@/components/shared/AutoExpandTextarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft } from 'lucide-react';
@@ -14,6 +13,7 @@ import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
+import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { coerceRichJournal, serializeJournal } from '@/lib/journalData';
 import { PlanListHeader, PlanDetailHeader, PlanEmptyState } from '@/components/plans/PlanHeader';
 import { PlanListItem } from '@/components/plans/PlanListItem';
@@ -437,9 +437,9 @@ export default function DailyPlanPage() {
           </SectionCard>
 
           {/* Prediction + Result — side-by-side on desktop, stacked on mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
-              <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
+              <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" maxPreviewHeight="336px" />
               <RichJournalBlock
                 title="Prediction Notes"
                 scope={`daily/${localPlan.id}/pair-${pp.id}/analysis`}
@@ -451,8 +451,16 @@ export default function DailyPlanPage() {
             </SectionCard>
 
             <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
-              <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
-              <AutoExpandTextarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened…" className="text-sm font-journal" minRows={2} />
+              <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" maxPreviewHeight="336px" />
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">Result Notes</Label>
+                <RichTextEditor
+                  value={pp.resultNarrative || ''}
+                  onChange={v => updatePair(pp.id, { resultNarrative: v })}
+                  placeholder="What actually happened…"
+                  className="font-journal"
+                />
+              </div>
             </SectionCard>
           </div>
         </div>
