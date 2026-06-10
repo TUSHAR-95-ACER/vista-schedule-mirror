@@ -70,7 +70,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
   return (
     <div className={cn(
-      'rounded-xl border border-border/60 bg-card overflow-hidden border-l-[3px]',
+      'rounded-xl border border-border/60 bg-card overflow-visible border-l-[3px]',
       accentColors[accent],
       'shadow-[var(--shadow-card)]',
       className
