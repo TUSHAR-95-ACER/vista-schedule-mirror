@@ -289,7 +289,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
               {hasHero ? (
-                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[180px] sm:h-[240px] md:h-[280px]">
+                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[144px] sm:h-[192px] md:h-[224px]">
                   <img
                     src={heroImage}
                     alt={urlMeta.title || urlMeta.domain || ''}
@@ -387,12 +387,12 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               <Loader2 className="h-3.5 w-3.5 text-muted-foreground shrink-0 animate-spin" />
             </a>
           ) : (
-            /* Image preview — full-width, intrinsic aspect ratio */
+            /* Image preview — intrinsic aspect ratio, capped at 80% of legacy display height */
             <img
               src={rawUrl}
               alt={label}
-              style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
-              className="block bg-muted/10 cursor-pointer"
+              style={{ width: '100%', maxWidth: 'none', height: 'auto', maxHeight: '336px', objectFit: 'contain' }}
+              className="block bg-muted/10 cursor-pointer mx-auto"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"
             />

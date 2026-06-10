@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { AutoExpandTextarea } from '@/components/shared/AutoExpandTextarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Newspaper, NotebookPen, ArrowLeft } from 'lucide-react';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
@@ -282,11 +282,11 @@ export default function WeeklyPlanPage() {
         </div>
         <div className="space-y-1.5">
           <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Risk Plan</Label>
-          <Textarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
+          <AutoExpandTextarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="text-sm" placeholder="Max 2% per trade, 5% daily drawdown..." minRows={2} />
         </div>
         <div className="space-y-1.5">
           <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Weekly Goals</Label>
-          <Textarea value={localPlan.goals} onChange={e => update({ goals: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Focus on A+ setups only, max 3 trades per day..." />
+          <AutoExpandTextarea value={localPlan.goals} onChange={e => update({ goals: e.target.value })} className="text-sm" placeholder="Focus on A+ setups only, max 3 trades per day..." minRows={2} />
         </div>
       </SectionCard>
 
@@ -370,7 +370,7 @@ export default function WeeklyPlanPage() {
           {/* Result chart only (Actual Direction removed; lives in Actual Bias above) */}
           <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
             <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg" />
+            <AutoExpandTextarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="text-sm" minRows={2} />
           </SectionCard>
         </div>
       ))}
