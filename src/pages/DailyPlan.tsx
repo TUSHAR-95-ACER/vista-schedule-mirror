@@ -437,24 +437,25 @@ export default function DailyPlanPage() {
             </div>
           </SectionCard>
 
-          {/* Prediction Chart - Notion-style notes */}
-          <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
-            <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
-            <RichJournalBlock
-              title="Prediction Notes"
-              scope={`daily/${localPlan.id}/pair-${pp.id}/analysis`}
-              value={coerceRichJournal(pp.analysisJournal, pp.narrative)}
-              onChange={v => updatePair(pp.id, { analysisJournal: serializeJournal(v), narrative: v.text })}
-              placeholder="Expected price movement, key reasoning…"
-              className="border-0 shadow-none p-0 bg-transparent"
-            />
-          </SectionCard>
+          {/* Prediction + Result — side-by-side on desktop, stacked on mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
+              <UnifiedMediaBox value={pp.chartImage} onChange={v => updatePair(pp.id, { chartImage: v })} label="Prediction Chart" />
+              <RichJournalBlock
+                title="Prediction Notes"
+                scope={`daily/${localPlan.id}/pair-${pp.id}/analysis`}
+                value={coerceRichJournal(pp.analysisJournal, pp.narrative)}
+                onChange={v => updatePair(pp.id, { analysisJournal: serializeJournal(v), narrative: v.text })}
+                placeholder="Expected price movement, key reasoning…"
+                className="border-0 shadow-none p-0 bg-transparent"
+              />
+            </SectionCard>
 
-          {/* Result */}
-          <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
-            <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg font-journal" />
-          </SectionCard>
+            <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
+              <UnifiedMediaBox value={pp.resultChartImage} onChange={v => updatePair(pp.id, { resultChartImage: v })} label="Result Chart" />
+              <AutoExpandTextarea value={pp.resultNarrative || ''} onChange={e => updatePair(pp.id, { resultNarrative: e.target.value })} placeholder="What actually happened…" className="text-sm font-journal" minRows={2} />
+            </SectionCard>
+          </div>
         </div>
       ))}
 
