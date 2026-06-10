@@ -387,12 +387,12 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               <Loader2 className="h-3.5 w-3.5 text-muted-foreground shrink-0 animate-spin" />
             </a>
           ) : (
-            /* Image preview — full-width, intrinsic aspect ratio */
+            /* Image preview — intrinsic aspect ratio, capped at 80% of legacy display height */
             <img
               src={rawUrl}
               alt={label}
-              style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
-              className="block bg-muted/10 cursor-pointer"
+              style={{ width: '100%', maxWidth: 'none', height: 'auto', maxHeight: '336px', objectFit: 'contain' }}
+              className="block bg-muted/10 cursor-pointer mx-auto"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"
             />
