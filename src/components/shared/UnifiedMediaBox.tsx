@@ -38,7 +38,7 @@ function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov)(\?|$)/i.test(url) || url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
 }
 
-export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '420px' }: UnifiedMediaBoxProps) {
+export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px' }: UnifiedMediaBoxProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -284,7 +284,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               <iframe src={`https://www.youtube.com/embed/${ytId}`} className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
             </div>
           ) : mediaType === 'video' || rawUrl.startsWith('blob:') || rawUrl.startsWith('data:video') ? (
-            <video src={rawUrl} controls className="w-full rounded-xl bg-black" style={{ maxHeight: maxPreviewHeight }} />
+            <video src={rawUrl} controls className="mx-auto block w-4/5 max-w-full rounded-xl bg-black" style={{ maxHeight: maxPreviewHeight }} />
           ) : mediaType === 'url' && urlMeta ? (
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
@@ -391,7 +391,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
             <img
               src={rawUrl}
               alt={label}
-              style={{ width: '100%', maxWidth: 'none', height: 'auto', maxHeight: '336px', objectFit: 'contain' }}
+              style={{ width: '80%', maxWidth: '100%', height: 'auto', maxHeight: maxPreviewHeight, objectFit: 'contain' }}
               className="block bg-muted/10 cursor-pointer mx-auto"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"

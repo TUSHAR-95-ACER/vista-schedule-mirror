@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,26 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RichTextEditor } from '@/components/shared/RichTextEditor';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+
+type WeeklyReviewNotes = {
+  weeklyNarrative: string;
+  reflection: string;
+  lessons: string;
+  mistakes: string;
+  improvements: string;
+  aiReview: string;
+};
+
+const emptyReviewNotes = (): WeeklyReviewNotes => ({
+  weeklyNarrative: '',
+  reflection: '',
+  lessons: '',
+  mistakes: '',
+  improvements: '',
+  aiReview: '',
+});
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -42,6 +63,7 @@ function calcExecutionScore(t: any): number {
 
 export default function WeeklyReview() {
   const { trades, weeklyPlans } = useTrading();
+  const { user } = useAuth();
   const valid = useMemo(() => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'), [trades]);
 
   const weeklyData = useMemo(() => {
@@ -162,6 +184,25 @@ export default function WeeklyReview() {
   const canPrev = selectedIdx > 0;
   const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
+  const [reviewNotes, setReviewNotes] = useState<WeeklyReviewNotes>(emptyReviewNotes);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) {
+      setReviewNotes(emptyReviewNotes());
+      return;
+    }
+    setReviewNotes(loadUserStorage<WeeklyReviewNotes>(`weeklyReviewNotes:${latest.week}`, user.id, emptyReviewNotes()));
+  }, [user?.id, latest?.week]);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) return;
+    const t = setTimeout(() => saveUserStorage(`weeklyReviewNotes:${latest.week}`, user.id, reviewNotes), 300);
+    return () => clearTimeout(t);
+  }, [user?.id, latest?.week, reviewNotes]);
+
+  const updateReviewNote = (field: keyof WeeklyReviewNotes, value: string) => {
+    setReviewNotes(prev => ({ ...prev, [field]: value }));
+  };
 
   // Insights
   const insights = useMemo(() => {
@@ -331,7 +372,7 @@ export default function WeeklyReview() {
             <Card>
               <CardContent className="p-4">
                 <ChartHeader title="Weekly P/L Trend" tooltip="How your weekly profit/loss has been trending" />
-                <div className="h-[240px]">
+                <div className="h-[192px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={plTrend}>
                       <defs>
@@ -353,7 +394,7 @@ export default function WeeklyReview() {
             <Card>
               <CardContent className="p-4">
                 <ChartHeader title="Win Rate by Week" tooltip="Weekly win rate comparison" />
-                <div className="h-[240px]">
+                <div className="h-[192px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData.map(w => ({ name: w.weekName, winRate: w.winRate }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -366,6 +407,32 @@ export default function WeeklyReview() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Rich weekly review notes — full editor controls, page scroll only */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            {[
+              ['weeklyNarrative', 'Weekly Narrative', 'Market story, weekly context, and key themes…'],
+              ['reflection', 'Reflection', 'How did you execute this week?'],
+              ['lessons', 'Lessons', 'Lessons to carry into next week…'],
+              ['mistakes', 'Mistakes', 'Mistakes, leaks, and repeated behaviors…'],
+              ['improvements', 'Improvements', 'Concrete process improvements…'],
+              ['aiReview', 'AI Review', 'Paste or refine AI review notes here…'],
+            ].map(([field, title, placeholder]) => (
+              <Card key={field} className="overflow-visible">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RichTextEditor
+                    value={reviewNotes[field as keyof WeeklyReviewNotes]}
+                    onChange={v => updateReviewNote(field as keyof WeeklyReviewNotes, v)}
+                    placeholder={placeholder}
+                    className="font-journal"
+                  />
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           {/* All Weeks Table */}

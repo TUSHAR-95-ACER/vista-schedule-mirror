@@ -202,11 +202,11 @@ export function RichTextEditor({
   };
 
   return (
-    <div className={cn('relative', className)} onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
+    <div className={cn('relative overflow-visible', className)} onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
       <BubbleMenu
         editor={editor}
-        options={{ placement: 'top' }}
-        className="z-50 flex items-center gap-0.5 rounded-xl border border-border bg-popover/95 px-1.5 py-1 shadow-xl backdrop-blur"
+        options={{ placement: 'top', strategy: 'fixed' }}
+        className="z-[9999] flex items-center gap-0.5 rounded-xl border border-border bg-popover/95 px-1.5 py-1 shadow-xl backdrop-blur"
       >
         <ToolbarBtn title="Heading 1" active={editor.isActive('heading', { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="h-3.5 w-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Heading 2" active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="h-3.5 w-3.5" /></ToolbarBtn>
