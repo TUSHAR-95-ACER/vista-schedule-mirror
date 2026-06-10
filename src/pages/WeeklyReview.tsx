@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,26 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGri
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RichTextEditor } from '@/components/shared/RichTextEditor';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+
+type WeeklyReviewNotes = {
+  weeklyNarrative: string;
+  reflection: string;
+  lessons: string;
+  mistakes: string;
+  improvements: string;
+  aiReview: string;
+};
+
+const emptyReviewNotes = (): WeeklyReviewNotes => ({
+  weeklyNarrative: '',
+  reflection: '',
+  lessons: '',
+  mistakes: '',
+  improvements: '',
+  aiReview: '',
+});
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
