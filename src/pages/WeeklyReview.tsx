@@ -372,7 +372,7 @@ export default function WeeklyReview() {
             <Card>
               <CardContent className="p-4">
                 <ChartHeader title="Weekly P/L Trend" tooltip="How your weekly profit/loss has been trending" />
-                <div className="h-[240px]">
+                <div className="h-[192px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={plTrend}>
                       <defs>
@@ -394,7 +394,7 @@ export default function WeeklyReview() {
             <Card>
               <CardContent className="p-4">
                 <ChartHeader title="Win Rate by Week" tooltip="Weekly win rate comparison" />
-                <div className="h-[240px]">
+                <div className="h-[192px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={weeklyData.map(w => ({ name: w.weekName, winRate: w.winRate }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
