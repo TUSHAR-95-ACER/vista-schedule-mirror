@@ -283,11 +283,11 @@ export default function WeeklyPlanPage() {
         </div>
         <div className="space-y-1.5">
           <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Risk Plan</Label>
-          <Textarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Max 2% per trade, 5% daily drawdown..." />
+          <AutoExpandTextarea value={localPlan.risk} onChange={e => update({ risk: e.target.value })} className="text-sm" placeholder="Max 2% per trade, 5% daily drawdown..." minRows={2} />
         </div>
         <div className="space-y-1.5">
           <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Weekly Goals</Label>
-          <Textarea value={localPlan.goals} onChange={e => update({ goals: e.target.value })} className="min-h-[60px] text-sm rounded-lg" placeholder="Focus on A+ setups only, max 3 trades per day..." />
+          <AutoExpandTextarea value={localPlan.goals} onChange={e => update({ goals: e.target.value })} className="text-sm" placeholder="Focus on A+ setups only, max 3 trades per day..." minRows={2} />
         </div>
       </SectionCard>
 
