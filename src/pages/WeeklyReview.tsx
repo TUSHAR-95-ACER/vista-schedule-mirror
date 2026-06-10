@@ -409,6 +409,32 @@ export default function WeeklyReview() {
             </Card>
           </div>
 
+          {/* Rich weekly review notes — full editor controls, page scroll only */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            {[
+              ['weeklyNarrative', 'Weekly Narrative', 'Market story, weekly context, and key themes…'],
+              ['reflection', 'Reflection', 'How did you execute this week?'],
+              ['lessons', 'Lessons', 'Lessons to carry into next week…'],
+              ['mistakes', 'Mistakes', 'Mistakes, leaks, and repeated behaviors…'],
+              ['improvements', 'Improvements', 'Concrete process improvements…'],
+              ['aiReview', 'AI Review', 'Paste or refine AI review notes here…'],
+            ].map(([field, title, placeholder]) => (
+              <Card key={field} className="overflow-visible">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <RichTextEditor
+                    value={reviewNotes[field as keyof WeeklyReviewNotes]}
+                    onChange={v => updateReviewNote(field as keyof WeeklyReviewNotes, v)}
+                    placeholder={placeholder}
+                    className="font-journal"
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
           {/* All Weeks Table */}
           <Card>
             <CardContent className="p-0">
