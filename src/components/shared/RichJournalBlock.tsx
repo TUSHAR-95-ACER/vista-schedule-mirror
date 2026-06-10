@@ -210,13 +210,13 @@ export function RichJournalBlock({
                   <img
                     src={m.url}
                     alt={m.name || 'media'}
-                    className="w-full h-40 object-cover"
+                    className="w-full h-32 object-contain bg-muted/20"
                     loading="lazy"
                   />
                 </button>
               ) : (
                 <div className="relative">
-                  <video src={m.url} className="w-full h-40 object-cover" controls preload="metadata" />
+                  <video src={m.url} className="w-full h-32 object-contain bg-muted/20" controls preload="metadata" />
                   <div className="absolute top-2 left-2 bg-background/80 backdrop-blur rounded-md px-1.5 py-0.5 text-[10px] font-semibold text-foreground flex items-center gap-1">
                     <Play className="h-3 w-3" /> Video
                   </div>
@@ -237,7 +237,7 @@ export function RichJournalBlock({
           {pending.map((p) => (
             <div
               key={p.id}
-              className="rounded-xl border border-dashed border-border bg-muted/30 p-3 flex flex-col justify-center gap-2 h-40"
+              className="rounded-xl border border-dashed border-border bg-muted/30 p-3 flex flex-col justify-center gap-2 h-32"
             >
               <div className="flex items-center gap-2 text-xs text-foreground truncate">
                 {p.error ? (
