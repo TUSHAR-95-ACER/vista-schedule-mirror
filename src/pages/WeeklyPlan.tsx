@@ -371,7 +371,7 @@ export default function WeeklyPlanPage() {
           {/* Result chart only (Actual Direction removed; lives in Actual Bias above) */}
           <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Week">
             <UnifiedMediaBox value={pa.resultChartImage} onChange={v => updatePair(pa.id, { resultChartImage: v })} label="Result Chart" />
-            <Textarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="min-h-[60px] text-sm rounded-lg" />
+            <AutoExpandTextarea value={pa.note || ''} onChange={e => updatePair(pa.id, { note: e.target.value })} placeholder="What actually happened…" className="text-sm" minRows={2} />
           </SectionCard>
         </div>
       ))}
