@@ -322,6 +322,19 @@
 /* ===== Tiptap rich text editor ===== */
 .tiptap {
   outline: none;
+  overflow: visible;
+  max-height: none;
+}
+.ProseMirror {
+  overflow: visible !important;
+  max-height: none !important;
+}
+/* Plan / Journal text editors must auto-grow with content — never scroll internally. */
+.rich-content,
+.font-journal textarea {
+  overflow: visible;
+  max-height: none;
+  resize: none;
 }
 .tiptap p { margin: 0.25rem 0; }
 .tiptap h1 { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin: 0.75rem 0 0.5rem; }
