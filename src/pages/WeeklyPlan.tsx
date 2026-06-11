@@ -335,6 +335,26 @@ export default function WeeklyPlanPage() {
             )}
           </div>
 
+          {/* Predicted Bias vs Actual Bias — placed BEFORE charts */}
+          <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
+                <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as PairAnalysis['bias'] })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <BiasSelectContent />
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
+                <Select value={pa.actualBias || 'none'} onValueChange={v => updatePair(pa.id, { actualBias: v === 'none' ? '' : v as PairAnalysis['actualBias'] })}>
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                  <BiasSelectContent includeNone />
+                </Select>
+              </div>
+            </div>
+          </SectionCard>
+
           {/* Chart Analysis - exact 50/50 desktop split */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
@@ -362,26 +382,6 @@ export default function WeeklyPlanPage() {
               </div>
             </SectionCard>
           </div>
-
-          {/* Predicted Bias vs Actual Bias */}
-          <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Predicted Bias</Label>
-                <Select value={pa.bias} onValueChange={v => updatePair(pa.id, { bias: v as PairAnalysis['bias'] })}>
-                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue /></SelectTrigger>
-                  <BiasSelectContent />
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Actual Bias</Label>
-                <Select value={pa.actualBias || 'none'} onValueChange={v => updatePair(pa.id, { actualBias: v === 'none' ? '' : v as PairAnalysis['actualBias'] })}>
-                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
-                  <BiasSelectContent includeNone />
-                </Select>
-              </div>
-            </div>
-          </SectionCard>
 
         </div>
       ))}
