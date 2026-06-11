@@ -42,7 +42,7 @@ export function HourChart({ trades }: { trades: Trade[] }) {
       row.trades++;
       if (t.result === 'Win') row.wins++;
       row.pl += t.profitLoss;
-      const rr = typeof t.riskReward === 'number' ? t.riskReward : Number(t.riskReward);
+      const rr = typeof t.actualRR === 'number' ? t.actualRR : t.plannedRR;
       if (!isNaN(rr) && rr !== 0) { row.rrSum += rr; row.rrCount++; }
       map.set(hh, row);
     });
