@@ -262,6 +262,7 @@ export type Database = {
           id: string
           impact: string | null
           notes: string | null
+          outcome_status: string | null
           previous: number | null
           release_date: string
           surprise: string | null
@@ -280,6 +281,7 @@ export type Database = {
           id?: string
           impact?: string | null
           notes?: string | null
+          outcome_status?: string | null
           previous?: number | null
           release_date?: string
           surprise?: string | null
@@ -298,6 +300,7 @@ export type Database = {
           id?: string
           impact?: string | null
           notes?: string | null
+          outcome_status?: string | null
           previous?: number | null
           release_date?: string
           surprise?: string | null

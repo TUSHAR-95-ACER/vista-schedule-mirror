@@ -50,6 +50,7 @@ type MacroEvent = {
   trend?: string | null;
   impact?: string | null;
   notes?: string | null;
+  outcome_status?: "worked" | "not_worked" | null;
 };
 
 type ForwardOutcome = { probability: number; outcomes: string[] };
@@ -376,7 +377,23 @@ export default function MacroIntelligence() {
   const [showDeepDive, setShowDeepDive] = useState(false);
   const [confirmNewCycleOpen, setConfirmNewCycleOpen] = useState(false);
 
-  useEffect(() => { if (user) bootstrap(); /* eslint-disable-next-line */ }, [user]);
+  // ----- Cross-cycle prediction history (all events, all time) -----
+  const [allEvents, setAllEvents] = useState<MacroEvent[]>([]);
+  type RangeKey = "today" | "week" | "month" | "90d" | "year" | "all";
+  const [historyRange, setHistoryRange] = useState<RangeKey>("month");
+
+  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); } /* eslint-disable-next-line */ }, [user]);
+
+  async function loadAllEvents() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("macro_events")
+      .select("id, cycle_id, release_date, event, category, previous, forecast, actual, unit, surprise, trend, impact, notes, outcome_status")
+      .eq("user_id", user.id)
+      .order("release_date", { ascending: false })
+      .limit(2000);
+    setAllEvents((data as MacroEvent[]) || []);
+  }
 
   /* ---------- bootstrap & cycle management ---------- */
   async function bootstrap() {
@@ -535,6 +552,7 @@ export default function MacroIntelligence() {
     const { error } = await supabase.from("macro_events").insert(rows);
     if (error) return toast.error(error.message);
     toast.success("Events saved");
+    loadAllEvents();
   }
 
   /* ---------- analysis ---------- */
@@ -635,6 +653,7 @@ export default function MacroIntelligence() {
         return [enriched, ...without].slice(0, 30);
       });
       toast.success("Macro intelligence updated");
+      loadAllEvents();
     } catch (e: any) {
       toast.error(e?.message || "Analysis failed");
     } finally {
@@ -649,13 +668,64 @@ export default function MacroIntelligence() {
     toast.success("Outcome recorded");
   }
 
+  async function setEventOutcome(id: string, status: "worked" | "not_worked") {
+    const { error } = await supabase.from("macro_events").update({ outcome_status: status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    setAllEvents(prev => prev.map(e => e.id === id ? { ...e, outcome_status: status } : e));
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, outcome_status: status } : e));
+    toast.success("Outcome recorded");
+  }
+
   /* ---------- derived ---------- */
+  // Aggregate (analysis-level) hit rate — kept for backwards compat
   const accuracyStats = useMemo(() => {
     const scored = analyses.filter(a => a.outcome_status === "worked" || a.outcome_status === "not_worked");
     const total = scored.length;
     const hits = scored.filter(a => a.outcome_status === "worked").length;
     return { total, hits, rate: total ? Math.round((hits / total) * 100) : 0 };
   }, [analyses]);
+
+  // Per-event hit rate stats across all cycles, all time.
+  const eventHitStats = useMemo(() => {
+    const now = new Date();
+    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const ninetyAgo = new Date(now); ninetyAgo.setDate(ninetyAgo.getDate() - 90);
+
+    const score = (list: MacroEvent[]) => {
+      const scored = list.filter(e => e.outcome_status === "worked" || e.outcome_status === "not_worked");
+      const hits = scored.filter(e => e.outcome_status === "worked").length;
+      return { total: scored.length, hits, rate: scored.length ? Math.round((hits / scored.length) * 100) : 0 };
+    };
+    const inRange = (since: Date) => allEvents.filter(e => new Date(e.release_date) >= since);
+
+    return {
+      overall: score(allEvents),
+      month: score(inRange(monthAgo)),
+      last90: score(inRange(ninetyAgo)),
+    };
+  }, [allEvents]);
+
+  const filteredHistory = useMemo(() => {
+    const now = new Date();
+    const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+    const startOfWeek = () => {
+      const x = startOfDay(now); x.setDate(x.getDate() - x.getDay()); return x;
+    };
+    const since: Date | null = (() => {
+      switch (historyRange) {
+        case "today":  return startOfDay(now);
+        case "week":   return startOfWeek();
+        case "month":  { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
+        case "90d":    { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
+        case "year":   { const x = startOfDay(now); x.setFullYear(x.getFullYear() - 1); return x; }
+        case "all":    return null;
+      }
+    })();
+    return allEvents
+      .filter(e => e.actual != null || isToneEvent(e))
+      .filter(e => !since || new Date(e.release_date) >= since)
+      .slice(0, 500);
+  }, [allEvents, historyRange]);
 
   const eventsByCategory = useMemo(() => {
     const groups: Record<string, MacroEvent[]> = {};
@@ -939,78 +1009,58 @@ export default function MacroIntelligence() {
                 }
                 return (
                   <CategoryGroup key={cat} category={cat} count={rows.length} defaultOpen onAdd={onAdd}>
-                    {cat === 'Fed' ? (
-                      /* Fed category renders per-row so each event picks its own field shape:
-                         numeric events (Federal Funds Rate, yields, …) → Prev/Fcst/Actual + auto Market Signal.
-                         Tone events (FOMC Tone, Statement, …) → Hawkish/Neutral/Dovish dropdown. */
-                      <div className="space-y-2">
-                        {rows.map((e) => {
-                          const i = events.indexOf(e);
-                          const toneEvent = isToneEvent(e);
-                          return (
-                            <div key={i} className="rounded-lg border border-border/40 bg-background/30 p-2.5">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Input disabled={isReadOnly} value={e.event} onChange={ev => updateEvent(i, { event: ev.target.value })} className="h-8 flex-1 min-w-[180px] bg-transparent border-border/40" placeholder="e.g. FOMC Tone or Federal Funds Rate" />
-                                {!isReadOnly && (
-                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
+                            <th className="text-left font-medium px-2 py-1.5">Event</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-44">Market Signal</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-36">Economic Direction</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
+                            {!isReadOnly && <th className="w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((e) => {
+                            const i = events.indexOf(e);
+                            const toneEvent = isToneEvent(e);
+                            return (
+                              <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
+                                <td className="px-2 py-1.5">
+                                  <Input
+                                    disabled={isReadOnly}
+                                    value={e.event}
+                                    onChange={ev => updateEvent(i, { event: ev.target.value })}
+                                    className="h-8 bg-transparent border-border/40"
+                                    placeholder={cat === 'Fed' ? 'e.g. FOMC Tone or Federal Funds Rate' : 'Event name'}
+                                  />
+                                </td>
+                                {toneEvent ? (
+                                  <td className="px-2 py-1.5" colSpan={3}>
+                                    <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
+                                  </td>
+                                ) : (
+                                  <>
+                                    <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
+                                    <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
+                                    <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
+                                  </>
                                 )}
-                              </div>
-                              {!toneEvent ? (
-                                <div className="mt-2 grid grid-cols-2 md:grid-cols-6 gap-2 items-center">
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Previous</div><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Forecast</div><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Actual</div><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal</div><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Economic Direction</div><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></div>
-                                </div>
-                              ) : (
-                                <div className="mt-2 max-w-xs">
-                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div>
-                                  <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
-                              <th className="text-left font-medium px-2 py-1.5">Event</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-44">Market Signal</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-36">Economic Direction</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
-                              {!isReadOnly && <th className="w-8"></th>}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {rows.map((e) => {
-                              const i = events.indexOf(e);
-                              return (
-                                <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
-                                  <td className="px-2 py-1.5"><Input disabled={isReadOnly} value={e.event} onChange={ev => updateEvent(i, { event: ev.target.value })} className="h-8 bg-transparent border-border/40" /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
-                                  {!isReadOnly && (
-                                    <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
-                                  )}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                                <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
+                                <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
+                                <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
+                                {!isReadOnly && (
+                                  <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
+                                )}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </CategoryGroup>
                 );
               })
@@ -1038,35 +1088,112 @@ export default function MacroIntelligence() {
             </div>
           </GlassCard>
 
-          {/* Prediction History */}
+          {/* Prediction History — per-event, all cycles, all time */}
           <GlassCard className="p-6">
-            <SectionHeader icon={<Layers className="h-4 w-4" />} title="Prediction History" subtitle={`${accuracyStats.hits}/${accuracyStats.total} worked • ${accuracyStats.rate}% hit rate`} />
+            <SectionHeader
+              icon={<Layers className="h-4 w-4" />}
+              title="Prediction History"
+              subtitle="Every NFP, CPI, PCE, FOMC, PMI, GDP… across all cycles. Mark worked / not worked after each release."
+            />
+
+            {/* Hit-rate tiles */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {([
+                { label: "Overall", s: eventHitStats.overall },
+                { label: "This Month", s: eventHitStats.month },
+                { label: "Last 90 Days", s: eventHitStats.last90 },
+              ] as const).map(({ label, s }) => (
+                <div key={label} className="rounded-lg border border-border/50 bg-background/30 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+                  <div className="mt-0.5 font-heading text-lg font-bold tabular-nums text-foreground">{s.rate}%</div>
+                  <div className="text-[10px] text-muted-foreground">{s.hits}/{s.total} worked</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Range filter chips */}
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {([
+                { k: "today", l: "Today" },
+                { k: "week",  l: "This Week" },
+                { k: "month", l: "This Month" },
+                { k: "90d",   l: "Last 3 Months" },
+                { k: "year",  l: "This Year" },
+                { k: "all",   l: "All Time" },
+              ] as { k: RangeKey; l: string }[]).map(({ k, l }) => (
+                <button
+                  key={k}
+                  onClick={() => setHistoryRange(k)}
+                  className={`px-2.5 py-1 rounded-md border text-[11px] transition-colors ${
+                    historyRange === k
+                      ? "border-primary/60 bg-primary/15 text-primary"
+                      : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
             <Separator className="my-4" />
-            <div className="space-y-2">
-              {analyses.length === 0 && <p className="text-sm text-muted-foreground italic">No predictions yet.</p>}
-              {analyses.map(a => (
-                <div key={a.id || a.analysis_date} className="rounded-lg border border-border/50 bg-background/30 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[10px]">{a.analysis_date}</Badge>
-                      <span className={`flex items-center gap-1 ${biasTone(a.usd_bias)}`}>USD {a.usd_bias || "—"}</span>
-                      <span className={`flex items-center gap-1 ${biasTone(a.gold_bias)}`}>Gold {a.gold_bias || "—"}</span>
-                      <span className={`flex items-center gap-1 ${biasTone(a.fed_bias)}`}>Fed {a.fed_bias || "—"}</span>
+
+            <div className="max-h-[460px] overflow-y-auto pr-1 space-y-2">
+              {filteredHistory.length === 0 && (
+                <p className="text-sm text-muted-foreground italic">No predictions in this range.</p>
+              )}
+              {filteredHistory.map(e => {
+                const tone = isToneEvent(e) ? getFedTone(e) : null;
+                return (
+                  <div key={e.id || `${e.release_date}-${e.event}`} className="rounded-lg border border-border/50 bg-background/30 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{e.release_date}</Badge>
+                        <span className="text-xs font-semibold text-foreground truncate">{e.event}</span>
+                        {e.category && <Badge variant="outline" className="text-[10px] opacity-70">{e.category}</Badge>}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {e.outcome_status === "worked" && (
+                          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>
+                        )}
+                        {e.outcome_status === "not_worked" && (
+                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>
+                        )}
+                        {!e.outcome_status && e.id && (
+                          <>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "worked")}>
+                              <CheckCircle2 className="h-3 w-3" /> Worked
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "not_worked")}>
+                              <XCircle className="h-3 w-3" /> Not Worked
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {a.outcome_status === "worked" && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>}
-                      {a.outcome_status === "not_worked" && <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>}
-                      {!a.outcome_status && a.id && (
+
+                    {/* Compact readout: prev / fcst / actual + auto labels */}
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 text-[11px]">
+                      {tone ? (
+                        <div className="col-span-2 sm:col-span-6 flex items-center gap-2">
+                          <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Tone</span>
+                          <LabelPill value={tone} tone={tone === "Hawkish" ? "rose" : tone === "Dovish" ? "emerald" : "muted"} />
+                        </div>
+                      ) : (
                         <>
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setOutcome(a.id!, "worked")}><CheckCircle2 className="h-3 w-3" /> Worked</Button>
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setOutcome(a.id!, "not_worked")}><XCircle className="h-3 w-3" /> Not Worked</Button>
+                          <div><span className="text-muted-foreground">Prev</span> <span className="tabular-nums">{e.previous ?? "—"}</span></div>
+                          <div><span className="text-muted-foreground">Fcst</span> <span className="tabular-nums">{e.forecast ?? "—"}</span></div>
+                          <div><span className="text-muted-foreground">Actual</span> <span className="tabular-nums font-medium text-foreground">{e.actual ?? "—"}</span></div>
+                          <div className="col-span-2 sm:col-span-1"><LabelPill value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
+                          <div><LabelPill value={e.trend} tone={surpriseTone(e.trend)} /></div>
+                          <div><LabelPill value={e.impact} tone={e.impact === "High" ? "rose" : e.impact === "Medium" ? "amber" : "muted"} /></div>
                         </>
                       )}
                     </div>
+
+                    {e.notes && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{e.notes}</p>}
                   </div>
-                  {a.narrative && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{a.narrative}</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </GlassCard>
         </div>
