@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { WeekdayChart } from '@/components/dashboard/WeekdayChart';
+import { HourChart } from '@/components/dashboard/HourChart';
 import {
   TrendingUp,
   TrendingDown,
@@ -268,8 +269,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* By Grade */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+      {/* By Grade + By Day */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
           <ChartHeader title="By Grade" tooltip="Performance grouped by the quality grade you assigned to each trade" />
           <PerformanceByGradeChart trades={trades} />
@@ -277,6 +278,14 @@ export default function Dashboard() {
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
           <ChartHeader title="By Day (P/L)" tooltip="P/L broken down by day of the week to find your best trading days" />
           <div className="h-[200px] sm:h-[240px]"><WeekdayChart trades={trades} /></div>
+        </div>
+      </div>
+
+      {/* By Time (P/L) */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
+          <ChartHeader title="By Time (P/L)" tooltip="Net P/L grouped by trade entry hour. Gold highlights your most profitable hour." />
+          <div className="h-[200px] sm:h-[240px]"><HourChart trades={trades} /></div>
         </div>
       </div>
     </div>

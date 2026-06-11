@@ -205,6 +205,12 @@ export function RichTextEditor({
     <div className={cn('relative overflow-visible', className)} onPaste={onPaste} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
       <BubbleMenu
         editor={editor}
+        updateDelay={0}
+        shouldShow={({ editor, from, to }) => {
+          if (from === to) return false;
+          const text = editor.state.doc.textBetween(from, to, ' ').trim();
+          return text.length > 0;
+        }}
         options={{ placement: 'top', strategy: 'fixed' }}
         className="z-[9999] flex items-center gap-0.5 rounded-xl border border-border bg-popover/95 px-1.5 py-1 shadow-xl backdrop-blur"
       >
