@@ -666,13 +666,64 @@ export default function MacroIntelligence() {
     toast.success("Outcome recorded");
   }
 
+  async function setEventOutcome(id: string, status: "worked" | "not_worked") {
+    const { error } = await supabase.from("macro_events").update({ outcome_status: status }).eq("id", id);
+    if (error) return toast.error(error.message);
+    setAllEvents(prev => prev.map(e => e.id === id ? { ...e, outcome_status: status } : e));
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, outcome_status: status } : e));
+    toast.success("Outcome recorded");
+  }
+
   /* ---------- derived ---------- */
+  // Aggregate (analysis-level) hit rate — kept for backwards compat
   const accuracyStats = useMemo(() => {
     const scored = analyses.filter(a => a.outcome_status === "worked" || a.outcome_status === "not_worked");
     const total = scored.length;
     const hits = scored.filter(a => a.outcome_status === "worked").length;
     return { total, hits, rate: total ? Math.round((hits / total) * 100) : 0 };
   }, [analyses]);
+
+  // Per-event hit rate stats across all cycles, all time.
+  const eventHitStats = useMemo(() => {
+    const now = new Date();
+    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const ninetyAgo = new Date(now); ninetyAgo.setDate(ninetyAgo.getDate() - 90);
+
+    const score = (list: MacroEvent[]) => {
+      const scored = list.filter(e => e.outcome_status === "worked" || e.outcome_status === "not_worked");
+      const hits = scored.filter(e => e.outcome_status === "worked").length;
+      return { total: scored.length, hits, rate: scored.length ? Math.round((hits / scored.length) * 100) : 0 };
+    };
+    const inRange = (since: Date) => allEvents.filter(e => new Date(e.release_date) >= since);
+
+    return {
+      overall: score(allEvents),
+      month: score(inRange(monthAgo)),
+      last90: score(inRange(ninetyAgo)),
+    };
+  }, [allEvents]);
+
+  const filteredHistory = useMemo(() => {
+    const now = new Date();
+    const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+    const startOfWeek = () => {
+      const x = startOfDay(now); x.setDate(x.getDate() - x.getDay()); return x;
+    };
+    const since: Date | null = (() => {
+      switch (historyRange) {
+        case "today":  return startOfDay(now);
+        case "week":   return startOfWeek();
+        case "month":  { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
+        case "90d":    { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
+        case "year":   { const x = startOfDay(now); x.setFullYear(x.getFullYear() - 1); return x; }
+        case "all":    return null;
+      }
+    })();
+    return allEvents
+      .filter(e => e.actual != null || isToneEvent(e))
+      .filter(e => !since || new Date(e.release_date) >= since)
+      .slice(0, 500);
+  }, [allEvents, historyRange]);
 
   const eventsByCategory = useMemo(() => {
     const groups: Record<string, MacroEvent[]> = {};
