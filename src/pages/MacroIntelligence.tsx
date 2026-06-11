@@ -377,7 +377,23 @@ export default function MacroIntelligence() {
   const [showDeepDive, setShowDeepDive] = useState(false);
   const [confirmNewCycleOpen, setConfirmNewCycleOpen] = useState(false);
 
-  useEffect(() => { if (user) bootstrap(); /* eslint-disable-next-line */ }, [user]);
+  // ----- Cross-cycle prediction history (all events, all time) -----
+  const [allEvents, setAllEvents] = useState<MacroEvent[]>([]);
+  type RangeKey = "today" | "week" | "month" | "90d" | "year" | "all";
+  const [historyRange, setHistoryRange] = useState<RangeKey>("month");
+
+  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); } /* eslint-disable-next-line */ }, [user]);
+
+  async function loadAllEvents() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("macro_events")
+      .select("id, cycle_id, release_date, event, category, previous, forecast, actual, unit, surprise, trend, impact, notes, outcome_status")
+      .eq("user_id", user.id)
+      .order("release_date", { ascending: false })
+      .limit(2000);
+    setAllEvents((data as MacroEvent[]) || []);
+  }
 
   /* ---------- bootstrap & cycle management ---------- */
   async function bootstrap() {
