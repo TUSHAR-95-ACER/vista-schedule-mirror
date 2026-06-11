@@ -552,6 +552,7 @@ export default function MacroIntelligence() {
     const { error } = await supabase.from("macro_events").insert(rows);
     if (error) return toast.error(error.message);
     toast.success("Events saved");
+    loadAllEvents();
   }
 
   /* ---------- analysis ---------- */
@@ -652,6 +653,7 @@ export default function MacroIntelligence() {
         return [enriched, ...without].slice(0, 30);
       });
       toast.success("Macro intelligence updated");
+      loadAllEvents();
     } catch (e: any) {
       toast.error(e?.message || "Analysis failed");
     } finally {
