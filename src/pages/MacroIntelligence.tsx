@@ -50,6 +50,7 @@ type MacroEvent = {
   trend?: string | null;
   impact?: string | null;
   notes?: string | null;
+  outcome_status?: "worked" | "not_worked" | null;
 };
 
 type ForwardOutcome = { probability: number; outcomes: string[] };
