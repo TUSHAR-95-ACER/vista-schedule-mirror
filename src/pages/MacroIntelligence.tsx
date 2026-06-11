@@ -1009,78 +1009,58 @@ export default function MacroIntelligence() {
                 }
                 return (
                   <CategoryGroup key={cat} category={cat} count={rows.length} defaultOpen onAdd={onAdd}>
-                    {cat === 'Fed' ? (
-                      /* Fed category renders per-row so each event picks its own field shape:
-                         numeric events (Federal Funds Rate, yields, …) → Prev/Fcst/Actual + auto Market Signal.
-                         Tone events (FOMC Tone, Statement, …) → Hawkish/Neutral/Dovish dropdown. */
-                      <div className="space-y-2">
-                        {rows.map((e) => {
-                          const i = events.indexOf(e);
-                          const toneEvent = isToneEvent(e);
-                          return (
-                            <div key={i} className="rounded-lg border border-border/40 bg-background/30 p-2.5">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Input disabled={isReadOnly} value={e.event} onChange={ev => updateEvent(i, { event: ev.target.value })} className="h-8 flex-1 min-w-[180px] bg-transparent border-border/40" placeholder="e.g. FOMC Tone or Federal Funds Rate" />
-                                {!isReadOnly && (
-                                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
+                            <th className="text-left font-medium px-2 py-1.5">Event</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-44">Market Signal</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-36">Economic Direction</th>
+                            <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
+                            {!isReadOnly && <th className="w-8"></th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((e) => {
+                            const i = events.indexOf(e);
+                            const toneEvent = isToneEvent(e);
+                            return (
+                              <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
+                                <td className="px-2 py-1.5">
+                                  <Input
+                                    disabled={isReadOnly}
+                                    value={e.event}
+                                    onChange={ev => updateEvent(i, { event: ev.target.value })}
+                                    className="h-8 bg-transparent border-border/40"
+                                    placeholder={cat === 'Fed' ? 'e.g. FOMC Tone or Federal Funds Rate' : 'Event name'}
+                                  />
+                                </td>
+                                {toneEvent ? (
+                                  <td className="px-2 py-1.5" colSpan={3}>
+                                    <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
+                                  </td>
+                                ) : (
+                                  <>
+                                    <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
+                                    <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
+                                    <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
+                                  </>
                                 )}
-                              </div>
-                              {!toneEvent ? (
-                                <div className="mt-2 grid grid-cols-2 md:grid-cols-6 gap-2 items-center">
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Previous</div><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Forecast</div><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Actual</div><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Market Signal</div><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Economic Direction</div><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></div>
-                                  <div><div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Impact</div><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></div>
-                                </div>
-                              ) : (
-                                <div className="mt-2 max-w-xs">
-                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Fed Tone</div>
-                                  <ToneSelect disabled={isReadOnly} value={getFedTone(e)} onChange={v => updateEvent(i, { unit: v })} />
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground border-b border-border/60">
-                              <th className="text-left font-medium px-2 py-1.5">Event</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Prev</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Fcst</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-[88px]">Actual</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-44">Market Signal</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-36">Economic Direction</th>
-                              <th className="text-left font-medium px-2 py-1.5 w-32">Impact</th>
-                              {!isReadOnly && <th className="w-8"></th>}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {rows.map((e) => {
-                              const i = events.indexOf(e);
-                              return (
-                                <tr key={i} className="border-b border-border/30 hover:bg-accent/30 transition-colors">
-                                  <td className="px-2 py-1.5"><Input disabled={isReadOnly} value={e.event} onChange={ev => updateEvent(i, { event: ev.target.value })} className="h-8 bg-transparent border-border/40" /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.previous} onChange={v => !isReadOnly && updateEvent(i, { previous: v })} /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.forecast} onChange={v => !isReadOnly && updateEvent(i, { forecast: v })} /></td>
-                                  <td className="px-2 py-1.5"><NumInput value={e.actual} onChange={v => !isReadOnly && updateEvent(i, { actual: v })} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
-                                  <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
-                                  {!isReadOnly && (
-                                    <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
-                                  )}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                                <td className="px-2 py-1.5"><AutoReadout value={e.surprise} tone={surpriseTone(e.surprise)} /></td>
+                                <td className="px-2 py-1.5"><AutoReadout value={e.trend} tone={surpriseTone(e.trend)} /></td>
+                                <td className="px-2 py-1.5"><AutoReadout value={e.impact} tone={e.impact === 'High' ? 'rose' : e.impact === 'Medium' ? 'amber' : 'muted'} /></td>
+                                {!isReadOnly && (
+                                  <td className="px-2 py-1.5"><Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeEvent(i)}><Trash2 className="h-3.5 w-3.5" /></Button></td>
+                                )}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </CategoryGroup>
                 );
               })
