@@ -1108,35 +1108,112 @@ export default function MacroIntelligence() {
             </div>
           </GlassCard>
 
-          {/* Prediction History */}
+          {/* Prediction History — per-event, all cycles, all time */}
           <GlassCard className="p-6">
-            <SectionHeader icon={<Layers className="h-4 w-4" />} title="Prediction History" subtitle={`${accuracyStats.hits}/${accuracyStats.total} worked • ${accuracyStats.rate}% hit rate`} />
+            <SectionHeader
+              icon={<Layers className="h-4 w-4" />}
+              title="Prediction History"
+              subtitle="Every NFP, CPI, PCE, FOMC, PMI, GDP… across all cycles. Mark worked / not worked after each release."
+            />
+
+            {/* Hit-rate tiles */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {([
+                { label: "Overall", s: eventHitStats.overall },
+                { label: "This Month", s: eventHitStats.month },
+                { label: "Last 90 Days", s: eventHitStats.last90 },
+              ] as const).map(({ label, s }) => (
+                <div key={label} className="rounded-lg border border-border/50 bg-background/30 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+                  <div className="mt-0.5 font-heading text-lg font-bold tabular-nums text-foreground">{s.rate}%</div>
+                  <div className="text-[10px] text-muted-foreground">{s.hits}/{s.total} worked</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Range filter chips */}
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {([
+                { k: "today", l: "Today" },
+                { k: "week",  l: "This Week" },
+                { k: "month", l: "This Month" },
+                { k: "90d",   l: "Last 3 Months" },
+                { k: "year",  l: "This Year" },
+                { k: "all",   l: "All Time" },
+              ] as { k: RangeKey; l: string }[]).map(({ k, l }) => (
+                <button
+                  key={k}
+                  onClick={() => setHistoryRange(k)}
+                  className={`px-2.5 py-1 rounded-md border text-[11px] transition-colors ${
+                    historyRange === k
+                      ? "border-primary/60 bg-primary/15 text-primary"
+                      : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+
             <Separator className="my-4" />
-            <div className="space-y-2">
-              {analyses.length === 0 && <p className="text-sm text-muted-foreground italic">No predictions yet.</p>}
-              {analyses.map(a => (
-                <div key={a.id || a.analysis_date} className="rounded-lg border border-border/50 bg-background/30 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[10px]">{a.analysis_date}</Badge>
-                      <span className={`flex items-center gap-1 ${biasTone(a.usd_bias)}`}>USD {a.usd_bias || "—"}</span>
-                      <span className={`flex items-center gap-1 ${biasTone(a.gold_bias)}`}>Gold {a.gold_bias || "—"}</span>
-                      <span className={`flex items-center gap-1 ${biasTone(a.fed_bias)}`}>Fed {a.fed_bias || "—"}</span>
+
+            <div className="max-h-[460px] overflow-y-auto pr-1 space-y-2">
+              {filteredHistory.length === 0 && (
+                <p className="text-sm text-muted-foreground italic">No predictions in this range.</p>
+              )}
+              {filteredHistory.map(e => {
+                const tone = isToneEvent(e) ? getFedTone(e) : null;
+                return (
+                  <div key={e.id || `${e.release_date}-${e.event}`} className="rounded-lg border border-border/50 bg-background/30 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{e.release_date}</Badge>
+                        <span className="text-xs font-semibold text-foreground truncate">{e.event}</span>
+                        {e.category && <Badge variant="outline" className="text-[10px] opacity-70">{e.category}</Badge>}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {e.outcome_status === "worked" && (
+                          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>
+                        )}
+                        {e.outcome_status === "not_worked" && (
+                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>
+                        )}
+                        {!e.outcome_status && e.id && (
+                          <>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "worked")}>
+                              <CheckCircle2 className="h-3 w-3" /> Worked
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "not_worked")}>
+                              <XCircle className="h-3 w-3" /> Not Worked
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {a.outcome_status === "worked" && <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>}
-                      {a.outcome_status === "not_worked" && <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>}
-                      {!a.outcome_status && a.id && (
+
+                    {/* Compact readout: prev / fcst / actual + auto labels */}
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 text-[11px]">
+                      {tone ? (
+                        <div className="col-span-2 sm:col-span-6 flex items-center gap-2">
+                          <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Tone</span>
+                          <LabelPill value={tone} tone={tone === "Hawkish" ? "rose" : tone === "Dovish" ? "emerald" : "muted"} />
+                        </div>
+                      ) : (
                         <>
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setOutcome(a.id!, "worked")}><CheckCircle2 className="h-3 w-3" /> Worked</Button>
-                          <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setOutcome(a.id!, "not_worked")}><XCircle className="h-3 w-3" /> Not Worked</Button>
+                          <div><span className="text-muted-foreground">Prev</span> <span className="tabular-nums">{e.previous ?? "—"}</span></div>
+                          <div><span className="text-muted-foreground">Fcst</span> <span className="tabular-nums">{e.forecast ?? "—"}</span></div>
+                          <div><span className="text-muted-foreground">Actual</span> <span className="tabular-nums font-medium text-foreground">{e.actual ?? "—"}</span></div>
+                          <div className="col-span-2 sm:col-span-1"><LabelPill value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
+                          <div><LabelPill value={e.trend} tone={surpriseTone(e.trend)} /></div>
+                          <div><LabelPill value={e.impact} tone={e.impact === "High" ? "rose" : e.impact === "Medium" ? "amber" : "muted"} /></div>
                         </>
                       )}
                     </div>
+
+                    {e.notes && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{e.notes}</p>}
                   </div>
-                  {a.narrative && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{a.narrative}</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </GlassCard>
         </div>
