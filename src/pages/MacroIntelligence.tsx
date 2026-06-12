@@ -701,6 +701,43 @@ export default function MacroIntelligence() {
       });
       toast.success("Macro intelligence updated");
       loadAllEvents();
+
+      // ----- Auto-create Prediction History entry for the locked NFP → CPI → FOMC cycle -----
+      // Find the most recent cycle-trigger event the user just analyzed.
+      const cycleHits = cleaned
+        .map(ev => ({ ev, kind: classifyCycleEvent(ev.event || "") }))
+        .filter(x => x.kind) as { ev: MacroEvent; kind: CycleEvent }[];
+      if (cycleHits.length > 0) {
+        cycleHits.sort((a, b) => (b.ev.release_date || "").localeCompare(a.ev.release_date || ""));
+        const { ev: srcEv, kind: sourceKind } = cycleHits[0];
+        const target = nextCycleEvent(sourceKind);
+        // De-dupe: skip if a pending prediction already exists for the same source on the same date
+        const dupe = predictions.find(
+          p => p.source_event === sourceKind && p.prediction_date === todayISO() && p.status === "pending",
+        );
+        if (!dupe) {
+          const payload = {
+            user_id: user.id,
+            cycle_id: activeCycleId,
+            source_event_id: srcEv.id || null,
+            source_event: sourceKind,
+            target_event: target,
+            prediction_date: todayISO(),
+            usd_outlook: a.usd_bias || null,
+            gold_outlook: a.gold_bias || null,
+            fed_outlook: a.fed_bias || null,
+            narrative: a.dominant_narrative || a.narrative || a.interpretation || null,
+            status: "pending" as const,
+          };
+          const { data: newPred } = await (supabase as any)
+            .from("macro_predictions")
+            .insert(payload)
+            .select()
+            .maybeSingle();
+          if (newPred) setPredictions(prev => [newPred as MacroPrediction, ...prev]);
+          toast.success(`Prediction logged: ${sourceKind} → ${target}`);
+        }
+      }
     } catch (e: any) {
       toast.error(e?.message || "Analysis failed");
     } finally {
