@@ -760,6 +760,16 @@ export default function MacroIntelligence() {
     toast.success("Outcome recorded");
   }
 
+  async function setPredictionStatus(id: string, status: "worked" | "failed") {
+    const { error } = await (supabase as any)
+      .from("macro_predictions")
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    setPredictions(prev => prev.map(p => p.id === id ? { ...p, status, reviewed_at: new Date().toISOString() } : p));
+    toast.success(`Marked ${status}`);
+  }
+
   /* ---------- derived ---------- */
   // Aggregate (analysis-level) hit rate — kept for backwards compat
   const accuracyStats = useMemo(() => {
@@ -769,47 +779,46 @@ export default function MacroIntelligence() {
     return { total, hits, rate: total ? Math.round((hits / total) * 100) : 0 };
   }, [analyses]);
 
-  // Per-event hit rate stats across all cycles, all time.
-  const eventHitStats = useMemo(() => {
+  // Forecast hit-rate stats from macro_predictions
+  const predictionHitStats = useMemo(() => {
     const now = new Date();
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
     const ninetyAgo = new Date(now); ninetyAgo.setDate(ninetyAgo.getDate() - 90);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    const score = (list: MacroEvent[]) => {
-      const scored = list.filter(e => e.outcome_status === "worked" || e.outcome_status === "not_worked");
-      const hits = scored.filter(e => e.outcome_status === "worked").length;
+    const score = (list: MacroPrediction[]) => {
+      const scored = list.filter(p => p.status === "worked" || p.status === "failed");
+      const hits = scored.filter(p => p.status === "worked").length;
       return { total: scored.length, hits, rate: scored.length ? Math.round((hits / scored.length) * 100) : 0 };
     };
-    const inRange = (since: Date) => allEvents.filter(e => new Date(e.release_date) >= since);
-
+    const inRange = (since: Date) => predictions.filter(p => new Date(p.prediction_date) >= since);
     return {
-      overall: score(allEvents),
-      month: score(inRange(monthAgo)),
+      overall: score(predictions),
+      year: score(inRange(yearStart)),
       last90: score(inRange(ninetyAgo)),
     };
-  }, [allEvents]);
+  }, [predictions]);
 
-  const filteredHistory = useMemo(() => {
+  const filteredPredictions = useMemo(() => {
     const now = new Date();
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
-    const startOfWeek = () => {
-      const x = startOfDay(now); x.setDate(x.getDate() - x.getDay()); return x;
-    };
     const since: Date | null = (() => {
       switch (historyRange) {
-        case "today":  return startOfDay(now);
-        case "week":   return startOfWeek();
-        case "month":  { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
-        case "90d":    { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
-        case "year":   { const x = startOfDay(now); x.setFullYear(x.getFullYear() - 1); return x; }
-        case "all":    return null;
+        case "month": { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
+        case "90d":   { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
+        case "year":  return new Date(now.getFullYear(), 0, 1);
+        case "all":   return null;
       }
     })();
-    return allEvents
-      .filter(e => e.actual != null || isToneEvent(e))
-      .filter(e => !since || new Date(e.release_date) >= since)
-      .slice(0, 500);
-  }, [allEvents, historyRange]);
+    return predictions
+      .filter(p => !since || new Date(p.prediction_date) >= since)
+      .filter(p => statusFilter === "all" ? true : p.status === statusFilter);
+  }, [predictions, historyRange, statusFilter]);
+
+  // Pending predictions that still need review — surfaced at top of history.
+  const pendingPredictions = useMemo(
+    () => predictions.filter(p => p.status === "pending"),
+    [predictions],
+  );
 
   const eventsByCategory = useMemo(() => {
     const groups: Record<string, MacroEvent[]> = {};
