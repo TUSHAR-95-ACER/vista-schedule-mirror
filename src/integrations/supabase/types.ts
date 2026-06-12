@@ -311,6 +311,60 @@ export type Database = {
         }
         Relationships: []
       }
+      macro_predictions: {
+        Row: {
+          created_at: string
+          cycle_id: string | null
+          fed_outlook: string | null
+          gold_outlook: string | null
+          id: string
+          narrative: string | null
+          prediction_date: string
+          reviewed_at: string | null
+          source_event: string
+          source_event_id: string | null
+          status: string
+          target_event: string
+          updated_at: string
+          usd_outlook: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_id?: string | null
+          fed_outlook?: string | null
+          gold_outlook?: string | null
+          id?: string
+          narrative?: string | null
+          prediction_date?: string
+          reviewed_at?: string | null
+          source_event: string
+          source_event_id?: string | null
+          status?: string
+          target_event: string
+          updated_at?: string
+          usd_outlook?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_id?: string | null
+          fed_outlook?: string | null
+          gold_outlook?: string | null
+          id?: string
+          narrative?: string | null
+          prediction_date?: string
+          reviewed_at?: string | null
+          source_event?: string
+          source_event_id?: string | null
+          status?: string
+          target_event?: string
+          updated_at?: string
+          usd_outlook?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -98,6 +98,39 @@ type Analysis = {
   narrative?: string;
 };
 
+type MacroPrediction = {
+  id: string;
+  user_id?: string;
+  cycle_id?: string | null;
+  source_event_id?: string | null;
+  source_event: string;
+  target_event: string;
+  prediction_date: string;
+  usd_outlook?: string | null;
+  gold_outlook?: string | null;
+  fed_outlook?: string | null;
+  narrative?: string | null;
+  status: "pending" | "worked" | "failed";
+  reviewed_at?: string | null;
+  created_at?: string;
+};
+
+/** Locked macro cycle: NFP → CPI → FOMC → NFP… */
+const MACRO_CYCLE = ["NFP", "CPI", "FOMC"] as const;
+type CycleEvent = typeof MACRO_CYCLE[number];
+
+function classifyCycleEvent(name: string): CycleEvent | null {
+  if (!name) return null;
+  if (/\bNFP\b|Nonfarm/i.test(name)) return "NFP";
+  if (/\bCPI\b/i.test(name)) return "CPI";
+  if (/FOMC|Fed Tone|Statement Tone|Rate Decision|Federal Funds/i.test(name)) return "FOMC";
+  return null;
+}
+function nextCycleEvent(src: CycleEvent): CycleEvent {
+  const i = MACRO_CYCLE.indexOf(src);
+  return MACRO_CYCLE[(i + 1) % MACRO_CYCLE.length];
+}
+
 /* =========================================================================
    DEFAULTS
    ========================================================================= */
@@ -379,10 +412,13 @@ export default function MacroIntelligence() {
 
   // ----- Cross-cycle prediction history (all events, all time) -----
   const [allEvents, setAllEvents] = useState<MacroEvent[]>([]);
-  type RangeKey = "today" | "week" | "month" | "90d" | "year" | "all";
-  const [historyRange, setHistoryRange] = useState<RangeKey>("month");
+  const [predictions, setPredictions] = useState<MacroPrediction[]>([]);
+  type RangeKey = "all" | "month" | "90d" | "year";
+  type StatusKey = "all" | "pending" | "worked" | "failed";
+  const [historyRange, setHistoryRange] = useState<RangeKey>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusKey>("all");
 
-  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); } /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); loadPredictions(); } /* eslint-disable-next-line */ }, [user]);
 
   async function loadAllEvents() {
     if (!user) return;
@@ -393,6 +429,17 @@ export default function MacroIntelligence() {
       .order("release_date", { ascending: false })
       .limit(2000);
     setAllEvents((data as MacroEvent[]) || []);
+  }
+
+  async function loadPredictions() {
+    if (!user) return;
+    const { data } = await (supabase as any)
+      .from("macro_predictions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("prediction_date", { ascending: false })
+      .limit(500);
+    setPredictions((data as MacroPrediction[]) || []);
   }
 
   /* ---------- bootstrap & cycle management ---------- */
@@ -654,6 +701,43 @@ export default function MacroIntelligence() {
       });
       toast.success("Macro intelligence updated");
       loadAllEvents();
+
+      // ----- Auto-create Prediction History entry for the locked NFP → CPI → FOMC cycle -----
+      // Find the most recent cycle-trigger event the user just analyzed.
+      const cycleHits = cleaned
+        .map(ev => ({ ev, kind: classifyCycleEvent(ev.event || "") }))
+        .filter(x => x.kind) as { ev: MacroEvent; kind: CycleEvent }[];
+      if (cycleHits.length > 0) {
+        cycleHits.sort((a, b) => (b.ev.release_date || "").localeCompare(a.ev.release_date || ""));
+        const { ev: srcEv, kind: sourceKind } = cycleHits[0];
+        const target = nextCycleEvent(sourceKind);
+        // De-dupe: skip if a pending prediction already exists for the same source on the same date
+        const dupe = predictions.find(
+          p => p.source_event === sourceKind && p.prediction_date === todayISO() && p.status === "pending",
+        );
+        if (!dupe) {
+          const payload = {
+            user_id: user.id,
+            cycle_id: activeCycleId,
+            source_event_id: srcEv.id || null,
+            source_event: sourceKind,
+            target_event: target,
+            prediction_date: todayISO(),
+            usd_outlook: a.usd_bias || null,
+            gold_outlook: a.gold_bias || null,
+            fed_outlook: a.fed_bias || null,
+            narrative: a.dominant_narrative || a.narrative || a.interpretation || null,
+            status: "pending" as const,
+          };
+          const { data: newPred } = await (supabase as any)
+            .from("macro_predictions")
+            .insert(payload)
+            .select()
+            .maybeSingle();
+          if (newPred) setPredictions(prev => [newPred as MacroPrediction, ...prev]);
+          toast.success(`Prediction logged: ${sourceKind} → ${target}`);
+        }
+      }
     } catch (e: any) {
       toast.error(e?.message || "Analysis failed");
     } finally {
@@ -676,6 +760,16 @@ export default function MacroIntelligence() {
     toast.success("Outcome recorded");
   }
 
+  async function setPredictionStatus(id: string, status: "worked" | "failed") {
+    const { error } = await (supabase as any)
+      .from("macro_predictions")
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    setPredictions(prev => prev.map(p => p.id === id ? { ...p, status, reviewed_at: new Date().toISOString() } : p));
+    toast.success(`Marked ${status}`);
+  }
+
   /* ---------- derived ---------- */
   // Aggregate (analysis-level) hit rate — kept for backwards compat
   const accuracyStats = useMemo(() => {
@@ -685,47 +779,46 @@ export default function MacroIntelligence() {
     return { total, hits, rate: total ? Math.round((hits / total) * 100) : 0 };
   }, [analyses]);
 
-  // Per-event hit rate stats across all cycles, all time.
-  const eventHitStats = useMemo(() => {
+  // Forecast hit-rate stats from macro_predictions
+  const predictionHitStats = useMemo(() => {
     const now = new Date();
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
     const ninetyAgo = new Date(now); ninetyAgo.setDate(ninetyAgo.getDate() - 90);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    const score = (list: MacroEvent[]) => {
-      const scored = list.filter(e => e.outcome_status === "worked" || e.outcome_status === "not_worked");
-      const hits = scored.filter(e => e.outcome_status === "worked").length;
+    const score = (list: MacroPrediction[]) => {
+      const scored = list.filter(p => p.status === "worked" || p.status === "failed");
+      const hits = scored.filter(p => p.status === "worked").length;
       return { total: scored.length, hits, rate: scored.length ? Math.round((hits / scored.length) * 100) : 0 };
     };
-    const inRange = (since: Date) => allEvents.filter(e => new Date(e.release_date) >= since);
-
+    const inRange = (since: Date) => predictions.filter(p => new Date(p.prediction_date) >= since);
     return {
-      overall: score(allEvents),
-      month: score(inRange(monthAgo)),
+      overall: score(predictions),
+      year: score(inRange(yearStart)),
       last90: score(inRange(ninetyAgo)),
     };
-  }, [allEvents]);
+  }, [predictions]);
 
-  const filteredHistory = useMemo(() => {
+  const filteredPredictions = useMemo(() => {
     const now = new Date();
     const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
-    const startOfWeek = () => {
-      const x = startOfDay(now); x.setDate(x.getDate() - x.getDay()); return x;
-    };
     const since: Date | null = (() => {
       switch (historyRange) {
-        case "today":  return startOfDay(now);
-        case "week":   return startOfWeek();
-        case "month":  { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
-        case "90d":    { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
-        case "year":   { const x = startOfDay(now); x.setFullYear(x.getFullYear() - 1); return x; }
-        case "all":    return null;
+        case "month": { const x = startOfDay(now); x.setMonth(x.getMonth() - 1); return x; }
+        case "90d":   { const x = startOfDay(now); x.setDate(x.getDate() - 90); return x; }
+        case "year":  return new Date(now.getFullYear(), 0, 1);
+        case "all":   return null;
       }
     })();
-    return allEvents
-      .filter(e => e.actual != null || isToneEvent(e))
-      .filter(e => !since || new Date(e.release_date) >= since)
-      .slice(0, 500);
-  }, [allEvents, historyRange]);
+    return predictions
+      .filter(p => !since || new Date(p.prediction_date) >= since)
+      .filter(p => statusFilter === "all" ? true : p.status === statusFilter);
+  }, [predictions, historyRange, statusFilter]);
+
+  // Pending predictions that still need review — surfaced at top of history.
+  const pendingPredictions = useMemo(
+    () => predictions.filter(p => p.status === "pending"),
+    [predictions],
+  );
 
   const eventsByCategory = useMemo(() => {
     const groups: Record<string, MacroEvent[]> = {};
@@ -1088,20 +1181,20 @@ export default function MacroIntelligence() {
             </div>
           </GlassCard>
 
-          {/* Prediction History — per-event, all cycles, all time */}
+          {/* Prediction History — forecast tracking (NFP → CPI → FOMC cycle) */}
           <GlassCard className="p-6">
             <SectionHeader
               icon={<Layers className="h-4 w-4" />}
               title="Prediction History"
-              subtitle="Every NFP, CPI, PCE, FOMC, PMI, GDP… across all cycles. Mark worked / not worked after each release."
+              subtitle="Macro forecast tracking · NFP → CPI → FOMC. Each AI run logs a forward forecast; mark Worked / Failed after the next release."
             />
 
             {/* Hit-rate tiles */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               {([
-                { label: "Overall", s: eventHitStats.overall },
-                { label: "This Month", s: eventHitStats.month },
-                { label: "Last 90 Days", s: eventHitStats.last90 },
+                { label: "Overall Hit Rate", s: predictionHitStats.overall },
+                { label: "Last 90 Days",     s: predictionHitStats.last90 },
+                { label: "This Year",        s: predictionHitStats.year },
               ] as const).map(({ label, s }) => (
                 <div key={label} className="rounded-lg border border-border/50 bg-background/30 px-3 py-2">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
@@ -1111,13 +1204,31 @@ export default function MacroIntelligence() {
               ))}
             </div>
 
-            {/* Range filter chips */}
+            {/* Status filter */}
             <div className="mt-4 flex flex-wrap gap-1.5">
               {([
-                { k: "today", l: "Today" },
-                { k: "week",  l: "This Week" },
+                { k: "all",     l: "All" },
+                { k: "pending", l: "Pending" },
+                { k: "worked",  l: "Worked" },
+                { k: "failed",  l: "Failed" },
+              ] as { k: StatusKey; l: string }[]).map(({ k, l }) => (
+                <button
+                  key={k}
+                  onClick={() => setStatusFilter(k)}
+                  className={`px-2.5 py-1 rounded-md border text-[11px] transition-colors ${
+                    statusFilter === k
+                      ? "border-primary/60 bg-primary/15 text-primary"
+                      : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                >{l}</button>
+              ))}
+            </div>
+
+            {/* Range filter */}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {([
                 { k: "month", l: "This Month" },
-                { k: "90d",   l: "Last 3 Months" },
+                { k: "90d",   l: "Last 90 Days" },
                 { k: "year",  l: "This Year" },
                 { k: "all",   l: "All Time" },
               ] as { k: RangeKey; l: string }[]).map(({ k, l }) => (
@@ -1129,68 +1240,75 @@ export default function MacroIntelligence() {
                       ? "border-primary/60 bg-primary/15 text-primary"
                       : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
                   }`}
-                >
-                  {l}
-                </button>
+                >{l}</button>
               ))}
             </div>
 
+            {/* Pending review banner */}
+            {pendingPredictions.length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-400/40 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
+                {pendingPredictions.length} pending prediction{pendingPredictions.length > 1 ? "s" : ""} — review before logging the next cycle event.
+              </div>
+            )}
+
             <Separator className="my-4" />
 
-            <div className="max-h-[460px] overflow-y-auto pr-1 space-y-2">
-              {filteredHistory.length === 0 && (
+            <div className="space-y-3">
+              {filteredPredictions.length === 0 && (
                 <p className="text-sm text-muted-foreground italic">No predictions in this range.</p>
               )}
-              {filteredHistory.map(e => {
-                const tone = isToneEvent(e) ? getFedTone(e) : null;
+              {filteredPredictions.map(p => {
+                const usdTone = surpriseTone(p.usd_outlook?.includes("Bull") ? "Bullish" : p.usd_outlook?.includes("Bear") ? "Bearish" : p.usd_outlook || undefined);
+                const goldTone = surpriseTone(p.gold_outlook?.includes("Bull") ? "Bullish" : p.gold_outlook?.includes("Bear") ? "Bearish" : p.gold_outlook || undefined);
+                const fedTone = /Hawk/i.test(p.fed_outlook || "") ? "rose" : /Dov/i.test(p.fed_outlook || "") ? "emerald" : "muted";
                 return (
-                  <div key={e.id || `${e.release_date}-${e.event}`} className="rounded-lg border border-border/50 bg-background/30 p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <Badge variant="outline" className="text-[10px] shrink-0">{e.release_date}</Badge>
-                        <span className="text-xs font-semibold text-foreground truncate">{e.event}</span>
-                        {e.category && <Badge variant="outline" className="text-[10px] opacity-70">{e.category}</Badge>}
+                  <div key={p.id} className="rounded-xl border border-border/60 bg-background/40 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px]">{p.source_event}</Badge>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <Badge variant="outline" className="text-[10px]">{p.target_event}</Badge>
+                        <span className="text-[10px] text-muted-foreground ml-2">{p.prediction_date}</span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {e.outcome_status === "worked" && (
+                        {p.status === "worked" && (
                           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>
                         )}
-                        {e.outcome_status === "not_worked" && (
-                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>
+                        {p.status === "failed" && (
+                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Failed</Badge>
                         )}
-                        {!e.outcome_status && e.id && (
+                        {p.status === "pending" && (
                           <>
-                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "worked")}>
+                            <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-[10px]">Pending</Badge>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setPredictionStatus(p.id, "worked")}>
                               <CheckCircle2 className="h-3 w-3" /> Worked
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "not_worked")}>
-                              <XCircle className="h-3 w-3" /> Not Worked
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setPredictionStatus(p.id, "failed")}>
+                              <XCircle className="h-3 w-3" /> Failed
                             </Button>
                           </>
                         )}
                       </div>
                     </div>
 
-                    {/* Compact readout: prev / fcst / actual + auto labels */}
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 text-[11px]">
-                      {tone ? (
-                        <div className="col-span-2 sm:col-span-6 flex items-center gap-2">
-                          <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Tone</span>
-                          <LabelPill value={tone} tone={tone === "Hawkish" ? "rose" : tone === "Dovish" ? "emerald" : "muted"} />
-                        </div>
-                      ) : (
-                        <>
-                          <div><span className="text-muted-foreground">Prev</span> <span className="tabular-nums">{e.previous ?? "—"}</span></div>
-                          <div><span className="text-muted-foreground">Fcst</span> <span className="tabular-nums">{e.forecast ?? "—"}</span></div>
-                          <div><span className="text-muted-foreground">Actual</span> <span className="tabular-nums font-medium text-foreground">{e.actual ?? "—"}</span></div>
-                          <div className="col-span-2 sm:col-span-1"><LabelPill value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
-                          <div><LabelPill value={e.trend} tone={surpriseTone(e.trend)} /></div>
-                          <div><LabelPill value={e.impact} tone={e.impact === "High" ? "rose" : e.impact === "Medium" ? "amber" : "muted"} /></div>
-                        </>
-                      )}
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><DollarSign className="h-3 w-3" />USD</div>
+                        <div className="mt-0.5"><LabelPill value={p.usd_outlook || null} tone={usdTone} /></div>
+                      </div>
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><Coins className="h-3 w-3" />Gold</div>
+                        <div className="mt-0.5"><LabelPill value={p.gold_outlook || null} tone={goldTone} /></div>
+                      </div>
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><Compass className="h-3 w-3" />Fed</div>
+                        <div className="mt-0.5"><LabelPill value={p.fed_outlook || null} tone={fedTone as any} /></div>
+                      </div>
                     </div>
 
-                    {e.notes && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{e.notes}</p>}
+                    {p.narrative && (
+                      <p className="mt-3 text-xs italic text-muted-foreground leading-relaxed">{p.narrative}</p>
+                    )}
                   </div>
                 );
               })}
