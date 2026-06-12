@@ -1181,20 +1181,20 @@ export default function MacroIntelligence() {
             </div>
           </GlassCard>
 
-          {/* Prediction History — per-event, all cycles, all time */}
+          {/* Prediction History — forecast tracking (NFP → CPI → FOMC cycle) */}
           <GlassCard className="p-6">
             <SectionHeader
               icon={<Layers className="h-4 w-4" />}
               title="Prediction History"
-              subtitle="Every NFP, CPI, PCE, FOMC, PMI, GDP… across all cycles. Mark worked / not worked after each release."
+              subtitle="Macro forecast tracking · NFP → CPI → FOMC. Each AI run logs a forward forecast; mark Worked / Failed after the next release."
             />
 
             {/* Hit-rate tiles */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               {([
-                { label: "Overall", s: eventHitStats.overall },
-                { label: "This Month", s: eventHitStats.month },
-                { label: "Last 90 Days", s: eventHitStats.last90 },
+                { label: "Overall Hit Rate", s: predictionHitStats.overall },
+                { label: "Last 90 Days",     s: predictionHitStats.last90 },
+                { label: "This Year",        s: predictionHitStats.year },
               ] as const).map(({ label, s }) => (
                 <div key={label} className="rounded-lg border border-border/50 bg-background/30 px-3 py-2">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
@@ -1204,13 +1204,31 @@ export default function MacroIntelligence() {
               ))}
             </div>
 
-            {/* Range filter chips */}
+            {/* Status filter */}
             <div className="mt-4 flex flex-wrap gap-1.5">
               {([
-                { k: "today", l: "Today" },
-                { k: "week",  l: "This Week" },
+                { k: "all",     l: "All" },
+                { k: "pending", l: "Pending" },
+                { k: "worked",  l: "Worked" },
+                { k: "failed",  l: "Failed" },
+              ] as { k: StatusKey; l: string }[]).map(({ k, l }) => (
+                <button
+                  key={k}
+                  onClick={() => setStatusFilter(k)}
+                  className={`px-2.5 py-1 rounded-md border text-[11px] transition-colors ${
+                    statusFilter === k
+                      ? "border-primary/60 bg-primary/15 text-primary"
+                      : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                  }`}
+                >{l}</button>
+              ))}
+            </div>
+
+            {/* Range filter */}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {([
                 { k: "month", l: "This Month" },
-                { k: "90d",   l: "Last 3 Months" },
+                { k: "90d",   l: "Last 90 Days" },
                 { k: "year",  l: "This Year" },
                 { k: "all",   l: "All Time" },
               ] as { k: RangeKey; l: string }[]).map(({ k, l }) => (
@@ -1222,68 +1240,75 @@ export default function MacroIntelligence() {
                       ? "border-primary/60 bg-primary/15 text-primary"
                       : "border-border/50 bg-background/40 text-muted-foreground hover:text-foreground hover:bg-accent/30"
                   }`}
-                >
-                  {l}
-                </button>
+                >{l}</button>
               ))}
             </div>
 
+            {/* Pending review banner */}
+            {pendingPredictions.length > 0 && (
+              <div className="mt-4 rounded-lg border border-amber-400/40 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
+                {pendingPredictions.length} pending prediction{pendingPredictions.length > 1 ? "s" : ""} — review before logging the next cycle event.
+              </div>
+            )}
+
             <Separator className="my-4" />
 
-            <div className="max-h-[460px] overflow-y-auto pr-1 space-y-2">
-              {filteredHistory.length === 0 && (
+            <div className="space-y-3">
+              {filteredPredictions.length === 0 && (
                 <p className="text-sm text-muted-foreground italic">No predictions in this range.</p>
               )}
-              {filteredHistory.map(e => {
-                const tone = isToneEvent(e) ? getFedTone(e) : null;
+              {filteredPredictions.map(p => {
+                const usdTone = surpriseTone(p.usd_outlook?.includes("Bull") ? "Bullish" : p.usd_outlook?.includes("Bear") ? "Bearish" : p.usd_outlook || undefined);
+                const goldTone = surpriseTone(p.gold_outlook?.includes("Bull") ? "Bullish" : p.gold_outlook?.includes("Bear") ? "Bearish" : p.gold_outlook || undefined);
+                const fedTone = /Hawk/i.test(p.fed_outlook || "") ? "rose" : /Dov/i.test(p.fed_outlook || "") ? "emerald" : "muted";
                 return (
-                  <div key={e.id || `${e.release_date}-${e.event}`} className="rounded-lg border border-border/50 bg-background/30 p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <Badge variant="outline" className="text-[10px] shrink-0">{e.release_date}</Badge>
-                        <span className="text-xs font-semibold text-foreground truncate">{e.event}</span>
-                        {e.category && <Badge variant="outline" className="text-[10px] opacity-70">{e.category}</Badge>}
+                  <div key={p.id} className="rounded-xl border border-border/60 bg-background/40 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px]">{p.source_event}</Badge>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <Badge variant="outline" className="text-[10px]">{p.target_event}</Badge>
+                        <span className="text-[10px] text-muted-foreground ml-2">{p.prediction_date}</span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {e.outcome_status === "worked" && (
+                        {p.status === "worked" && (
                           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 gap-1"><CheckCircle2 className="h-3 w-3" /> Worked</Badge>
                         )}
-                        {e.outcome_status === "not_worked" && (
-                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Not Worked</Badge>
+                        {p.status === "failed" && (
+                          <Badge className="bg-rose-500/20 text-rose-300 border-rose-500/30 gap-1"><XCircle className="h-3 w-3" /> Failed</Badge>
                         )}
-                        {!e.outcome_status && e.id && (
+                        {p.status === "pending" && (
                           <>
-                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "worked")}>
+                            <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-[10px]">Pending</Badge>
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setPredictionStatus(p.id, "worked")}>
                               <CheckCircle2 className="h-3 w-3" /> Worked
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setEventOutcome(e.id!, "not_worked")}>
-                              <XCircle className="h-3 w-3" /> Not Worked
+                            <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" onClick={() => setPredictionStatus(p.id, "failed")}>
+                              <XCircle className="h-3 w-3" /> Failed
                             </Button>
                           </>
                         )}
                       </div>
                     </div>
 
-                    {/* Compact readout: prev / fcst / actual + auto labels */}
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 text-[11px]">
-                      {tone ? (
-                        <div className="col-span-2 sm:col-span-6 flex items-center gap-2">
-                          <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Tone</span>
-                          <LabelPill value={tone} tone={tone === "Hawkish" ? "rose" : tone === "Dovish" ? "emerald" : "muted"} />
-                        </div>
-                      ) : (
-                        <>
-                          <div><span className="text-muted-foreground">Prev</span> <span className="tabular-nums">{e.previous ?? "—"}</span></div>
-                          <div><span className="text-muted-foreground">Fcst</span> <span className="tabular-nums">{e.forecast ?? "—"}</span></div>
-                          <div><span className="text-muted-foreground">Actual</span> <span className="tabular-nums font-medium text-foreground">{e.actual ?? "—"}</span></div>
-                          <div className="col-span-2 sm:col-span-1"><LabelPill value={e.surprise} tone={surpriseTone(e.surprise)} /></div>
-                          <div><LabelPill value={e.trend} tone={surpriseTone(e.trend)} /></div>
-                          <div><LabelPill value={e.impact} tone={e.impact === "High" ? "rose" : e.impact === "Medium" ? "amber" : "muted"} /></div>
-                        </>
-                      )}
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><DollarSign className="h-3 w-3" />USD</div>
+                        <div className="mt-0.5"><LabelPill value={p.usd_outlook || null} tone={usdTone} /></div>
+                      </div>
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><Coins className="h-3 w-3" />Gold</div>
+                        <div className="mt-0.5"><LabelPill value={p.gold_outlook || null} tone={goldTone} /></div>
+                      </div>
+                      <div className="rounded-md border border-border/50 bg-background/30 px-2 py-1.5">
+                        <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground"><Compass className="h-3 w-3" />Fed</div>
+                        <div className="mt-0.5"><LabelPill value={p.fed_outlook || null} tone={fedTone as any} /></div>
+                      </div>
                     </div>
 
-                    {e.notes && <p className="mt-2 text-xs italic text-muted-foreground line-clamp-2">{e.notes}</p>}
+                    {p.narrative && (
+                      <p className="mt-3 text-xs italic text-muted-foreground leading-relaxed">{p.narrative}</p>
+                    )}
                   </div>
                 );
               })}
