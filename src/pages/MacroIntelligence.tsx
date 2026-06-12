@@ -98,6 +98,39 @@ type Analysis = {
   narrative?: string;
 };
 
+type MacroPrediction = {
+  id: string;
+  user_id?: string;
+  cycle_id?: string | null;
+  source_event_id?: string | null;
+  source_event: string;
+  target_event: string;
+  prediction_date: string;
+  usd_outlook?: string | null;
+  gold_outlook?: string | null;
+  fed_outlook?: string | null;
+  narrative?: string | null;
+  status: "pending" | "worked" | "failed";
+  reviewed_at?: string | null;
+  created_at?: string;
+};
+
+/** Locked macro cycle: NFP → CPI → FOMC → NFP… */
+const MACRO_CYCLE = ["NFP", "CPI", "FOMC"] as const;
+type CycleEvent = typeof MACRO_CYCLE[number];
+
+function classifyCycleEvent(name: string): CycleEvent | null {
+  if (!name) return null;
+  if (/\bNFP\b|Nonfarm/i.test(name)) return "NFP";
+  if (/\bCPI\b/i.test(name)) return "CPI";
+  if (/FOMC|Fed Tone|Statement Tone|Rate Decision|Federal Funds/i.test(name)) return "FOMC";
+  return null;
+}
+function nextCycleEvent(src: CycleEvent): CycleEvent {
+  const i = MACRO_CYCLE.indexOf(src);
+  return MACRO_CYCLE[(i + 1) % MACRO_CYCLE.length];
+}
+
 /* =========================================================================
    DEFAULTS
    ========================================================================= */
