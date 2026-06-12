@@ -412,10 +412,13 @@ export default function MacroIntelligence() {
 
   // ----- Cross-cycle prediction history (all events, all time) -----
   const [allEvents, setAllEvents] = useState<MacroEvent[]>([]);
-  type RangeKey = "today" | "week" | "month" | "90d" | "year" | "all";
-  const [historyRange, setHistoryRange] = useState<RangeKey>("month");
+  const [predictions, setPredictions] = useState<MacroPrediction[]>([]);
+  type RangeKey = "all" | "month" | "90d" | "year";
+  type StatusKey = "all" | "pending" | "worked" | "failed";
+  const [historyRange, setHistoryRange] = useState<RangeKey>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusKey>("all");
 
-  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); } /* eslint-disable-next-line */ }, [user]);
+  useEffect(() => { if (user) { bootstrap(); loadAllEvents(); loadPredictions(); } /* eslint-disable-next-line */ }, [user]);
 
   async function loadAllEvents() {
     if (!user) return;
@@ -426,6 +429,17 @@ export default function MacroIntelligence() {
       .order("release_date", { ascending: false })
       .limit(2000);
     setAllEvents((data as MacroEvent[]) || []);
+  }
+
+  async function loadPredictions() {
+    if (!user) return;
+    const { data } = await (supabase as any)
+      .from("macro_predictions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("prediction_date", { ascending: false })
+      .limit(500);
+    setPredictions((data as MacroPrediction[]) || []);
   }
 
   /* ---------- bootstrap & cycle management ---------- */
