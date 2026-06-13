@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { formatCurrency, calcAvgRR } from '@/lib/calculations';
 import { Trade } from '@/types/trading';
 import { Lightbulb } from 'lucide-react';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptTrades } from '@/lib/aiInsightAdapters';
 
 const COLORS = ['hsl(142,71%,45%)', 'hsl(210,100%,50%)', 'hsl(38,92%,50%)', 'hsl(0,84%,60%)', 'hsl(260,60%,50%)'];
 
@@ -215,6 +217,9 @@ export default function TradeQuality() {
           </tbody>
         </table>
       </div>
+
+      {/* AI Insights — page bottom (universal) */}
+      <AIInsightsPanel page="Trade Quality" payload={adaptTrades(trades)} />
     </div>
   );
 }
