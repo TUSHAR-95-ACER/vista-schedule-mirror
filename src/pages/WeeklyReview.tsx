@@ -9,9 +9,12 @@ import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
-import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight, Sparkles, Loader2 } from 'lucide-react';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 type WeeklyReviewNotes = {
   weeklyNarrative: string;
@@ -204,6 +207,50 @@ export default function WeeklyReview() {
     setReviewNotes(prev => ({ ...prev, [field]: value }));
   };
 
+  // ─── AI auto-generation ───────────────────────────────────────────
+  const [aiBusy, setAiBusy] = useState(false);
+  const generateWithAI = async (silent = false) => {
+    if (!latest?.week || aiBusy) return;
+    setAiBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('weekly-review-generate', {
+        body: { weekStart: latest.week },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const r = data as WeeklyReviewNotes;
+      setReviewNotes({
+        weeklyNarrative: r.weeklyNarrative || '',
+        reflection: r.reflection || '',
+        lessons: r.lessons || '',
+        mistakes: r.mistakes || '',
+        improvements: r.improvements || '',
+        aiReview: r.aiReview || '',
+      });
+      if (!silent) toast({ title: '✨ Weekly review generated', description: 'AI populated all sections from this week\'s journal.' });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to generate';
+      if (!silent) toast({ title: 'AI generation failed', description: msg.slice(0, 160), variant: 'destructive' });
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  // Auto-generate every Sunday, once per week, only if review is empty.
+  useEffect(() => {
+    if (!user?.id || !latest?.week) return;
+    const isSunday = new Date().getDay() === 0;
+    if (!isSunday) return;
+    const allEmpty = Object.values(reviewNotes).every(v => !v || !v.trim());
+    if (!allEmpty) return;
+    const guardKey = `wr-auto:${latest.week}`;
+    const already = loadUserStorage<boolean>(guardKey, user.id, false);
+    if (already) return;
+    saveUserStorage(guardKey, user.id, true);
+    void generateWithAI(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, latest?.week]);
+
   // Insights
   const insights = useMemo(() => {
     if (!latest) return [];
@@ -226,6 +273,10 @@ export default function WeeklyReview() {
   return (
     <div className="px-3 sm:px-4 py-3 w-full space-y-6">
       <PageHeader title="Weekly Review" subtitle="Auto-generated weekly performance reports with behavioral insights">
+        <Button size="sm" className="gap-1.5" onClick={() => generateWithAI(false)} disabled={aiBusy || !latest}>
+          {aiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {aiBusy ? 'Generating…' : 'Generate with AI'}
+        </Button>
       </PageHeader>
 
       {latest ? (
@@ -490,6 +541,19 @@ export default function WeeklyReview() {
             No trading data for weekly review yet. Start logging trades to see your weekly analysis.
           </CardContent>
         </Card>
+      )}
+
+      {/* AI Insights — page bottom (universal) */}
+      {latest && (
+        <AIInsightsPanel
+          page="Weekly Review"
+          payload={{
+            week: latest.week, trades: latest.trades, wins: latest.wins, losses: latest.losses,
+            pl: latest.pl, win_rate: latest.winRate, avg_rr: latest.avgRR, bias_accuracy: latest.biasAccuracy,
+            exec_score: latest.avgExec, top_mistake: latest.topMistake, best_pair: latest.bestPair, worst_pair: latest.worstPair,
+            best_setup: latest.bestSetup?.name, worst_setup: latest.worstSetup?.name,
+          }}
+        />
       )}
     </div>
   );

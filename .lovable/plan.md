@@ -1,118 +1,82 @@
-## Research Lab Redesign
+# Master Journal – Phase Next Fixes
 
-Transform Research Lab from a notes page into a strategy R&D platform with a clear workflow: **Research → Testing → Validation → Playbook**.
+This is a large multi-area change. I'll ship it in **3 batches** so each batch can be verified visually before the next. Nothing existing is removed — only added, restructured, or fixed.
 
-### 1. Data Model (localStorage, user-scoped — same pattern as today)
+---
 
-Storage key: `ef_research_strategies` (replaces `ef_research_lab` + `ef_tool_testing`, old keys kept readable for migration only).
+## Batch A — Core fixes (blockers you listed at the bottom)
 
-```ts
-Strategy {
-  id, name, description, type, icon, color,
-  status: 'Testing'|'Promising'|'Validated'|'Failed'|'Archived',
-  pairs: string[],            // user-editable pair list (add/delete)
-  templateFields?: FieldSet,  // saved template structure
-  tests: Test[],
-  createdAt, updatedAt
-}
+These are the 6 verification items you require for "completed".
 
-Test {
-  id, date, pair, session,
-  predictedBias, actualBias,
-  dealingRange, liquidityTarget, liquidityNote, narrative,
-  drHigh, drEq, drLow,
-  breakoutQuality, fvgLocation, entryType, ltfConfirmation,
-  entryPrice, stopLoss, tp1, tp1Target, tp2, tp2Target,
-  result: 'Win'|'Loss'|'Scratch', rAchieved,
-  grade: 'A'|'B'|'C', emotionalState,
-  predictedScreenshot, actualScreenshot,
-  reflection: { wentWell, toImprove, notes },   // rich text
-  modelReview: { followedModel, narrative, differently }  // rich text
-}
-```
+1. **Universal Text Editor first-click fix**
+   - Root cause: selection toolbar listens to `mouseup`, but the editor only mounts the listener after `focus`, so the first selection is missed.
+   - Fix once in `RichTextEditor.tsx` (used by Daily Plan, Weekly Review, Macro, Notebook, Trade Notes, Research Lab) → toolbar attaches on mount via `selectionchange` on `document`, scoped to editor ref.
 
-### 2. Pages & Routes
+2. **Setup Performance chart (Analytics) – real data**
+   - Repoint chart to grouped trades by `setup` field, compute Trades / Win Rate / Avg RR / Profit Factor / Total PnL.
+   - Render bars even when only some setups have data; empty state only when zero trades.
 
-- `/research-lab` — strategy gallery (cards)
-- `/research-lab/:strategyId` — strategy dashboard + tests list
-- `/research-lab/:strategyId/test/:testId` — single test detail/editor
+3. **Setup Rating logic rebuild**
+   - Replace `0.00` with composite score: `0.4·winRate + 0.3·normRR + 0.2·normPF + 0.1·(1−normDD)` → 0–100.
+   - Map to letter grade A+/A/B+/B/C+/C/D and display `★ Setup Score: NN/100`.
 
-### 3. Research Lab Home (gallery)
+4. **Universal AI Insights block at bottom of every page**
+   - Reuse existing `AIInsightsPanel` + `gemini-insights` edge function.
+   - Add to: Dashboard, Trades, Analytics, Research Lab, Macro Intelligence, Behavior, Trade Quality, Weekly Review, Daily Plan, Notebook.
+   - On pages that already have one mid-page, move to the bottom.
 
-- Header actions: **New Strategy**, **Import Strategy**, **Research Analytics**, **Archive**
-- Grid of strategy cards showing: name, tests completed, win rate, avg RR, bias accuracy, validation score, status pill
-- Status colors via design tokens (blue/green/emerald/red/gray)
-- Card actions: Open, Edit, Duplicate, Archive, Delete + `...` menu (Rename/Duplicate/Archive/Delete)
-- Empty state with seeded suggestions (ICT Session Narrative, EBP Candle, SMT Divergence, AMD, London Reversal)
+5. **Weekly Review auto-generation (Sunday)**
+   - New edge function `weekly-review-generate` that pulls all 5 daily plans + week's trades + psychology + macro notes for the active week and returns: Narrative, Reflection, Lessons, Mistakes, Improvements, Best/Worst Decision, Patterns, AI Review.
+   - "Generate with AI" button on Weekly Review + auto-trigger on first Weekly Review load on Sunday (client-side check, idempotent — won't overwrite if user edited).
+   - User can still edit every field afterward.
 
-### 4. New Strategy Modal
+6. **Page-connection verification**
+   - Confirm Daily Plan → Weekly Review (via shared week selector + data fetch in #5).
+   - Confirm Trades → Trade Quality / Analytics (already linked, just verify).
+   - Confirm Macro Intelligence → Daily Plan macro notes display.
+   - Add lightweight "Connected sources" footer line on each page listing the data inputs.
 
-Fields: Name, Description, Type (Session/Liquidity/SMT/PO3/Custom), Icon picker, Color picker, Status.
+---
 
-### 5. Strategy Dashboard (`/research-lab/:strategyId`)
+## Batch B — Behavior + Trade Quality redesigns
 
-- KPI row: Total Tests, Wins, Losses, Win Rate, Avg RR, Bias Accuracy, Best Session, Best Pair, A-Grade %, Validation Score (computed)
-- Charts (Recharts): Win Rate by Session, Win Rate by Pair, Grade Distribution, Bias Accuracy, Emotional State Distribution
-- **Pair manager** card: add/delete pairs for this strategy
-- Top-right actions: New Test, Edit Strategy, Save Template, Export Data, Archive, Promote to Playbook
-- Tests table below dashboard
+7. **Behavior page redesign**
+   - Keep all existing calcs.
+   - Add cards: Most Emotional Day, Best/Worst Discipline Day, Most Common Mistake, Most Profitable / Most Dangerous Emotional State.
+   - Add charts: Mistakes by Session, by Pair, by Time; Discipline Trend, Emotion Trend, Weekly Discipline Trend, Behavior Score Trend.
+   - Emerald + Gold styling, card-based hierarchy.
 
-### 6. Test Entry Form (sectioned, single page)
+8. **Trade Quality redesign**
+   - Add: A+/A/B/C %, Quality Distribution, Quality vs PnL, Quality vs RR, Quality vs Win Rate.
+   - Add: Avg Grade per Week / Month, Best / Worst Grade, AI Findings panel.
+   - Institutional layout (Emerald + Gold).
 
-Sections with clear visual hierarchy:
-1. Basic Info (date, pair pill, session pill)
-2. HTF Bias (predicted vs actual pills)
-3. Dealing Range (Premium/Discount/EQ)
-4. Liquidity (BSL/SSL/Both/None + note)
-5. Session Narrative (textarea)
-6. DR Levels (High/EQ/Low)
-7. Breakout Quality, FVG Location, Entry Type, LTF Confirmation (pill groups)
-8. Trade Execution (entry, SL, TP1+target, TP2+target)
-9. Result + R Achieved
-10. Process Grade (large A/B/C cards)
-11. Emotional State (Process/Flow/Foggy/Revenge)
-12. Screenshots (predicted + actual, preview/zoom/fullscreen via existing image lightbox pattern)
-13. Reflection (rich text x3) using existing `RichTextEditor`
-14. **Model Review** highlighted block (3 large rich text answers)
+---
 
-### 7. Auto-Analytics (computed, not stored)
+## Batch C — Macro + AI Coach context
 
-Pure functions over `tests[]`: bias accuracy, win rate by session/pair/grade/emotion/entry/liquidity. Surfaced in dashboard charts and per-test detail.
+9. **Macro Timeline cleanup**
+   - Filter timeline so only the `2026-06-12` "Core CPI Cools, PPI Surges, NFP Strong" entry shows (single curated entry).
+   - Keep underlying event records; the change is display-only so analytics aren't affected.
 
-### 8. Templates
+10. **AI Coach full-journal memory**
+    - Extend `ai-coach` edge function payload to include compact snapshots of: Trades, Behavior, Weekly Reviews, Daily Plans, Macro Intelligence, Research Lab, Trade Quality, Analytics.
+    - Reuse `aiInsightAdapters.ts` adapters; cap each at ~2KB to stay under token limits.
+    - Coach replies cite cross-page patterns.
 
-- "Save Template" snapshots current field config to the strategy
-- "New Strategy → Use Existing Template" copies fields from selected strategy
+---
 
-### 9. Autosave
+## Technical Details (for reference)
 
-Reuse existing `useAutosave` hook. Saves on type, blur, tab switch, beforeunload. Status pill via `SaveStatusIndicator`. No manual Save button.
+- **Editor fix**: switch from `editor.addEventListener('mouseup', ...)` to a single `document.addEventListener('selectionchange', ...)` guarded by `editorRef.current?.contains(selection.anchorNode)`. One change in `RichTextEditor.tsx` propagates to all consumers.
+- **Setup rating**: pure function `computeSetupScore(stats) → { score: 0-100, grade: 'A+'|...|'D' }` in `src/lib/calculations.ts`. Reused by Analytics + Trade Quality.
+- **Weekly review edge function**: `supabase/functions/weekly-review-generate/index.ts` using shared `lovable-ai.ts` at `sonnet` tier. Returns structured JSON; client maps into existing Weekly Review fields.
+- **Auto-Sunday trigger**: on Weekly Review mount, if `weekday===0` AND review fields are empty AND week has ≥1 daily plan → auto-invoke once, gated by `localStorage[user_id + ':wr-auto:' + weekStart]`.
+- **AI Insights placement**: add `<AIInsightsPanel page="..." payload={adapted} />` as last child of each page's main column.
+- **No schema changes** required for Batch A. Batch C may not need any either.
 
-### 10. Design
+---
 
-- Reuse design tokens, MetricCard, Card, Badge, Tabs from existing system
-- Status badges use semantic tokens (success/primary/destructive/muted)
-- Dark mode compatible
-- Mobile-responsive grid (1 col mobile, 2 tablet, 3 desktop)
-- Smooth hover (existing transition utilities), no new animation libs
+## Delivery order
 
-### Files
-
-**New:**
-- `src/types/research.ts` — Strategy/Test types
-- `src/lib/researchAnalytics.ts` — pure analytics fns
-- `src/lib/researchStorage.ts` — load/save/migrate
-- `src/components/research/StrategyCard.tsx`
-- `src/components/research/StrategyDialog.tsx` (new/edit modal)
-- `src/components/research/StrategyDashboard.tsx`
-- `src/components/research/TestEditor.tsx`
-- `src/components/research/PillGroup.tsx` (shared selector)
-
-**Edited:**
-- `src/pages/ResearchLab.tsx` — gallery only
-- `src/App.tsx` — add `/research-lab/:strategyId` and `/research-lab/:strategyId/test/:testId` routes
-
-**Out of scope (this round):**
-- Server-side persistence (stays localStorage to match other settings-like data; can migrate to Supabase in a follow-up)
-- Actual "Promote to Playbook" wiring beyond a stub action (will hook into existing SetupPlaybook in a follow-up)
-- Import Strategy from file (button + JSON import only)
+I'll start **Batch A** now, post visual proof after each batch, and only proceed once you confirm. Reply "go" to start, or tell me to reorder.

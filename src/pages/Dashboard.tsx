@@ -35,6 +35,8 @@ import { SessionChart } from '@/components/dashboard/SessionChart';
 import { WeeklyPerformanceChart } from '@/components/dashboard/WeeklyPerformanceChart';
 import { PerformanceByGradeChart } from '@/components/dashboard/PerformanceByGradeChart';
 import { DashboardCalendar } from '@/components/dashboard/DashboardCalendar';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptTrades } from '@/lib/aiInsightAdapters';
 import type { Trade } from '@/types/trading';
 
 const MS_PER_DAY = 86_400_000;
@@ -288,6 +290,9 @@ export default function Dashboard() {
           <div className="h-[200px] sm:h-[240px]"><HourChart trades={trades} /></div>
         </div>
       </div>
+
+      {/* AI Insights — page bottom (universal) */}
+      <div className="mt-4"><AIInsightsPanel page="Dashboard" payload={adaptTrades(trades)} /></div>
     </div>
   );
 }

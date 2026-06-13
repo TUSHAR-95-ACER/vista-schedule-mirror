@@ -15,6 +15,10 @@ const TABLES = [
   "weekly_plans",
   "daily_plans",
   "user_settings",
+  "macro_events",
+  "macro_analyses",
+  "macro_predictions",
+  "macro_cycles",
 ];
 
 async function fetchAllUserData(supabase: any, userId: string) {
@@ -197,6 +201,24 @@ function buildReadableContext(context: Record<string, any>): string {
 
   // User settings — pass through (already small)
   readable.user_settings = context.user_settings;
+
+  // Macro intelligence ecosystem — give the coach awareness of macro context.
+  readable.macro_cycles = (context.macro_cycles || []).slice(0, 6).map((c: any) => ({
+    label: c.label, status: c.status, month: c.cycle_month,
+  }));
+  readable.macro_analyses = (context.macro_analyses || []).slice(0, 6).map((a: any) => ({
+    date: a.analysis_date, theme: a.macro_theme, fed_cycle: a.fed_cycle, environment: a.environment,
+    usd_bias: a.usd_bias, gold_bias: a.gold_bias, fed_bias: a.fed_bias,
+    confidence: a.confidence_level, narrative: (a.dominant_narrative || "").slice(0, 400),
+  }));
+  readable.macro_events = (context.macro_events || []).slice(0, 30).map((e: any) => ({
+    date: e.release_date, event: e.event, category: e.category,
+    previous: e.previous, forecast: e.forecast, actual: e.actual, impact: e.impact, outcome: e.outcome_status,
+  }));
+  readable.macro_predictions = (context.macro_predictions || []).slice(0, 20).map((p: any) => ({
+    source: p.source_event, target: p.target_event, status: p.status,
+    usd: p.usd_outlook, gold: p.gold_outlook, fed: p.fed_outlook, created: p.created_at,
+  }));
 
   let json = JSON.stringify(readable);
   // Safety: if still too large, cut trades further

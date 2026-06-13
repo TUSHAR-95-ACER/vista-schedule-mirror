@@ -3,7 +3,10 @@ import { useTrading } from '@/contexts/TradingContext';
 import {
   calcWinRate, calcProfitFactor, calcAvgRR, calcMaxDrawdown,
   calcEdgeScore, calcExpectancy, formatPercent, getDayOfWeek,
+  calcSetupScore, getSetupGrade,
 } from '@/lib/calculations';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptTrades } from '@/lib/aiInsightAdapters';
 import { Trade, ALL_ASSETS, SETUPS } from '@/types/trading';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -199,8 +202,14 @@ export default function Analytics() {
     valid.forEach(t => { const a = map.get(t.setup) || []; a.push(t); map.set(t.setup, a); });
     return [...map.entries()].map(([name, st]) => {
       const wr = calcWinRate(st); const rr = calcAvgRR(st); const dd = calcMaxDrawdown(st);
-      return { name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: calcProfitFactor(st), maxDrawdown: dd, setupRating: calcEdgeScore(wr, rr, st.length, dd) };
-    }).sort((a, b) => b.setupRating - a.setupRating);
+      const pf = calcProfitFactor(st);
+      const score = calcSetupScore({ winRate: wr, avgRR: rr, profitFactor: pf, maxDD: dd, tradeCount: st.length });
+      return {
+        name, trades: st.length, winRate: wr, avgRR: rr, profitFactor: pf,
+        maxDrawdown: dd, totalPL: st.reduce((s, t) => s + t.profitLoss, 0),
+        setupRating: score, setupScore: score, grade: getSetupGrade(score),
+      };
+    }).sort((a, b) => b.setupScore - a.setupScore);
   }, [valid]);
 
   // ─── Behavior: Overtrading ────────────────────────────────────────
@@ -571,7 +580,7 @@ export default function Analytics() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Setup Rating'].map(h => (
+                  {['Setup', 'Trades', 'Win %', 'Avg RR', 'PF', 'Max DD', 'Score', 'Grade'].map(h => (
                     <th key={h} className="px-3 py-2 text-xs font-medium text-muted-foreground">{h}</th>
                   ))}
                 </tr>
@@ -585,7 +594,17 @@ export default function Analytics() {
                     <td className="px-3 py-1.5 font-mono text-xs">{s.avgRR.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs">{s.profitFactor.toFixed(2)}</td>
                     <td className="px-3 py-1.5 font-mono text-xs text-destructive">{s.maxDrawdown.toFixed(2)}</td>
-                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">{s.setupRating.toFixed(2)}</td>
+                    <td className="px-3 py-1.5 font-mono text-xs font-bold text-primary">★ {s.setupScore}/100</td>
+                    <td className="px-3 py-1.5 font-mono text-xs">
+                      <span className={cn(
+                        'inline-flex items-center justify-center w-9 h-6 rounded-md font-bold text-[11px]',
+                        s.grade === 'A+' && 'bg-gold/20 text-gold border border-gold/35',
+                        s.grade === 'A' && 'bg-success/20 text-success',
+                        s.grade.startsWith('B') && 'bg-primary/15 text-primary',
+                        s.grade.startsWith('C') && 'bg-warning/15 text-warning',
+                        s.grade === 'D' && 'bg-destructive/15 text-destructive',
+                      )}>{s.grade}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -633,6 +652,9 @@ export default function Analytics() {
           </div>
         </div>
       )}
+
+      {/* AI Insights — page bottom (universal) */}
+      <AIInsightsPanel page="Analytics" payload={adaptTrades(valid)} />
     </div>
   );
 }

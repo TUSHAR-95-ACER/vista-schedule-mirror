@@ -4,6 +4,8 @@ import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Lightbulb } from 'lucide-react';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
+import { adaptTrades, adaptPsychology } from '@/lib/aiInsightAdapters';
 
 const Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -283,6 +285,9 @@ export default function BehaviorPatterns() {
           </div>
         </div>
       )}
+
+      {/* AI Insights — page bottom (universal) */}
+      <AIInsightsPanel page="Behavior" payload={{ ...adaptPsychology(trades), ...adaptTrades(trades) }} />
     </div>
   );
 }

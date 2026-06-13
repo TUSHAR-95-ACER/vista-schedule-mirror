@@ -10,6 +10,7 @@ import { StrategyCard } from '@/components/research/StrategyCard';
 import { StrategyDialog } from '@/components/research/StrategyDialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 
 export default function ResearchLab() {
   const { user } = useAuth();
@@ -130,6 +131,19 @@ export default function ResearchLab() {
       </Tabs>
 
       <StrategyDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSave={handleSave} />
+
+      {/* AI Insights — page bottom (universal) */}
+      <AIInsightsPanel
+        page="Research Lab"
+        payload={{
+          total_strategies: strategies.length,
+          archived: strategies.filter(s => (s as any).status === 'archived').length,
+          strategies: strategies.slice(0, 12).map(s => ({
+            name: (s as any).name, category: (s as any).category, status: (s as any).status,
+            tests: Array.isArray((s as any).tests) ? (s as any).tests.length : 0,
+          })),
+        }}
+      />
     </div>
   );
 }
