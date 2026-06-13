@@ -542,6 +542,19 @@ export default function WeeklyReview() {
           </CardContent>
         </Card>
       )}
+
+      {/* AI Insights — page bottom (universal) */}
+      {latest && (
+        <AIInsightsPanel
+          page="Weekly Review"
+          payload={{
+            week: latest.week, trades: latest.trades, wins: latest.wins, losses: latest.losses,
+            pl: latest.pl, win_rate: latest.winRate, avg_rr: latest.avgRR, bias_accuracy: latest.biasAccuracy,
+            exec_score: latest.avgExec, top_mistake: latest.topMistake, best_pair: latest.bestPair, worst_pair: latest.worstPair,
+            best_setup: latest.bestSetup?.name, worst_setup: latest.worstSetup?.name,
+          }}
+        />
+      )}
     </div>
   );
 }
