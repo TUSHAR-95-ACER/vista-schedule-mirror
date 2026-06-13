@@ -273,6 +273,10 @@ export default function WeeklyReview() {
   return (
     <div className="px-3 sm:px-4 py-3 w-full space-y-6">
       <PageHeader title="Weekly Review" subtitle="Auto-generated weekly performance reports with behavioral insights">
+        <Button size="sm" className="gap-1.5" onClick={() => generateWithAI(false)} disabled={aiBusy || !latest}>
+          {aiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {aiBusy ? 'Generating…' : 'Generate with AI'}
+        </Button>
       </PageHeader>
 
       {latest ? (
