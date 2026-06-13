@@ -1347,6 +1347,27 @@ export default function MacroIntelligence() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Insights — page bottom (universal) */}
+      <div className="px-6 pb-8">
+        <AIInsightsPanel
+          page="Macro Intelligence"
+          payload={{
+            cycle: activeCycle ? { label: activeCycle.label, status: activeCycle.status, month: activeCycle.cycle_month } : null,
+            latest_analysis: latest ? {
+              theme: latest.macro_theme, fed_cycle: latest.fed_cycle, environment: latest.environment,
+              usd_bias: latest.usd_bias, gold_bias: latest.gold_bias, fed_bias: latest.fed_bias,
+              confidence: latest.confidence_level, narrative: latest.dominant_narrative,
+            } : null,
+            event_count: events.length,
+            predictions: predictions.slice(0, 12).map((p: any) => ({
+              source: p.source_event, target: p.target_event, status: p.status,
+              usd: p.usd_outlook, gold: p.gold_outlook, fed: p.fed_outlook,
+            })),
+            hit_rate: predictionHitStats.overall,
+          }}
+        />
+      </div>
     </div>
   );
 }
