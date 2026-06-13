@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AIInsightsPanel } from "@/components/shared/AIInsightsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -830,7 +831,13 @@ export default function MacroIntelligence() {
     return groups;
   }, [events]);
 
-  const cycleTimeline = (activeCycle as any)?.timeline || [];
+  const rawTimeline = (activeCycle as any)?.timeline || [];
+  // Curated institutional timeline — only the single 2026-06-12 entry per user spec.
+  // The full underlying timeline is preserved in the database (rawTimeline) for analytics.
+  const cycleTimeline = (rawTimeline as any[]).filter((t: any) => {
+    const d = String(t?.date || "").slice(0, 10);
+    return d === "2026-06-12";
+  });
 
   /* ---------- render ---------- */
   return (
