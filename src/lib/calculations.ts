@@ -127,8 +127,37 @@ export const calcMaxDrawdown = (trades: Trade[]): number => {
 };
 
 export const calcEdgeScore = (winRate: number, avgRR: number, tradeCount: number, maxDD: number): number => {
-  if (maxDD === 0) return 0;
+  // Legacy edge score — kept for backwards compatibility. Falls back to setup score when no drawdown.
+  if (maxDD <= 0) return calcSetupScore({ winRate, avgRR, profitFactor: avgRR > 0 ? avgRR : 0, maxDD: 0, tradeCount });
   return Math.round(((winRate / 100) * avgRR * tradeCount) / maxDD * 100) / 100;
+};
+
+/**
+ * Institutional Setup Score — 0–100 composite.
+ *  40% Win Rate · 30% Avg RR (normalized to 3) · 20% Profit Factor (normalized to 3) · 10% Drawdown control.
+ * Always returns a meaningful number when at least 1 trade exists — never silently 0.
+ */
+export const calcSetupScore = ({
+  winRate, avgRR, profitFactor, maxDD, tradeCount,
+}: { winRate: number; avgRR: number; profitFactor: number; maxDD: number; tradeCount: number }): number => {
+  if (tradeCount === 0) return 0;
+  const wr = Math.max(0, Math.min(100, winRate)) / 100;                       // 0..1
+  const rr = Math.max(0, Math.min(1, (avgRR || 0) / 3));                       // 0..1, cap at RR 3
+  const pf = !isFinite(profitFactor) ? 1 : Math.max(0, Math.min(1, profitFactor / 3));
+  // Drawdown control: 0 DD = 1.0, scales down as DD grows relative to trade count.
+  const ddCtrl = maxDD <= 0 ? 1 : Math.max(0, 1 - Math.min(1, maxDD / (Math.max(1, tradeCount) * 100)));
+  const score = (wr * 0.4) + (rr * 0.3) + (pf * 0.2) + (ddCtrl * 0.1);
+  return Math.round(score * 100);
+};
+
+export const getSetupGrade = (score: number): 'A+' | 'A' | 'B+' | 'B' | 'C+' | 'C' | 'D' => {
+  if (score >= 88) return 'A+';
+  if (score >= 78) return 'A';
+  if (score >= 70) return 'B+';
+  if (score >= 60) return 'B';
+  if (score >= 50) return 'C+';
+  if (score >= 40) return 'C';
+  return 'D';
 };
 
 export const calcAvgRR = (trades: Trade[]): number => {
