@@ -652,6 +652,9 @@ export default function Analytics() {
           </div>
         </div>
       )}
+
+      {/* AI Insights — page bottom (universal) */}
+      <AIInsightsPanel page="Analytics" payload={adaptTrades(valid)} />
     </div>
   );
 }
