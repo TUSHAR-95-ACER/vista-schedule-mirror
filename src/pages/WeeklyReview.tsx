@@ -236,20 +236,24 @@ export default function WeeklyReview() {
     }
   };
 
-  // Auto-generate every Sunday, once per week, only if review is empty.
+  // Auto-generate on first visit to ANY week that has data but no review yet.
+  // This ensures historical weeks populate automatically — no need to wait for Sunday.
+  // Guarded per-week in localStorage so we never overwrite a user's edits.
   useEffect(() => {
     if (!user?.id || !latest?.week) return;
-    const isSunday = new Date().getDay() === 0;
-    if (!isSunday) return;
+    if (aiBusy) return;
     const allEmpty = Object.values(reviewNotes).every(v => !v || !v.trim());
     if (!allEmpty) return;
+    // Only auto-generate when there is actually something to review for this week.
+    const hasData = latest.trades > 0;
+    if (!hasData) return;
     const guardKey = `wr-auto:${latest.week}`;
     const already = loadUserStorage<boolean>(guardKey, user.id, false);
     if (already) return;
     saveUserStorage(guardKey, user.id, true);
     void generateWithAI(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, latest?.week]);
+  }, [user?.id, latest?.week, reviewNotes]);
 
   // Insights
   const insights = useMemo(() => {
