@@ -1,5 +1,16 @@
-// Auto-generate a complete Weekly Review from the week's Daily Plans + Trades.
+// Auto-generate a complete Weekly Review from the week's Daily Plans + Trades + Weekly Plan.
 // Returns structured JSON consumed by the Weekly Review page.
+//
+// Reads EVERYTHING for the requested week:
+//  - All Daily Plans (Mon–Fri): bias, pairs, narratives, prediction notes, result notes,
+//    bias comparison, market narrative, psychology, emotional notes, day summary, mistakes, wins,
+//    macro notes, checklist, chart notes.
+//  - The Weekly Plan: bias, goals, risk, levels, pair analyses, observation, calendar result.
+//  - All Trades executed during the week: pair, dir, setup, grade, result, RR, PnL, session,
+//    mistakes, psychology, notes/reasons, chart notes.
+//
+// The AI is instructed to find recurring themes across days (e.g. "impatience appeared on
+// Monday AND Thursday → premature exits remain the biggest leak").
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { aiChat, aiErrorResponse } from "../_shared/lovable-ai.ts";
@@ -10,7 +21,12 @@ const corsHeaders = {
 };
 
 function fmt(d: string) { try { return new Date(d).toISOString().split("T")[0]; } catch { return d; } }
-function safe(v: any) { if (typeof v !== "string") return v; try { return JSON.parse(v); } catch { return v; } }
+function safe(v: any) { if (v == null) return v; if (typeof v !== "string") return v; try { return JSON.parse(v); } catch { return v; } }
+function stripHtml(s: any): string {
+  if (!s) return "";
+  const str = typeof s === "string" ? s : (s?.text || s?.html || JSON.stringify(s));
+  return String(str).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -45,56 +61,142 @@ serve(async (req) => {
       supabase.from("weekly_plans").select("*").eq("user_id", userId).eq("week_start", startStr).maybeSingle(),
     ]);
 
-    const days = (dailyPlans || []).map((p: any) => ({
-      date: p.date,
-      bias: p.daily_bias,
-      session_focus: p.session_focus,
-      max_trades: p.max_trades,
-      risk_limit: p.risk_limit,
-      took_trades: p.took_trades,
-      day_summary: safe(p.day_summary),
-      notes: p.note || safe(p.notes_journal),
-      result_narrative: p.result_narrative,
-      pairs: safe(p.pairs),
-      checklist: safe(p.checklist),
-    }));
+    // Distill each daily plan to a compact, AI-friendly object that contains
+    // every field the user listed (prediction notes, result notes, psych, etc.).
+    const days = (dailyPlans || []).map((p: any) => {
+      const pairs = safe(p.pairs) || [];
+      const checklist = safe(p.checklist) || {};
+      const psych = safe(p.psychology) || {};
+      const summary = safe(p.day_summary);
+      const notes = safe(p.notes_journal);
+      const macro = safe(p.macro_notes);
+      return {
+        date: p.date,
+        daily_bias: p.daily_bias,
+        session_focus: p.session_focus,
+        max_trades: p.max_trades,
+        risk_limit: p.risk_limit,
+        took_trades: p.took_trades,
+        pairs: (Array.isArray(pairs) ? pairs : []).map((x: any) => ({
+          pair: x.pair,
+          predicted_bias: x.bias,
+          actual_bias: x.actualBias || x.actualDirection || null,
+          predicted_narrative: stripHtml(x.narrative).slice(0, 400),
+          result_narrative: stripHtml(x.resultNarrative || x.actualNarrative).slice(0, 400),
+          prediction_chart_note: stripHtml(x.predictionChartNote || x.predictionNote).slice(0, 300),
+          result_chart_note: stripHtml(x.resultChartNote || x.resultNote).slice(0, 300),
+        })),
+        day_summary: stripHtml(summary).slice(0, 1200),
+        notes: stripHtml(notes || p.note).slice(0, 1200),
+        result_narrative: stripHtml(p.result_narrative).slice(0, 1200),
+        macro_notes: stripHtml(macro).slice(0, 800),
+        psychology: {
+          emotion: psych?.emotion || null,
+          discipline: psych?.discipline ?? null,
+          notes: stripHtml(psych?.notes).slice(0, 600),
+          checklist: psych?.checklist || null,
+        },
+        wins: Array.isArray(p.wins) ? p.wins : (safe(p.wins) || []),
+        mistakes: Array.isArray(p.mistakes) ? p.mistakes : (safe(p.mistakes) || []),
+        checklist,
+      };
+    });
 
-    const tradesLite = (trades || []).map((t: any) => ({
-      date: t.date, pair: t.asset, dir: t.direction, setup: t.setup, grade: t.grade,
-      result: t.result, pnl: t.profit_loss, rr: t.actual_rr, planned_rr: t.planned_rr,
-      session: t.session, mistakes: safe(t.mistakes), psychology: safe(t.psychology), notes: t.notes,
-    }));
+    const tradesLite = (trades || []).map((t: any) => {
+      const psy = safe(t.psychology) || {};
+      return {
+        date: t.date, pair: t.asset, dir: t.direction, setup: t.setup, grade: t.grade,
+        result: t.result, pnl: t.profit_loss, rr: t.actual_rr, planned_rr: t.planned_rr,
+        session: t.session,
+        mistakes: safe(t.mistakes) || [],
+        reasons: safe(t.reasons) || [],
+        notes: stripHtml(t.notes).slice(0, 800),
+        chart_notes: stripHtml(t.chart_notes || t.trade_log_note).slice(0, 600),
+        psychology: { emotion: psy?.emotion, discipline: psy?.discipline, notes: stripHtml(psy?.notes).slice(0, 400) },
+      };
+    });
+
+    const wp = weeklyPlan ? {
+      bias: weeklyPlan.bias,
+      goals: stripHtml(weeklyPlan.goals).slice(0, 600),
+      risk: stripHtml(weeklyPlan.risk).slice(0, 400),
+      levels: stripHtml(weeklyPlan.levels).slice(0, 600),
+      pairs: (safe(weeklyPlan.pair_analyses) || []).map((x: any) => ({
+        pair: x.pair, predicted: x.bias, actual: x.actualBias || x.actualDirection || null,
+        narrative: stripHtml(x.narrative).slice(0, 400),
+        result: stripHtml(x.actualNarrative || x.resultNarrative).slice(0, 400),
+      })),
+      observation: stripHtml(safe(weeklyPlan.observation)).slice(0, 800),
+      calendar_result: stripHtml(safe(weeklyPlan.calendar_result)).slice(0, 800),
+    } : null;
 
     const wins = tradesLite.filter(t => t.result === "Win").length;
     const losses = tradesLite.filter(t => t.result === "Loss").length;
     const pnl = tradesLite.reduce((s: number, t: any) => s + (Number(t.pnl) || 0), 0);
 
-    const sys = `You are a professional institutional trading coach writing a weekly review for a trader's journal.
-You will receive ALL data from a single trading week (Mon–Fri daily plans, all trades, plus the weekly plan).
-Read everything carefully, find recurring patterns, and write a complete, mentor-grade review.
+    // If there's literally NOTHING for the week, return a clear empty result so
+    // the UI can render an honest "no data" review rather than fabrications.
+    if (days.length === 0 && tradesLite.length === 0 && !wp) {
+      return new Response(JSON.stringify({
+        weeklyNarrative: "No daily plans, trades, or weekly plan were recorded for this week — there is nothing to review.",
+        reflection: "Not enough data this week to reflect on execution.",
+        lessons: "Not enough data this week to extract lessons.",
+        mistakes: "Not enough data this week to identify mistakes.",
+        improvements: "Begin by logging at least a daily plan for each session and any trades you take.",
+        aiReview: "This week has no journal entries to review.",
+        meta: { weekStart: startStr, weekEnd: endStr, trades: 0, wins: 0, losses: 0, pnl: 0 },
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
-OUTPUT RULES (STRICT JSON via tool call):
-- Write in second person ("you", "your"). Direct, calm, specific, reference real pairs/dates/RR/mistake tags.
-- Each long field should be 2–5 short paragraphs of plain prose (no markdown headings, no bullets unless listing 3+ items).
-- Cite actual numbers from the data — never invent.
-- If a section has no data, say "Not enough data this week to call this out."
-- Tone: senior fund mentor reviewing a junior trader. Strict, fair, actionable.`;
+    const sys = `You are a senior institutional trading coach writing a complete WEEKLY REVIEW for a trader's journal.
+
+You will receive EVERYTHING the trader recorded for a single week:
+- The Weekly Plan (bias, goals, risk, levels, per-pair analysis, observation, calendar result)
+- All Daily Plans, Mon–Fri (bias, pairs predicted vs actual, prediction notes, result notes,
+  market narrative, psychology, emotional notes, day summary, notes, macro notes, wins,
+  mistakes, checklist, prediction/result chart notes)
+- All Trades taken during the week (setup, grade, result, RR, PnL, session, mistakes,
+  reasons, notes, chart notes, psychology)
+
+YOUR JOB — write a deep, mentor-grade review:
+1. READ EVERYTHING. Cross-reference every day with every other day.
+2. Find RECURRING THEMES across the week.
+   - If "impatience" appears in Mon notes AND Thu notes → call it out by name and dates.
+   - If the trader exits early multiple days → name it as a leak.
+   - If bias was wrong on the same pair multiple times → flag it.
+   - If discipline drops as the week progresses → flag it.
+3. Compare plan vs execution (Weekly Plan bias vs actual market behavior;
+   Daily Plan predicted vs actual; planned RR vs actual RR).
+4. Reference real pairs, dates, RR numbers, mistake tags, emotion tags — never invent.
+
+OUTPUT (STRICT — JSON tool call). Each field is multi-paragraph prose (2–5 short paragraphs):
+- weekly_narrative: market story of the week + plan vs execution + key themes you observed.
+- reflection: how the trader executed, emotional state across the week, discipline trend.
+- lessons: concrete lessons to carry into next week, drawn from the actual data.
+- mistakes: recurring mistakes detected across days/trades — name them, cite dates.
+- improvements: specific process improvements to implement next week.
+- ai_review: senior-coach summary — strongest behavior, biggest leak, best decision of the week,
+  worst decision of the week, execution quality grade A/B/C/D, and a single bottom-line directive.
+
+TONE: second person ("you", "your"). Calm, direct, fair, specific, no fluff, no markdown headings,
+no bullet points unless you're listing 3+ named items. If a section truly has no data, write
+"Not enough data this week to call this out." for that field.`;
 
     const userText = `WEEK: ${startStr} → ${endStr}
-WIN/LOSS: ${wins}W / ${losses}L · NET P/L: ${pnl.toFixed(2)} · TRADES: ${tradesLite.length}
+SUMMARY: ${wins}W / ${losses}L · NET P/L ${pnl.toFixed(2)} · ${tradesLite.length} trades · ${days.length} daily plans
 
 WEEKLY PLAN:
-${JSON.stringify(weeklyPlan || {}, null, 0).slice(0, 4000)}
+${JSON.stringify(wp || {}, null, 0).slice(0, 5000)}
 
 DAILY PLANS (Mon–Fri):
-${JSON.stringify(days, null, 0).slice(0, 12000)}
+${JSON.stringify(days, null, 0).slice(0, 18000)}
 
 TRADES TAKEN THIS WEEK:
-${JSON.stringify(tradesLite, null, 0).slice(0, 10000)}`;
+${JSON.stringify(tradesLite, null, 0).slice(0, 12000)}`;
 
     const result = await aiChat({
       tier: "sonnet",
-      max_tokens: 3200,
+      max_tokens: 4000,
       temperature: 0.5,
       messages: [{ role: "system", content: sys }, { role: "user", content: userText }],
       tools: [{
@@ -105,12 +207,12 @@ ${JSON.stringify(tradesLite, null, 0).slice(0, 10000)}`;
           parameters: {
             type: "object",
             properties: {
-              weekly_narrative: { type: "string", description: "Market story of the week, plan vs execution, key themes" },
-              reflection: { type: "string", description: "How you executed this week, emotional state, discipline" },
-              lessons: { type: "string", description: "What to carry forward into next week" },
-              mistakes: { type: "string", description: "Recurring mistakes detected across days/trades" },
-              improvements: { type: "string", description: "Concrete process improvements to implement" },
-              ai_review: { type: "string", description: "Senior-coach summary: patterns, strengths, missed opportunities, best & worst decision of the week, execution quality" },
+              weekly_narrative: { type: "string" },
+              reflection: { type: "string" },
+              lessons: { type: "string" },
+              mistakes: { type: "string" },
+              improvements: { type: "string" },
+              ai_review: { type: "string" },
             },
             required: ["weekly_narrative", "reflection", "lessons", "mistakes", "improvements", "ai_review"],
           },
@@ -132,7 +234,7 @@ ${JSON.stringify(tradesLite, null, 0).slice(0, 10000)}`;
       mistakes: args.mistakes || "",
       improvements: args.improvements || "",
       aiReview: args.ai_review || "",
-      meta: { weekStart: startStr, weekEnd: endStr, trades: tradesLite.length, wins, losses, pnl },
+      meta: { weekStart: startStr, weekEnd: endStr, trades: tradesLite.length, wins, losses, pnl, daily_plans: days.length },
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return aiErrorResponse(e, corsHeaders);
