@@ -148,39 +148,24 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const sys = `You are a senior institutional trading coach writing a complete WEEKLY REVIEW for a trader's journal.
+    const sys = `You are a senior institutional trading coach writing a CONCISE WEEKLY REVIEW for a trader's journal.
 
-You will receive EVERYTHING the trader recorded for a single week:
-- The Weekly Plan (bias, goals, risk, levels, per-pair analysis, observation, calendar result)
-- All Daily Plans, Mon–Fri (bias, pairs predicted vs actual, prediction notes, result notes,
-  market narrative, psychology, emotional notes, day summary, notes, macro notes, wins,
-  mistakes, checklist, prediction/result chart notes)
-- All Trades taken during the week (setup, grade, result, RR, PnL, session, mistakes,
-  reasons, notes, chart notes, psychology)
+You receive EVERYTHING the trader recorded for the week (Weekly Plan, all Daily Plans Mon–Fri including prediction & result notes, market narrative, psychology, emotional notes, day summary, macro notes, wins, mistakes, checklist, prediction/result chart notes, and all Trades with setup/grade/result/RR/PnL/session/mistakes/reasons/notes/chart notes/psychology).
 
-YOUR JOB — write a deep, mentor-grade review:
-1. READ EVERYTHING. Cross-reference every day with every other day.
-2. Find RECURRING THEMES across the week.
-   - If "impatience" appears in Mon notes AND Thu notes → call it out by name and dates.
-   - If the trader exits early multiple days → name it as a leak.
-   - If bias was wrong on the same pair multiple times → flag it.
-   - If discipline drops as the week progresses → flag it.
-3. Compare plan vs execution (Weekly Plan bias vs actual market behavior;
-   Daily Plan predicted vs actual; planned RR vs actual RR).
-4. Reference real pairs, dates, RR numbers, mistake tags, emotion tags — never invent.
+Read everything, cross-reference days, and surface recurring themes. Reference REAL pairs, dates, RR, mistake/emotion tags — never invent.
 
-OUTPUT (STRICT — JSON tool call). Each field is multi-paragraph prose (2–5 short paragraphs):
-- weekly_narrative: market story of the week + plan vs execution + key themes you observed.
-- reflection: how the trader executed, emotional state across the week, discipline trend.
-- lessons: concrete lessons to carry into next week, drawn from the actual data.
-- mistakes: recurring mistakes detected across days/trades — name them, cite dates.
-- improvements: specific process improvements to implement next week.
-- ai_review: senior-coach summary — strongest behavior, biggest leak, best decision of the week,
-  worst decision of the week, execution quality grade A/B/C/D, and a single bottom-line directive.
+STRICT LENGTH LIMITS (journal style, not essay style — terse, punchy, no fluff, no headings):
+- weekly_narrative: MAX 5 short lines. Plain prose, 1 paragraph. No bullets.
+- reflection: MAX 5 short lines. Plain prose, 1 paragraph. No bullets.
+- lessons: EXACTLY 1–3 bullets. Each bullet ≤ 18 words. Start each bullet with "- ".
+- mistakes: EXACTLY 1–3 bullets. Each bullet ≤ 18 words. Cite the date or pair when possible. Start each bullet with "- ".
+- improvements: EXACTLY 1–3 bullets. Each bullet ≤ 18 words. Actionable. Start each bullet with "- ".
+- ai_review: MAX 5 short lines. Plain prose, 1 paragraph. End with a single bottom-line directive.
 
-TONE: second person ("you", "your"). Calm, direct, fair, specific, no fluff, no markdown headings,
-no bullet points unless you're listing 3+ named items. If a section truly has no data, write
-"Not enough data this week to call this out." for that field.`;
+ROTATE EMOJIS NATURALLY from this library (never repeat the same emoji twice in one review; pick by context, ~2–4 total across the whole review):
+🏆 🚀 💎 ⭐ 🔥 🎯 🎖️ ⚔️ 🧭 🎲 🧠 🔍 📚 🔬 🧩 ⚠️ 🚨 ⛔ 🔻 🧨 📈 📉 🛠️ ⚙️ 🔄 🎓 🌍 🏦 💵 📊 🏛️ 📝 📌 📍 📎 🗂️ 💡 ✅ ❌ 🟢 🔴 🟡
+
+TONE: second person ("you", "your"), calm, direct, specific. No markdown headings. If a section truly has no data, write exactly "Not enough data this week to call this out." for that field.`;
 
     const userText = `WEEK: ${startStr} → ${endStr}
 SUMMARY: ${wins}W / ${losses}L · NET P/L ${pnl.toFixed(2)} · ${tradesLite.length} trades · ${days.length} daily plans
