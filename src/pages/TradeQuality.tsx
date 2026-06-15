@@ -105,6 +105,36 @@ export default function TradeQuality() {
     }));
   }, [valid]);
 
+  // Batch B: Quality Distribution share (A+/A/B/C %)
+  const gradedTotal = useMemo(() => gradeData.filter(g => g.grade !== 'Ungraded').reduce((s, g) => s + g.count, 0), [gradeData]);
+  const qualityDistribution = useMemo(() => {
+    return gradeData.filter(g => g.grade !== 'Ungraded').map(g => ({
+      grade: g.grade,
+      pct: gradedTotal ? Math.round((g.count / gradedTotal) * 1000) / 10 : 0,
+      count: g.count,
+    }));
+  }, [gradeData, gradedTotal]);
+
+  // Best / Worst Grade (by total PL)
+  const bestGrade = useMemo(() => gradeData.filter(g => g.count > 0).reduce<typeof gradeData[number] | null>((b, g) => !b || g.totalPL > b.totalPL ? g : b, null), [gradeData]);
+  const worstGrade = useMemo(() => gradeData.filter(g => g.count > 0).reduce<typeof gradeData[number] | null>((b, g) => !b || g.totalPL < b.totalPL ? g : b, null), [gradeData]);
+
+  // Avg Grade per Week (numeric mapping: A+=4, A=3, B=2, C=1)
+  const gradeNum: Record<string, number> = { 'A+': 4, A: 3, B: 2, C: 1 };
+  const avgGradePerWeek = useMemo(() => {
+    const weeks = new Map<string, number[]>();
+    valid.forEach(t => {
+      const g = t.grade && gradeNum[t.grade]; if (!g) return;
+      const d = new Date(t.date);
+      const ws = new Date(d); ws.setDate(d.getDate() - d.getDay());
+      const key = ws.toISOString().slice(0, 10);
+      const arr = weeks.get(key) || []; arr.push(g); weeks.set(key, arr);
+    });
+    return [...weeks.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([week, arr]) => ({
+      week: week.slice(5), avg: Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 100) / 100,
+    }));
+  }, [valid]);
+
   // Insights
   const insights = useMemo(() => {
     const result: string[] = [];
