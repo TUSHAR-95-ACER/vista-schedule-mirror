@@ -130,6 +130,25 @@ OUTPUT RULES (STRICT — JSON tool call):
       };
     });
 
+    // Persist to cache so subsequent visits render instantly without calling AI.
+    try {
+      const userId = claimsData.claims.sub as string;
+      if (payloadHash && userId) {
+        const admin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        await admin
+          .from("ai_insights_cache")
+          .upsert(
+            { user_id: userId, page: String(page).slice(0, 80), payload_hash: String(payloadHash).slice(0, 80), insights },
+            { onConflict: "user_id,page" },
+          );
+      }
+    } catch (cacheErr) {
+      console.warn("ai_insights_cache upsert failed", cacheErr);
+    }
+
     return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
