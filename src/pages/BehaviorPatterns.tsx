@@ -269,7 +269,7 @@ export default function BehaviorPatterns() {
             <span className="text-destructive">{mostDangerousEmotion?.emotion || '—'}</span>
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {mostProfitableEmotion ? formatCurrencyShort(mostProfitableEmotion.pl) : '—'} / {mostDangerousEmotion ? formatCurrencyShort(mostDangerousEmotion.pl) : '—'}
+            {mostProfitableEmotion ? formatCurrency(mostProfitableEmotion.pl) : '—'} / {mostDangerousEmotion ? formatCurrency(mostDangerousEmotion.pl) : '—'}
           </p>
         </div>
       </div>
