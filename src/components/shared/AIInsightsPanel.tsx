@@ -3,6 +3,7 @@ import { Sparkles, RefreshCw, Loader2, AlertCircle, TrendingUp, AlertTriangle, T
 
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 export interface AIInsight {
@@ -37,43 +38,89 @@ const ACCENT: Record<string, { ring: string; chip: string; icon: string }> = {
   Recommendation: { ring: 'border-gold/35 bg-gold/[0.05]',               chip: 'bg-gold/10 text-gold border-gold/30',                  icon: 'text-gold' },
 };
 
+// djb2 hash of stringified payload — stable, deterministic, fast.
+function hashPayload(payload: unknown): string {
+  const str = JSON.stringify(payload) || '';
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return `${str.length}:${(h >>> 0).toString(36)}`;
+}
+
 /**
  * AI Insights — always visible at the bottom of every page.
- * Auto-loads on mount, returns exactly 5 categorized insights from the page's data.
- * Replaces the old "Page Intelligence" / Mentor Review panels.
+ * Cache-first: instantly displays stored insights from `ai_insights_cache`.
+ * Only invokes the AI when the payload hash differs from the cached hash, or
+ * when the user clicks Regenerate.
  */
 export function AIInsightsPanel({ page, payload, title = 'AI Insights', className }: AIInsightsProps) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<AIInsight[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const lastKeyRef = useRef<string>('');
+  const lastHashRef = useRef<string>('');
+  const inFlightRef = useRef<string>('');
 
-  const generate = useCallback(async () => {
-    setLoading(true);
+  const fetchOrGenerate = useCallback(async (force = false) => {
+    if (!user?.id) return;
+    const hash = hashPayload(payload);
+    if (!force && hash === lastHashRef.current && insights) return;
+    if (inFlightRef.current === hash && !force) return;
+    inFlightRef.current = hash;
+
     setError(null);
+
+    // 1) Try cache first — instant render, no spinner.
+    if (!force) {
+      const { data: cached } = await supabase
+        .from('ai_insights_cache')
+        .select('payload_hash, insights')
+        .eq('user_id', user.id)
+        .eq('page', page)
+        .maybeSingle();
+      if (cached && cached.payload_hash === hash && Array.isArray(cached.insights)) {
+        setInsights(cached.insights as AIInsight[]);
+        lastHashRef.current = hash;
+        inFlightRef.current = '';
+        return;
+      }
+    }
+
+    // 2) Data changed (or forced) → call AI, then upsert cache.
+    setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('gemini-insights', {
-        body: { page, payload },
+        body: { page, payload, payloadHash: hash },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       const list = (data as any)?.insights as AIInsight[] | undefined;
-      setInsights(Array.isArray(list) ? list : []);
+      const next = Array.isArray(list) ? list : [];
+      setInsights(next);
+      lastHashRef.current = hash;
+
+      // Persist locally too (edge function also upserts server-side as fallback)
+      await supabase
+        .from('ai_insights_cache')
+        .upsert(
+          { user_id: user.id, page, payload_hash: hash, insights: next as any },
+          { onConflict: 'user_id,page' },
+        );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load insights');
     } finally {
       setLoading(false);
+      inFlightRef.current = '';
     }
-  }, [page, payload]);
+  }, [user?.id, page, payload, insights]);
 
-  // Auto-load once per (page + payload fingerprint). No button press required.
+  // Re-check whenever the payload hash (data) changes. No regeneration on simple
+  // remount — only when the underlying data actually changed.
   useEffect(() => {
-    const key = page + '::' + JSON.stringify(payload).slice(0, 4000);
-    if (lastKeyRef.current === key) return;
-    lastKeyRef.current = key;
-    void generate();
+    void fetchOrGenerate(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, JSON.stringify(payload).slice(0, 4000)]);
+  }, [user?.id, page, hashPayload(payload)]);
+
+  const showInitialSpinner = loading && !insights;
 
   return (
     <section
@@ -90,12 +137,12 @@ export function AIInsightsPanel({ page, payload, title = 'AI Insights', classNam
           </div>
           <div>
             <h3 className="text-base font-heading font-semibold text-foreground tracking-tight">{title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Auto-generated from this page's data — Strength, Weakness, Opportunity, Warning, Recommendation.</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Cached — refreshes only when your data changes. Use Regenerate to force.</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5" onClick={generate} disabled={loading}>
+        <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5" onClick={() => fetchOrGenerate(true)} disabled={loading}>
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          {loading ? 'Reviewing…' : 'Regenerate'}
+          {loading ? 'Refreshing…' : 'Regenerate'}
         </Button>
       </div>
 
@@ -133,9 +180,9 @@ export function AIInsightsPanel({ page, payload, title = 'AI Insights', classNam
                     </span>
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/80">{cat}</span>
                   </div>
-                  {loading && !body ? (
+                  {showInitialSpinner && !body ? (
                     <div className="flex-1 flex items-center text-xs text-muted-foreground gap-1.5">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Reading data…
+                      <Loader2 className="h-3 w-3 animate-spin" /> Generating once…
                     </div>
                   ) : (
                     <p className="text-sm leading-snug text-foreground/90">
