@@ -381,6 +381,44 @@ export default function BehaviorPatterns() {
         </div>
       )}
 
+      {/* Batch B: Mistakes by Pair + Behavior Score Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="🧩 Mistakes by Pair" tooltip="Which instruments accumulate the most mistakes — focus your filters here" />
+          <div className="h-[220px]">
+            {mistakesByPair.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={mistakesByPair} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis dataKey="pair" type="category" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={80} />
+                  <Tooltip content={<Tip />} />
+                  <Bar dataKey="mistakes" name="Mistakes" fill="hsl(38 92% 50%)" radius={[0, 4, 4, 0]} opacity={0.85} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No mistake data</div>}
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="📈 Behavior Score Trend (Daily)" tooltip="Per-day discipline score — is your behavior improving over time?" />
+          <div className="h-[220px]">
+            {disciplineByDay.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={disciplineByDay}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Tooltip content={<Tip />} />
+                  <Line type="monotone" dataKey="score" name="Behavior Score" stroke="hsl(45 90% 55%)" strokeWidth={2} dot={{ r: 2 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No psychology data yet</div>}
+          </div>
+        </div>
+      </div>
+
+
       {/* AI Insights — page bottom (universal) */}
       <AIInsightsPanel page="Behavior" payload={{ ...adaptPsychology(trades), ...adaptTrades(trades) }} />
     </div>
