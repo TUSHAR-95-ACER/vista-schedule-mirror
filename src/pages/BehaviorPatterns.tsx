@@ -4,6 +4,7 @@ import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Lightbulb } from 'lucide-react';
+import { formatCurrency } from '@/lib/calculations';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptTrades, adaptPsychology } from '@/lib/aiInsightAdapters';
 
