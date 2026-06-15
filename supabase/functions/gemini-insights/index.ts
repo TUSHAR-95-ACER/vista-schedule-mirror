@@ -33,7 +33,7 @@ serve(async (req) => {
       });
     }
 
-    const { page, payload } = await req.json();
+    const { page, payload, payloadHash } = await req.json();
     if (!page || !payload) {
       return new Response(JSON.stringify({ error: "page and payload required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,10 +51,12 @@ OUTPUT RULES (STRICT — JSON tool call):
   4. Warning
   5. Recommendation
 - Each body: ONE punchy sentence, max ~22 words. Direct, specific, second person ("you", "your").
+- Start each body with a SINGLE relevant emoji from this rotating library (vary across slots, NEVER repeat the same emoji twice in one response, pick by context):
+  🏆 🚀 💎 ⭐ 🔥 🎯 🎖️ ⚔️ 🧭 🎲 🧠 🔍 📚 🔬 🧩 ⚠️ 🚨 ⛔ 🔻 🧨 📈 📉 🛠️ ⚙️ 🔄 🎓 🌍 🏦 💵 📊 🏛️ 📝 📌 📍 📎 🗂️ 💡 ✅ ❌ 🟢 🔴 🟡
 - Reference real numbers, pairs, sessions, dates, setups, mistakes from the data — never invent.
 - Base every insight ONLY on the JSON data provided for this page.
-- If a slot truly has no signal, write "Not enough data yet for this page." for that slot.
-- No markdown, no preamble, no emojis.
+- If a slot truly has no signal, write "Not enough data yet for this page." (no emoji) for that slot.
+- No markdown, no preamble.
 - Severity guidance: Strength=good, Weakness=warn, Opportunity=info, Warning=critical, Recommendation=info.`;
 
     const safePage = String(page).replace(/[\r\n]+/g, " ").slice(0, 80);
@@ -127,6 +129,25 @@ OUTPUT RULES (STRICT — JSON tool call):
         severity: ["info", "good", "warn", "critical"].includes(i?.severity) ? i.severity : sevDefault[cat],
       };
     });
+
+    // Persist to cache so subsequent visits render instantly without calling AI.
+    try {
+      const userId = claimsData.claims.sub as string;
+      if (payloadHash && userId) {
+        const admin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        await admin
+          .from("ai_insights_cache")
+          .upsert(
+            { user_id: userId, page: String(page).slice(0, 80), payload_hash: String(payloadHash).slice(0, 80), insights },
+            { onConflict: "user_id,page" },
+          );
+      }
+    } catch (cacheErr) {
+      console.warn("ai_insights_cache upsert failed", cacheErr);
+    }
 
     return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

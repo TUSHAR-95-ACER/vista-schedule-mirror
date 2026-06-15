@@ -105,6 +105,36 @@ export default function TradeQuality() {
     }));
   }, [valid]);
 
+  // Batch B: Quality Distribution share (A+/A/B/C %)
+  const gradedTotal = useMemo(() => gradeData.filter(g => g.grade !== 'Ungraded').reduce((s, g) => s + g.count, 0), [gradeData]);
+  const qualityDistribution = useMemo(() => {
+    return gradeData.filter(g => g.grade !== 'Ungraded').map(g => ({
+      grade: g.grade,
+      pct: gradedTotal ? Math.round((g.count / gradedTotal) * 1000) / 10 : 0,
+      count: g.count,
+    }));
+  }, [gradeData, gradedTotal]);
+
+  // Best / Worst Grade (by total PL)
+  const bestGrade = useMemo(() => gradeData.filter(g => g.count > 0).reduce<typeof gradeData[number] | null>((b, g) => !b || g.totalPL > b.totalPL ? g : b, null), [gradeData]);
+  const worstGrade = useMemo(() => gradeData.filter(g => g.count > 0).reduce<typeof gradeData[number] | null>((b, g) => !b || g.totalPL < b.totalPL ? g : b, null), [gradeData]);
+
+  // Avg Grade per Week (numeric mapping: A+=4, A=3, B=2, C=1)
+  const gradeNum: Record<string, number> = { 'A+': 4, A: 3, B: 2, C: 1 };
+  const avgGradePerWeek = useMemo(() => {
+    const weeks = new Map<string, number[]>();
+    valid.forEach(t => {
+      const g = t.grade && gradeNum[t.grade]; if (!g) return;
+      const d = new Date(t.date);
+      const ws = new Date(d); ws.setDate(d.getDate() - d.getDay());
+      const key = ws.toISOString().slice(0, 10);
+      const arr = weeks.get(key) || []; arr.push(g); weeks.set(key, arr);
+    });
+    return [...weeks.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([week, arr]) => ({
+      week: week.slice(5), avg: Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 100) / 100,
+    }));
+  }, [valid]);
+
   // Insights
   const insights = useMemo(() => {
     const result: string[] = [];
@@ -172,6 +202,59 @@ export default function TradeQuality() {
           </div>
         </div>
       </div>
+
+      {/* Batch B: Quality Distribution + Best/Worst + Avg Grade per Week */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="🎯 Quality Distribution" tooltip="Share of graded trades by grade (A+/A/B/C)" />
+          <div className="space-y-2 mt-2">
+            {qualityDistribution.map((q, i) => (
+              <div key={q.grade} className="flex items-center gap-2">
+                <span className="w-10 text-xs font-mono font-bold" style={{ color: COLORS[i] }}>{q.grade}</span>
+                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${q.pct}%`, background: COLORS[i] }} />
+                </div>
+                <span className="w-16 text-right text-xs font-mono text-muted-foreground">{q.pct}% · {q.count}</span>
+              </div>
+            ))}
+            {gradedTotal === 0 && <div className="text-xs text-muted-foreground">No graded trades yet</div>}
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="🏆 Best & 🔻 Worst Grade" tooltip="Grade producing the most / least cumulative P/L" />
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div className="rounded-lg border border-success/25 bg-success/5 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Best</p>
+              <p className="mt-1 text-lg font-mono font-bold text-success">{bestGrade?.grade || '—'}</p>
+              <p className="text-[11px] text-muted-foreground">{bestGrade ? formatCurrency(bestGrade.totalPL) : '—'}</p>
+            </div>
+            <div className="rounded-lg border border-destructive/25 bg-destructive/5 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Worst</p>
+              <p className="mt-1 text-lg font-mono font-bold text-destructive">{worstGrade?.grade || '—'}</p>
+              <p className="text-[11px] text-muted-foreground">{worstGrade ? formatCurrency(worstGrade.totalPL) : '—'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="📈 Avg Grade per Week" tooltip="Average grade score per week (A+=4, A=3, B=2, C=1)" />
+          <div className="h-[160px]">
+            {avgGradePerWeek.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={avgGradePerWeek}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis domain={[0, 4]} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Tooltip content={<Tip />} />
+                  <Bar dataKey="avg" name="Avg Grade" fill="hsl(45 90% 55%)" radius={[4, 4, 0, 0]} opacity={0.85} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No graded trades</div>}
+          </div>
+        </div>
+      </div>
+
 
       {/* Insights */}
       {insights.length > 0 && (

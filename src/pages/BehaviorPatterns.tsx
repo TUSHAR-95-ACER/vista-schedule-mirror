@@ -4,6 +4,7 @@ import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
 import { ChartHeader } from '@/components/shared/InfoTooltip';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Lightbulb } from 'lucide-react';
+import { formatCurrency } from '@/lib/calculations';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptTrades, adaptPsychology } from '@/lib/aiInsightAdapters';
 
@@ -153,6 +154,66 @@ export default function BehaviorPatterns() {
     return [...map.entries()].map(([session, count]) => ({ session, mistakes: count })).sort((a, b) => b.mistakes - a.mistakes);
   }, [valid]);
 
+  // ─── Batch B additive: behavioral highlights ──────────────────────
+  const dayMap = useMemo(() => {
+    const m = new Map<string, typeof valid>();
+    valid.forEach(t => { const a = m.get(t.date) || []; a.push(t); m.set(t.date, a); });
+    return m;
+  }, [valid]);
+
+  const mostEmotionalDay = useMemo(() => {
+    let best: { date: string; count: number } | null = null;
+    dayMap.forEach((dt, date) => {
+      const n = dt.filter(t => t.mistakes.includes('Emotional') || t.mistakes.includes('FOMO') || ['Fearful', 'Greedy', 'Frustrated', 'Anxious'].includes(t.psychology?.emotion || '')).length;
+      if (n > 0 && (!best || n > best.count)) best = { date, count: n };
+    });
+    return best;
+  }, [dayMap]);
+
+  const disciplineByDay = useMemo(() => {
+    const rows: { date: string; score: number }[] = [];
+    dayMap.forEach((dt, date) => {
+      const wp = dt.filter(t => t.psychology);
+      if (wp.length === 0) return;
+      const s = Math.round(wp.reduce((sum, t) => {
+        const c = t.psychology!.checklist; let v = 0;
+        if (c.followPlan) v += 20; if (c.noFomo) v += 20; if (c.noRevenge) v += 20;
+        if (c.waitedConfirmation) v += 20; if (c.riskRespected) v += 20;
+        return sum + v;
+      }, 0) / wp.length);
+      rows.push({ date, score: s });
+    });
+    return rows.sort((a, b) => a.date.localeCompare(b.date));
+  }, [dayMap]);
+
+  const bestDisciplineDay = useMemo(() => disciplineByDay.reduce<{ date: string; score: number } | null>((b, r) => !b || r.score > b.score ? r : b, null), [disciplineByDay]);
+  const worstDisciplineDay = useMemo(() => disciplineByDay.reduce<{ date: string; score: number } | null>((b, r) => !b || r.score < b.score ? r : b, null), [disciplineByDay]);
+
+  const mostCommonMistake = useMemo(() => {
+    const counts = new Map<string, number>();
+    valid.forEach(t => t.mistakes.forEach(m => counts.set(m, (counts.get(m) || 0) + 1)));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+  }, [valid]);
+
+  const emotionPnl = useMemo(() => {
+    const m = new Map<string, { pl: number; count: number }>();
+    valid.forEach(t => {
+      const e = t.psychology?.emotion; if (!e) return;
+      const cur = m.get(e) || { pl: 0, count: 0 };
+      cur.pl += t.profitLoss; cur.count++; m.set(e, cur);
+    });
+    return [...m.entries()].map(([emotion, v]) => ({ emotion, pl: Math.round(v.pl * 100) / 100, count: v.count }));
+  }, [valid]);
+
+  const mostProfitableEmotion = useMemo(() => emotionPnl.reduce<{ emotion: string; pl: number; count: number } | null>((b, r) => !b || r.pl > b.pl ? r : b, null), [emotionPnl]);
+  const mostDangerousEmotion = useMemo(() => emotionPnl.reduce<{ emotion: string; pl: number; count: number } | null>((b, r) => !b || r.pl < b.pl ? r : b, null), [emotionPnl]);
+
+  const mistakesByPair = useMemo(() => {
+    const m = new Map<string, number>();
+    valid.forEach(t => t.mistakes.length && m.set(t.asset, (m.get(t.asset) || 0) + t.mistakes.length));
+    return [...m.entries()].map(([pair, mistakes]) => ({ pair, mistakes })).sort((a, b) => b.mistakes - a.mistakes).slice(0, 8);
+  }, [valid]);
+
   // Insights
   const insights = useMemo(() => {
     const result: string[] = [];
@@ -179,7 +240,41 @@ export default function BehaviorPatterns() {
         <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} tooltip="Trades closed early due to fear emotions that resulted in losses" />
       </div>
 
-      {/* Insights */}
+      {/* Behavioral Highlights — Batch B */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <div className="rounded-xl border border-warning/30 bg-warning/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🧨 Most Emotional Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{mostEmotionalDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{mostEmotionalDay ? `${mostEmotionalDay.count} emotional trades` : 'No emotional spikes'}</p>
+        </div>
+        <div className="rounded-xl border border-success/30 bg-success/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🏆 Best Discipline Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{bestDisciplineDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{bestDisciplineDay ? `Score ${bestDisciplineDay.score}/100` : 'No data'}</p>
+        </div>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🔻 Worst Discipline Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{worstDisciplineDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{worstDisciplineDay ? `Score ${worstDisciplineDay.score}/100` : 'No data'}</p>
+        </div>
+        <div className="rounded-xl border border-gold/30 bg-gold/[0.05] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">📌 Most Common Mistake</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{mostCommonMistake?.[0] || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{mostCommonMistake ? `${mostCommonMistake[1]} times` : 'Clean record'}</p>
+        </div>
+        <div className="rounded-xl border border-primary/30 bg-primary/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">💎 Best / ⚠️ Worst Emotion</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">
+            <span className="text-success">{mostProfitableEmotion?.emotion || '—'}</span>
+            <span className="text-muted-foreground"> · </span>
+            <span className="text-destructive">{mostDangerousEmotion?.emotion || '—'}</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {mostProfitableEmotion ? formatCurrency(mostProfitableEmotion.pl) : '—'} / {mostDangerousEmotion ? formatCurrency(mostDangerousEmotion.pl) : '—'}
+          </p>
+        </div>
+      </div>
+
       {insights.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -285,6 +380,44 @@ export default function BehaviorPatterns() {
           </div>
         </div>
       )}
+
+      {/* Batch B: Mistakes by Pair + Behavior Score Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="🧩 Mistakes by Pair" tooltip="Which instruments accumulate the most mistakes — focus your filters here" />
+          <div className="h-[220px]">
+            {mistakesByPair.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={mistakesByPair} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis dataKey="pair" type="category" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} width={80} />
+                  <Tooltip content={<Tip />} />
+                  <Bar dataKey="mistakes" name="Mistakes" fill="hsl(38 92% 50%)" radius={[0, 4, 4, 0]} opacity={0.85} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No mistake data</div>}
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-4">
+          <ChartHeader title="📈 Behavior Score Trend (Daily)" tooltip="Per-day discipline score — is your behavior improving over time?" />
+          <div className="h-[220px]">
+            {disciplineByDay.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={disciplineByDay}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+                  <Tooltip content={<Tip />} />
+                  <Line type="monotone" dataKey="score" name="Behavior Score" stroke="hsl(45 90% 55%)" strokeWidth={2} dot={{ r: 2 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full flex items-center justify-center text-muted-foreground text-sm">No psychology data yet</div>}
+          </div>
+        </div>
+      </div>
+
 
       {/* AI Insights — page bottom (universal) */}
       <AIInsightsPanel page="Behavior" payload={{ ...adaptPsychology(trades), ...adaptTrades(trades) }} />
