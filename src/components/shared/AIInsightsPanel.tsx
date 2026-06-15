@@ -78,7 +78,7 @@ export function AIInsightsPanel({ page, payload, title = 'AI Insights', classNam
         .eq('page', page)
         .maybeSingle();
       if (cached && cached.payload_hash === hash && Array.isArray(cached.insights)) {
-        setInsights(cached.insights as AIInsight[]);
+        setInsights(cached.insights as unknown as AIInsight[]);
         lastHashRef.current = hash;
         inFlightRef.current = '';
         return;
