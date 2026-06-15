@@ -33,7 +33,7 @@ serve(async (req) => {
       });
     }
 
-    const { page, payload } = await req.json();
+    const { page, payload, payloadHash } = await req.json();
     if (!page || !payload) {
       return new Response(JSON.stringify({ error: "page and payload required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,10 +51,12 @@ OUTPUT RULES (STRICT — JSON tool call):
   4. Warning
   5. Recommendation
 - Each body: ONE punchy sentence, max ~22 words. Direct, specific, second person ("you", "your").
+- Start each body with a SINGLE relevant emoji from this rotating library (vary across slots, NEVER repeat the same emoji twice in one response, pick by context):
+  🏆 🚀 💎 ⭐ 🔥 🎯 🎖️ ⚔️ 🧭 🎲 🧠 🔍 📚 🔬 🧩 ⚠️ 🚨 ⛔ 🔻 🧨 📈 📉 🛠️ ⚙️ 🔄 🎓 🌍 🏦 💵 📊 🏛️ 📝 📌 📍 📎 🗂️ 💡 ✅ ❌ 🟢 🔴 🟡
 - Reference real numbers, pairs, sessions, dates, setups, mistakes from the data — never invent.
 - Base every insight ONLY on the JSON data provided for this page.
-- If a slot truly has no signal, write "Not enough data yet for this page." for that slot.
-- No markdown, no preamble, no emojis.
+- If a slot truly has no signal, write "Not enough data yet for this page." (no emoji) for that slot.
+- No markdown, no preamble.
 - Severity guidance: Strength=good, Weakness=warn, Opportunity=info, Warning=critical, Recommendation=info.`;
 
     const safePage = String(page).replace(/[\r\n]+/g, " ").slice(0, 80);
