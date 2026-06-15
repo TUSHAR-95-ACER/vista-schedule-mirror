@@ -239,7 +239,41 @@ export default function BehaviorPatterns() {
         <MetricCard label="Fear-Based Exits" value={fearExits} trend={fearExits > 0 ? 'down' : 'up'} tooltip="Trades closed early due to fear emotions that resulted in losses" />
       </div>
 
-      {/* Insights */}
+      {/* Behavioral Highlights — Batch B */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        <div className="rounded-xl border border-warning/30 bg-warning/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🧨 Most Emotional Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{mostEmotionalDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{mostEmotionalDay ? `${mostEmotionalDay.count} emotional trades` : 'No emotional spikes'}</p>
+        </div>
+        <div className="rounded-xl border border-success/30 bg-success/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🏆 Best Discipline Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{bestDisciplineDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{bestDisciplineDay ? `Score ${bestDisciplineDay.score}/100` : 'No data'}</p>
+        </div>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">🔻 Worst Discipline Day</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{worstDisciplineDay?.date || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{worstDisciplineDay ? `Score ${worstDisciplineDay.score}/100` : 'No data'}</p>
+        </div>
+        <div className="rounded-xl border border-gold/30 bg-gold/[0.05] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">📌 Most Common Mistake</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">{mostCommonMistake?.[0] || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{mostCommonMistake ? `${mostCommonMistake[1]} times` : 'Clean record'}</p>
+        </div>
+        <div className="rounded-xl border border-primary/30 bg-primary/[0.04] p-3">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">💎 Best / ⚠️ Worst Emotion</p>
+          <p className="mt-1 text-sm font-heading font-semibold text-foreground">
+            <span className="text-success">{mostProfitableEmotion?.emotion || '—'}</span>
+            <span className="text-muted-foreground"> · </span>
+            <span className="text-destructive">{mostDangerousEmotion?.emotion || '—'}</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {mostProfitableEmotion ? formatCurrencyShort(mostProfitableEmotion.pl) : '—'} / {mostDangerousEmotion ? formatCurrencyShort(mostDangerousEmotion.pl) : '—'}
+          </p>
+        </div>
+      </div>
+
       {insights.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
