@@ -181,7 +181,7 @@ ${JSON.stringify(tradesLite, null, 0).slice(0, 12000)}`;
 
     const result = await aiChat({
       tier: "sonnet",
-      max_tokens: 4000,
+      max_tokens: 1200,
       temperature: 0.5,
       messages: [{ role: "system", content: sys }, { role: "user", content: userText }],
       tools: [{
