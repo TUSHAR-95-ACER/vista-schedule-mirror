@@ -153,6 +153,66 @@ export default function BehaviorPatterns() {
     return [...map.entries()].map(([session, count]) => ({ session, mistakes: count })).sort((a, b) => b.mistakes - a.mistakes);
   }, [valid]);
 
+  // ─── Batch B additive: behavioral highlights ──────────────────────
+  const dayMap = useMemo(() => {
+    const m = new Map<string, typeof valid>();
+    valid.forEach(t => { const a = m.get(t.date) || []; a.push(t); m.set(t.date, a); });
+    return m;
+  }, [valid]);
+
+  const mostEmotionalDay = useMemo(() => {
+    let best: { date: string; count: number } | null = null;
+    dayMap.forEach((dt, date) => {
+      const n = dt.filter(t => t.mistakes.includes('Emotional') || t.mistakes.includes('FOMO') || ['Fearful', 'Greedy', 'Frustrated', 'Anxious'].includes(t.psychology?.emotion || '')).length;
+      if (n > 0 && (!best || n > best.count)) best = { date, count: n };
+    });
+    return best;
+  }, [dayMap]);
+
+  const disciplineByDay = useMemo(() => {
+    const rows: { date: string; score: number }[] = [];
+    dayMap.forEach((dt, date) => {
+      const wp = dt.filter(t => t.psychology);
+      if (wp.length === 0) return;
+      const s = Math.round(wp.reduce((sum, t) => {
+        const c = t.psychology!.checklist; let v = 0;
+        if (c.followPlan) v += 20; if (c.noFomo) v += 20; if (c.noRevenge) v += 20;
+        if (c.waitedConfirmation) v += 20; if (c.riskRespected) v += 20;
+        return sum + v;
+      }, 0) / wp.length);
+      rows.push({ date, score: s });
+    });
+    return rows.sort((a, b) => a.date.localeCompare(b.date));
+  }, [dayMap]);
+
+  const bestDisciplineDay = useMemo(() => disciplineByDay.reduce<{ date: string; score: number } | null>((b, r) => !b || r.score > b.score ? r : b, null), [disciplineByDay]);
+  const worstDisciplineDay = useMemo(() => disciplineByDay.reduce<{ date: string; score: number } | null>((b, r) => !b || r.score < b.score ? r : b, null), [disciplineByDay]);
+
+  const mostCommonMistake = useMemo(() => {
+    const counts = new Map<string, number>();
+    valid.forEach(t => t.mistakes.forEach(m => counts.set(m, (counts.get(m) || 0) + 1)));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+  }, [valid]);
+
+  const emotionPnl = useMemo(() => {
+    const m = new Map<string, { pl: number; count: number }>();
+    valid.forEach(t => {
+      const e = t.psychology?.emotion; if (!e) return;
+      const cur = m.get(e) || { pl: 0, count: 0 };
+      cur.pl += t.profitLoss; cur.count++; m.set(e, cur);
+    });
+    return [...m.entries()].map(([emotion, v]) => ({ emotion, pl: Math.round(v.pl * 100) / 100, count: v.count }));
+  }, [valid]);
+
+  const mostProfitableEmotion = useMemo(() => emotionPnl.reduce<{ emotion: string; pl: number; count: number } | null>((b, r) => !b || r.pl > b.pl ? r : b, null), [emotionPnl]);
+  const mostDangerousEmotion = useMemo(() => emotionPnl.reduce<{ emotion: string; pl: number; count: number } | null>((b, r) => !b || r.pl < b.pl ? r : b, null), [emotionPnl]);
+
+  const mistakesByPair = useMemo(() => {
+    const m = new Map<string, number>();
+    valid.forEach(t => t.mistakes.length && m.set(t.asset, (m.get(t.asset) || 0) + t.mistakes.length));
+    return [...m.entries()].map(([pair, mistakes]) => ({ pair, mistakes })).sort((a, b) => b.mistakes - a.mistakes).slice(0, 8);
+  }, [valid]);
+
   // Insights
   const insights = useMemo(() => {
     const result: string[] = [];
