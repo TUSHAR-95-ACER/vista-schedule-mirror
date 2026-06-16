@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,9 @@ interface TickerItem {
 }
 
 const CACHE_KEY = 'market-ticker-cache-v1';
+const POLL_MS = 300_000;  // 5 minutes
+const RETRY_MS = 60_000;  // 1 minute, only while data is missing
+const MIN_GAP_MS = 15_000; // hard floor between any two requests
 
 function loadCache(): TickerItem[] {
   try {
@@ -26,42 +29,59 @@ export function MarketTicker() {
   const [items, setItems] = useState<TickerItem[]>(() => loadCache());
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState(false);
-
-
-  const fetchPrices = useCallback(async () => {
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('market-ticker');
-      if (fnError) throw fnError;
-      if (data?.data && Array.isArray(data.data)) {
-        // Only overwrite with rows that actually have a price; preserve last good
-        // value for any pair the API returned as 0 (rate-limit / outage).
-        setItems(prev => {
-          const next = data.data.map((fresh: TickerItem) => {
-            if (fresh.price > 0) return fresh;
-            const cached = prev.find(p => p.symbol === fresh.symbol);
-            return cached && cached.price > 0 ? cached : fresh;
-          });
-          try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
-          return next;
-        });
-        setError(false);
-      }
-    } catch (e) {
-      console.error('Ticker fetch error:', e);
-      setError(true);
-    }
-  }, []);
-
+  const itemsRef = useRef(items);
+  const lastFetchRef = useRef(0);
+  const inFlightRef = useRef(false);
+  itemsRef.current = items;
 
   useEffect(() => {
+    let cancelled = false;
+
+    const fetchPrices = async () => {
+      const now = Date.now();
+      if (inFlightRef.current) return;
+      if (now - lastFetchRef.current < MIN_GAP_MS) return;
+      inFlightRef.current = true;
+      lastFetchRef.current = now;
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('market-ticker');
+        if (cancelled) return;
+        if (fnError) throw fnError;
+        if (data?.data && Array.isArray(data.data)) {
+          setItems(prev => {
+            const next = data.data.map((fresh: TickerItem) => {
+              if (fresh.price > 0) return fresh;
+              const cached = prev.find(p => p.symbol === fresh.symbol);
+              return cached && cached.price > 0 ? cached : fresh;
+            });
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
+            return next;
+          });
+          setError(false);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.error('Ticker fetch error:', e);
+          setError(true);
+        }
+      } finally {
+        inFlightRef.current = false;
+      }
+    };
+
     fetchPrices();
-    const interval = setInterval(fetchPrices, 300000); // 5 min normal poll
-    // Faster retry while we still have any missing prices (rate-limit recovery)
+    const poll = setInterval(fetchPrices, POLL_MS);
     const retry = setInterval(() => {
-      if (items.some(i => i.price === 0) || items.length === 0) fetchPrices();
-    }, 30000);
-    return () => { clearInterval(interval); clearInterval(retry); };
-  }, [fetchPrices, items]);
+      const list = itemsRef.current;
+      if (list.length === 0 || list.some(i => i.price === 0)) fetchPrices();
+    }, RETRY_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+      clearInterval(retry);
+    };
+  }, []); // mount once — never re-create timers on state change
 
   const formatPrice = (price: number, decimals: number) => {
     return price.toFixed(decimals);
