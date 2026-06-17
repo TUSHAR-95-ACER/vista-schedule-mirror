@@ -272,7 +272,7 @@ export function AICoachDrawer() {
           <div className="border-t border-border/60 px-3 pt-2 flex gap-2 flex-wrap shrink-0">
             {pendingImages.map((src, i) => (
               <div key={i} className="relative w-12 h-12 rounded-md overflow-hidden border border-border">
-                <img src={src} alt="attachment" className="w-full h-full object-cover" />
+                <img src={src} alt="attachment" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 <button
                   onClick={() => setPendingImages(prev => prev.filter((_, idx) => idx !== i))}
                   className="absolute top-0 right-0 bg-background/80 rounded-bl px-1 text-[10px] hover:bg-background"

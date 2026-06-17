@@ -246,7 +246,7 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
             </Button>
             {previewImage && (
               <>
-                <img src={previewImage} alt="Full size" className="max-w-full max-h-[85vh] object-contain rounded-md" />
+                <img src={previewImage} alt="Full size" loading="lazy" decoding="async" className="max-w-full max-h-[85vh] object-contain rounded-md" />
                 <Button variant="ghost" size="sm" className="absolute bottom-4 right-4 text-white hover:bg-white/20 gap-1.5" onClick={() => handleDownload(previewImage, 'trade-chart.png')}>
                   <Download className="h-4 w-4" /> Download
                 </Button>

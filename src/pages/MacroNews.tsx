@@ -207,7 +207,7 @@ export default function MacroNews() {
               >
                 <div className="flex items-start gap-3">
                   {article.imageUrl && (
-                    <img src={article.imageUrl} alt="" className="w-20 h-14 rounded-lg object-cover shrink-0" />
+                    <img src={article.imageUrl} alt="" loading="lazy" decoding="async" className="w-20 h-14 rounded-lg object-cover shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

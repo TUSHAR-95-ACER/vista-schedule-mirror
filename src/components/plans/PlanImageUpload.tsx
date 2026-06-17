@@ -78,6 +78,8 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
           <img
             src={value}
             alt={label}
+            loading="lazy"
+            decoding="async"
             style={{ width: '100%', maxWidth: 'none', height: 'auto' }}
             className="block object-contain cursor-pointer"
             onClick={() => { setZoom(1); setViewerOpen(true); }}
@@ -154,6 +156,8 @@ export function PlanImageUpload({ value, onChange, label, scope = 'plans' }: Pla
             <img
               src={value}
               alt={label}
+              loading="lazy"
+              decoding="async"
               style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
               className="max-w-full transition-transform duration-200"
             />
