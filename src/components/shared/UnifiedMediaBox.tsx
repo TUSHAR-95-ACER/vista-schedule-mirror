@@ -322,7 +322,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               <div className="p-5 space-y-2">
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                   {urlMeta.favicon ? (
-                    <img src={urlMeta.favicon} alt="" className="h-3.5 w-3.5 rounded-sm" />
+                    <img src={urlMeta.favicon} alt="" loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm" />
                   ) : (
                     <Globe className="h-3 w-3" />
                   )}
@@ -374,7 +374,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                 {(() => {
                   try {
                     const d = new URL(rawUrl).hostname.replace(/^www\./, '');
-                    return <img src={faviconFor(d)} alt="" className="h-7 w-7" />;
+                    return <img src={faviconFor(d)} alt="" loading="lazy" decoding="async" className="h-7 w-7" />;
                   } catch {
                     return <Link2 className="h-4 w-4 text-muted-foreground" />;
                   }
@@ -422,7 +422,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                 <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={() => setZoom(1)}>Reset</Button>
               </div>
               <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
-                <img src={value} alt={label} style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }} className="max-w-full transition-transform duration-200" />
+                <img src={value} alt={label} loading="lazy" decoding="async" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }} className="max-w-full transition-transform duration-200" />
               </div>
             </DialogContent>
           </Dialog>

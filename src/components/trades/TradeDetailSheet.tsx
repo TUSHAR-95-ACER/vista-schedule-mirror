@@ -499,7 +499,7 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 {newsEventImages.map((img, i) => (
                   <div key={i} className="relative group cursor-pointer w-24 h-16 rounded-lg border border-border overflow-hidden shrink-0 hover:border-primary/50 transition-colors"
                     onClick={() => setPreviewImage(img)}>
-                    <img src={img} alt="News event" className="w-full h-full object-cover" />
+                    <img src={img} alt="News event" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                       <ZoomIn className="h-3.5 w-3.5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -523,7 +523,7 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                   <div className="space-y-1.5">
                     <p className="text-[10px] font-medium text-muted-foreground">Prediction</p>
                     <div className="relative group cursor-pointer rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors" onClick={() => setPreviewImage(trade.predictionImage!)}>
-                      <img src={trade.predictionImage} alt="Prediction" className="w-full h-32 object-cover" />
+                      <img src={trade.predictionImage} alt="Prediction" loading="lazy" decoding="async" className="w-full h-32 object-cover" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <ZoomIn className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
@@ -534,7 +534,7 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                   <div className="space-y-1.5">
                     <p className="text-[10px] font-medium text-muted-foreground">Execution</p>
                     <div className="relative group cursor-pointer rounded-lg border border-border overflow-hidden hover:border-primary/50 transition-colors" onClick={() => setPreviewImage(trade.executionImage!)}>
-                      <img src={trade.executionImage} alt="Execution" className="w-full h-32 object-cover" />
+                      <img src={trade.executionImage} alt="Execution" loading="lazy" decoding="async" className="w-full h-32 object-cover" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                         <ZoomIn className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
@@ -558,7 +558,7 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
             </Button>
             {previewImage && (
               <>
-                <img src={previewImage} alt="Full size" className="max-w-full max-h-[85vh] object-contain rounded-md" />
+                <img src={previewImage} alt="Full size" loading="lazy" decoding="async" className="max-w-full max-h-[85vh] object-contain rounded-md" />
                 <Button variant="ghost" size="sm" className="absolute bottom-4 right-4 text-white hover:bg-white/20 gap-1.5"
                   onClick={() => handleDownload(previewImage, 'trade-screenshot.png')}>
                   <Download className="h-4 w-4" /> Download

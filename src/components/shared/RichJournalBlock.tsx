@@ -212,6 +212,7 @@ export function RichJournalBlock({
                     alt={m.name || 'media'}
                     className="w-full h-32 object-contain bg-muted/20"
                     loading="lazy"
+                    decoding="async"
                   />
                 </button>
               ) : (
@@ -270,7 +271,7 @@ export function RichJournalBlock({
           className="fixed inset-0 z-50 bg-background/90 backdrop-blur flex items-center justify-center p-6"
           onClick={() => setLightbox(null)}
         >
-          <img src={lightbox.url} alt="" className="max-h-full max-w-full rounded-xl object-contain" />
+          <img src={lightbox.url} alt="" loading="lazy" decoding="async" className="max-h-full max-w-full rounded-xl object-contain" />
         </div>
       )}
     </div>
