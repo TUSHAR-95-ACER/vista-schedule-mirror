@@ -303,7 +303,22 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     return full;
   }, [user]);
 
-  // Helper: save settings to Supabase
+  const weeklyPlanMediaCache = useRef<Map<string, WeeklyPlan>>(new Map());
+  const hydrateWeeklyPlanMedia = useCallback(async (id: string): Promise<WeeklyPlan | null> => {
+    if (!user) return null;
+    const cached = weeklyPlanMediaCache.current.get(id);
+    if (cached) return cached;
+    const { data } = await db.from('weekly_plans')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) return null;
+    const full = dbToWeeklyPlan(data);
+    weeklyPlanMediaCache.current.set(id, full);
+    setWeeklyPlans(s => s.map(p => p.id === id ? { ...p, ...full } : p));
+    return full;
+  }, [user]);
   const saveSettings = useCallback((updates: Record<string, any>) => {
     if (!user) return;
     db.from('user_settings').update({ ...updates, updated_at: new Date().toISOString() })
