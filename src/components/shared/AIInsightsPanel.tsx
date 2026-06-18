@@ -91,20 +91,25 @@ export function AIInsightsPanel({ page, payload, title = 'AI Insights', classNam
       const { data, error } = await supabase.functions.invoke('gemini-insights', {
         body: { page, payload, payloadHash: hash },
       });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      // Treat any non-2xx (FunctionsHttpError) or payload-level error as a soft failure.
+      const payloadErr = (data as any)?.error as string | undefined;
+      if (error || payloadErr) {
+        setError(payloadErr || (error as any)?.message || 'AI service unavailable');
+        return;
+      }
       const list = (data as any)?.insights as AIInsight[] | undefined;
       const next = Array.isArray(list) ? list : [];
       setInsights(next);
       lastHashRef.current = hash;
 
-      // Persist locally too (edge function also upserts server-side as fallback)
-      await supabase
-        .from('ai_insights_cache')
-        .upsert(
-          { user_id: user.id, page, payload_hash: hash, insights: next as any },
-          { onConflict: 'user_id,page' },
-        );
+      if (next.length > 0) {
+        await supabase
+          .from('ai_insights_cache')
+          .upsert(
+            { user_id: user.id, page, payload_hash: hash, insights: next as any },
+            { onConflict: 'user_id,page' },
+          );
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load insights');
     } finally {
