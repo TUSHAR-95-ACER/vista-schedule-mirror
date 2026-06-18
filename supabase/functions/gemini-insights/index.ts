@@ -101,8 +101,20 @@ OUTPUT RULES (STRICT — JSON tool call):
         }],
         tool_choice: { type: "function", function: { name: "emit_insights" } },
       });
-    } catch (e) {
-      return aiErrorResponse(e, corsHeaders);
+    } catch (e: any) {
+      const status = e?.status ?? 500;
+      let msg = "AI service error.";
+      if (status === 402) msg = "AI credits exhausted. Add credits in Settings.";
+      else if (status === 429) msg = "AI service is busy. Try again shortly.";
+      else if (status === 401 || status === 403) msg = "AI service unavailable.";
+      else if (status >= 500) msg = "AI service temporarily unavailable.";
+      console.error("gemini-insights AI call failed", status, e?.message?.slice?.(0, 400));
+      // Return 200 with empty insights + error so the client renders gracefully
+      // instead of throwing on a non-2xx response and blanking the page.
+      return new Response(
+        JSON.stringify({ insights: [], error: msg, fallback: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const argsStr = result?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}";
