@@ -108,7 +108,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function WeeklyPlanPage() {
-  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan, loadingWeeklyPlans } = useTrading();
+  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan, loadingWeeklyPlans, hydrateWeeklyPlanMedia } = useTrading();
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
