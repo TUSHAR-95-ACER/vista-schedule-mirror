@@ -40,6 +40,8 @@ interface TradingContextType {
   hydrateTradeMedia: (id: string) => Promise<Trade | null>;
   /** Fetches a single daily plan with full media on demand. */
   hydrateDailyPlanMedia: (id: string) => Promise<DailyPlan | null>;
+  /** Fetches a single weekly plan with full pair_analyses/observation/calendarResult on demand. */
+  hydrateWeeklyPlanMedia: (id: string) => Promise<WeeklyPlan | null>;
   addTrade: (trade: Trade) => void;
   updateTrade: (trade: Trade) => void;
   deleteTrade: (id: string) => void;
@@ -95,11 +97,19 @@ const TRADE_LITE_COLUMNS = [
   'curve','trade_analysis','market_sentiment','status','created_at',
 ].join(',');
 
-// Same idea for daily plans — drop result_chart_image (often base64) from list fetch.
-const DAILY_PLAN_LITE_COLUMNS = [
-  'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit','pairs',
-  'news_items','took_trades','result_narrative','analysis_video_url','note','reviewed',
-  'day_summary','notes_journal','created_at',
+// Daily-plan LIST fetch: ONLY columns the list-view card needs.
+// `pairs` (avg ~1 MB/row, base64 charts inlined) and other heavy fields are
+// loaded on-demand via hydrateDailyPlanMedia() when a plan is opened.
+const DAILY_PLAN_LIST_COLUMNS = [
+  'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit',
+  'took_trades','reviewed','analysis_video_url','pair_count','created_at',
+].join(',');
+
+// Weekly-plan LIST fetch: same idea — exclude `pair_analyses`, `news_items`,
+// `observation`, `calendar_result` (rich-text + base64 blobs).
+const WEEKLY_PLAN_LIST_COLUMNS = [
+  'id','user_id','week_start','bias','markets','setups','levels','risk','goals',
+  'analysis_video_url','reviewed','pair_count','created_at',
 ].join(',');
 
 export function TradingProvider({ children }: { children: React.ReactNode }) {
@@ -191,7 +201,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       });
 
     // Daily plans — lite. THIS is what was getting blocked behind the giant trade fetch.
-    db.from('daily_plans').select(DAILY_PLAN_LITE_COLUMNS).eq('user_id', uid)
+    db.from('daily_plans').select(DAILY_PLAN_LIST_COLUMNS).eq('user_id', uid)
       .order('date', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
@@ -199,7 +209,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
         setLoadingDailyPlans(false);
       });
 
-    db.from('weekly_plans').select('*').eq('user_id', uid)
+    db.from('weekly_plans').select(WEEKLY_PLAN_LIST_COLUMNS).eq('user_id', uid)
       .order('week_start', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
@@ -293,7 +303,22 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     return full;
   }, [user]);
 
-  // Helper: save settings to Supabase
+  const weeklyPlanMediaCache = useRef<Map<string, WeeklyPlan>>(new Map());
+  const hydrateWeeklyPlanMedia = useCallback(async (id: string): Promise<WeeklyPlan | null> => {
+    if (!user) return null;
+    const cached = weeklyPlanMediaCache.current.get(id);
+    if (cached) return cached;
+    const { data } = await db.from('weekly_plans')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!data) return null;
+    const full = dbToWeeklyPlan(data);
+    weeklyPlanMediaCache.current.set(id, full);
+    setWeeklyPlans(s => s.map(p => p.id === id ? { ...p, ...full } : p));
+    return full;
+  }, [user]);
   const saveSettings = useCallback((updates: Record<string, any>) => {
     if (!user) return;
     db.from('user_settings').update({ ...updates, updated_at: new Date().toISOString() })
@@ -446,7 +471,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       customSetups, customAssets, customConfluences, markets, sessions, conditions,
       gradesList, managementOptions, psychTags, violations, notebookCategories, loading,
       loadingTrades, loadingDailyPlans, loadingWeeklyPlans, loadingAccounts, loadingSettings,
-      hydrateTradeMedia, hydrateDailyPlanMedia,
+      hydrateTradeMedia, hydrateDailyPlanMedia, hydrateWeeklyPlanMedia,
       addTrade, updateTrade, deleteTrade,
       addAccount, updateAccount, deleteAccount,
       addTransaction, addScaleEvent,

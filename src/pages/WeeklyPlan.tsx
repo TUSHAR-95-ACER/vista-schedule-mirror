@@ -108,7 +108,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 }
 
 export default function WeeklyPlanPage() {
-  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan, loadingWeeklyPlans } = useTrading();
+  const { weeklyPlans, addWeeklyPlan, updateWeeklyPlan, deleteWeeklyPlan, loadingWeeklyPlans, hydrateWeeklyPlanMedia } = useTrading();
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
@@ -136,20 +136,30 @@ export default function WeeklyPlanPage() {
 
   const openPlan = (id: string) => {
     const plan = weeklyPlans.find(p => p.id === id);
-    if (plan) {
-      setActiveId(id);
-      const base: WeeklyPlan = { ...plan, pairAnalyses: plan.pairAnalyses.map(pa => ({ ...pa })) };
-      if (authUser?.id && !restoredRef.current.has(id)) {
-        const draft = loadDraft<WeeklyPlan>('weeklyPlan', authUser.id, id);
-        restoredRef.current.add(id);
-        if (draft) {
-          setLocalPlan({ ...draft.data, pairAnalyses: draft.data.pairAnalyses?.map(pa => ({ ...pa })) || [] });
-          toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
-          return;
-        }
+    if (!plan) return;
+    setActiveId(id);
+
+    // The list-view row has placeholder pairAnalyses (length-only); fetch the
+    // full plan in the background and patch state once it arrives.
+    const applyFull = (full: WeeklyPlan | null) => {
+      if (!full) return;
+      setLocalPlan(prev => (prev && prev.id === id ? { ...prev, ...full } : prev));
+    };
+
+    if (authUser?.id && !restoredRef.current.has(id)) {
+      const draft = loadDraft<WeeklyPlan>('weeklyPlan', authUser.id, id);
+      restoredRef.current.add(id);
+      if (draft) {
+        setLocalPlan({ ...draft.data, pairAnalyses: draft.data.pairAnalyses?.map(pa => ({ ...pa })) || [] });
+        toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
+        // still hydrate so non-draft fields stay accurate
+        hydrateWeeklyPlanMedia(id).then(applyFull);
+        return;
       }
-      setLocalPlan(base);
     }
+    const base: WeeklyPlan = { ...plan, pairAnalyses: (plan.pairAnalyses || []).map(pa => ({ ...pa })) };
+    setLocalPlan(base);
+    hydrateWeeklyPlanMedia(id).then(applyFull);
   };
 
   const update = (updates: Partial<WeeklyPlan>) => {

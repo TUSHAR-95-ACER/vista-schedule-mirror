@@ -56,6 +56,7 @@ export type Database = {
           news_items: Json | null
           note: string | null
           notes_journal: Json | null
+          pair_count: number
           pairs: Json | null
           result_chart_image: string | null
           result_narrative: string | null
@@ -76,6 +77,7 @@ export type Database = {
           news_items?: Json | null
           note?: string | null
           notes_journal?: Json | null
+          pair_count?: number
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
@@ -96,6 +98,7 @@ export type Database = {
           news_items?: Json | null
           note?: string | null
           notes_journal?: Json | null
+          pair_count?: number
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
@@ -790,6 +793,7 @@ export type Database = {
           news_result: string | null
           observation: Json | null
           pair_analyses: Json | null
+          pair_count: number
           reviewed: boolean | null
           risk: string | null
           setups: Json | null
@@ -809,6 +813,7 @@ export type Database = {
           news_result?: string | null
           observation?: Json | null
           pair_analyses?: Json | null
+          pair_count?: number
           reviewed?: boolean | null
           risk?: string | null
           setups?: Json | null
@@ -828,6 +833,7 @@ export type Database = {
           news_result?: string | null
           observation?: Json | null
           pair_analyses?: Json | null
+          pair_count?: number
           reviewed?: boolean | null
           risk?: string | null
           setups?: Json | null
