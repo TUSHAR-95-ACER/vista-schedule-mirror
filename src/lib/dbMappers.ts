@@ -182,10 +182,20 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
   };
 }
 export function dbToDailyPlan(row: any): DailyPlan {
+  // List-view fetches omit `pairs` (heavy JSON with inlined chart images).
+  // Synthesize a length-only placeholder from `pair_count` so list cards keep
+  // working; the full array is loaded on demand via hydrateDailyPlanMedia.
+  let pairs: any[];
+  if (row.pairs === undefined) {
+    const n = Number(row.pair_count) || 0;
+    pairs = n > 0 ? new Array(n).fill(null).map(() => ({})) : [];
+  } else {
+    pairs = typeof row.pairs === 'string' ? JSON.parse(row.pairs) : (row.pairs || []);
+  }
   return {
     id: row.id, date: row.date, dailyBias: row.daily_bias,
     sessionFocus: row.session_focus, maxTrades: Number(row.max_trades), riskLimit: row.risk_limit,
-    pairs: typeof row.pairs === 'string' ? JSON.parse(row.pairs) : (row.pairs || []),
+    pairs,
     newsItems: row.news_items ? (typeof row.news_items === 'string' ? JSON.parse(row.news_items) : row.news_items) : undefined,
     tookTrades: row.took_trades ?? undefined, resultNarrative: row.result_narrative || undefined,
     resultChartImage: row.result_chart_image || undefined,
