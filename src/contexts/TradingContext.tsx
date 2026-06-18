@@ -199,7 +199,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       });
 
     // Daily plans — lite. THIS is what was getting blocked behind the giant trade fetch.
-    db.from('daily_plans').select(DAILY_PLAN_LITE_COLUMNS).eq('user_id', uid)
+    db.from('daily_plans').select(DAILY_PLAN_LIST_COLUMNS).eq('user_id', uid)
       .order('date', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
@@ -207,7 +207,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
         setLoadingDailyPlans(false);
       });
 
-    db.from('weekly_plans').select('*').eq('user_id', uid)
+    db.from('weekly_plans').select(WEEKLY_PLAN_LIST_COLUMNS).eq('user_id', uid)
       .order('week_start', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
