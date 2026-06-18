@@ -95,11 +95,19 @@ const TRADE_LITE_COLUMNS = [
   'curve','trade_analysis','market_sentiment','status','created_at',
 ].join(',');
 
-// Same idea for daily plans — drop result_chart_image (often base64) from list fetch.
-const DAILY_PLAN_LITE_COLUMNS = [
-  'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit','pairs',
-  'news_items','took_trades','result_narrative','analysis_video_url','note','reviewed',
-  'day_summary','notes_journal','created_at',
+// Daily-plan LIST fetch: ONLY columns the list-view card needs.
+// `pairs` (avg ~1 MB/row, base64 charts inlined) and other heavy fields are
+// loaded on-demand via hydrateDailyPlanMedia() when a plan is opened.
+const DAILY_PLAN_LIST_COLUMNS = [
+  'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit',
+  'took_trades','reviewed','analysis_video_url','pair_count','created_at',
+].join(',');
+
+// Weekly-plan LIST fetch: same idea — exclude `pair_analyses`, `news_items`,
+// `observation`, `calendar_result` (rich-text + base64 blobs).
+const WEEKLY_PLAN_LIST_COLUMNS = [
+  'id','user_id','week_start','bias','markets','setups','levels','risk','goals',
+  'analysis_video_url','reviewed','pair_count','created_at',
 ].join(',');
 
 export function TradingProvider({ children }: { children: React.ReactNode }) {
