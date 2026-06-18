@@ -126,30 +126,47 @@ export default function DailyPlanPage() {
 
   const openPlan = (id: string) => {
     const plan = dailyPlans.find(p => p.id === id);
-    if (plan) {
-      setActiveId(id);
-      const base: DailyPlan = { ...plan, pairs: plan.pairs.map(pp => ({ ...pp })) };
-      // Try to restore an unsaved draft from a previous crash/refresh.
-      if (authUser?.id && !restoredRef.current.has(id)) {
-        const draft = loadDraft<DailyPlan>('dailyPlan', authUser.id, id);
-        if (draft && draft.savedAt > (Date.parse((plan as any).updated_at || '') || 0)) {
-          setLocalPlan({ ...draft.data, pairs: draft.data.pairs?.map(pp => ({ ...pp })) || [] });
-          toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
-          restoredRef.current.add(id);
-          hydrateDailyPlanMedia(id).then(full => {
-            if (!full) return;
-            setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: prev.resultChartImage || full.resultChartImage } : prev);
-          });
-          return;
-        }
-        restoredRef.current.add(id);
-      }
-      setLocalPlan(base);
-      hydrateDailyPlanMedia(id).then(full => {
-        if (!full) return;
-        setLocalPlan(prev => prev && prev.id === id ? { ...prev, resultChartImage: full.resultChartImage ?? prev.resultChartImage } : prev);
+    if (!plan) return;
+    setActiveId(id);
+
+    // List rows now carry length-only placeholder `pairs` — hydrate the full
+    // row from the backend and merge any field not already supplied by a
+    // restored local draft.
+    const mergeFull = (full: DailyPlan | null) => {
+      if (!full) return;
+      setLocalPlan(prev => {
+        if (!prev || prev.id !== id) return prev;
+        // Prefer prev (user's in-flight edits / draft) for fields they may
+        // have just changed; otherwise fall back to the hydrated value.
+        const hasRealPairs = Array.isArray(prev.pairs) && prev.pairs.some(p => p && (p as any).id);
+        return {
+          ...full,
+          ...prev,
+          pairs: hasRealPairs ? prev.pairs : full.pairs,
+          newsItems: prev.newsItems ?? full.newsItems,
+          daySummary: prev.daySummary ?? full.daySummary,
+          notesJournal: prev.notesJournal ?? full.notesJournal,
+          resultChartImage: prev.resultChartImage ?? full.resultChartImage,
+          resultNarrative: prev.resultNarrative ?? full.resultNarrative,
+          note: prev.note ?? full.note,
+        };
       });
+    };
+
+    const base: DailyPlan = { ...plan, pairs: (plan.pairs || []).map(pp => ({ ...pp })) };
+
+    if (authUser?.id && !restoredRef.current.has(id)) {
+      const draft = loadDraft<DailyPlan>('dailyPlan', authUser.id, id);
+      restoredRef.current.add(id);
+      if (draft && draft.savedAt > (Date.parse((plan as any).updated_at || '') || 0)) {
+        setLocalPlan({ ...draft.data, pairs: draft.data.pairs?.map(pp => ({ ...pp })) || [] });
+        toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
+        hydrateDailyPlanMedia(id).then(mergeFull);
+        return;
+      }
     }
+    setLocalPlan(base);
+    hydrateDailyPlanMedia(id).then(mergeFull);
   };
 
   const update = (updates: Partial<DailyPlan>) => {
