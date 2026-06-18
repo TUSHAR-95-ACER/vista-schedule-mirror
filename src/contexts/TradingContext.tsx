@@ -471,7 +471,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       customSetups, customAssets, customConfluences, markets, sessions, conditions,
       gradesList, managementOptions, psychTags, violations, notebookCategories, loading,
       loadingTrades, loadingDailyPlans, loadingWeeklyPlans, loadingAccounts, loadingSettings,
-      hydrateTradeMedia, hydrateDailyPlanMedia,
+      hydrateTradeMedia, hydrateDailyPlanMedia, hydrateWeeklyPlanMedia,
       addTrade, updateTrade, deleteTrade,
       addAccount, updateAccount, deleteAccount,
       addTransaction, addScaleEvent,
