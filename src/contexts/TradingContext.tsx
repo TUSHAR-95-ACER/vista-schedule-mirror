@@ -40,6 +40,8 @@ interface TradingContextType {
   hydrateTradeMedia: (id: string) => Promise<Trade | null>;
   /** Fetches a single daily plan with full media on demand. */
   hydrateDailyPlanMedia: (id: string) => Promise<DailyPlan | null>;
+  /** Fetches a single weekly plan with full pair_analyses/observation/calendarResult on demand. */
+  hydrateWeeklyPlanMedia: (id: string) => Promise<WeeklyPlan | null>;
   addTrade: (trade: Trade) => void;
   updateTrade: (trade: Trade) => void;
   deleteTrade: (id: string) => void;
