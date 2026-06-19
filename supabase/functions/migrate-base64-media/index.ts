@@ -171,27 +171,35 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
 
-    // Auth: require a logged-in user.
     const authHeader = req.headers.get("Authorization") ?? "";
-    const userClient = createClient(SUPABASE_URL, ANON, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const callerId = userData.user.id;
+    const adminHeader = req.headers.get("x-admin-token") ?? "";
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun: boolean = body.dryRun !== false; // default DRY RUN
     const batchSize: number = Math.min(Math.max(Number(body.batchSize) || 25, 1), 100);
-    const targetUserId: string = body.userId || callerId;
 
-    // Only allow callers to migrate their own data.
+    let callerId: string | null = null;
+
+    // Service-mode: requires LOVABLE_API_KEY match AND explicit userId.
+    if (LOVABLE_KEY && adminHeader && adminHeader === LOVABLE_KEY && body.userId) {
+      callerId = String(body.userId);
+    } else {
+      const userClient = createClient(SUPABASE_URL, ANON, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !userData.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerId = userData.user.id;
+    }
+
+    const targetUserId: string = body.userId || callerId!;
     if (targetUserId !== callerId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
@@ -202,6 +210,7 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });
+
 
     const stats: MigrationStats[] = [];
     const log = (msg: string) => console.log(`[migrate-base64] ${msg}`);
