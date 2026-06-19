@@ -291,8 +291,9 @@ Deno.serve(async (req) => {
           }
 
           for (const col of cfg.jsonbCols) {
-            const clone = row[col] ? JSON.parse(JSON.stringify(row[col])) : null;
-            if (!clone) continue;
+            if (row[col] == null) continue;
+            const { parsed, wasString } = normalizeJsonbColumn(row[col]);
+            const clone = JSON.parse(JSON.stringify(parsed));
             let mutated = false;
             await walkJson(clone, async (val, set) => {
               if (!BASE64_RE.test(val)) return;
@@ -307,8 +308,11 @@ Deno.serve(async (req) => {
                 tStats.errors.push(`${cfg.table}#${row.id}.${col}: ${(e as Error).message}`);
               }
             });
-            if (mutated) update[col] = clone;
+            // Re-serialize back as a JSON string when the column was stored that way,
+            // to preserve the existing on-disk format used by the app.
+            if (mutated) update[col] = wasString ? JSON.stringify(clone) : clone;
           }
+
 
           if (Object.keys(update).length > 0) {
             const { error: upErr } = await admin
