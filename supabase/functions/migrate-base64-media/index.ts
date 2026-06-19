@@ -136,12 +136,14 @@ async function scanRow(
     if (isBase64Image(row[col])) found.push(row[col]);
   }
   for (const col of cfg.jsonbCols) {
-    await walkJson(row[col], (val) => {
+    const { parsed } = normalizeJsonbColumn(row[col]);
+    await walkJson(parsed, (val) => {
       if (BASE64_RE.test(val)) found.push(val);
     });
   }
   return { base64Strings: found };
 }
+
 
 async function uploadAndSign(
   admin: ReturnType<typeof createClient>,
