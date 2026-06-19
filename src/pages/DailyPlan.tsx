@@ -562,7 +562,16 @@ export default function DailyPlanPage() {
         />
       </SectionCard>
 
+      {/* Daily Review Video — Google Drive embed (lazy-loaded) */}
+      <SectionCard title="Daily Review Video" icon={<Video className="h-3.5 w-3.5" />} accent="success" badge="Review">
+        <DailyReviewVideo
+          value={localPlan.reviewVideo ?? null}
+          onChange={(v) => update({ reviewVideo: v } as Partial<DailyPlan>)}
+        />
+      </SectionCard>
+
       <AIInsightsPanel page="Daily Plan" payload={adaptDailyPlan(localPlan, dayTrades)} />
+
 
       {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
