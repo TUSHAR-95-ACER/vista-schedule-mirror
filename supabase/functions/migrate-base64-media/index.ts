@@ -97,6 +97,20 @@ async function walkJson(node: any, visit: Visitor): Promise<void> {
   }
 }
 
+// Normalize a jsonb column that may have been stored as a JSON-encoded string
+// (so the actual array/object lives inside a string). Returns { parsed, wasString }.
+function normalizeJsonbColumn(value: any): { parsed: any; wasString: boolean } {
+  if (typeof value === "string") {
+    try {
+      return { parsed: JSON.parse(value), wasString: true };
+    } catch {
+      return { parsed: value, wasString: false };
+    }
+  }
+  return { parsed: value, wasString: false };
+}
+
+
 interface TableConfig {
   table: "trades" | "daily_plans" | "weekly_plans";
   jsonbCols: string[];
