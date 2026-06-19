@@ -205,5 +205,7 @@ export function dbToDailyPlan(row: any): DailyPlan {
     reviewed: row.reviewed || false,
     daySummary: row.day_summary ? (typeof row.day_summary === 'string' ? JSON.parse(row.day_summary) : row.day_summary) : undefined,
     notesJournal: row.notes_journal ? (typeof row.notes_journal === 'string' ? JSON.parse(row.notes_journal) : row.notes_journal) : undefined,
+    reviewVideo: row.review_video ? (typeof row.review_video === 'string' ? JSON.parse(row.review_video) : row.review_video) : null,
   } as DailyPlan;
 }
+
