@@ -299,7 +299,17 @@ export interface DailyPlan {
   daySummary?: RichJournalDoc;
   notesJournal?: RichJournalDoc;
   analysisVideoPath?: string;
+  reviewVideo?: DailyReviewVideo | null;
 }
+
+export interface DailyReviewVideo {
+  video_url: string;
+  video_title?: string;
+  provider: 'google_drive';
+  added_at: string;
+  file_id?: string;
+}
+
 
 export const TRADE_GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C'];
 

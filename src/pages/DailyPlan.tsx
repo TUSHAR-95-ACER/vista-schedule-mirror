@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft, Video } from 'lucide-react';
+import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
+
 import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -560,7 +562,16 @@ export default function DailyPlanPage() {
         />
       </SectionCard>
 
+      {/* Daily Review Video — Google Drive embed (lazy-loaded) */}
+      <SectionCard title="Daily Review Video" icon={<Video className="h-3.5 w-3.5" />} accent="success" badge="Review">
+        <DailyReviewVideo
+          value={localPlan.reviewVideo ?? null}
+          onChange={(v) => update({ reviewVideo: v } as Partial<DailyPlan>)}
+        />
+      </SectionCard>
+
       <AIInsightsPanel page="Daily Plan" payload={adaptDailyPlan(localPlan, dayTrades)} />
+
 
       {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
