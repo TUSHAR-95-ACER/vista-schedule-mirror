@@ -336,12 +336,21 @@ Deno.serve(async (req) => {
               log(`migrated ${cfg.table}#${row.id} (${rowImageCount} images)`);
             }
           }
+          if (!dryRun && Object.keys(update).length > 0) {
+            processedTotal++;
+            if (maxRows > 0 && processedTotal >= maxRows) {
+              exhausted = true;
+              break;
+            }
+          }
         }
 
         log(`${cfg.table}: scanned ${tStats.rowsScanned} so far`);
+        if (exhausted) break;
         if (rows.length < batchSize) break;
         from += batchSize;
       }
+
 
       stats.push(tStats);
     }
