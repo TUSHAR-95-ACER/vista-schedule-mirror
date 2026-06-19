@@ -232,7 +232,15 @@ Deno.serve(async (req) => {
     const log = (msg: string) => console.log(`[migrate-base64] ${msg}`);
     const uploadCache = new Map<string, string>();
 
+    const tableFilter: string | null = body.table ?? null;
+    const maxRows: number = Math.max(0, Number(body.maxRows) || 0); // 0 = no cap
+    let processedTotal = 0;
+    let exhausted = false;
+
     for (const cfg of TABLES) {
+      if (tableFilter && cfg.table !== tableFilter) continue;
+      if (exhausted) break;
+
       const cols = ["id", ...cfg.textCols, ...cfg.jsonbCols].join(",");
       const tStats: MigrationStats = {
         table: cfg.table,
