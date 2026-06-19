@@ -102,8 +102,9 @@ const TRADE_LITE_COLUMNS = [
 // loaded on-demand via hydrateDailyPlanMedia() when a plan is opened.
 const DAILY_PLAN_LIST_COLUMNS = [
   'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit',
-  'took_trades','reviewed','analysis_video_url','pair_count','created_at',
+  'took_trades','reviewed','analysis_video_url','review_video','pair_count','created_at',
 ].join(',');
+
 
 // Weekly-plan LIST fetch: same idea — exclude `pair_analyses`, `news_items`,
 // `observation`, `calendar_result` (rich-text + base64 blobs).
