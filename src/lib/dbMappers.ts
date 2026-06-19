@@ -179,8 +179,10 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
     reviewed: p.reviewed || false,
     day_summary: (p as any).daySummary ? JSON.stringify((p as any).daySummary) : null,
     notes_journal: (p as any).notesJournal ? JSON.stringify((p as any).notesJournal) : null,
+    review_video: p.reviewVideo ? JSON.stringify(p.reviewVideo) : null,
   };
 }
+
 export function dbToDailyPlan(row: any): DailyPlan {
   // List-view fetches omit `pairs` (heavy JSON with inlined chart images).
   // Synthesize a length-only placeholder from `pair_count` so list cards keep
