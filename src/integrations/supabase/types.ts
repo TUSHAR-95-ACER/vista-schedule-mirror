@@ -60,6 +60,7 @@ export type Database = {
           pairs: Json | null
           result_chart_image: string | null
           result_narrative: string | null
+          review_video: Json | null
           reviewed: boolean | null
           risk_limit: string | null
           session_focus: string
@@ -81,6 +82,7 @@ export type Database = {
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
+          review_video?: Json | null
           reviewed?: boolean | null
           risk_limit?: string | null
           session_focus?: string
@@ -102,6 +104,7 @@ export type Database = {
           pairs?: Json | null
           result_chart_image?: string | null
           result_narrative?: string | null
+          review_video?: Json | null
           reviewed?: boolean | null
           risk_limit?: string | null
           session_focus?: string
