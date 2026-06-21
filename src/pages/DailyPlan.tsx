@@ -364,7 +364,9 @@ export default function DailyPlanPage() {
             update({ newsItems: items });
           }}
           label="Economic Calendar / News Screenshots"
-          maxItems={5}
+          maxItems={4}
+          gridCols={2}
+          forceAspect="16/9"
         />
       </SectionCard>
 
