@@ -23,6 +23,8 @@ interface UnifiedMediaBoxProps {
   accept?: ('image' | 'video' | 'url')[];
   /** Max image height in preview */
   maxPreviewHeight?: string;
+  /** Force a fixed aspect ratio on the image preview (uses object-cover) */
+  forceAspect?: '16/9' | '4/3' | '1/1';
 }
 
 function getYouTubeId(url: string): string | null {
@@ -38,7 +40,7 @@ function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov)(\?|$)/i.test(url) || url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
 }
 
-export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px' }: UnifiedMediaBoxProps) {
+export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px', forceAspect }: UnifiedMediaBoxProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
