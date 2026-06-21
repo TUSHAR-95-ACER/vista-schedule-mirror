@@ -297,6 +297,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                     alt={urlMeta.title || urlMeta.domain || ''}
                     className="w-full h-full object-cover object-center"
                     loading="lazy"
+                    decoding="async"
                     onLoad={handleHeroLoad}
                     onError={handleHeroError}
                   />
