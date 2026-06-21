@@ -289,7 +289,18 @@ export default function WeeklyPlanPage() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Markets Focus</Label>
-            <Input value={localPlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg h-9 text-sm" />
+            <Input
+              value={marketsRaw}
+              onChange={e => {
+                const raw = e.target.value;
+                setMarketsRaw(raw);
+                // Accept any of: , . / - | : ; ( ) ' and whitespace as separators
+                const tokens = raw.split(/[,.\/\-|:;()'\s]+/).map(s => s.trim()).filter(Boolean);
+                update({ markets: tokens });
+              }}
+              placeholder="EURUSD, XAUUSD, NAS100"
+              className="rounded-lg h-9 text-sm"
+            />
           </div>
         </div>
         <div className="space-y-1.5">
