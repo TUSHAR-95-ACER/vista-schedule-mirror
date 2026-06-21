@@ -57,12 +57,6 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
   title: string; icon?: React.ReactNode; accent?: 'primary' | 'success' | 'warning' | 'destructive';
   badge?: string; children: React.ReactNode; className?: string;
 }) {
-  const accentColors = {
-    primary: 'border-l-primary',
-    success: 'border-l-success',
-    warning: 'border-l-warning',
-    destructive: 'border-l-destructive',
-  };
   const iconColors = {
     primary: 'text-primary bg-primary/10',
     success: 'text-success bg-success/10',
@@ -72,12 +66,10 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
   return (
     <div className={cn(
-      'rounded-xl border border-border/60 bg-card overflow-visible border-l-[3px]',
-      accentColors[accent],
-      'shadow-[var(--shadow-card)]',
+      'rounded-xl border border-border/40 bg-card/60 overflow-visible shadow-sm',
       className
     )}>
-      <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20">
+      <div className="px-5 py-3.5 border-b border-border/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             {icon && (
@@ -88,7 +80,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
             <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">{title}</h3>
           </div>
           {badge && (
-            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70 bg-muted/50 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70 bg-muted/40 px-2 py-0.5 rounded-full">
               {badge}
             </span>
           )}
