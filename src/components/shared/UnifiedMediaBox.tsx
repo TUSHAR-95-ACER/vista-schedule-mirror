@@ -388,6 +388,21 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               </div>
               <Loader2 className="h-3.5 w-3.5 text-muted-foreground shrink-0 animate-spin" />
             </a>
+          ) : forceAspect ? (
+            /* Image preview — fixed aspect ratio with object-cover for grid consistency */
+            <div
+              className="w-full overflow-hidden rounded-lg bg-muted/10 cursor-pointer"
+              style={{ aspectRatio: forceAspect.replace('/', ' / ') }}
+              onClick={() => { setZoom(1); setViewerOpen(true); }}
+            >
+              <img
+                src={rawUrl}
+                alt={label}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            </div>
           ) : (
             /* Image preview — intrinsic aspect ratio, capped at 80% of legacy display height */
             <img
@@ -397,6 +412,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               className="block bg-muted/10 cursor-pointer mx-auto"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"
+              decoding="async"
             />
           )}
 
