@@ -47,9 +47,22 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
   const filledCount = slots.filter(Boolean).length;
   const canAdd = filledCount > 0 && filledCount < maxItems;
 
-  const containerClass = gridCols === 2
+  // Adaptive layout for 2-column mode:
+  //   1 item  -> full width
+  //   2 items -> 50/50
+  //   3 items -> 50/50 + full-width row
+  //   4 items -> 2x2 grid
+  const useGrid = gridCols === 2 && slots.length >= 2;
+  const containerClass = useGrid
     ? 'grid grid-cols-1 md:grid-cols-2 gap-3'
     : 'space-y-3';
+
+  const itemSpanClass = (idx: number) => {
+    if (!useGrid) return '';
+    // 3 items: last one spans both columns
+    if (slots.length === 3 && idx === 2) return 'md:col-span-2';
+    return '';
+  };
 
   return (
     <div className="space-y-2">
@@ -57,7 +70,7 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
 
       <div className={containerClass}>
         {slots.map((item, idx) => (
-          <div key={idx} className="relative">
+          <div key={idx} className={cn('relative', itemSpanClass(idx))}>
             {filledCount > 1 && item && (
               <div className="absolute -top-1.5 -left-1.5 z-10 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-sm">
                 {idx + 1}
