@@ -104,6 +104,15 @@ export default function WeeklyPlanPage() {
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
+  const [marketsRaw, setMarketsRaw] = useState<string>('');
+
+  // Sync raw markets input when switching plans
+  useEffect(() => {
+    if (localPlan) setMarketsRaw(localPlan.markets.join(', '));
+    else setMarketsRaw('');
+    // Only resync when the plan identity changes, not on every keystroke
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localPlan?.id]);
   const restoredRef = useRef<Set<string>>(new Set());
 
   const startNew = () => {
