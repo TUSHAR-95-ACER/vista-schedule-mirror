@@ -291,11 +291,11 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
             /* Rich news / link card — institutional research board aesthetic */
             <a href={urlMeta.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/10 transition-colors">
               {hasHero ? (
-                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden h-[144px] sm:h-[192px] md:h-[224px]">
+                <div className="relative w-full bg-muted/20 border-b border-border/40 overflow-hidden flex items-center justify-center" style={{ aspectRatio: '16 / 9' }}>
                   <img
                     src={heroImage}
                     alt={urlMeta.title || urlMeta.domain || ''}
-                    className="w-full h-full object-cover object-center"
+                    className="w-full h-full object-contain"
                     loading="lazy"
                     decoding="async"
                     onLoad={handleHeroLoad}
