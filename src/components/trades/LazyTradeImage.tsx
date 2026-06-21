@@ -48,7 +48,7 @@ export function LazyTradeImage({ trade, alt, className }: Props) {
   return (
     <div ref={ref} className={className}>
       {src ? (
-        <img src={src} alt={alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+        <img src={src} alt={alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
       ) : loading ? (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
           <Loader2 className="h-6 w-6 animate-spin" />
