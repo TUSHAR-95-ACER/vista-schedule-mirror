@@ -139,7 +139,7 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
                       <div>
                         <p className="text-xs text-muted-foreground mb-1.5 font-medium">Execution Chart</p>
                         <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(expandedTrade.executionImage!)}>
-                          <img src={expandedTrade.executionImage} alt="Execution" className="w-full object-cover" loading="lazy" />
+                          <img src={expandedTrade.executionImage} alt="Execution" className="w-full object-cover" loading="lazy" decoding="async" />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                             <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
@@ -150,7 +150,7 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
                       <div>
                         <p className="text-xs text-muted-foreground mb-1.5 font-medium">Prediction Chart</p>
                         <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(expandedTrade.predictionImage!)}>
-                          <img src={expandedTrade.predictionImage} alt="Prediction" className="w-full object-cover" loading="lazy" />
+                          <img src={expandedTrade.predictionImage} alt="Prediction" className="w-full object-cover" loading="lazy" decoding="async" />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                             <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>

@@ -12,9 +12,11 @@ interface MultiMediaBoxProps {
   accept?: ('image' | 'video' | 'url')[];
   maxItems?: number;
   maxPreviewHeight?: string;
+  gridCols?: 1 | 2;
+  forceAspect?: '16/9' | '4/3' | '1/1';
 }
 
-export function MultiMediaBox({ values, onChange, label, accept = ['image', 'video', 'url'], maxItems = 5, maxPreviewHeight = '300px' }: MultiMediaBoxProps) {
+export function MultiMediaBox({ values, onChange, label, accept = ['image', 'video', 'url'], maxItems = 5, maxPreviewHeight = '300px', gridCols = 1, forceAspect }: MultiMediaBoxProps) {
   // Track number of slots separately so empty slots persist
   const [slotCount, setSlotCount] = useState(Math.max(1, values.length));
 
@@ -24,7 +26,6 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
   const updateItem = (index: number, value: string) => {
     const updated = [...slots];
     updated[index] = value;
-    // Pass all values (including empty) to parent but filter empties for storage
     onChange(updated);
   };
 
@@ -46,11 +47,15 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
   const filledCount = slots.filter(Boolean).length;
   const canAdd = filledCount > 0 && filledCount < maxItems;
 
+  const containerClass = gridCols === 2
+    ? 'grid grid-cols-1 md:grid-cols-2 gap-3'
+    : 'space-y-3';
+
   return (
     <div className="space-y-2">
       {label && <Label className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</Label>}
-      
-      <div className="space-y-3">
+
+      <div className={containerClass}>
         {slots.map((item, idx) => (
           <div key={idx} className="relative">
             {filledCount > 1 && item && (
@@ -58,7 +63,6 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
                 {idx + 1}
               </div>
             )}
-            {/* Remove button for extra slots */}
             {slots.length > 1 && (
               <button
                 type="button"
@@ -74,6 +78,7 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
               label=""
               accept={accept}
               maxPreviewHeight={maxPreviewHeight}
+              forceAspect={forceAspect}
             />
           </div>
         ))}

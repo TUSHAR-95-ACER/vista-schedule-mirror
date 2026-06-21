@@ -63,12 +63,6 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
   title: string; icon?: React.ReactNode; accent?: 'primary' | 'success' | 'warning' | 'destructive';
   badge?: string; children: React.ReactNode; className?: string;
 }) {
-  const accentColors = {
-    primary: 'border-l-primary',
-    success: 'border-l-success',
-    warning: 'border-l-warning',
-    destructive: 'border-l-destructive',
-  };
   const iconColors = {
     primary: 'text-primary bg-primary/10',
     success: 'text-success bg-success/10',
@@ -78,12 +72,10 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
 
   return (
     <div className={cn(
-      'rounded-xl border border-border/60 bg-card overflow-visible border-l-[3px]',
-      accentColors[accent],
-      'shadow-[var(--shadow-card)]',
+      'rounded-xl border border-border/40 bg-card/60 overflow-visible shadow-sm',
       className
     )}>
-      <div className="px-5 py-3.5 border-b border-border/40 bg-muted/20">
+      <div className="px-5 py-3.5 border-b border-border/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             {icon && (
@@ -94,7 +86,7 @@ function SectionCard({ title, icon, accent = 'primary', badge, children, classNa
             <h3 className="font-heading text-xs font-bold tracking-wide uppercase text-foreground">{title}</h3>
           </div>
           {badge && (
-            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70 bg-muted/50 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70 bg-muted/40 px-2 py-0.5 rounded-full">
               {badge}
             </span>
           )}
@@ -112,6 +104,15 @@ export default function WeeklyPlanPage() {
   const { user: authUser } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
+  const [marketsRaw, setMarketsRaw] = useState<string>('');
+
+  // Sync raw markets input when switching plans
+  useEffect(() => {
+    if (localPlan) setMarketsRaw(localPlan.markets.join(', '));
+    else setMarketsRaw('');
+    // Only resync when the plan identity changes, not on every keystroke
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localPlan?.id]);
   const restoredRef = useRef<Set<string>>(new Set());
 
   const startNew = () => {
@@ -288,7 +289,18 @@ export default function WeeklyPlanPage() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Markets Focus</Label>
-            <Input value={localPlan.markets.join(', ')} onChange={e => update({ markets: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} placeholder="EURUSD, XAUUSD, NAS100" className="rounded-lg h-9 text-sm" />
+            <Input
+              value={marketsRaw}
+              onChange={e => {
+                const raw = e.target.value;
+                setMarketsRaw(raw);
+                // Accept any of: , . / - | : ; ( ) ' and whitespace as separators
+                const tokens = raw.split(/[,.\/\-|:;()'\s]+/).map(s => s.trim()).filter(Boolean);
+                update({ markets: tokens });
+              }}
+              placeholder="EURUSD, XAUUSD, NAS100"
+              className="rounded-lg h-9 text-sm"
+            />
           </div>
         </div>
         <div className="space-y-1.5">
@@ -317,7 +329,9 @@ export default function WeeklyPlanPage() {
             update({ newsItems: items });
           }}
           label="Forex Factory / Economic Calendar"
-          maxItems={5}
+          maxItems={4}
+          gridCols={2}
+          forceAspect="16/9"
         />
       </SectionCard>
 

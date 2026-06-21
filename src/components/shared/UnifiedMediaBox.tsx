@@ -23,6 +23,8 @@ interface UnifiedMediaBoxProps {
   accept?: ('image' | 'video' | 'url')[];
   /** Max image height in preview */
   maxPreviewHeight?: string;
+  /** Force a fixed aspect ratio on the image preview (uses object-cover) */
+  forceAspect?: '16/9' | '4/3' | '1/1';
 }
 
 function getYouTubeId(url: string): string | null {
@@ -38,7 +40,7 @@ function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov)(\?|$)/i.test(url) || url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
 }
 
-export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px' }: UnifiedMediaBoxProps) {
+export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px', forceAspect }: UnifiedMediaBoxProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -295,6 +297,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                     alt={urlMeta.title || urlMeta.domain || ''}
                     className="w-full h-full object-cover object-center"
                     loading="lazy"
+                    decoding="async"
                     onLoad={handleHeroLoad}
                     onError={handleHeroError}
                   />
@@ -386,6 +389,21 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               </div>
               <Loader2 className="h-3.5 w-3.5 text-muted-foreground shrink-0 animate-spin" />
             </a>
+          ) : forceAspect ? (
+            /* Image preview — fixed aspect ratio with object-cover for grid consistency */
+            <div
+              className="w-full overflow-hidden rounded-lg bg-muted/10 cursor-pointer"
+              style={{ aspectRatio: forceAspect.replace('/', ' / ') }}
+              onClick={() => { setZoom(1); setViewerOpen(true); }}
+            >
+              <img
+                src={rawUrl}
+                alt={label}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            </div>
           ) : (
             /* Image preview — intrinsic aspect ratio, capped at 80% of legacy display height */
             <img
@@ -395,6 +413,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               className="block bg-muted/10 cursor-pointer mx-auto"
               onClick={() => { setZoom(1); setViewerOpen(true); }}
               loading="lazy"
+              decoding="async"
             />
           )}
 
