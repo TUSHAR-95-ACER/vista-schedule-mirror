@@ -309,7 +309,9 @@ export default function WeeklyPlanPage() {
             update({ newsItems: items });
           }}
           label="Forex Factory / Economic Calendar"
-          maxItems={5}
+          maxItems={4}
+          gridCols={2}
+          forceAspect="16/9"
         />
       </SectionCard>
 
