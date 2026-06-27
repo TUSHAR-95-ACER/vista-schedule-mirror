@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadJournalMedia } from '@/lib/journalUpload';
+import { toast } from '@/hooks/use-toast';
 import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
