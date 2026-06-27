@@ -39,10 +39,17 @@ export function MarketTicker() {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchPrices = async () => {
+    const fetchPrices = async (force = false) => {
       const now = Date.now();
       if (inFlightRef.current) return;
       if (now - lastFetchRef.current < MIN_GAP_MS) return;
+      // Skip if cached value is fresh enough.
+      if (!force) {
+        try {
+          const ts = Number(localStorage.getItem(CACHE_TS_KEY) || 0);
+          if (ts && now - ts < STALE_AFTER_MS && itemsRef.current.length > 0 && itemsRef.current.every(i => i.price > 0)) return;
+        } catch {}
+      }
       inFlightRef.current = true;
       lastFetchRef.current = now;
       try {
