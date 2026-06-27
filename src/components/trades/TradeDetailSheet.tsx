@@ -320,57 +320,8 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 </InfoCard>
               )}
 
-              {/* Event Impact */}
-              {topEvents.length > 0 && (
-                <InfoCard icon={Activity} title="Event Impact Analysis">
-                  <div className="space-y-2">
-                    {eventBiases.map(event => {
-                      const biasInfo = getBiasLabel(event.bias);
-                      const BiasIcon = biasInfo.icon;
-                      const hasActual = event.actual && event.actual !== 'N/A';
-                      return (
-                        <div key={event.id} className="bg-muted/20 border border-border/40 rounded-lg p-2.5">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <Badge variant="outline" className="text-[8px] font-mono h-4 bg-destructive/10 text-destructive border-destructive/30">{event.currency}</Badge>
-                                <span className="text-[10px] font-semibold">{event.title}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-[10px]">
-                                <span className="text-muted-foreground">Prev: <span className="font-mono font-medium text-foreground">{event.previous}</span></span>
-                                <span className="text-muted-foreground">Fcst: <span className="font-mono font-medium text-foreground">{event.forecast}</span></span>
-                                {hasActual && <span className="text-primary font-semibold">Act: <span className="font-mono font-bold">{event.actual}</span></span>}
-                              </div>
-                            </div>
-                            {hasActual && (
-                              <div className={cn("flex items-center gap-1 text-[10px] font-bold shrink-0", biasInfo.color)}>
-                                <BiasIcon className="h-3 w-3" />
-                                {biasInfo.text}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {eventBiases.some(e => e.actual && e.actual !== 'N/A') && (
-                    <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2">
-                      {(() => {
-                        const nb = getBiasLabel(netBias);
-                        const NbIcon = nb.icon;
-                        return (
-                          <>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">Net Impact:</span>
-                            <div className={cn("flex items-center gap-1 text-xs font-bold", nb.color)}>
-                              <NbIcon className="h-3.5 w-3.5" /> {nb.text}
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </InfoCard>
-              )}
+              {/* Event Impact section removed — News & Events is fully manual via Daily Plan. */}
+
 
               {/* Technical Points */}
               {((trade.entryConfluences && trade.entryConfluences.length > 0) || (trade.targetConfluences && trade.targetConfluences.length > 0) || trade.confluences.length > 0) && (
