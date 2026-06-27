@@ -8,7 +8,7 @@ import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Login from "./pages/Login";
-import { MacroNewsProvider } from "./contexts/MacroNewsContext";
+
 
 // PERFORMANCE: Route-level code splitting. Each page only downloads when navigated to,
 // shrinking the initial bundle from ~all-pages to just shell + Login + Dashboard route.
