@@ -461,6 +461,7 @@ export default function DailyPlanPage() {
                 placeholder="Expected price movement, key reasoning…"
                 className="border-0 shadow-none p-0 bg-transparent"
               />
+              <UnifiedMediaBox value={pp.dailyViewImage} onChange={v => updatePair(pp.id, { dailyViewImage: v })} label="Daily View" maxPreviewHeight="336px" />
             </SectionCard>
 
             <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
@@ -474,6 +475,7 @@ export default function DailyPlanPage() {
                   className="font-journal"
                 />
               </div>
+              <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
             </SectionCard>
           </div>
         </div>
