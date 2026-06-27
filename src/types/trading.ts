@@ -311,6 +311,8 @@ export interface DailyPlan {
   notesJournal?: RichJournalDoc;
   analysisVideoPath?: string;
   reviewVideo?: DailyReviewVideo | null;
+  /** Schema version. >=2 enables Daily/4H reference charts and Market Location selector. Absent/1 = legacy plan. */
+  schemaVersion?: number;
 }
 
 export interface DailyReviewVideo {
