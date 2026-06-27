@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft, Video } from 'lucide-react';
 import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
 
-import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
+import { DailyPlan, DailyPairPlan, ALL_ASSETS, MARKET_LOCATIONS, MarketLocation } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
