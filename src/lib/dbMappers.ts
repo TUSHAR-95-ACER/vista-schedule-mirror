@@ -3,7 +3,7 @@ import { assertNoBase64 } from '@/lib/noBase64Guard';
 
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
-  return {
+  return assertNoBase64({
     id: t.id, user_id: userId, date: t.date, entry_time: t.entryTime || null,
     exit_time: t.exitTime || null, market: t.market, asset: t.asset,
     direction: t.direction, session: t.session, market_condition: t.marketCondition,
