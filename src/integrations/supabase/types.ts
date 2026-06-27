@@ -63,6 +63,7 @@ export type Database = {
           review_video: Json | null
           reviewed: boolean | null
           risk_limit: string | null
+          schema_version: number | null
           session_focus: string
           took_trades: boolean | null
           user_id: string
@@ -85,6 +86,7 @@ export type Database = {
           review_video?: Json | null
           reviewed?: boolean | null
           risk_limit?: string | null
+          schema_version?: number | null
           session_focus?: string
           took_trades?: boolean | null
           user_id: string
@@ -107,6 +109,7 @@ export type Database = {
           review_video?: Json | null
           reviewed?: boolean | null
           risk_limit?: string | null
+          schema_version?: number | null
           session_focus?: string
           took_trades?: boolean | null
           user_id?: string
