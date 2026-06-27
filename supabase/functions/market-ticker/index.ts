@@ -17,7 +17,7 @@ const PAIRS = [
 // In-memory cache (survives within same instance)
 let cachedData: any = null;
 let cacheTime = 0;
-const CACHE_TTL = 300_000; // 5 minutes cache
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours cache
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
