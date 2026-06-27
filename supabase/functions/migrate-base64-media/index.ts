@@ -23,7 +23,7 @@ const corsHeaders = {
 };
 
 const BUCKET = "journal-media";
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 years
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
 const BASE64_RE = /^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/;
 
