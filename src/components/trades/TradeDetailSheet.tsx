@@ -66,7 +66,6 @@ function DataRow({ label, value, mono, highlight }: { label: string; value: Reac
 export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { updateTrade, dailyPlans, hydrateTradeMedia } = useTrading();
-  const { calendarEvents, news } = useMacroNewsContext();
 
   // Hydrate full media (base64 images) for the opened trade. The list view ships
   // a "lite" trade without images for fast load; we fill them in once the sheet opens.
@@ -94,28 +93,6 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
     return imgs;
   }, [dailyPlan]);
 
-  const tradeDateEvents = useMemo(() => {
-    if (!trade) return [];
-    return calendarEvents.filter(e => {
-      const eventDate = e.date?.split('T')[0] || '';
-      return eventDate === trade.date;
-    });
-  }, [trade, calendarEvents]);
-
-  const topEvents = tradeDateEvents.slice(0, 3);
-
-  const eventBiases = useMemo(() => {
-    return topEvents.map(e => ({ ...e, bias: getEventImpactBias(e) }));
-  }, [topEvents]);
-
-  const netBias = useMemo(() => {
-    const biases = eventBiases.map(e => e.bias);
-    const bullish = biases.filter(b => b.startsWith('bullish')).length;
-    const bearish = biases.filter(b => b.startsWith('bearish')).length;
-    if (bullish > bearish) return 'bullish_USD';
-    if (bearish > bullish) return 'bearish_USD';
-    return 'neutral';
-  }, [eventBiases]);
 
   if (!trade) return null;
 
