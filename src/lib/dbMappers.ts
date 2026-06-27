@@ -1,4 +1,5 @@
 import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
+import { assertNoBase64 } from '@/lib/noBase64Guard';
 
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
