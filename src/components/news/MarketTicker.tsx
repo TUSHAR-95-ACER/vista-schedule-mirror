@@ -11,10 +11,12 @@ interface TickerItem {
   decimals: number;
 }
 
-const CACHE_KEY = 'market-ticker-cache-v1';
-const POLL_MS = 300_000;  // 5 minutes
-const RETRY_MS = 60_000;  // 1 minute, only while data is missing
-const MIN_GAP_MS = 15_000; // hard floor between any two requests
+const CACHE_KEY = 'market-ticker-cache-v2';
+const CACHE_TS_KEY = 'market-ticker-cache-ts-v2';
+const POLL_MS = 6 * 60 * 60 * 1000;  // 6 hours
+const RETRY_MS = 5 * 60 * 1000;       // 5 min, only while data is missing
+const MIN_GAP_MS = 60_000;            // 1 min floor between requests
+const STALE_AFTER_MS = 6 * 60 * 60 * 1000; // reuse cache without fetch if newer than 6h
 
 function loadCache(): TickerItem[] {
   try {
@@ -37,10 +39,17 @@ export function MarketTicker() {
   useEffect(() => {
     let cancelled = false;
 
-    const fetchPrices = async () => {
+    const fetchPrices = async (force = false) => {
       const now = Date.now();
       if (inFlightRef.current) return;
       if (now - lastFetchRef.current < MIN_GAP_MS) return;
+      // Skip if cached value is fresh enough.
+      if (!force) {
+        try {
+          const ts = Number(localStorage.getItem(CACHE_TS_KEY) || 0);
+          if (ts && now - ts < STALE_AFTER_MS && itemsRef.current.length > 0 && itemsRef.current.every(i => i.price > 0)) return;
+        } catch {}
+      }
       inFlightRef.current = true;
       lastFetchRef.current = now;
       try {
@@ -54,7 +63,10 @@ export function MarketTicker() {
               const cached = prev.find(p => p.symbol === fresh.symbol);
               return cached && cached.price > 0 ? cached : fresh;
             });
-            try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(next));
+              localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+            } catch {}
             return next;
           });
           setError(false);

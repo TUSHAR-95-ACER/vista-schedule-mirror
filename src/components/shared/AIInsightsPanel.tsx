@@ -1,205 +1,185 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Sparkles, RefreshCw, Loader2, AlertCircle, TrendingUp, AlertTriangle, Target, ShieldAlert, Lightbulb } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useMemo } from 'react';
+import { Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-export interface AIInsight {
-  title: string;
-  body?: string;
-  description?: string;
-  severity?: 'info' | 'good' | 'warn' | 'critical';
-}
 
 interface AIInsightsProps {
   page: string;
   payload: Record<string, unknown>;
   title?: string;
   className?: string;
-}
-
-const CATEGORIES = ['Strength', 'Weakness', 'Opportunity', 'Warning', 'Recommendation'] as const;
-
-const ICONS: Record<string, any> = {
-  Strength: TrendingUp,
-  Weakness: AlertTriangle,
-  Opportunity: Target,
-  Warning: ShieldAlert,
-  Recommendation: Lightbulb,
-};
-
-const ACCENT: Record<string, { ring: string; chip: string; icon: string }> = {
-  Strength:       { ring: 'border-success/30 bg-success/[0.04]',         chip: 'bg-success/10 text-success border-success/30',         icon: 'text-success' },
-  Weakness:       { ring: 'border-warning/30 bg-warning/[0.04]',         chip: 'bg-warning/10 text-warning border-warning/30',         icon: 'text-warning' },
-  Opportunity:    { ring: 'border-primary/30 bg-primary/[0.04]',         chip: 'bg-primary/10 text-primary border-primary/30',         icon: 'text-primary' },
-  Warning:        { ring: 'border-destructive/30 bg-destructive/[0.04]', chip: 'bg-destructive/10 text-destructive border-destructive/30', icon: 'text-destructive' },
-  Recommendation: { ring: 'border-gold/35 bg-gold/[0.05]',               chip: 'bg-gold/10 text-gold border-gold/30',                  icon: 'text-gold' },
-};
-
-// djb2 hash of stringified payload — stable, deterministic, fast.
-function hashPayload(payload: unknown): string {
-  const str = JSON.stringify(payload) || '';
-  let h = 5381;
-  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
-  return `${str.length}:${(h >>> 0).toString(36)}`;
+  /** Optional pre-computed insights. If provided, used as-is (already numbered). */
+  insights?: string[];
 }
 
 /**
- * AI Insights — always visible at the bottom of every page.
- * Cache-first: instantly displays stored insights from `ai_insights_cache`.
- * Only invokes the AI when the payload hash differs from the cached hash, or
- * when the user clicks Regenerate.
+ * Stats-based Insight Panel — fully offline, no AI calls, no caching.
+ * Derives a short numbered list of actionable insights from the page payload.
+ * Replaces the previous Gemini-backed AIInsightsPanel.
  */
-export function AIInsightsPanel({ page, payload, title = 'AI Insights', className }: AIInsightsProps) {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [insights, setInsights] = useState<AIInsight[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const lastHashRef = useRef<string>('');
-  const inFlightRef = useRef<string>('');
-
-  const fetchOrGenerate = useCallback(async (force = false) => {
-    if (!user?.id) return;
-    const hash = hashPayload(payload);
-    if (!force && hash === lastHashRef.current && insights) return;
-    if (inFlightRef.current === hash && !force) return;
-    inFlightRef.current = hash;
-
-    setError(null);
-
-    // 1) Try cache first — instant render, no spinner.
-    if (!force) {
-      const { data: cached } = await supabase
-        .from('ai_insights_cache')
-        .select('payload_hash, insights')
-        .eq('user_id', user.id)
-        .eq('page', page)
-        .maybeSingle();
-      if (cached && cached.payload_hash === hash && Array.isArray(cached.insights)) {
-        setInsights(cached.insights as unknown as AIInsight[]);
-        lastHashRef.current = hash;
-        inFlightRef.current = '';
-        return;
-      }
-    }
-
-    // 2) Data changed (or forced) → call AI, then upsert cache.
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('gemini-insights', {
-        body: { page, payload, payloadHash: hash },
-      });
-      // Treat any non-2xx (FunctionsHttpError) or payload-level error as a soft failure.
-      const payloadErr = (data as any)?.error as string | undefined;
-      if (error || payloadErr) {
-        setError(payloadErr || (error as any)?.message || 'AI service unavailable');
-        return;
-      }
-      const list = (data as any)?.insights as AIInsight[] | undefined;
-      const next = Array.isArray(list) ? list : [];
-      setInsights(next);
-      lastHashRef.current = hash;
-
-      if (next.length > 0) {
-        await supabase
-          .from('ai_insights_cache')
-          .upsert(
-            { user_id: user.id, page, payload_hash: hash, insights: next as any },
-            { onConflict: 'user_id,page' },
-          );
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load insights');
-    } finally {
-      setLoading(false);
-      inFlightRef.current = '';
-    }
-  }, [user?.id, page, payload, insights]);
-
-  // Re-check whenever the payload hash (data) changes. No regeneration on simple
-  // remount — only when the underlying data actually changed.
-  useEffect(() => {
-    void fetchOrGenerate(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, page, hashPayload(payload)]);
-
-  const showInitialSpinner = loading && !insights;
+export function AIInsightsPanel({ page, payload, title = 'Insights', className, insights }: AIInsightsProps) {
+  const lines = useMemo(() => {
+    if (insights && insights.length) return insights.slice(0, 10);
+    return deriveInsights(page, payload).slice(0, 10);
+  }, [page, payload, insights]);
 
   return (
     <section
       className={cn(
-        'rounded-2xl border border-gold/30 bg-[linear-gradient(135deg,hsl(var(--gold)/0.06),hsl(var(--card))_55%)] overflow-hidden shadow-[0_0_0_1px_hsl(var(--gold)/0.06)_inset]',
+        'rounded-2xl border border-gold/25 bg-[linear-gradient(135deg,hsl(var(--gold)/0.04),hsl(var(--card))_60%)] overflow-hidden',
         className,
       )}
-      aria-label="AI Insights"
+      aria-label={title}
     >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gold/10 text-gold border border-gold/30 flex items-center justify-center">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <h3 className="text-base font-heading font-semibold text-foreground tracking-tight">{title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Cached — refreshes only when your data changes. Use Regenerate to force.</p>
-          </div>
+      <div className="flex items-center gap-2.5 px-5 py-3 border-b border-border/40">
+        <div className="h-7 w-7 rounded-lg bg-gold/10 text-gold border border-gold/30 flex items-center justify-center">
+          <Lightbulb className="h-3.5 w-3.5" />
         </div>
-        <Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5" onClick={() => fetchOrGenerate(true)} disabled={loading}>
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          {loading ? 'Refreshing…' : 'Regenerate'}
-        </Button>
+        <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-foreground">{title}</h3>
       </div>
-
       <div className="p-5">
-        {error && (
-          <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 text-sm flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
-            <div>
-              <p className="font-medium text-foreground">AI Insights unavailable</p>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{error}. Try again in a moment — the rest of the page is unaffected.</p>
-            </div>
-          </div>
+        {lines.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Not enough data yet to generate insights.</p>
+        ) : (
+          <ol className="space-y-2.5">
+            {lines.map((line, i) => (
+              <li key={i} className="flex gap-3 text-sm leading-snug text-foreground/90">
+                <span className="font-mono text-xs text-muted-foreground w-5 shrink-0 pt-0.5">{i + 1}</span>
+                <span className="flex-1">{line}</span>
+              </li>
+            ))}
+          </ol>
         )}
-
-        {!error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
-            {CATEGORIES.map((cat, i) => {
-              const ins = insights?.find((x) => x.title === cat);
-              const body = ins?.body || ins?.description;
-              const Icon = ICONS[cat];
-              const a = ACCENT[cat];
-              return (
-                <div
-                  key={cat}
-                  className={cn(
-                    'relative rounded-xl border p-3.5 min-h-[120px] flex flex-col gap-2',
-                    a.ring,
-                    'animate-in fade-in slide-in-from-bottom-1 duration-300',
-                  )}
-                  style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={cn('h-7 w-7 rounded-lg border flex items-center justify-center', a.chip)}>
-                      <Icon className={cn('h-3.5 w-3.5', a.icon)} />
-                    </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground/80">{cat}</span>
-                  </div>
-                  {showInitialSpinner && !body ? (
-                    <div className="flex-1 flex items-center text-xs text-muted-foreground gap-1.5">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Generating once…
-                    </div>
-                  ) : (
-                    <p className="text-sm leading-snug text-foreground/90">
-                      {body || 'Not enough data yet for this page.'}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <p className="mt-4 pt-3 border-t border-border/30 text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+          Derived directly from logged journal data · no AI required
+        </p>
       </div>
     </section>
   );
+}
+
+/* ============================================================
+   Insight generator — pure functions over adapter payloads.
+   Shapes come from src/lib/aiInsightAdapters.ts.
+============================================================ */
+
+type AnyRec = Record<string, any>;
+
+function pct(n: any): string {
+  return typeof n === 'number' && isFinite(n) ? `${n.toFixed(0)}%` : '—';
+}
+
+function num(n: any, d = 2): string {
+  return typeof n === 'number' && isFinite(n) ? n.toFixed(d) : '—';
+}
+
+function topBy(arr: any, key: string, min = 3): AnyRec | null {
+  if (!Array.isArray(arr) || !arr.length) return null;
+  const filtered = arr.filter((x: AnyRec) => (x.trades ?? x.count ?? 0) >= min);
+  const pool = filtered.length ? filtered : arr;
+  return [...pool].sort((a: AnyRec, b: AnyRec) => (Number(b[key]) || 0) - (Number(a[key]) || 0))[0] || null;
+}
+
+function bottomBy(arr: any, key: string, min = 3): AnyRec | null {
+  if (!Array.isArray(arr) || !arr.length) return null;
+  const filtered = arr.filter((x: AnyRec) => (x.trades ?? x.count ?? 0) >= min);
+  const pool = filtered.length ? filtered : arr;
+  return [...pool].sort((a: AnyRec, b: AnyRec) => (Number(a[key]) || 0) - (Number(b[key]) || 0))[0] || null;
+}
+
+export function deriveInsights(page: string, payload: AnyRec): string[] {
+  const out: string[] = [];
+  if (!payload || payload.empty) {
+    return ['Add data on this page to generate insights.'];
+  }
+
+  // ---- Trades-shaped payload (Dashboard, Trades, Analytics, TradeQuality, Behavior) ----
+  if (typeof payload.total_trades === 'number') {
+    const wr = payload.win_rate_pct;
+    if (payload.total_trades > 0 && typeof wr === 'number') {
+      if (wr >= 55) out.push(`Strong win rate of ${pct(wr)} across the last ${payload.total_trades} trades.`);
+      else if (wr >= 45) out.push(`Win rate is ${pct(wr)} across ${payload.total_trades} trades — close to break-even territory.`);
+      else if (payload.total_trades >= 5) out.push(`Win rate of ${pct(wr)} across ${payload.total_trades} trades — review setup quality.`);
+    }
+    if (typeof payload.total_pnl === 'number') {
+      if (payload.total_pnl > 0) out.push(`Net PnL positive at ${num(payload.total_pnl)} over the sample.`);
+      else if (payload.total_pnl < 0) out.push(`Net PnL negative (${num(payload.total_pnl)}) — protect capital before scaling.`);
+    }
+    if (typeof payload.avg_rr === 'number') {
+      if (payload.avg_rr >= 2) out.push(`Average RR of ${num(payload.avg_rr)} — letting winners run.`);
+      else if (payload.avg_rr > 0 && payload.avg_rr < 1) out.push(`Average RR is only ${num(payload.avg_rr)} — winners are being cut early.`);
+    }
+    const bestPair = topBy(payload.by_pair, 'win_rate');
+    const worstPair = bottomBy(payload.by_pair, 'win_rate');
+    if (bestPair && (bestPair.win_rate ?? 0) >= 55) {
+      out.push(`Strongest performance on ${bestPair.pair} (${pct(bestPair.win_rate)} win rate, ${bestPair.trades} trades).`);
+    }
+    if (worstPair && bestPair && worstPair.pair !== bestPair.pair && (worstPair.win_rate ?? 100) < 40) {
+      out.push(`${worstPair.pair} is underperforming at ${pct(worstPair.win_rate)} — consider sizing down or skipping.`);
+    }
+    const bestSession = topBy(payload.by_session, 'win_rate');
+    if (bestSession && (bestSession.win_rate ?? 0) >= 55) {
+      out.push(`Your edge is sharpest in the ${bestSession.session} session (${pct(bestSession.win_rate)} win rate).`);
+    }
+    const bestSetup = topBy(payload.top_setups, 'win_rate', 3);
+    if (bestSetup && (bestSetup.win_rate ?? 0) >= 55) {
+      out.push(`Highest-conviction setup: ${bestSetup.setup} at ${pct(bestSetup.win_rate)} over ${bestSetup.trades} trades.`);
+    }
+    if (Array.isArray(payload.recent_mistakes) && payload.recent_mistakes.length) {
+      const counts: Record<string, number> = {};
+      for (const m of payload.recent_mistakes) counts[m] = (counts[m] || 0) + 1;
+      const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+      if (top && top[1] >= 2) out.push(`Most frequent recent leak: "${top[0]}" (${top[1]}x) — make it a checklist item.`);
+    }
+  }
+
+  // ---- Psychology / Behavior payload ----
+  if (Array.isArray(payload.emotion_distribution) && payload.emotion_distribution.length) {
+    const top = [...payload.emotion_distribution].sort((a, b) => (b.count || 0) - (a.count || 0))[0];
+    if (top) out.push(`Dominant emotional state logged: ${top.emotion} (${top.count} entries).`);
+  }
+  if (Array.isArray(payload.mistake_distribution) && payload.mistake_distribution.length) {
+    const top = [...payload.mistake_distribution].sort((a, b) => (b.count || 0) - (a.count || 0))[0];
+    if (top && top.count >= 2 && !out.some((x) => x.includes(top.mistake))) {
+      out.push(`Repeat mistake to address: ${top.mistake} (${top.count}x).`);
+    }
+  }
+
+  // ---- Plan payloads (Daily / Weekly) ----
+  if (Array.isArray(payload.pairs) && payload.pairs.length) {
+    const directional = payload.pairs.filter((p: AnyRec) => p.predicted === 'Bullish' || p.predicted === 'Bearish');
+    const resolved = directional.filter((p: AnyRec) => p.actual === 'Bullish' || p.actual === 'Bearish');
+    if (resolved.length) {
+      const hits = resolved.filter((p: AnyRec) => p.actual === p.predicted).length;
+      const acc = (hits / resolved.length) * 100;
+      out.push(`Plan directional accuracy: ${pct(acc)} (${hits}/${resolved.length} calls correct).`);
+    }
+    const standAside = payload.pairs.filter((p: AnyRec) => p.predicted === 'Neutral' || p.predicted === 'Sideways').length;
+    if (standAside) out.push(`${standAside} stand-aside call(s) logged — discipline counts toward edge.`);
+    if (directional.length && !resolved.length) {
+      out.push(`Log the actual direction for each pair to grade today's bias.`);
+    }
+  }
+  if (Array.isArray(payload.actual_trades) && payload.actual_trades.length) {
+    const wins = payload.actual_trades.filter((t: AnyRec) => t.result === 'Win').length;
+    out.push(`${wins}/${payload.actual_trades.length} trades closed as wins on this plan.`);
+  }
+
+  // ---- Notebook payload ----
+  if (typeof payload.total_entries === 'number') {
+    out.push(`Notebook holds ${payload.total_entries} entries — review tagged categories weekly.`);
+    const topCat = topBy(payload.categories, 'count', 1);
+    if (topCat) out.push(`Most-used category: ${topCat.category} (${topCat.count}).`);
+    const topPair = topBy(payload.pairs as AnyRec[], 'count', 1);
+    if (topPair) out.push(`Most-studied pair in notebook: ${topPair.pair} (${topPair.count} entries).`);
+  }
+
+  // ---- Macro Intelligence fallback ----
+  if (page.toLowerCase().includes('macro') && out.length === 0) {
+    if (payload.usd_bias) out.push(`Current USD bias: ${payload.usd_bias}.`);
+    if (payload.gold_bias) out.push(`Current Gold bias: ${payload.gold_bias}.`);
+    if (payload.fed_bias) out.push(`Current Fed lean: ${payload.fed_bias}.`);
+  }
+
+  if (!out.length) out.push('Not enough data yet — add more trades and plans to surface insights.');
+  return out;
 }
