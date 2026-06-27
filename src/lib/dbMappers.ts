@@ -181,6 +181,7 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
     day_summary: (p as any).daySummary ? JSON.stringify((p as any).daySummary) : null,
     notes_journal: (p as any).notesJournal ? JSON.stringify((p as any).notesJournal) : null,
     review_video: p.reviewVideo ? JSON.stringify(p.reviewVideo) : null,
+    schema_version: p.schemaVersion ?? null,
   }, 'dailyPlanToDb');
 }
 
