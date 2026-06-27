@@ -241,127 +241,112 @@ Deno.serve(async (req) => {
     let processedTotal = 0;
     let exhausted = false;
 
-    for (const cfg of TABLES) {
-      if (tableFilter && cfg.table !== tableFilter) continue;
-      if (exhausted) break;
-
-      const cols = ["id", ...cfg.textCols, ...cfg.jsonbCols].join(",");
-      const tStats: MigrationStats = {
-        table: cfg.table,
-        rowsScanned: 0,
-        rowsWithBase64: 0,
-        imagesFound: 0,
-        estimatedBytes: 0,
-        rowsMigrated: 0,
-        imagesMigrated: 0,
-        errors: [],
-      };
-
-      let from = 0;
-      while (true) {
-        const { data: rows, error } = await admin
-          .from(cfg.table)
-          .select(cols)
-          .eq("user_id", targetUserId)
-          .range(from, from + batchSize - 1);
-        if (error) {
-          tStats.errors.push(`fetch: ${error.message}`);
-          break;
-        }
-        if (!rows || rows.length === 0) break;
-
-        for (const row of rows as any[]) {
-          tStats.rowsScanned++;
-          const { base64Strings } = await scanRow(row, cfg);
-          if (base64Strings.length === 0) continue;
-
-          tStats.rowsWithBase64++;
-          tStats.imagesFound += base64Strings.length;
-          for (const s of base64Strings) {
-            // rough decoded size: base64 length * 0.75
-            tStats.estimatedBytes += Math.floor(((s.length - s.indexOf(",") - 1) * 3) / 4);
-          }
-
-          if (dryRun) continue;
-
-          // Build update payload by re-walking and replacing in place.
-          const update: Record<string, any> = {};
-          let rowImageCount = 0;
-
-          for (const col of cfg.textCols) {
-            if (isBase64Image(row[col])) {
-              try {
-                const url = await uploadAndSign(admin, targetUserId, cfg.table, row.id, row[col], uploadCache);
-                if (url) {
-                  update[col] = url;
-                  rowImageCount++;
-                }
-              } catch (e) {
-                tStats.errors.push(`${cfg.table}#${row.id}.${col}: ${(e as Error).message}`);
-              }
-            }
-          }
-
-          for (const col of cfg.jsonbCols) {
-            if (row[col] == null) continue;
-            const { parsed, wasString } = normalizeJsonbColumn(row[col]);
-            const clone = JSON.parse(JSON.stringify(parsed));
-            let mutated = false;
-            await walkJson(clone, async (val, set) => {
-              if (!BASE64_RE.test(val)) return;
-              try {
-                const url = await uploadAndSign(admin, targetUserId, cfg.table, row.id, val, uploadCache);
-                if (url) {
-                  set(url);
-                  mutated = true;
-                  rowImageCount++;
-                }
-              } catch (e) {
-                tStats.errors.push(`${cfg.table}#${row.id}.${col}: ${(e as Error).message}`);
-              }
-            });
-            // Re-serialize back as a JSON string when the column was stored that way,
-            // to preserve the existing on-disk format used by the app.
-            if (mutated) update[col] = wasString ? JSON.stringify(clone) : clone;
-          }
-
-
-          if (Object.keys(update).length > 0) {
-            const { error: upErr } = await admin
-              .from(cfg.table)
-              .update(update)
-              .eq("id", row.id)
-              .eq("user_id", targetUserId);
-            if (upErr) {
-              tStats.errors.push(`${cfg.table}#${row.id} update: ${upErr.message}`);
-            } else {
-              tStats.rowsMigrated++;
-              tStats.imagesMigrated += rowImageCount;
-              log(`migrated ${cfg.table}#${row.id} (${rowImageCount} images)`);
-            }
-          }
-          if (!dryRun && Object.keys(update).length > 0) {
-            processedTotal++;
-            if (maxRows > 0 && processedTotal >= maxRows) {
-              exhausted = true;
-              break;
-            }
-          }
-        }
-
-        log(`${cfg.table}: scanned ${tStats.rowsScanned} so far`);
+    for (const targetUserId of targetUserIds) {
+      for (const cfg of TABLES) {
+        if (tableFilter && cfg.table !== tableFilter) continue;
         if (exhausted) break;
-        if (rows.length < batchSize) break;
-        from += batchSize;
+
+        const cols = ["id", ...cfg.textCols, ...cfg.jsonbCols].join(",");
+        let tStats = stats.find((s) => s.table === cfg.table);
+        if (!tStats) {
+          tStats = {
+            table: cfg.table,
+            rowsScanned: 0,
+            rowsWithBase64: 0,
+            imagesFound: 0,
+            estimatedBytes: 0,
+            rowsMigrated: 0,
+            imagesMigrated: 0,
+            errors: [],
+          };
+          stats.push(tStats);
+        }
+
+        let from = 0;
+        while (true) {
+          const { data: rows, error } = await admin
+            .from(cfg.table)
+            .select(cols)
+            .eq("user_id", targetUserId)
+            .range(from, from + batchSize - 1);
+          if (error) {
+            tStats.errors.push(`fetch: ${error.message}`);
+            break;
+          }
+          if (!rows || rows.length === 0) break;
+
+          for (const row of rows as any[]) {
+            tStats.rowsScanned++;
+            const { base64Strings } = await scanRow(row, cfg);
+            if (base64Strings.length === 0) continue;
+
+            tStats.rowsWithBase64++;
+            tStats.imagesFound += base64Strings.length;
+            for (const s of base64Strings) {
+              tStats.estimatedBytes += Math.floor(((s.length - s.indexOf(",") - 1) * 3) / 4);
+            }
+
+            if (dryRun) continue;
+
+            const update: Record<string, any> = {};
+            let rowImageCount = 0;
+
+            for (const col of cfg.textCols) {
+              if (isBase64Image(row[col])) {
+                try {
+                  const url = await uploadAndSign(admin, targetUserId, cfg.table, row.id, row[col], uploadCache);
+                  if (url) { update[col] = url; rowImageCount++; }
+                } catch (e) {
+                  tStats.errors.push(`${cfg.table}#${row.id}.${col}: ${(e as Error).message}`);
+                }
+              }
+            }
+
+            for (const col of cfg.jsonbCols) {
+              if (row[col] == null) continue;
+              const { parsed, wasString } = normalizeJsonbColumn(row[col]);
+              const clone = JSON.parse(JSON.stringify(parsed));
+              let mutated = false;
+              await walkJson(clone, async (val, set) => {
+                if (!BASE64_RE.test(val)) return;
+                try {
+                  const url = await uploadAndSign(admin, targetUserId, cfg.table, row.id, val, uploadCache);
+                  if (url) { set(url); mutated = true; rowImageCount++; }
+                } catch (e) {
+                  tStats.errors.push(`${cfg.table}#${row.id}.${col}: ${(e as Error).message}`);
+                }
+              });
+              if (mutated) update[col] = wasString ? JSON.stringify(clone) : clone;
+            }
+
+            if (Object.keys(update).length > 0) {
+              const { error: upErr } = await admin
+                .from(cfg.table)
+                .update(update)
+                .eq("id", row.id)
+                .eq("user_id", targetUserId);
+              if (upErr) {
+                tStats.errors.push(`${cfg.table}#${row.id} update: ${upErr.message}`);
+              } else {
+                tStats.rowsMigrated++;
+                tStats.imagesMigrated += rowImageCount;
+                log(`migrated ${cfg.table}#${row.id} (${rowImageCount} images)`);
+              }
+              processedTotal++;
+              if (maxRows > 0 && processedTotal >= maxRows) { exhausted = true; break; }
+            }
+          }
+
+          if (exhausted) break;
+          if (rows.length < batchSize) break;
+          from += batchSize;
+        }
       }
-
-
-      stats.push(tStats);
     }
 
     const summary = {
       dryRun,
-      userId: targetUserId,
+      userIds: targetUserIds,
       batchSize,
       tables: stats,
       totals: stats.reduce(
