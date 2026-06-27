@@ -187,10 +187,8 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
 
     const authHeader = req.headers.get("Authorization") ?? "";
-    const adminHeader = req.headers.get("x-admin-token") ?? "";
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun: boolean = body.dryRun !== false; // default DRY RUN
