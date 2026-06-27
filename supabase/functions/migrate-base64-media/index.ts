@@ -189,35 +189,47 @@ Deno.serve(async (req) => {
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun: boolean = body.dryRun !== false; // default DRY RUN
     const batchSize: number = Math.min(Math.max(Number(body.batchSize) || 25, 1), 100);
 
-    const userClient = createClient(SUPABASE_URL, ANON, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const callerId: string = userData.user.id;
-
-    // Users can only migrate their own data. No admin bypass.
-    const targetUserId: string = callerId;
-    if (body.userId && body.userId !== callerId) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
       auth: { persistSession: false },
     });
+
+    // Final-cleanup admin path: invoked once via service-role bearer to sweep
+    // every remaining row across all users, then this function is deleted.
+    const isAdmin = token && token === SERVICE_ROLE;
+    let targetUserIds: string[] = [];
+
+    if (isAdmin) {
+      const { data: ups, error: upsErr } = await admin
+        .from("profiles")
+        .select("id");
+      if (upsErr) throw upsErr;
+      targetUserIds = (ups ?? []).map((u: any) => u.id);
+    } else {
+      const userClient = createClient(SUPABASE_URL, ANON, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !userData.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const callerId: string = userData.user.id;
+      if (body.userId && body.userId !== callerId) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      targetUserIds = [callerId];
+    }
 
 
     const stats: MigrationStats[] = [];
