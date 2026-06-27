@@ -104,7 +104,7 @@ const TRADE_LITE_COLUMNS = [
 const DAILY_PLAN_LIST_COLUMNS = [
   'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit',
   'took_trades','reviewed','analysis_video_url','review_video','pair_count',
-  'pairs','created_at',
+  'pairs','schema_version','created_at',
 ].join(',');
 
 

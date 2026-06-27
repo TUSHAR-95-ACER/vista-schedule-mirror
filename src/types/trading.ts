@@ -283,7 +283,14 @@ export interface DailyPairPlan {
   marketSentiment?: number;
   /** Predicted market condition for the day (used by analytics). */
   marketCondition?: DailyPairMarketCondition;
+  /** Market location (Premium / Discount / EQ) per timeframe — schemaVersion >= 2 only. */
+  marketLocationDaily?: MarketLocation;
+  marketLocation4H?: MarketLocation;
+  marketLocation1H?: MarketLocation;
 }
+
+export type MarketLocation = 'Premium' | 'Discount' | 'EQ';
+export const MARKET_LOCATIONS: MarketLocation[] = ['Premium', 'Discount', 'EQ'];
 
 export interface DailyPlan {
   id: string;
@@ -304,6 +311,8 @@ export interface DailyPlan {
   notesJournal?: RichJournalDoc;
   analysisVideoPath?: string;
   reviewVideo?: DailyReviewVideo | null;
+  /** Schema version. >=2 enables Daily/4H reference charts and Market Location selector. Absent/1 = legacy plan. */
+  schemaVersion?: number;
 }
 
 export interface DailyReviewVideo {

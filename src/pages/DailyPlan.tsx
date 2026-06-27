@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft, Video } from 'lucide-react';
 import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
 
-import { DailyPlan, DailyPairPlan, ALL_ASSETS } from '@/types/trading';
+import { DailyPlan, DailyPairPlan, ALL_ASSETS, MARKET_LOCATIONS, MarketLocation } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
 import { RichJournalBlock } from '@/components/shared/RichJournalBlock';
@@ -112,6 +112,9 @@ export default function DailyPlanPage() {
       newsItems: [],
       analysisVideoUrl: '',
       note: '',
+      // v2: enables Daily/4H reference charts + Market Location selector.
+      // Legacy plans (no schemaVersion) keep their original layout untouched.
+      schemaVersion: 2,
     };
     addDailyPlan(plan);
     setActiveId(plan.id);
@@ -394,6 +397,46 @@ export default function DailyPlanPage() {
             )}
           </div>
 
+          {/* MARKET LOCATION — v2+ only. Hidden on legacy plans to preserve them as-is. */}
+          {(localPlan.schemaVersion ?? 1) >= 2 && (
+            <SectionCard title="Market Location" icon={<Crosshair className="h-3.5 w-3.5" />} accent="warning" badge="HTF Context">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {([
+                  { key: 'marketLocationDaily', label: 'Daily' },
+                  { key: 'marketLocation4H', label: '4H' },
+                  { key: 'marketLocation1H', label: '1H' },
+                ] as const).map(({ key, label }) => {
+                  const current = pp[key] as MarketLocation | undefined;
+                  return (
+                    <div key={key} className="space-y-1.5">
+                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</Label>
+                      <div className="inline-flex w-full rounded-lg border border-border/50 bg-muted/30 p-0.5">
+                        {MARKET_LOCATIONS.map(opt => {
+                          const active = current === opt;
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
+                              className={cn(
+                                'flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                                active
+                                  ? 'bg-primary/15 text-primary shadow-sm'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              )}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionCard>
+          )}
+
           {/* Predicted Bias | Actual Bias | Market Sentiment */}
           <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -461,7 +504,9 @@ export default function DailyPlanPage() {
                 placeholder="Expected price movement, key reasoning…"
                 className="border-0 shadow-none p-0 bg-transparent"
               />
-              <UnifiedMediaBox value={pp.dailyViewImage} onChange={v => updatePair(pp.id, { dailyViewImage: v })} label="Daily View" maxPreviewHeight="336px" />
+              {(localPlan.schemaVersion ?? 1) >= 2 && (
+                <UnifiedMediaBox value={pp.dailyViewImage} onChange={v => updatePair(pp.id, { dailyViewImage: v })} label="Daily View" maxPreviewHeight="336px" />
+              )}
             </SectionCard>
 
             <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
@@ -475,7 +520,9 @@ export default function DailyPlanPage() {
                   className="font-journal"
                 />
               </div>
-              <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
+              {(localPlan.schemaVersion ?? 1) >= 2 && (
+                <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
+              )}
             </SectionCard>
           </div>
         </div>
