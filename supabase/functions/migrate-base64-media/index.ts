@@ -23,7 +23,7 @@ const corsHeaders = {
 };
 
 const BUCKET = "journal-media";
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 years
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
 
 const BASE64_RE = /^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/;
 
@@ -187,36 +187,28 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
 
     const authHeader = req.headers.get("Authorization") ?? "";
-    const adminHeader = req.headers.get("x-admin-token") ?? "";
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const dryRun: boolean = body.dryRun !== false; // default DRY RUN
     const batchSize: number = Math.min(Math.max(Number(body.batchSize) || 25, 1), 100);
 
-    let callerId: string | null = null;
-
-    // Service-mode: requires LOVABLE_API_KEY match AND explicit userId.
-    if (LOVABLE_KEY && adminHeader && adminHeader === LOVABLE_KEY && body.userId) {
-      callerId = String(body.userId);
-    } else {
-      const userClient = createClient(SUPABASE_URL, ANON, {
-        global: { headers: { Authorization: authHeader } },
+    const userClient = createClient(SUPABASE_URL, ANON, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      const { data: userData, error: userErr } = await userClient.auth.getUser();
-      if (userErr || !userData.user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      callerId = userData.user.id;
     }
+    const callerId: string = userData.user.id;
 
-    const targetUserId: string = body.userId || callerId!;
-    if (targetUserId !== callerId) {
+    // Users can only migrate their own data. No admin bypass.
+    const targetUserId: string = callerId;
+    if (body.userId && body.userId !== callerId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
