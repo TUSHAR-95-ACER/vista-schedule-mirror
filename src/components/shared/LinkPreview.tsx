@@ -23,6 +23,70 @@ export function LinkPreview({ metadata, loading, onRemove, compact }: LinkPrevie
 
   const { type, url, domain, title, description, image, youtubeId } = metadata;
 
+  // ── Provider-specific embeds (check by host) ─────────────────────────
+  let host = '';
+  try { host = new URL(url).hostname.toLowerCase().replace(/^www\./, ''); } catch { /* ignore */ }
+
+  // YouTube — extract a valid 11-char ID, never trust youtubeId blindly.
+  const isYouTubeHost = host === 'youtube.com' || host.endsWith('.youtube.com') || host === 'youtu.be';
+  if (isYouTubeHost) {
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/);
+    const ytId = ytMatch?.[1] || (youtubeId && /^[a-zA-Z0-9_-]{11}$/.test(youtubeId) ? youtubeId : null);
+    if (ytId) {
+      return (
+        <div className="relative group rounded-xl overflow-hidden border border-border/50">
+          <div className="aspect-video">
+            <iframe
+              src={`https://www.youtube.com/embed/${ytId}`}
+              className="w-full h-full"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </div>
+          {onRemove && <RemoveButton onRemove={onRemove} />}
+        </div>
+      );
+    }
+  }
+
+  // Twitter / X — embed via publish.twitter.com (no script needed for blockquote, but we use iframe widget).
+  const isTwitterHost = host === 'twitter.com' || host === 'x.com' || host.endsWith('.twitter.com') || host.endsWith('.x.com');
+  const tweetMatch = isTwitterHost ? url.match(/^https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[A-Za-z0-9_]+\/status\/(\d+)/) : null;
+  if (tweetMatch) {
+    const tweetId = tweetMatch[1];
+    return (
+      <div className="relative group rounded-xl overflow-hidden border border-border/50 bg-card">
+        <iframe
+          src={`https://platform.twitter.com/embed/Tweet.html?id=${tweetId}&theme=dark`}
+          className="w-full"
+          style={{ height: 520, border: 0 }}
+          allow="clipboard-write"
+          title="X post"
+        />
+        {onRemove && <RemoveButton onRemove={onRemove} />}
+      </div>
+    );
+  }
+
+  // Truth Social — extract status id, embed via official /embed route.
+  const isTruthHost = host === 'truthsocial.com' || host.endsWith('.truthsocial.com');
+  const truthMatch = isTruthHost ? url.match(/^https?:\/\/(?:www\.)?truthsocial\.com\/@[A-Za-z0-9_.-]+\/(?:posts\/)?(\d+)/) : null;
+  if (truthMatch) {
+    const postId = truthMatch[1];
+    return (
+      <div className="relative group rounded-xl overflow-hidden border border-border/50 bg-card">
+        <iframe
+          src={`https://truthsocial.com/embed/${postId}`}
+          className="w-full"
+          style={{ height: 560, border: 0 }}
+          title="Truth Social post"
+          sandbox="allow-scripts allow-popups allow-same-origin allow-popups-to-escape-sandbox"
+        />
+        {onRemove && <RemoveButton onRemove={onRemove} />}
+      </div>
+    );
+  }
+
   // Image preview
   if (type === 'image') {
     return (
@@ -33,8 +97,8 @@ export function LinkPreview({ metadata, loading, onRemove, compact }: LinkPrevie
     );
   }
 
-  // Video / YouTube preview
-  if (type === 'video' && youtubeId) {
+  // Generic video / YouTube preview (legacy fallback via metadata.youtubeId)
+  if (type === 'video' && youtubeId && /^[a-zA-Z0-9_-]{11}$/.test(youtubeId)) {
     return (
       <div className="relative group rounded-xl overflow-hidden border border-border/50">
         <div className="aspect-video">
