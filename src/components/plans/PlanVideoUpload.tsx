@@ -40,8 +40,12 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
   const handleDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setDragging(false); }, []);
 
   const isBlob = value?.startsWith('blob:');
-  const isYouTube = value?.includes('youtu');
-  const youtubeEmbed = isYouTube ? value?.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/') : '';
+  const getYouTubeId = (url: string): string | null => {
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
+  };
+  const ytId = value ? getYouTubeId(value) : null;
+  const youtubeEmbed = ytId ? `https://www.youtube.com/embed/${ytId}` : '';
 
   return (
     <div className="space-y-2">
@@ -50,7 +54,7 @@ export function PlanVideoUpload({ value, onChange, label }: PlanVideoUploadProps
         <div className="relative group rounded-xl overflow-hidden border border-border/50">
           {isBlob ? (
             <video src={value} controls className="w-full max-h-[360px] rounded-xl bg-black" />
-          ) : isYouTube ? (
+          ) : ytId ? (
             <iframe src={youtubeEmbed} className="w-full aspect-video rounded-xl" allowFullScreen />
           ) : (
             <video src={value} controls className="w-full max-h-[360px] rounded-xl bg-black" />
