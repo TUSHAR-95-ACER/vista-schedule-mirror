@@ -66,7 +66,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedRoute><MacroNewsProvider><AppLayout /></MacroNewsProvider></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Suspense fallback={<RouteFallback />}><Dashboard /></Suspense>} />
               <Route path="/trades" element={<Suspense fallback={<RouteFallback />}><Trades /></Suspense>} />
               <Route path="/accounts" element={<Suspense fallback={<RouteFallback />}><Accounts /></Suspense>} />
