@@ -63,11 +63,13 @@ export function MarketTicker() {
               const cached = prev.find(p => p.symbol === fresh.symbol);
               return cached && cached.price > 0 ? cached : fresh;
             });
-            try { localStorage.setItem(CACHE_KEY, JSON.stringify(next)); } catch {}
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(next));
+              localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+            } catch {}
             return next;
           });
           setError(false);
-        }
       } catch (e) {
         if (!cancelled) {
           console.error('Ticker fetch error:', e);
