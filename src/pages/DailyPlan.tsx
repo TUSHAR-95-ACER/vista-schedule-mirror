@@ -520,7 +520,9 @@ export default function DailyPlanPage() {
                   className="font-journal"
                 />
               </div>
-              <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
+              {(localPlan.schemaVersion ?? 1) >= 2 && (
+                <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
+              )}
             </SectionCard>
           </div>
         </div>
