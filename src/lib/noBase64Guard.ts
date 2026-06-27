@@ -33,8 +33,11 @@ function walk(node: unknown, path: string, hits: string[], strip: boolean): unkn
     if (node.length > 32 && (node[0] === '[' || node[0] === '{')) {
       try {
         const parsed = JSON.parse(node);
+        const before = hits.length;
         const cleaned = walk(parsed, path, hits, strip);
-        return strip && hits.length ? JSON.stringify(cleaned) : node;
+        if (hits.length > before) {
+          return strip ? JSON.stringify(cleaned) : node;
+        }
       } catch { /* not JSON, leave as-is */ }
     }
     return node;
