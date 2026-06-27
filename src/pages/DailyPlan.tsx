@@ -397,6 +397,46 @@ export default function DailyPlanPage() {
             )}
           </div>
 
+          {/* MARKET LOCATION — v2+ only. Hidden on legacy plans to preserve them as-is. */}
+          {(localPlan.schemaVersion ?? 1) >= 2 && (
+            <SectionCard title="Market Location" icon={<Crosshair className="h-3.5 w-3.5" />} accent="warning" badge="HTF Context">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {([
+                  { key: 'marketLocationDaily', label: 'Daily' },
+                  { key: 'marketLocation4H', label: '4H' },
+                  { key: 'marketLocation1H', label: '1H' },
+                ] as const).map(({ key, label }) => {
+                  const current = pp[key] as MarketLocation | undefined;
+                  return (
+                    <div key={key} className="space-y-1.5">
+                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</Label>
+                      <div className="inline-flex w-full rounded-lg border border-border/50 bg-muted/30 p-0.5">
+                        {MARKET_LOCATIONS.map(opt => {
+                          const active = current === opt;
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
+                              className={cn(
+                                'flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                                active
+                                  ? 'bg-primary/15 text-primary shadow-sm'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              )}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionCard>
+          )}
+
           {/* Predicted Bias | Actual Bias | Market Sentiment */}
           <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
