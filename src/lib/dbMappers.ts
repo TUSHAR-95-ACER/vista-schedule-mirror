@@ -1,8 +1,9 @@
 import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
+import { assertNoBase64 } from '@/lib/noBase64Guard';
 
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
-  return {
+  return assertNoBase64({
     id: t.id, user_id: userId, date: t.date, entry_time: t.entryTime || null,
     exit_time: t.exitTime || null, market: t.market, asset: t.asset,
     direction: t.direction, session: t.session, market_condition: t.marketCondition,
@@ -28,7 +29,7 @@ export function tradeToDb(t: Trade, userId: string) {
     trade_analysis: (t as any).tradeAnalysis ? JSON.stringify((t as any).tradeAnalysis) : null,
     market_sentiment: (t as any).marketSentiment ?? null,
     status: (t as any).status || 'Complete',
-  };
+  }, 'tradeToDb');
 }
 
 export function dbToTrade(row: any): Trade {
@@ -126,7 +127,7 @@ export function dbToScale(row: any): ScaleEvent {
 
 // WeeklyPlan
 export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
-  return {
+  return assertNoBase64({
     id: p.id, user_id: userId, week_start: p.weekStart, bias: p.bias,
     markets: JSON.stringify(p.markets), setups: JSON.stringify(p.setups),
     levels: p.levels, risk: p.risk, goals: p.goals,
@@ -136,7 +137,7 @@ export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
     reviewed: p.reviewed || false,
     observation: (p as any).observation ? JSON.stringify((p as any).observation) : null,
     calendar_result: (p as any).calendarResult ? JSON.stringify((p as any).calendarResult) : null,
-  };
+  }, 'weeklyPlanToDb');
 }
 export function dbToWeeklyPlan(row: any): WeeklyPlan {
   // In list-view fetches, `pair_analyses` is intentionally omitted to keep the
@@ -168,7 +169,7 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
 
 // DailyPlan
 export function dailyPlanToDb(p: DailyPlan, userId: string) {
-  return {
+  return assertNoBase64({
     id: p.id, user_id: userId, date: p.date, daily_bias: p.dailyBias,
     session_focus: p.sessionFocus, max_trades: p.maxTrades, risk_limit: p.riskLimit,
     pairs: JSON.stringify(p.pairs),
@@ -180,7 +181,7 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
     day_summary: (p as any).daySummary ? JSON.stringify((p as any).daySummary) : null,
     notes_journal: (p as any).notesJournal ? JSON.stringify((p as any).notesJournal) : null,
     review_video: p.reviewVideo ? JSON.stringify(p.reviewVideo) : null,
-  };
+  }, 'dailyPlanToDb');
 }
 
 export function dbToDailyPlan(row: any): DailyPlan {

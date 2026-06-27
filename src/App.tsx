@@ -8,7 +8,7 @@ import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Login from "./pages/Login";
-import { MacroNewsProvider } from "./contexts/MacroNewsContext";
+
 
 // PERFORMANCE: Route-level code splitting. Each page only downloads when navigated to,
 // shrinking the initial bundle from ~all-pages to just shell + Login + Dashboard route.
@@ -66,7 +66,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<ProtectedRoute><MacroNewsProvider><AppLayout /></MacroNewsProvider></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Suspense fallback={<RouteFallback />}><Dashboard /></Suspense>} />
               <Route path="/trades" element={<Suspense fallback={<RouteFallback />}><Trades /></Suspense>} />
               <Route path="/accounts" element={<Suspense fallback={<RouteFallback />}><Accounts /></Suspense>} />

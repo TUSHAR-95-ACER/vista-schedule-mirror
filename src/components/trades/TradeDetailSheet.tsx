@@ -8,7 +8,7 @@ import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, T
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
 import { useTrading } from '@/contexts/TradingContext';
-import { useMacroNewsContext } from '@/contexts/MacroNewsContext';
+
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 
@@ -66,7 +66,6 @@ function DataRow({ label, value, mono, highlight }: { label: string; value: Reac
 export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { updateTrade, dailyPlans, hydrateTradeMedia } = useTrading();
-  const { calendarEvents, news } = useMacroNewsContext();
 
   // Hydrate full media (base64 images) for the opened trade. The list view ships
   // a "lite" trade without images for fast load; we fill them in once the sheet opens.
@@ -94,28 +93,6 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
     return imgs;
   }, [dailyPlan]);
 
-  const tradeDateEvents = useMemo(() => {
-    if (!trade) return [];
-    return calendarEvents.filter(e => {
-      const eventDate = e.date?.split('T')[0] || '';
-      return eventDate === trade.date;
-    });
-  }, [trade, calendarEvents]);
-
-  const topEvents = tradeDateEvents.slice(0, 3);
-
-  const eventBiases = useMemo(() => {
-    return topEvents.map(e => ({ ...e, bias: getEventImpactBias(e) }));
-  }, [topEvents]);
-
-  const netBias = useMemo(() => {
-    const biases = eventBiases.map(e => e.bias);
-    const bullish = biases.filter(b => b.startsWith('bullish')).length;
-    const bearish = biases.filter(b => b.startsWith('bearish')).length;
-    if (bullish > bearish) return 'bullish_USD';
-    if (bearish > bullish) return 'bearish_USD';
-    return 'neutral';
-  }, [eventBiases]);
 
   if (!trade) return null;
 
@@ -343,57 +320,8 @@ export function TradeDetailSheet({ trade: tradeProp, onClose }: Props) {
                 </InfoCard>
               )}
 
-              {/* Event Impact */}
-              {topEvents.length > 0 && (
-                <InfoCard icon={Activity} title="Event Impact Analysis">
-                  <div className="space-y-2">
-                    {eventBiases.map(event => {
-                      const biasInfo = getBiasLabel(event.bias);
-                      const BiasIcon = biasInfo.icon;
-                      const hasActual = event.actual && event.actual !== 'N/A';
-                      return (
-                        <div key={event.id} className="bg-muted/20 border border-border/40 rounded-lg p-2.5">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <Badge variant="outline" className="text-[8px] font-mono h-4 bg-destructive/10 text-destructive border-destructive/30">{event.currency}</Badge>
-                                <span className="text-[10px] font-semibold">{event.title}</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-[10px]">
-                                <span className="text-muted-foreground">Prev: <span className="font-mono font-medium text-foreground">{event.previous}</span></span>
-                                <span className="text-muted-foreground">Fcst: <span className="font-mono font-medium text-foreground">{event.forecast}</span></span>
-                                {hasActual && <span className="text-primary font-semibold">Act: <span className="font-mono font-bold">{event.actual}</span></span>}
-                              </div>
-                            </div>
-                            {hasActual && (
-                              <div className={cn("flex items-center gap-1 text-[10px] font-bold shrink-0", biasInfo.color)}>
-                                <BiasIcon className="h-3 w-3" />
-                                {biasInfo.text}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {eventBiases.some(e => e.actual && e.actual !== 'N/A') && (
-                    <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2">
-                      {(() => {
-                        const nb = getBiasLabel(netBias);
-                        const NbIcon = nb.icon;
-                        return (
-                          <>
-                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">Net Impact:</span>
-                            <div className={cn("flex items-center gap-1 text-xs font-bold", nb.color)}>
-                              <NbIcon className="h-3.5 w-3.5" /> {nb.text}
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </InfoCard>
-              )}
+              {/* Event Impact section removed — News & Events is fully manual via Daily Plan. */}
+
 
               {/* Technical Points */}
               {((trade.entryConfluences && trade.entryConfluences.length > 0) || (trade.targetConfluences && trade.targetConfluences.length > 0) || trade.confluences.length > 0) && (
