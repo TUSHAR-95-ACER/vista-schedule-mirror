@@ -196,27 +196,21 @@ Deno.serve(async (req) => {
     const dryRun: boolean = body.dryRun !== false; // default DRY RUN
     const batchSize: number = Math.min(Math.max(Number(body.batchSize) || 25, 1), 100);
 
-    let callerId: string | null = null;
-
-    // Service-mode: requires LOVABLE_API_KEY match AND explicit userId.
-    if (LOVABLE_KEY && adminHeader && adminHeader === LOVABLE_KEY && body.userId) {
-      callerId = String(body.userId);
-    } else {
-      const userClient = createClient(SUPABASE_URL, ANON, {
-        global: { headers: { Authorization: authHeader } },
+    const userClient = createClient(SUPABASE_URL, ANON, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
-      const { data: userData, error: userErr } = await userClient.auth.getUser();
-      if (userErr || !userData.user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      callerId = userData.user.id;
     }
+    const callerId: string = userData.user.id;
 
-    const targetUserId: string = body.userId || callerId!;
-    if (targetUserId !== callerId) {
+    // Users can only migrate their own data. No admin bypass.
+    const targetUserId: string = callerId;
+    if (body.userId && body.userId !== callerId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
