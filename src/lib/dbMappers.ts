@@ -169,7 +169,7 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
 
 // DailyPlan
 export function dailyPlanToDb(p: DailyPlan, userId: string) {
-  return {
+  return assertNoBase64({
     id: p.id, user_id: userId, date: p.date, daily_bias: p.dailyBias,
     session_focus: p.sessionFocus, max_trades: p.maxTrades, risk_limit: p.riskLimit,
     pairs: JSON.stringify(p.pairs),
@@ -181,7 +181,7 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
     day_summary: (p as any).daySummary ? JSON.stringify((p as any).daySummary) : null,
     notes_journal: (p as any).notesJournal ? JSON.stringify((p as any).notesJournal) : null,
     review_video: p.reviewVideo ? JSON.stringify(p.reviewVideo) : null,
-  };
+  }, 'dailyPlanToDb');
 }
 
 export function dbToDailyPlan(row: any): DailyPlan {
