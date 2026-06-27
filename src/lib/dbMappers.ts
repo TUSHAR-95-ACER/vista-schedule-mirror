@@ -127,7 +127,7 @@ export function dbToScale(row: any): ScaleEvent {
 
 // WeeklyPlan
 export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
-  return {
+  return assertNoBase64({
     id: p.id, user_id: userId, week_start: p.weekStart, bias: p.bias,
     markets: JSON.stringify(p.markets), setups: JSON.stringify(p.setups),
     levels: p.levels, risk: p.risk, goals: p.goals,
@@ -137,7 +137,7 @@ export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
     reviewed: p.reviewed || false,
     observation: (p as any).observation ? JSON.stringify((p as any).observation) : null,
     calendar_result: (p as any).calendarResult ? JSON.stringify((p as any).calendarResult) : null,
-  };
+  }, 'weeklyPlanToDb');
 }
 export function dbToWeeklyPlan(row: any): WeeklyPlan {
   // In list-view fetches, `pair_analyses` is intentionally omitted to keep the
