@@ -269,10 +269,14 @@ export interface DailyPairPlan {
   reasons: PairReason[];
   keyLevels: string;
   chartImage?: string;
+  /** Additional Daily timeframe chart shown under Prediction Notes. */
+  dailyViewImage?: string;
   narrative?: string;
   /** Notion-style prediction analysis block */
   analysisJournal?: RichJournalDoc;
   resultChartImage?: string;
+  /** Additional 4H timeframe chart shown under Result Notes. */
+  fourHViewImage?: string;
   resultNarrative?: string;
   note?: string;
   /** Crowd sentiment slider: long % 0-100 (short % = 100 - this). */
