@@ -72,18 +72,18 @@ function num(n: any, d = 2): string {
   return typeof n === 'number' && isFinite(n) ? n.toFixed(d) : '—';
 }
 
-function topBy<T extends AnyRec>(arr: T[] | undefined, key: keyof T, min = 3): T | null {
+function topBy(arr: any, key: string, min = 3): AnyRec | null {
   if (!Array.isArray(arr) || !arr.length) return null;
-  const filtered = arr.filter((x) => (x.trades ?? x.count ?? 0) >= min);
+  const filtered = arr.filter((x: AnyRec) => (x.trades ?? x.count ?? 0) >= min);
   const pool = filtered.length ? filtered : arr;
-  return [...pool].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0))[0] || null;
+  return [...pool].sort((a: AnyRec, b: AnyRec) => (Number(b[key]) || 0) - (Number(a[key]) || 0))[0] || null;
 }
 
-function bottomBy<T extends AnyRec>(arr: T[] | undefined, key: keyof T, min = 3): T | null {
+function bottomBy(arr: any, key: string, min = 3): AnyRec | null {
   if (!Array.isArray(arr) || !arr.length) return null;
-  const filtered = arr.filter((x) => (x.trades ?? x.count ?? 0) >= min);
+  const filtered = arr.filter((x: AnyRec) => (x.trades ?? x.count ?? 0) >= min);
   const pool = filtered.length ? filtered : arr;
-  return [...pool].sort((a, b) => (Number(a[key]) || 0) - (Number(b[key]) || 0))[0] || null;
+  return [...pool].sort((a: AnyRec, b: AnyRec) => (Number(a[key]) || 0) - (Number(b[key]) || 0))[0] || null;
 }
 
 export function deriveInsights(page: string, payload: AnyRec): string[] {
