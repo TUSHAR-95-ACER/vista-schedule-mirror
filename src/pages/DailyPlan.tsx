@@ -112,6 +112,9 @@ export default function DailyPlanPage() {
       newsItems: [],
       analysisVideoUrl: '',
       note: '',
+      // v2: enables Daily/4H reference charts + Market Location selector.
+      // Legacy plans (no schemaVersion) keep their original layout untouched.
+      schemaVersion: 2,
     };
     addDailyPlan(plan);
     setActiveId(plan.id);
