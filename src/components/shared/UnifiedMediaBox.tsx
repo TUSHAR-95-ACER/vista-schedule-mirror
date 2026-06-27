@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadJournalMedia } from '@/lib/journalUpload';
+import { toast } from '@/hooks/use-toast';
 import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
 
 export interface MediaItem {
@@ -110,23 +112,24 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const readFileAsDataUrl = (file: File): Promise<string> =>
-    new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
+  const [uploading, setUploading] = useState(false);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const file = files instanceof FileList ? files[0] : files[0];
     if (!file) return;
 
-    if (file.type.startsWith('image/') && accept.includes('image')) {
-      const dataUrl = await readFileAsDataUrl(file);
-      onChange(dataUrl);
-    } else if (file.type.startsWith('video/') && accept.includes('video')) {
-      const url = URL.createObjectURL(file);
-      onChange(url);
+    const isImage = file.type.startsWith('image/') && accept.includes('image');
+    const isVideo = file.type.startsWith('video/') && accept.includes('video');
+    if (!isImage && !isVideo) return;
+
+    setUploading(true);
+    try {
+      const m = await uploadJournalMedia(file, isVideo ? 'unified/video' : 'unified/image');
+      onChange(m.url);
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Could not upload file', variant: 'destructive' });
+    } finally {
+      setUploading(false);
     }
   }, [accept, onChange]);
 
