@@ -70,6 +70,7 @@ export function MarketTicker() {
             return next;
           });
           setError(false);
+        }
       } catch (e) {
         if (!cancelled) {
           console.error('Ticker fetch error:', e);
