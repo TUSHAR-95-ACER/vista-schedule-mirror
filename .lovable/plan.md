@@ -21,7 +21,7 @@ These are the 6 verification items you require for "completed".
    - Map to letter grade A+/A/B+/B/C+/C/D and display `★ Setup Score: NN/100`.
 
 4. **Universal AI Insights block at bottom of every page**
-   - Reuse existing `AIInsightsPanel` + `gemini-insights` edge function.
+   - Reuse existing `AIInsightsPanel` (offline stats-based; no edge function).
    - Add to: Dashboard, Trades, Analytics, Research Lab, Macro Intelligence, Behavior, Trade Quality, Weekly Review, Daily Plan, Notebook.
    - On pages that already have one mid-page, move to the bottom.
 
