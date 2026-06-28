@@ -1,25 +1,27 @@
 import { useMemo } from 'react';
 import { Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { generateInsights } from '@/lib/insightEngine';
 
 interface AIInsightsProps {
   page: string;
   payload: Record<string, unknown>;
   title?: string;
   className?: string;
-  /** Optional pre-computed insights. If provided, used as-is (already numbered). */
+  /** Optional pre-computed insights. If provided, used as-is. */
   insights?: string[];
 }
 
 /**
- * Stats-based Insight Panel — fully offline, no AI calls, no caching.
- * Derives a short numbered list of actionable insights from the page payload.
- * Replaces the previous Gemini-backed AIInsightsPanel.
+ * Offline Insight Panel — dynamic, ranked, page-aware.
+ * Calls the detector-based engine in src/lib/insightEngine.ts.
+ * No AI calls, no network, no fixed templates — every observation must be evidenced
+ * by data the page already has.
  */
 export function AIInsightsPanel({ page, payload, title = 'Insights', className, insights }: AIInsightsProps) {
   const lines = useMemo(() => {
     if (insights && insights.length) return insights.slice(0, 10);
-    return deriveInsights(page, payload).slice(0, 10);
+    return generateInsights(page, payload as Record<string, any>);
   }, [page, payload, insights]);
 
   return (
@@ -56,6 +58,7 @@ export function AIInsightsPanel({ page, payload, title = 'Insights', className, 
     </section>
   );
 }
+
 
 /* ============================================================
    Insight generator — pure functions over adapter payloads.
