@@ -397,47 +397,7 @@ export default function DailyPlanPage() {
             )}
           </div>
 
-          {/* MARKET LOCATION — v2+ only. Hidden on legacy plans to preserve them as-is. */}
-          {(localPlan.schemaVersion ?? 1) >= 2 && (
-            <SectionCard title="Market Location" icon={<Crosshair className="h-3.5 w-3.5" />} accent="warning" badge="HTF Context">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {([
-                  { key: 'marketLocationDaily', label: 'Daily' },
-                  { key: 'marketLocation4H', label: '4H' },
-                  { key: 'marketLocation1H', label: '1H' },
-                ] as const).map(({ key, label }) => {
-                  const current = pp[key] as MarketLocation | undefined;
-                  return (
-                    <div key={key} className="space-y-1.5">
-                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</Label>
-                      <div className="inline-flex w-full rounded-lg border border-border/50 bg-muted/30 p-0.5">
-                        {MARKET_LOCATIONS.map(opt => {
-                          const active = current === opt;
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
-                              className={cn(
-                                'flex-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                                active
-                                  ? 'bg-primary/15 text-primary shadow-sm'
-                                  : 'text-muted-foreground hover:text-foreground'
-                              )}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          )}
-
-          {/* Predicted Bias | Actual Bias | Market Sentiment */}
+          {/* Predicted Bias | Actual Bias | Market Sentiment + Market Condition (left) & Market Location (right, v2+) */}
           <SectionCard title="Bias Comparison" icon={<TrendingUp className="h-3.5 w-3.5" />}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5">
@@ -462,33 +422,83 @@ export default function DailyPlanPage() {
               )}
             </div>
 
-            {/* Market Condition pills — per pair, feeds analytics */}
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Condition</Label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { val: 'Trending' as const, emoji: '📈', label: 'Trending' },
-                  { val: 'Volatile' as const, emoji: '🌊', label: 'Volatile' },
-                  { val: 'Sideways' as const, emoji: '➡️', label: 'Sideways' },
-                ].map(opt => {
-                  const active = pp.marketCondition === opt.val;
-                  return (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => updatePair(pp.id, { marketCondition: active ? undefined : opt.val })}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
-                        active
-                          ? 'bg-primary/10 border-primary/40 text-primary'
-                          : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
-                      )}
-                    >
-                      <span>{opt.emoji}</span> {opt.label}
-                    </button>
-                  );
-                })}
+            {/* Bottom row: Market Condition (left) + Market Location (right, v2+ only) */}
+            <div className={cn(
+              'grid gap-4 grid-cols-1',
+              (localPlan.schemaVersion ?? 1) >= 2 ? 'lg:grid-cols-[auto,1fr]' : ''
+            )}>
+              {/* Market Condition pills */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Condition</Label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { val: 'Trending' as const, emoji: '📈', label: 'Trending' },
+                    { val: 'Volatile' as const, emoji: '🌊', label: 'Volatile' },
+                    { val: 'Sideways' as const, emoji: '➡️', label: 'Sideways' },
+                  ].map(opt => {
+                    const active = pp.marketCondition === opt.val;
+                    return (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => updatePair(pp.id, { marketCondition: active ? undefined : opt.val })}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
+                          active
+                            ? 'bg-primary/10 border-primary/40 text-primary'
+                            : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
+                        )}
+                      >
+                        <span>{opt.emoji}</span> {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* Market Location (Daily / 4H / 1H) — inline on the same row, v2+ only */}
+              {(localPlan.schemaVersion ?? 1) >= 2 && (
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Crosshair className="h-3 w-3 text-muted-foreground" />
+                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Location</Label>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {([
+                      { key: 'marketLocationDaily', label: 'Daily' },
+                      { key: 'marketLocation4H', label: '4H' },
+                      { key: 'marketLocation1H', label: '1H' },
+                    ] as const).map(({ key, label }) => {
+                      const current = pp[key] as MarketLocation | undefined;
+                      return (
+                        <div key={key} className="flex items-center gap-2 min-w-0">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-9 shrink-0">{label}</span>
+                          <div className="inline-flex flex-1 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+                            {MARKET_LOCATIONS.map(opt => {
+                              const active = current === opt;
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
+                                  className={cn(
+                                    'flex-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all',
+                                    active
+                                      ? 'bg-primary/15 text-primary shadow-sm'
+                                      : 'text-muted-foreground hover:text-foreground'
+                                  )}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </SectionCard>
 
