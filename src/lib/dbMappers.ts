@@ -1,6 +1,22 @@
 import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
 import { assertNoBase64 } from '@/lib/noBase64Guard';
 
+// Marker placed on synthesized list-view placeholder pairs. If a write ever
+// reaches the DB mappers with these still present, autosave is racing
+// hydration and would otherwise destroy the real pair data — refuse instead.
+const PLACEHOLDER = '__placeholder';
+
+function assertNoPlaceholderPairs(arr: any[] | undefined, label: string) {
+  if (!Array.isArray(arr)) return;
+  const hasPlaceholder = arr.some(p => p && (p as any)[PLACEHOLDER] === true);
+  if (hasPlaceholder) {
+    throw new Error(
+      `[${label}] refused to save: pair_analyses/pairs still contain hydration placeholders. ` +
+      `This indicates autosave fired before the full plan finished loading.`
+    );
+  }
+}
+
 // Trade: app <-> DB mapping
 export function tradeToDb(t: Trade, userId: string) {
   return assertNoBase64({
