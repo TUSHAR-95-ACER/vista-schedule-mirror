@@ -186,9 +186,13 @@ export default function WeeklyPlanPage() {
     update({ pairAnalyses: localPlan.pairAnalyses.filter(p => p.id !== id) });
   };
 
+  // Block autosave while the open plan still contains hydration placeholders
+  // (length-only synthesized pair_analyses). Otherwise a race between the
+  // 1.2s debounce and the hydration round-trip could wipe real pair data.
+  const isHydrated = !localPlan || !localPlan.pairAnalyses?.some((p: any) => p && p.__placeholder);
   const { status: saveStatus } = useAutosave<WeeklyPlan | null>({
     value: localPlan,
-    enabled: !!localPlan && !!authUser?.id,
+    enabled: !!localPlan && !!authUser?.id && isHydrated,
     debounceMs: 1200,
     onSave: async (val) => {
       if (!val || !authUser?.id) return;
