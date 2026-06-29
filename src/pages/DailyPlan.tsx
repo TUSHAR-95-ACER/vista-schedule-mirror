@@ -190,9 +190,13 @@ export default function DailyPlanPage() {
   };
 
   // Autosave: persists to backend (debounced) and snapshots to localStorage for crash recovery.
+  // Gated on hydration — if `pairs` still carries length-only placeholders, do
+  // NOT save: a race with the hydration round-trip would otherwise wipe real
+  // pair data on disk.
+  const isHydrated = !localPlan || !localPlan.pairs?.some((p: any) => p && p.__placeholder);
   const { status: saveStatus } = useAutosave<DailyPlan | null>({
     value: localPlan,
-    enabled: !!localPlan && !!authUser?.id,
+    enabled: !!localPlan && !!authUser?.id && isHydrated,
     debounceMs: 1200,
     onSave: async (val) => {
       if (!val || !authUser?.id) return;

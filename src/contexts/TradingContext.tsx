@@ -388,9 +388,18 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const updateWeeklyPlan = useCallback((plan: WeeklyPlan) => {
+    let row: any;
+    try {
+      row = weeklyPlanToDb(plan, user?.id || '');
+    } catch (err) {
+      // Placeholder/base64 guard tripped — refuse the write entirely so we
+      // never destroy real pair data on disk.
+      console.error('[updateWeeklyPlan] refused to save:', err);
+      return;
+    }
     setWeeklyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     if (user) {
-      const { id, ...rest } = weeklyPlanToDb(plan, user.id);
+      const { id, ...rest } = row;
       db.from('weekly_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
@@ -408,10 +417,17 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const updateDailyPlan = useCallback((plan: DailyPlan) => {
+    let row: any;
+    try {
+      row = dailyPlanToDb(plan, user?.id || '');
+    } catch (err) {
+      console.error('[updateDailyPlan] refused to save:', err);
+      return;
+    }
     setDailyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     dailyPlanMediaCache.current.set(plan.id, plan);
     if (user) {
-      const { id, ...rest } = dailyPlanToDb(plan, user.id);
+      const { id, ...rest } = row;
       db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
     }
   }, [user]);
