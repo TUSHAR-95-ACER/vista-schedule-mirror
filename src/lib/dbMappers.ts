@@ -143,6 +143,7 @@ export function dbToScale(row: any): ScaleEvent {
 
 // WeeklyPlan
 export function weeklyPlanToDb(p: WeeklyPlan, userId: string) {
+  assertNoPlaceholderPairs(p.pairAnalyses as any[], 'weeklyPlanToDb');
   return assertNoBase64({
     id: p.id, user_id: userId, week_start: p.weekStart, bias: p.bias,
     markets: JSON.stringify(p.markets), setups: JSON.stringify(p.setups),
@@ -159,11 +160,13 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
   // In list-view fetches, `pair_analyses` is intentionally omitted to keep the
   // payload small. We synthesize a length-only placeholder array from the
   // maintained `pair_count` column so `plan.pairAnalyses.length` keeps working
-  // without exposing any heavy data. The full array is loaded on plan open.
+  // without exposing any heavy data. Each placeholder carries a __placeholder
+  // marker so weeklyPlanToDb can refuse to save them — preventing a hydration
+  // race from overwriting real pair data with empty objects.
   let pairAnalyses: any[];
   if (row.pair_analyses === undefined) {
     const n = Number(row.pair_count) || 0;
-    pairAnalyses = n > 0 ? new Array(n).fill(null).map(() => ({})) : [];
+    pairAnalyses = n > 0 ? new Array(n).fill(null).map(() => ({ [PLACEHOLDER]: true })) : [];
   } else {
     pairAnalyses = typeof row.pair_analyses === 'string'
       ? JSON.parse(row.pair_analyses)
