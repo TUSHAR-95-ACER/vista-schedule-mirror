@@ -188,6 +188,7 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
 
 // DailyPlan
 export function dailyPlanToDb(p: DailyPlan, userId: string) {
+  assertNoPlaceholderPairs(p.pairs as any[], 'dailyPlanToDb');
   return assertNoBase64({
     id: p.id, user_id: userId, date: p.date, daily_bias: p.dailyBias,
     session_focus: p.sessionFocus, max_trades: p.maxTrades, risk_limit: p.riskLimit,
@@ -206,12 +207,13 @@ export function dailyPlanToDb(p: DailyPlan, userId: string) {
 
 export function dbToDailyPlan(row: any): DailyPlan {
   // List-view fetches omit `pairs` (heavy JSON with inlined chart images).
-  // Synthesize a length-only placeholder from `pair_count` so list cards keep
-  // working; the full array is loaded on demand via hydrateDailyPlanMedia.
+  // Synthesize a length-only placeholder from `pair_count` with a __placeholder
+  // marker so dailyPlanToDb refuses to persist them — preventing hydration
+  // races from overwriting real pair data with empty objects.
   let pairs: any[];
   if (row.pairs === undefined) {
     const n = Number(row.pair_count) || 0;
-    pairs = n > 0 ? new Array(n).fill(null).map(() => ({})) : [];
+    pairs = n > 0 ? new Array(n).fill(null).map(() => ({ [PLACEHOLDER]: true })) : [];
   } else {
     pairs = typeof row.pairs === 'string' ? JSON.parse(row.pairs) : (row.pairs || []);
   }
