@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_plan_history: {
+        Row: {
+          created_at: string
+          id: string
+          plan_id: string
+          schema_version: number | null
+          snapshot: Json
+          source_updated_at: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_id: string
+          schema_version?: number | null
+          snapshot: Json
+          source_updated_at?: string | null
+          user_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_id?: string
+          schema_version?: number | null
+          snapshot?: Json
+          source_updated_at?: string | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       daily_plans: {
         Row: {
           analysis_video_url: string | null
@@ -62,10 +95,12 @@ export type Database = {
           result_narrative: string | null
           review_video: Json | null
           reviewed: boolean | null
+          revision: number
           risk_limit: string | null
           schema_version: number | null
           session_focus: string
           took_trades: boolean | null
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -85,10 +120,12 @@ export type Database = {
           result_narrative?: string | null
           review_video?: Json | null
           reviewed?: boolean | null
+          revision?: number
           risk_limit?: string | null
           schema_version?: number | null
           session_focus?: string
           took_trades?: boolean | null
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -108,10 +145,12 @@ export type Database = {
           result_narrative?: string | null
           review_video?: Json | null
           reviewed?: boolean | null
+          revision?: number
           risk_limit?: string | null
           schema_version?: number | null
           session_focus?: string
           took_trades?: boolean | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -401,6 +440,48 @@ export type Database = {
           updated_at?: string
           usd_outlook?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      plan_audit_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          operation: string
+          payload_hash: string | null
+          payload_size: number | null
+          plan_id: string | null
+          plan_type: string
+          revision: number | null
+          success: boolean
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          operation: string
+          payload_hash?: string | null
+          payload_size?: number | null
+          plan_id?: string | null
+          plan_type: string
+          revision?: number | null
+          success: boolean
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          operation?: string
+          payload_hash?: string | null
+          payload_size?: number | null
+          plan_id?: string | null
+          plan_type?: string
+          revision?: number | null
+          success?: boolean
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -785,6 +866,39 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_plan_history: {
+        Row: {
+          created_at: string
+          id: string
+          plan_id: string
+          schema_version: number | null
+          snapshot: Json
+          source_updated_at: string | null
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_id: string
+          schema_version?: number | null
+          snapshot: Json
+          source_updated_at?: string | null
+          user_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_id?: string
+          schema_version?: number | null
+          snapshot?: Json
+          source_updated_at?: string | null
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       weekly_plans: {
         Row: {
           analysis_video_url: string | null
@@ -801,8 +915,10 @@ export type Database = {
           pair_analyses: Json | null
           pair_count: number
           reviewed: boolean | null
+          revision: number
           risk: string | null
           setups: Json | null
+          updated_at: string
           user_id: string
           week_start: string
         }
@@ -821,8 +937,10 @@ export type Database = {
           pair_analyses?: Json | null
           pair_count?: number
           reviewed?: boolean | null
+          revision?: number
           risk?: string | null
           setups?: Json | null
+          updated_at?: string
           user_id: string
           week_start: string
         }
@@ -841,8 +959,10 @@ export type Database = {
           pair_analyses?: Json | null
           pair_count?: number
           reviewed?: boolean | null
+          revision?: number
           risk?: string | null
           setups?: Json | null
+          updated_at?: string
           user_id?: string
           week_start?: string
         }
@@ -853,7 +973,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      _safe_jsonb_array_length: { Args: { v: Json }; Returns: number }
+      save_daily_plan: {
+        Args: { p_expected_revision?: number; p_id: string; p_payload: Json }
+        Returns: Json
+      }
+      save_weekly_plan: {
+        Args: { p_expected_revision?: number; p_id: string; p_payload: Json }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
