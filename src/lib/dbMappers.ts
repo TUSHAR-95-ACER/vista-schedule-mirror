@@ -1,5 +1,6 @@
 import { Trade, TradingAccount, Transaction, ScaleEvent, WeeklyPlan, DailyPlan, TradeJourneyStep } from '@/types/trading';
 import { assertNoBase64 } from '@/lib/noBase64Guard';
+import { supabase } from '@/integrations/supabase/client';
 
 // Marker placed on synthesized list-view placeholder pairs. If a write ever
 // reaches the DB mappers with these still present, autosave is racing
@@ -183,6 +184,8 @@ export function dbToWeeklyPlan(row: any): WeeklyPlan {
     reviewed: row.reviewed || false,
     observation: row.observation ? (typeof row.observation === 'string' ? JSON.parse(row.observation) : row.observation) : undefined,
     calendarResult: row.calendar_result ? (typeof row.calendar_result === 'string' ? JSON.parse(row.calendar_result) : row.calendar_result) : undefined,
+    revision: row.revision != null ? Number(row.revision) : undefined,
+    updatedAt: row.updated_at || undefined,
   } as WeeklyPlan;
 }
 
@@ -230,6 +233,107 @@ export function dbToDailyPlan(row: any): DailyPlan {
     notesJournal: row.notes_journal ? (typeof row.notes_journal === 'string' ? JSON.parse(row.notes_journal) : row.notes_journal) : undefined,
     reviewVideo: row.review_video ? (typeof row.review_video === 'string' ? JSON.parse(row.review_video) : row.review_video) : null,
     schemaVersion: row.schema_version ?? undefined,
+    revision: row.revision != null ? Number(row.revision) : undefined,
+    updatedAt: row.updated_at || undefined,
   } as DailyPlan;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Safe save RPCs — every plan write goes through these. They run inside a DB
+// transaction and enforce: placeholder rejection, write-guard against mass
+// data erasure, optimistic concurrency via `revision`, history snapshot, and
+// audit logging. On success they return the new `revision` & `updated_at`.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildDailyPayload(p: DailyPlan) {
+  assertNoPlaceholderPairs(p.pairs as any[], 'saveDailyPlan');
+  // Reuse the same scrub/guard the legacy mapper applied.
+  const row = assertNoBase64({
+    date: p.date,
+    daily_bias: p.dailyBias,
+    session_focus: p.sessionFocus,
+    max_trades: p.maxTrades,
+    risk_limit: p.riskLimit,
+    pairs: p.pairs ?? [],
+    news_items: p.newsItems ?? null,
+    took_trades: p.tookTrades ?? null,
+    result_narrative: p.resultNarrative ?? null,
+    result_chart_image: p.resultChartImage ?? null,
+    analysis_video_url: p.analysisVideoUrl ?? null,
+    note: p.note ?? null,
+    reviewed: p.reviewed ?? false,
+    day_summary: (p as any).daySummary ?? null,
+    notes_journal: (p as any).notesJournal ?? null,
+    review_video: p.reviewVideo ?? null,
+    schema_version: p.schemaVersion ?? null,
+  }, 'saveDailyPlan');
+  return row;
+}
+
+function buildWeeklyPayload(p: WeeklyPlan) {
+  assertNoPlaceholderPairs(p.pairAnalyses as any[], 'saveWeeklyPlan');
+  const row = assertNoBase64({
+    week_start: p.weekStart,
+    bias: p.bias,
+    markets: p.markets ?? [],
+    setups: p.setups ?? [],
+    levels: p.levels,
+    risk: p.risk,
+    goals: p.goals,
+    pair_analyses: p.pairAnalyses ?? [],
+    news_items: p.newsItems ?? null,
+    news_result: p.newsResult ?? null,
+    analysis_video_url: p.analysisVideoUrl ?? null,
+    reviewed: p.reviewed ?? false,
+    observation: (p as any).observation ?? null,
+    calendar_result: (p as any).calendarResult ?? null,
+  }, 'saveWeeklyPlan');
+  return row;
+}
+
+export interface SavePlanResult {
+  revision: number;
+  updated_at: string;
+  inserted: boolean;
+}
+
+function logFailure(scope: string, plan: { id: string }, err: unknown, payloadSize: number) {
+  // eslint-disable-next-line no-console
+  console.error(`[${scope}] save failed`, {
+    planId: plan.id,
+    payloadSize,
+    error: err instanceof Error ? err.message : err,
+    stack: err instanceof Error ? err.stack : undefined,
+  });
+}
+
+export async function saveDailyPlanRpc(plan: DailyPlan): Promise<SavePlanResult> {
+  const payload = buildDailyPayload(plan);
+  const payloadSize = JSON.stringify(payload).length;
+  const { data, error } = await (supabase as any).rpc('save_daily_plan', {
+    p_id: plan.id,
+    p_payload: payload,
+    p_expected_revision: plan.revision ?? null,
+  });
+  if (error) {
+    logFailure('saveDailyPlanRpc', plan, error, payloadSize);
+    throw error;
+  }
+  return data as SavePlanResult;
+}
+
+export async function saveWeeklyPlanRpc(plan: WeeklyPlan): Promise<SavePlanResult> {
+  const payload = buildWeeklyPayload(plan);
+  const payloadSize = JSON.stringify(payload).length;
+  const { data, error } = await (supabase as any).rpc('save_weekly_plan', {
+    p_id: plan.id,
+    p_payload: payload,
+    p_expected_revision: plan.revision ?? null,
+  });
+  if (error) {
+    logFailure('saveWeeklyPlanRpc', plan, error, payloadSize);
+    throw error;
+  }
+  return data as SavePlanResult;
 }
 

@@ -8,7 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   tradeToDb, dbToTrade, accountToDb, dbToAccount,
   txToDb, dbToTx, scaleToDb, dbToScale,
-  weeklyPlanToDb, dbToWeeklyPlan, dailyPlanToDb, dbToDailyPlan
+  weeklyPlanToDb, dbToWeeklyPlan, dailyPlanToDb, dbToDailyPlan,
+  saveDailyPlanRpc, saveWeeklyPlanRpc,
 } from '@/lib/dbMappers';
 
 interface TradingContextType {
@@ -104,7 +105,7 @@ const TRADE_LITE_COLUMNS = [
 const DAILY_PLAN_LIST_COLUMNS = [
   'id','user_id','date','daily_bias','session_focus','max_trades','risk_limit',
   'took_trades','reviewed','analysis_video_url','review_video','pair_count',
-  'pairs','schema_version','created_at',
+  'pairs','schema_version','created_at','updated_at','revision',
 ].join(',');
 
 
@@ -112,7 +113,7 @@ const DAILY_PLAN_LIST_COLUMNS = [
 // are URL-only after migration. Heavy rich-text fields stay lazy.
 const WEEKLY_PLAN_LIST_COLUMNS = [
   'id','user_id','week_start','bias','markets','setups','levels','risk','goals',
-  'analysis_video_url','reviewed','pair_count','pair_analyses','created_at',
+  'analysis_video_url','reviewed','pair_count','pair_analyses','created_at','updated_at','revision',
 ].join(',');
 
 export function TradingProvider({ children }: { children: React.ReactNode }) {
@@ -382,26 +383,35 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // ── Weekly Plans ──
+  // All writes go through `save_weekly_plan` RPC which: snapshots history,
+  // validates payload, enforces optimistic concurrency, and runs inside a
+  // single DB transaction. Revision is round-tripped on the plan object.
   const addWeeklyPlan = useCallback((plan: WeeklyPlan) => {
-    setWeeklyPlans(s => [...s, plan]);
-    if (user) db.from('weekly_plans').insert(weeklyPlanToDb(plan, user.id) as any).then(() => {});
+    const seeded: WeeklyPlan = { ...plan, revision: undefined };
+    setWeeklyPlans(s => [...s, seeded]);
+    if (!user) return;
+    saveWeeklyPlanRpc(seeded)
+      .then(res => {
+        setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      })
+      .catch(err => console.error('[addWeeklyPlan] save failed:', err));
   }, [user]);
 
   const updateWeeklyPlan = useCallback((plan: WeeklyPlan) => {
-    let row: any;
-    try {
-      row = weeklyPlanToDb(plan, user?.id || '');
-    } catch (err) {
-      // Placeholder/base64 guard tripped — refuse the write entirely so we
-      // never destroy real pair data on disk.
-      console.error('[updateWeeklyPlan] refused to save:', err);
-      return;
-    }
+    // Optimistic UI; revision is bumped only after the server confirms.
     setWeeklyPlans(s => s.map(p => p.id === plan.id ? plan : p));
-    if (user) {
-      const { id, ...rest } = row;
-      db.from('weekly_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
-    }
+    if (!user) return;
+    saveWeeklyPlanRpc(plan)
+      .then(res => {
+        setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      })
+      .catch(err => {
+        // Refuse-to-overwrite errors (placeholders / write-guard / concurrency)
+        // surface here. We keep the optimistic state so the user doesn't lose
+        // their edits — the next clean save will retry against the latest
+        // server revision.
+        console.error('[updateWeeklyPlan] save rejected:', err);
+      });
   }, [user]);
 
   const deleteWeeklyPlan = useCallback((id: string) => {
@@ -411,25 +421,28 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
 
   // ── Daily Plans ──
   const addDailyPlan = useCallback((plan: DailyPlan) => {
-    setDailyPlans(s => [...s, plan]);
-    dailyPlanMediaCache.current.set(plan.id, plan);
-    if (user) db.from('daily_plans').insert(dailyPlanToDb(plan, user.id) as any).then(() => {});
+    const seeded: DailyPlan = { ...plan, revision: undefined };
+    setDailyPlans(s => [...s, seeded]);
+    dailyPlanMediaCache.current.set(plan.id, seeded);
+    if (!user) return;
+    saveDailyPlanRpc(seeded)
+      .then(res => {
+        setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      })
+      .catch(err => console.error('[addDailyPlan] save failed:', err));
   }, [user]);
 
   const updateDailyPlan = useCallback((plan: DailyPlan) => {
-    let row: any;
-    try {
-      row = dailyPlanToDb(plan, user?.id || '');
-    } catch (err) {
-      console.error('[updateDailyPlan] refused to save:', err);
-      return;
-    }
     setDailyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     dailyPlanMediaCache.current.set(plan.id, plan);
-    if (user) {
-      const { id, ...rest } = row;
-      db.from('daily_plans').update(rest as any).eq('id', id).eq('user_id', user.id).then(() => {});
-    }
+    if (!user) return;
+    saveDailyPlanRpc(plan)
+      .then(res => {
+        setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+        const cached = dailyPlanMediaCache.current.get(plan.id);
+        if (cached) dailyPlanMediaCache.current.set(plan.id, { ...cached, revision: res.revision, updatedAt: res.updated_at });
+      })
+      .catch(err => console.error('[updateDailyPlan] save rejected:', err));
   }, [user]);
 
   const deleteDailyPlan = useCallback((id: string) => {
@@ -437,6 +450,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     dailyPlanMediaCache.current.delete(id);
     if (user) db.from('daily_plans').delete().eq('id', id).eq('user_id', user.id).then(() => {});
   }, [user]);
+
 
   // ── Settings list CRUD factory ──
   function makeSettingsCRUD(

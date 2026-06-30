@@ -255,6 +255,10 @@ export interface WeeklyPlan {
   calendarResult?: RichJournalDoc;
   /** Persisted Storage path for analysis video (in addition to URL) */
   analysisVideoPath?: string;
+  /** Server-tracked optimistic concurrency revision. Echoed back unchanged on save. */
+  revision?: number;
+  /** Server-tracked last update timestamp. Display-only. */
+  updatedAt?: string;
 }
 
 // Daily Plan
@@ -313,6 +317,10 @@ export interface DailyPlan {
   reviewVideo?: DailyReviewVideo | null;
   /** Schema version. >=2 enables Daily/4H reference charts and Market Location selector. Absent/1 = legacy plan. */
   schemaVersion?: number;
+  /** Server-tracked optimistic concurrency revision. Echoed back unchanged on save. */
+  revision?: number;
+  /** Server-tracked last update timestamp. Display-only. */
+  updatedAt?: string;
 }
 
 export interface DailyReviewVideo {
