@@ -209,7 +209,13 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       .order('date', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
-        if (data) setDailyPlans(data.map(dbToDailyPlan));
+        if (data) {
+          const plans = data.map(dbToDailyPlan);
+          plans.forEach((p: DailyPlan) => {
+            if (typeof p.revision === 'number') latestDailyRevision.current.set(p.id, p.revision);
+          });
+          setDailyPlans(plans);
+        }
         setLoadingDailyPlans(false);
       });
 
@@ -217,7 +223,13 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       .order('week_start', { ascending: false })
       .then(({ data }: any) => {
         if (isStale()) return;
-        if (data) setWeeklyPlans(data.map(dbToWeeklyPlan));
+        if (data) {
+          const plans = data.map(dbToWeeklyPlan);
+          plans.forEach((p: WeeklyPlan) => {
+            if (typeof p.revision === 'number') latestWeeklyRevision.current.set(p.id, p.revision);
+          });
+          setWeeklyPlans(plans);
+        }
         setLoadingWeeklyPlans(false);
       });
 
@@ -286,7 +298,9 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     const previous = queue.current.get(id) || Promise.resolve();
     const next = previous.catch(() => undefined).then(task);
     queue.current.set(id, next);
-    next.finally(() => {
+    next.then(() => {
+      if (queue.current.get(id) === next) queue.current.delete(id);
+    }).catch(() => {
       if (queue.current.get(id) === next) queue.current.delete(id);
     });
     return next;
