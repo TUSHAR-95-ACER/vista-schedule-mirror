@@ -144,13 +144,26 @@ export default function WeeklyPlanPage() {
     // full plan in the background and patch state once it arrives.
     const applyFull = (full: WeeklyPlan | null) => {
       if (!full) return;
-      setLocalPlan(prev => (prev && prev.id === id ? { ...prev, ...full } : prev));
+      setLocalPlan(prev => {
+        if (!prev || prev.id !== id) return prev;
+        const hasRealPairs = Array.isArray(prev.pairAnalyses) && prev.pairAnalyses.some(p => p && (p as any).id);
+        return {
+          ...full,
+          ...prev,
+          revision: full.revision ?? prev.revision,
+          updatedAt: full.updatedAt ?? prev.updatedAt,
+          pairAnalyses: hasRealPairs ? prev.pairAnalyses : full.pairAnalyses,
+          newsItems: prev.newsItems ?? full.newsItems,
+          observation: (prev as any).observation ?? (full as any).observation,
+          calendarResult: (prev as any).calendarResult ?? (full as any).calendarResult,
+        };
+      });
     };
 
     if (authUser?.id && !restoredRef.current.has(id)) {
       const draft = loadDraft<WeeklyPlan>('weeklyPlan', authUser.id, id);
       restoredRef.current.add(id);
-      if (draft) {
+      if (draft && draft.savedAt > (Date.parse(plan.updatedAt || '') || 0)) {
         setLocalPlan({ ...draft.data, pairAnalyses: draft.data.pairAnalyses?.map(pa => ({ ...pa })) || [] });
         toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
         // still hydrate so non-draft fields stay accurate
@@ -197,7 +210,11 @@ export default function WeeklyPlanPage() {
     onSave: async (val) => {
       if (!val || !authUser?.id) return;
       saveDraft('weeklyPlan', authUser.id, val, val.id);
-      await Promise.resolve(updateWeeklyPlan(val));
+      const result = await updateWeeklyPlan(val);
+      if (!result) return val;
+      const persisted = { ...val, revision: result.revision, updatedAt: result.updated_at };
+      setLocalPlan(current => current?.id === val.id ? { ...current, revision: result.revision, updatedAt: result.updated_at } : current);
+      return persisted;
     },
     onSaved: (val) => {
       if (val && authUser?.id) clearDraft('weeklyPlan', authUser.id, val.id);

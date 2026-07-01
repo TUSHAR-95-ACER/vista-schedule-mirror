@@ -139,6 +139,8 @@ export default function DailyPlanPage() {
         return {
           ...full,
           ...prev,
+          revision: full.revision ?? prev.revision,
+          updatedAt: full.updatedAt ?? prev.updatedAt,
           pairs: hasRealPairs ? prev.pairs : full.pairs,
           newsItems: prev.newsItems ?? full.newsItems,
           daySummary: prev.daySummary ?? full.daySummary,
@@ -155,7 +157,7 @@ export default function DailyPlanPage() {
     if (authUser?.id && !restoredRef.current.has(id)) {
       const draft = loadDraft<DailyPlan>('dailyPlan', authUser.id, id);
       restoredRef.current.add(id);
-      if (draft && draft.savedAt > (Date.parse((plan as any).updated_at || '') || 0)) {
+      if (draft && draft.savedAt > (Date.parse(plan.updatedAt || '') || 0)) {
         setLocalPlan({ ...draft.data, pairs: draft.data.pairs?.map(pp => ({ ...pp })) || [] });
         toast({ title: 'Draft restored', description: 'Picked up where you left off.' });
         hydrateDailyPlanMedia(id).then(mergeFull);
@@ -201,7 +203,11 @@ export default function DailyPlanPage() {
     onSave: async (val) => {
       if (!val || !authUser?.id) return;
       saveDraft('dailyPlan', authUser.id, val, val.id);
-      await Promise.resolve(updateDailyPlan(val));
+      const result = await updateDailyPlan(val);
+      if (!result) return val;
+      const persisted = { ...val, revision: result.revision, updatedAt: result.updated_at };
+      setLocalPlan(current => current?.id === val.id ? { ...current, revision: result.revision, updatedAt: result.updated_at } : current);
+      return persisted;
     },
     onSaved: (val) => {
       if (val && authUser?.id) clearDraft('dailyPlan', authUser.id, val.id);

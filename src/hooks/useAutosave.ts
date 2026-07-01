@@ -5,8 +5,8 @@ export type SaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 interface UseAutosaveOptions<T> {
   /** Current value to persist. Compared by reference + JSON. */
   value: T;
-  /** Async write to the backing store. */
-  onSave: (value: T) => Promise<void> | void;
+  /** Async write to the backing store. May return the canonical persisted value. */
+  onSave: (value: T) => Promise<T | void> | T | void;
   /** Debounce in ms (default 1200). */
   debounceMs?: number;
   /** When false, autosave is paused entirely (e.g. while loading initial data). */
@@ -54,14 +54,17 @@ export function useAutosave<T>({
     setStatus('saving');
     try {
       const toSave = valueRef.current;
-      await onSave(toSave);
-      savedSnapshotRef.current = JSON.stringify(toSave);
-      onSaved?.(toSave);
+      const persistedValue = await onSave(toSave);
+      const savedValue = (persistedValue === undefined ? toSave : persistedValue) as T;
+      savedSnapshotRef.current = JSON.stringify(savedValue);
+      onSaved?.(savedValue);
       setStatus('saved');
       // Flip back to idle after a beat so the indicator doesn't shout forever.
       if (savedResetRef.current) clearTimeout(savedResetRef.current);
       savedResetRef.current = setTimeout(() => setStatus('idle'), 1800);
-    } catch {
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[useAutosave] save failed; Saved state was not shown', error);
       setStatus('error');
     } finally {
       inflightRef.current = false;
