@@ -9,7 +9,7 @@ import {
   tradeToDb, dbToTrade, accountToDb, dbToAccount,
   txToDb, dbToTx, scaleToDb, dbToScale,
   weeklyPlanToDb, dbToWeeklyPlan, dailyPlanToDb, dbToDailyPlan,
-  saveDailyPlanRpc, saveWeeklyPlanRpc,
+  saveDailyPlanRpc, saveWeeklyPlanRpc, SavePlanResult,
 } from '@/lib/dbMappers';
 
 interface TradingContextType {
@@ -51,11 +51,11 @@ interface TradingContextType {
   deleteAccount: (id: string) => void;
   addTransaction: (tx: Transaction) => void;
   addScaleEvent: (event: ScaleEvent) => void;
-  addWeeklyPlan: (plan: WeeklyPlan) => void;
-  updateWeeklyPlan: (plan: WeeklyPlan) => void;
+  addWeeklyPlan: (plan: WeeklyPlan) => Promise<SavePlanResult | void>;
+  updateWeeklyPlan: (plan: WeeklyPlan) => Promise<SavePlanResult | void>;
   deleteWeeklyPlan: (id: string) => void;
-  addDailyPlan: (plan: DailyPlan) => void;
-  updateDailyPlan: (plan: DailyPlan) => void;
+  addDailyPlan: (plan: DailyPlan) => Promise<SavePlanResult | void>;
+  updateDailyPlan: (plan: DailyPlan) => Promise<SavePlanResult | void>;
   deleteDailyPlan: (id: string) => void;
   addCustomSetup: (setup: string) => void;
   updateCustomSetup: (previous: string, next: string) => void;
@@ -273,6 +273,24 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   // Cache so opening the same trade detail twice doesn't refetch.
   const tradeMediaCache = useRef<Map<string, Trade>>(new Map());
   const dailyPlanMediaCache = useRef<Map<string, DailyPlan>>(new Map());
+  const dailyPlanSaveQueue = useRef<Map<string, Promise<SavePlanResult | void>>>(new Map());
+  const weeklyPlanSaveQueue = useRef<Map<string, Promise<SavePlanResult | void>>>(new Map());
+  const latestDailyRevision = useRef<Map<string, number>>(new Map());
+  const latestWeeklyRevision = useRef<Map<string, number>>(new Map());
+
+  const enqueuePlanSave = useCallback((
+    queue: React.MutableRefObject<Map<string, Promise<SavePlanResult | void>>>,
+    id: string,
+    task: () => Promise<SavePlanResult | void>,
+  ): Promise<SavePlanResult | void> => {
+    const previous = queue.current.get(id) || Promise.resolve();
+    const next = previous.catch(() => undefined).then(task);
+    queue.current.set(id, next);
+    next.finally(() => {
+      if (queue.current.get(id) === next) queue.current.delete(id);
+    });
+    return next;
+  }, []);
 
   const hydrateTradeMedia = useCallback(async (id: string): Promise<Trade | null> => {
     if (!user) return null;
@@ -303,6 +321,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     if (!data) return null;
     const full = dbToDailyPlan(data);
     dailyPlanMediaCache.current.set(id, full);
+    if (typeof full.revision === 'number') latestDailyRevision.current.set(id, full.revision);
     setDailyPlans(s => s.map(p => p.id === id ? { ...p, ...full } : p));
     return full;
   }, [user]);
@@ -320,6 +339,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     if (!data) return null;
     const full = dbToWeeklyPlan(data);
     weeklyPlanMediaCache.current.set(id, full);
+    if (typeof full.revision === 'number') latestWeeklyRevision.current.set(id, full.revision);
     setWeeklyPlans(s => s.map(p => p.id === id ? { ...p, ...full } : p));
     return full;
   }, [user]);
@@ -389,30 +409,38 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   const addWeeklyPlan = useCallback((plan: WeeklyPlan) => {
     const seeded: WeeklyPlan = { ...plan, revision: undefined };
     setWeeklyPlans(s => [...s, seeded]);
-    if (!user) return;
-    saveWeeklyPlanRpc(seeded)
-      .then(res => {
-        setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
-      })
-      .catch(err => console.error('[addWeeklyPlan] save failed:', err));
-  }, [user]);
+    if (!user) return Promise.resolve();
+    return enqueuePlanSave(weeklyPlanSaveQueue, plan.id, async () => {
+      const res = await saveWeeklyPlanRpc(seeded);
+      latestWeeklyRevision.current.set(plan.id, res.revision);
+      setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      return res;
+    }).catch(err => {
+      console.error('[addWeeklyPlan] save failed:', err);
+      throw err;
+    });
+  }, [enqueuePlanSave, user]);
 
   const updateWeeklyPlan = useCallback((plan: WeeklyPlan) => {
     // Optimistic UI; revision is bumped only after the server confirms.
     setWeeklyPlans(s => s.map(p => p.id === plan.id ? plan : p));
-    if (!user) return;
-    saveWeeklyPlanRpc(plan)
-      .then(res => {
-        setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
-      })
-      .catch(err => {
-        // Refuse-to-overwrite errors (placeholders / write-guard / concurrency)
-        // surface here. We keep the optimistic state so the user doesn't lose
-        // their edits — the next clean save will retry against the latest
-        // server revision.
-        console.error('[updateWeeklyPlan] save rejected:', err);
-      });
-  }, [user]);
+    if (!user) return Promise.resolve();
+    return enqueuePlanSave(weeklyPlanSaveQueue, plan.id, async () => {
+      const latest = latestWeeklyRevision.current.get(plan.id);
+      const planForSave = latest != null ? { ...plan, revision: latest } : plan;
+      const res = await saveWeeklyPlanRpc(planForSave);
+      latestWeeklyRevision.current.set(plan.id, res.revision);
+      setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      return res;
+    }).catch(err => {
+      // Refuse-to-overwrite errors (placeholders / write-guard / concurrency)
+      // surface here. We keep the optimistic state so the user doesn't lose
+      // their edits — the next clean save will retry against the latest
+      // server revision.
+      console.error('[updateWeeklyPlan] save rejected:', err);
+      throw err;
+    });
+  }, [enqueuePlanSave, user]);
 
   const deleteWeeklyPlan = useCallback((id: string) => {
     setWeeklyPlans(s => s.filter(p => p.id !== id));
@@ -424,26 +452,38 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     const seeded: DailyPlan = { ...plan, revision: undefined };
     setDailyPlans(s => [...s, seeded]);
     dailyPlanMediaCache.current.set(plan.id, seeded);
-    if (!user) return;
-    saveDailyPlanRpc(seeded)
-      .then(res => {
-        setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
-      })
-      .catch(err => console.error('[addDailyPlan] save failed:', err));
-  }, [user]);
+    if (!user) return Promise.resolve();
+    return enqueuePlanSave(dailyPlanSaveQueue, plan.id, async () => {
+      const res = await saveDailyPlanRpc(seeded);
+      latestDailyRevision.current.set(plan.id, res.revision);
+      setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      const cached = dailyPlanMediaCache.current.get(plan.id);
+      if (cached) dailyPlanMediaCache.current.set(plan.id, { ...cached, revision: res.revision, updatedAt: res.updated_at });
+      return res;
+    }).catch(err => {
+      console.error('[addDailyPlan] save failed:', err);
+      throw err;
+    });
+  }, [enqueuePlanSave, user]);
 
   const updateDailyPlan = useCallback((plan: DailyPlan) => {
     setDailyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     dailyPlanMediaCache.current.set(plan.id, plan);
-    if (!user) return;
-    saveDailyPlanRpc(plan)
-      .then(res => {
-        setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
-        const cached = dailyPlanMediaCache.current.get(plan.id);
-        if (cached) dailyPlanMediaCache.current.set(plan.id, { ...cached, revision: res.revision, updatedAt: res.updated_at });
-      })
-      .catch(err => console.error('[updateDailyPlan] save rejected:', err));
-  }, [user]);
+    if (!user) return Promise.resolve();
+    return enqueuePlanSave(dailyPlanSaveQueue, plan.id, async () => {
+      const latest = latestDailyRevision.current.get(plan.id);
+      const planForSave = latest != null ? { ...plan, revision: latest } : plan;
+      const res = await saveDailyPlanRpc(planForSave);
+      latestDailyRevision.current.set(plan.id, res.revision);
+      setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
+      const cached = dailyPlanMediaCache.current.get(plan.id);
+      if (cached) dailyPlanMediaCache.current.set(plan.id, { ...cached, revision: res.revision, updatedAt: res.updated_at });
+      return res;
+    }).catch(err => {
+      console.error('[updateDailyPlan] save rejected:', err);
+      throw err;
+    });
+  }, [enqueuePlanSave, user]);
 
   const deleteDailyPlan = useCallback((id: string) => {
     setDailyPlans(s => s.filter(p => p.id !== id));

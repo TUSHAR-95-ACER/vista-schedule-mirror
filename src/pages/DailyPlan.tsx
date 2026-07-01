@@ -201,7 +201,11 @@ export default function DailyPlanPage() {
     onSave: async (val) => {
       if (!val || !authUser?.id) return;
       saveDraft('dailyPlan', authUser.id, val, val.id);
-      await Promise.resolve(updateDailyPlan(val));
+      const result = await updateDailyPlan(val);
+      if (!result) return val;
+      const persisted = { ...val, revision: result.revision, updatedAt: result.updated_at };
+      setLocalPlan(current => current?.id === val.id ? { ...current, revision: result.revision, updatedAt: result.updated_at } : current);
+      return persisted;
     },
     onSaved: (val) => {
       if (val && authUser?.id) clearDraft('dailyPlan', authUser.id, val.id);

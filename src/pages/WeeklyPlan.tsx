@@ -197,7 +197,11 @@ export default function WeeklyPlanPage() {
     onSave: async (val) => {
       if (!val || !authUser?.id) return;
       saveDraft('weeklyPlan', authUser.id, val, val.id);
-      await Promise.resolve(updateWeeklyPlan(val));
+      const result = await updateWeeklyPlan(val);
+      if (!result) return val;
+      const persisted = { ...val, revision: result.revision, updatedAt: result.updated_at };
+      setLocalPlan(current => current?.id === val.id ? { ...current, revision: result.revision, updatedAt: result.updated_at } : current);
+      return persisted;
     },
     onSaved: (val) => {
       if (val && authUser?.id) clearDraft('weeklyPlan', authUser.id, val.id);

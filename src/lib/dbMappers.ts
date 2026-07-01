@@ -295,6 +295,11 @@ export interface SavePlanResult {
   revision: number;
   updated_at: string;
   inserted: boolean;
+  previous_revision?: number | null;
+  row_count?: number;
+  history_created?: boolean;
+  history_version?: number | null;
+  payload_hash?: string;
 }
 
 function logFailure(scope: string, plan: { id: string }, err: unknown, payloadSize: number) {
@@ -305,6 +310,24 @@ function logFailure(scope: string, plan: { id: string }, err: unknown, payloadSi
     error: err instanceof Error ? err.message : err,
     stack: err instanceof Error ? err.stack : undefined,
   });
+}
+
+function validateSaveResult(scope: string, result: SavePlanResult | null | undefined) {
+  if (!result || typeof result !== 'object') {
+    throw new Error(`[${scope}] save verification failed: RPC returned no result`);
+  }
+  if (!Number.isFinite(Number(result.revision)) || Number(result.revision) < 1) {
+    throw new Error(`[${scope}] save verification failed: invalid revision ${String(result.revision)}`);
+  }
+  if (!result.updated_at || Number.isNaN(Date.parse(result.updated_at))) {
+    throw new Error(`[${scope}] save verification failed: invalid updated_at ${String(result.updated_at)}`);
+  }
+  if (result.row_count !== undefined && Number(result.row_count) !== 1) {
+    throw new Error(`[${scope}] save verification failed: row_count=${String(result.row_count)}`);
+  }
+  if (result.inserted === false && result.history_created !== true) {
+    throw new Error(`[${scope}] save verification failed: update committed without confirmed history snapshot`);
+  }
 }
 
 export async function saveDailyPlanRpc(plan: DailyPlan): Promise<SavePlanResult> {
@@ -319,6 +342,7 @@ export async function saveDailyPlanRpc(plan: DailyPlan): Promise<SavePlanResult>
     logFailure('saveDailyPlanRpc', plan, error, payloadSize);
     throw error;
   }
+  validateSaveResult('saveDailyPlanRpc', data as SavePlanResult);
   return data as SavePlanResult;
 }
 
@@ -334,6 +358,7 @@ export async function saveWeeklyPlanRpc(plan: WeeklyPlan): Promise<SavePlanResul
     logFailure('saveWeeklyPlanRpc', plan, error, payloadSize);
     throw error;
   }
+  validateSaveResult('saveWeeklyPlanRpc', data as SavePlanResult);
   return data as SavePlanResult;
 }
 
