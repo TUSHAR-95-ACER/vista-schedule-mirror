@@ -55,7 +55,7 @@ export function useAutosave<T>({
     try {
       const toSave = valueRef.current;
       const persistedValue = await onSave(toSave);
-      const savedValue = persistedValue === undefined ? toSave : persistedValue;
+      const savedValue = (persistedValue === undefined ? toSave : persistedValue) as T;
       savedSnapshotRef.current = JSON.stringify(savedValue);
       onSaved?.(savedValue);
       setStatus('saved');
