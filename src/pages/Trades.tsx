@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Edit, ExternalLink, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, LayoutGrid, List, Filter } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import { PageHeader } from '@/components/shared/MetricCard';
 import { Button } from '@/components/ui/button';
@@ -8,17 +8,13 @@ const TradeFormDialog = lazy(() => import('@/components/trades/TradeFormDialog')
 const TradeDetailSheet = lazy(() => import('@/components/trades/TradeDetailSheet').then(m => ({ default: m.TradeDetailSheet })));
 import { TradeEntryGate } from '@/components/trades/TradeEntryGate';
 import { TradeGalleryView } from '@/components/trades/TradeGalleryView';
+import { TradeTableRow } from '@/components/trades/TradeTableRow';
 import { Trade } from '@/types/trading';
-import { getDayOfWeek } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { adaptTrades } from '@/lib/aiInsightAdapters';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+
 
 export default function Trades() {
   const { trades, deleteTrade } = useTrading();
@@ -81,16 +77,11 @@ export default function Trades() {
     return sortDir === 'desc' ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />;
   };
 
-  const resultBadge = (result: string) => {
-    const styles: Record<string, string> = {
-      Win: 'bg-success/15 text-success border border-success/30',
-      Loss: 'bg-destructive/15 text-destructive border border-destructive/30',
-      Breakeven: 'bg-muted text-muted-foreground border border-border',
-      'Untriggered Setup': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25',
-      Cancelled: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/25',
-    };
-    return <span className={cn('px-2 py-0.5 rounded text-xs font-medium', styles[result])}>{result}</span>;
-  };
+  // Stable handler identities so memoized rows don't re-render on every parent update.
+  const handleSelect = useCallback((t: Trade) => setSelectedTrade(t), []);
+  const handleEdit = useCallback((t: Trade) => { setEditTrade(t); setShowForm(true); }, []);
+  const handleDelete = useCallback((id: string) => { deleteTrade(id); }, [deleteTrade]);
+
 
   const hasActiveFilters = filterPair !== 'all' || filterResult !== 'all';
 
@@ -189,72 +180,16 @@ export default function Trades() {
                   </tr>
                 ) : (
                   visible.map(trade => (
-                    <tr
+                    <TradeTableRow
                       key={trade.id}
-                      className="border-b border-border/50 hover:bg-accent/50 cursor-pointer transition-colors h-8"
-                      onClick={() => setSelectedTrade(trade)}
-                    >
-                      <td className="px-3 py-1.5 font-mono text-xs">{trade.date}</td>
-                      <td className="px-3 py-1.5 text-xs text-muted-foreground">{getDayOfWeek(trade.date).slice(0, 3)}</td>
-                      <td className="px-3 py-1.5 font-medium text-xs">
-                        <span className="inline-flex items-center gap-1.5">
-                          {trade.asset}
-                          {trade.status && trade.status !== 'Complete' && (
-                            <span className={cn(
-                              'text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full border',
-                              trade.status === 'Draft' && 'border-muted-foreground/30 text-muted-foreground bg-muted/30',
-                              trade.status === 'Incomplete' && 'border-warning/40 text-warning bg-warning/10',
-                              trade.status === 'Needs Review' && 'border-primary/40 text-primary bg-primary/10',
-                            )}>{trade.status}</span>
-                          )}
-                        </span>
-                      </td>
-                      <td className="px-3 py-1.5 text-xs">{trade.setup}</td>
-                      <td className="px-3 py-1.5 text-xs text-muted-foreground">{trade.session}</td>
-                      <td className="px-3 py-1.5 text-xs">
-                        <span className={trade.direction === 'Long' ? 'text-success' : 'text-destructive'}>{trade.direction}</span>
-                      </td>
-                      <td className="px-3 py-1.5 font-mono text-xs">{trade.quantity ?? '-'}</td>
-                      <td className="px-3 py-1.5 font-mono text-xs">{trade.actualRR?.toFixed(2) ?? '-'}</td>
-                      <td className={cn('px-3 py-1.5 font-mono text-xs font-medium',
-                        trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? 'text-muted-foreground' :
-                        trade.profitLoss >= 0 ? 'text-success' : 'text-destructive')}>
-                        {trade.result === 'Untriggered Setup' || trade.result === 'Cancelled' ? '—' : `${trade.profitLoss >= 0 ? '+' : ''}${trade.profitLoss.toFixed(2)}`}
-                      </td>
-                      <td className="px-3 py-1.5 text-xs font-medium">{trade.grade || '—'}</td>
-                      <td className="px-3 py-1.5">{resultBadge(trade.result)}</td>
-                      <td className="px-3 py-1.5">
-                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setEditTrade(trade); setShowForm(true); }}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive">
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Trade</AlertDialogTitle>
-                                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteTrade(trade.id)}>Delete</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                          {trade.chartLink && (
-                            <a href={trade.chartLink} target="_blank" rel="noopener noreferrer" className="text-primary">
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                      trade={trade}
+                      onSelect={handleSelect}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
                   ))
                 )}
+
               </tbody>
             </table>
           </div>
