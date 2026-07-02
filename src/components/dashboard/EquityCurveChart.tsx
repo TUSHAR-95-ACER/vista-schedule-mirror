@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
@@ -22,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function EquityCurveChart({ trades }: EquityCurveChartProps) {
+function EquityCurveChartImpl({ trades }: EquityCurveChartProps) {
   const equityData = useMemo(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const sorted = [...valid].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -59,3 +59,5 @@ export function EquityCurveChart({ trades }: EquityCurveChartProps) {
     </ResponsiveContainer>
   );
 }
+
+export const EquityCurveChart = memo(EquityCurveChartImpl);

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Trade } from '@/types/trading';
 
@@ -21,7 +21,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   );
 };
 
-export function PerformanceByMarketChart({ trades }: { trades: Trade[] }) {
+function PerformanceByMarketChartImpl({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const map = new Map<string, number>();
@@ -42,3 +42,5 @@ export function PerformanceByMarketChart({ trades }: { trades: Trade[] }) {
     </ResponsiveContainer>
   );
 }
+
+export const PerformanceByMarketChart = memo(PerformanceByMarketChartImpl);

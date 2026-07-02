@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { Trade } from '@/types/trading';
 
@@ -14,7 +14,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function WeekdayChart({ trades }: { trades: Trade[] }) {
+function WeekdayChartImpl({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const map = new Map(days.map(d => [d, { wins: 0, total: 0, pl: 0 }]));
@@ -49,3 +49,5 @@ export function WeekdayChart({ trades }: { trades: Trade[] }) {
     </ResponsiveContainer>
   );
 }
+
+export const WeekdayChart = memo(WeekdayChartImpl);

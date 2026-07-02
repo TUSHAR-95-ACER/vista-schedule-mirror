@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
 } from 'recharts';
@@ -18,7 +18,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function PerformanceByPairChart({ trades }: { trades: Trade[] }) {
+function PerformanceByPairChartImpl({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const map = new Map<string, { wins: number; total: number; pl: number }>();
@@ -55,3 +55,5 @@ export function PerformanceByPairChart({ trades }: { trades: Trade[] }) {
     </ResponsiveContainer>
   );
 }
+
+export const PerformanceByPairChart = memo(PerformanceByPairChartImpl);

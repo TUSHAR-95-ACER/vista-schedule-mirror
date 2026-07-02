@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { Trade } from '@/types/trading';
 import { useTrading } from '@/contexts/TradingContext';
 import { cn } from '@/lib/utils';
 
-export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
+function PerformanceByGradeChartImpl({ trades }: { trades: Trade[] }) {
   const { gradesList } = useTrading();
 
   const data = useMemo(() => {
@@ -53,3 +53,5 @@ export function PerformanceByGradeChart({ trades }: { trades: Trade[] }) {
     </div>
   );
 }
+
+export const PerformanceByGradeChart = memo(PerformanceByGradeChartImpl);
