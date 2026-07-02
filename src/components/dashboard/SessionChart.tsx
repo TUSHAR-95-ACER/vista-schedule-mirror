@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { Trade } from '@/types/trading';
 
@@ -21,7 +21,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function SessionChart({ trades }: { trades: Trade[] }) {
+function SessionChartImpl({ trades }: { trades: Trade[] }) {
   const data = useMemo(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled');
     const map = new Map<string, { wins: number; total: number; pl: number }>();
@@ -68,3 +68,5 @@ export function SessionChart({ trades }: { trades: Trade[] }) {
     </ResponsiveContainer>
   );
 }
+
+export const SessionChart = memo(SessionChartImpl);

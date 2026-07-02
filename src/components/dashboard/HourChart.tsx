@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { Trade } from '@/types/trading';
 import { formatCurrency } from '@/lib/calculations';
@@ -31,7 +31,7 @@ const HourTooltip = ({ active, payload }: any) => {
   );
 };
 
-export function HourChart({ trades }: { trades: Trade[] }) {
+function HourChartImpl({ trades }: { trades: Trade[] }) {
   const data = useMemo<HourRow[]>(() => {
     const valid = trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled' && t.entryTime);
     const map = new Map<number, HourRow>();
@@ -77,3 +77,5 @@ export function HourChart({ trades }: { trades: Trade[] }) {
     </ResponsiveContainer>
   );
 }
+
+export const HourChart = memo(HourChartImpl);

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts';
 import { Trade } from '@/types/trading';
 
@@ -29,7 +29,7 @@ function weekOfMonth(iso: string): number {
   return Math.floor((d + firstDayOffset - 1) / 7) + 1;
 }
 
-export function WeeklyPerformanceChart({ trades }: { trades: Trade[]; month?: number; year?: number }) {
+function WeeklyPerformanceChartImpl({ trades }: { trades: Trade[]; month?: number; year?: number }) {
   const data = useMemo(() => {
     // GLOBAL aggregation: combine trades by week-of-month bucket across ALL months.
     const buckets = new Map<number, { pl: number; trades: number }>();
@@ -81,3 +81,5 @@ export function WeeklyPerformanceChart({ trades }: { trades: Trade[]; month?: nu
     </ResponsiveContainer>
   );
 }
+
+export const WeeklyPerformanceChart = memo(WeeklyPerformanceChartImpl);

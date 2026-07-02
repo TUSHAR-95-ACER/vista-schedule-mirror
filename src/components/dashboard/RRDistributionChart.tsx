@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { Trade } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { Lightbulb } from 'lucide-react';
@@ -14,7 +14,7 @@ interface Bucket {
   percent: number;
 }
 
-export function RRDistributionChart({ trades }: RRDistributionChartProps) {
+function RRDistributionChartImpl({ trades }: RRDistributionChartProps) {
   const validTrades = useMemo(
     () => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'),
     [trades]
@@ -158,3 +158,5 @@ export function RRDistributionChart({ trades }: RRDistributionChartProps) {
     </div>
   );
 }
+
+export const RRDistributionChart = memo(RRDistributionChartImpl);

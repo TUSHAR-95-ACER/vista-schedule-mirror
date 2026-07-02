@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import {useMemo, memo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Trade } from '@/types/trading';
 
@@ -6,7 +6,7 @@ interface WinLossChartProps {
   trades: Trade[];
 }
 
-export function WinLossChart({ trades }: WinLossChartProps) {
+function WinLossChartImpl({ trades }: WinLossChartProps) {
   const data = useMemo(() => {
     const wins = trades.filter(t => t.result === 'Win').length;
     const losses = trades.filter(t => t.result === 'Loss').length;
@@ -76,3 +76,5 @@ export function WinLossChart({ trades }: WinLossChartProps) {
     </div>
   );
 }
+
+export const WinLossChart = memo(WinLossChartImpl);
