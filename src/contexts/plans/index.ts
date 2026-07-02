@@ -57,3 +57,28 @@ export function useAccountsSlice() {
     addScaleEvent: t.addScaleEvent,
   };
 }
+
+/**
+ * Metadata slice — read-only lists used across pickers (setups, sessions,
+ * markets, grades, etc.). Kept separate from the CRUD mutators so components
+ * that only need the enum values don't accidentally re-render when a mutator
+ * identity would change.
+ */
+export function useSettingsMeta() {
+  const t = useTrading();
+  return {
+    customSetups: t.customSetups,
+    customAssets: t.customAssets,
+    customConfluences: t.customConfluences,
+    markets: t.markets,
+    sessions: t.sessions,
+    conditions: t.conditions,
+    gradesList: t.gradesList,
+    managementOptions: t.managementOptions,
+    psychTags: t.psychTags,
+    violations: t.violations,
+    notebookCategories: t.notebookCategories,
+    loadingSettings: t.loadingSettings,
+  };
+}
+
