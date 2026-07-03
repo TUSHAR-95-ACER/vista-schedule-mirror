@@ -51,6 +51,7 @@ const sections: NavSection[] = [
     items: [
       { path: '/trading-rules', label: 'Trading Rules', icon: Shield },
       { path: '/control-center', label: 'Control Center', icon: Sliders },
+      { path: '/ai-workspace', label: 'AI Workspace', icon: Sparkles },
       { path: '/system-analytics', label: 'System Analytics', icon: Activity },
       { path: '/settings', label: 'Settings', icon: Settings },
     ],
