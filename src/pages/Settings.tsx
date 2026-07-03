@@ -21,9 +21,11 @@ import {
   Database,
   Sliders,
   User,
+  Monitor,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+import { DesktopSettingsPanel } from '@/components/desktop/DesktopSettings';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 function SettingCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
@@ -435,6 +437,7 @@ const tabs = [
   { id: 'notifications', label: 'Alerts', icon: Bell },
   { id: 'account', label: 'Profile', icon: User },
   { id: 'data', label: 'Data', icon: Database },
+  { id: 'desktop', label: 'Desktop', icon: Monitor },
 ] as const;
 
 export default function Settings() {
@@ -455,6 +458,7 @@ export default function Settings() {
       case 'notifications': return <NotificationsPanel prefs={prefs} update={update} />;
       case 'account': return <AccountPanel prefs={prefs} update={update} />;
       case 'data': return <DataPanel />;
+      case 'desktop': return <DesktopSettingsPanel />;
       default: return <WorkspaceModulesPanel />;
     }
   };

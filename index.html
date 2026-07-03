@@ -50,9 +50,19 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
       }
     </script>
+    <style>
+      #tg-splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#050505;color:#D4AF37;font-family:'Sora',system-ui,sans-serif;transition:opacity .4s ease}
+      #tg-splash.hide{opacity:0;pointer-events:none}
+      #tg-splash .logo{font-size:22px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}
+      #tg-splash .sub{font-size:11px;letter-spacing:.3em;color:#10B981;text-transform:uppercase}
+      #tg-splash .spin{width:26px;height:26px;border-radius:50%;border:2px solid rgba(16,185,129,.25);border-top-color:#10B981;animation:tg-spin 1s linear infinite;margin-top:6px}
+      @keyframes tg-spin{to{transform:rotate(360deg)}}
+    </style>
   </head>
   <body>
+    <div id="tg-splash"><div class="logo">TG Master Journal</div><div class="sub">Professional Trading OS</div><div class="spin"></div></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>window.addEventListener('load',()=>{setTimeout(()=>{var s=document.getElementById('tg-splash');if(s){s.classList.add('hide');setTimeout(()=>s.remove(),450);}},350);});</script>
   </body>
 </html>
