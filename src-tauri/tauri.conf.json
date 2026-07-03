@@ -20,6 +20,9 @@
         "minHeight": 700,
         "resizable": true,
         "fullscreen": false,
+        "center": true,
+        "focus": true,
+        "decorations": true,
         "url": "https://master-journal-tg.lovable.app"
       }
     ],
@@ -30,6 +33,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis", "dmg", "app"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -38,7 +42,28 @@
       "icons/icon.ico"
     ],
     "category": "Finance",
-    "shortDescription": "TG Master Journal desktop wrapper",
-    "longDescription": "Native desktop window that loads the latest deployed TG Master Journal web application. Updates appear automatically with every Lovable deploy — no desktop rebuild required for normal UI changes."
+    "shortDescription": "Professional trading journal — desktop edition",
+    "longDescription": "TG Master Journal desktop app: native window for the professional trading operating system. Auto-syncs with every web deploy — no manual reinstall needed for UI updates.",
+    "copyright": "© 2026 TG Master Journal",
+    "publisher": "TG Master Journal",
+    "windows": {
+      "nsis": {
+        "installMode": "perMachine",
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico"
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "pubkey": "REPLACE_WITH_MINISIGN_PUBLIC_KEY",
+      "endpoints": [
+        "https://master-journal-tg.lovable.app/desktop-updates/{{target}}-{{arch}}/{{current_version}}"
+      ]
+    }
   }
 }
