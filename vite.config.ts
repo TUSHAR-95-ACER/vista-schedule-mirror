@@ -20,22 +20,23 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
   build: {
-    // Split heavy vendor libs so the main bundle stays lean and pages
-    // that don't use recharts / rich editors don't ship them.
+    // Let Rollup bundle recharts/d3 with their consumers. Manually splitting
+    // them into a vendor-charts chunk caused a circular-init ReferenceError
+    // ("Cannot access 'P' before initialization") at runtime / white screen.
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
-          if (id.includes('react-dom') || id.includes('react/') || id.includes('/react@')) return 'vendor-react';
+          if (id.includes('react-dom') || id.includes('/react/') || id.includes('/react@')) return 'vendor-react';
           if (id.includes('@supabase') || id.includes('@tanstack/react-query')) return 'vendor-data';
-          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
           if (id.includes('@radix-ui')) return 'vendor-radix';
           if (id.includes('date-fns')) return 'vendor-date';
           if (id.includes('lucide-react')) return 'vendor-icons';
+          // NOTE: recharts + d3-* intentionally NOT split — see comment above.
         },
       },
     },
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 800,
   },
 }));
 
