@@ -40,6 +40,10 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
 const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
+const AIWorkspace = lazy(() => import("./pages/AIWorkspace"));
+
+import { DesktopBootstrap } from "@/components/desktop/DesktopBootstrap";
+import { OfflineBanner } from "@/components/desktop/OfflineBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,6 +67,8 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <DesktopBootstrap />
+        <OfflineBanner />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
