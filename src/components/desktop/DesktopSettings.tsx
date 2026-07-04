@@ -39,7 +39,7 @@ export function DesktopSettingsPanel() {
             <p className="text-[11px] text-muted-foreground">
               {desktop
                 ? `Native window · v${version ?? '…'} · window state, single-instance, system tray, and native menus enabled.`
-                : 'Install the TG Master Journal desktop app to unlock native features like AI Workspace windows, system tray, and offline resilience.'}
+                : 'Install the TG Master Journal desktop app to unlock native features like the system tray, offline resilience, and native notifications.'}
             </p>
           </div>
         </div>
