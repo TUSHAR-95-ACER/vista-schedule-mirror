@@ -101,6 +101,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const MAX_HTML_BYTES = 50_000; // ~50 kB cap to prevent credit drain
+    if (html.length > MAX_HTML_BYTES) {
+      return new Response(JSON.stringify({ error: "Input too large" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (mode !== "improve" && mode !== "polish") {
       return new Response(JSON.stringify({ error: "Invalid mode" }), {
         status: 400,
