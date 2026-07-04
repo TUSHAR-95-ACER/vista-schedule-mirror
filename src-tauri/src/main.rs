@@ -13,7 +13,8 @@ use tauri::{
     AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
 };
 
-const MAIN_URL: &str = "https://master-journal-tg.lovable.app";
+// Main window URL is configured in tauri.conf.json so future web deploys
+// appear in the desktop app without a native rebuild.
 
 // -------- AI Workspace commands --------
 
