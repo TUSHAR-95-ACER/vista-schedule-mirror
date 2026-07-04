@@ -1,32 +1,12 @@
 /**
  * Desktop-only helpers. Every function safely no-ops in the browser so the
  * same web bundle powers both the Lovable web app and the Tauri desktop shell.
- *
- * We access Tauri via `window.__TAURI_INTERNALS__` presence detection and
- * dynamic imports so the web bundle never fails to load the plugin JS files.
  */
 
 export const isDesktop = (): boolean => {
   if (typeof window === 'undefined') return false;
   return Boolean((window as any).__TAURI_INTERNALS__ || (window as any).__TAURI__);
 };
-
-type AiProvider = 'chatgpt' | 'gemini' | 'claude' | 'perplexity';
-
-export async function openAiWorkspace(provider: AiProvider): Promise<void> {
-  if (!isDesktop()) {
-    const urls: Record<AiProvider, string> = {
-      chatgpt: 'https://chat.openai.com/',
-      gemini: 'https://gemini.google.com/app',
-      claude: 'https://claude.ai/new',
-      perplexity: 'https://www.perplexity.ai/',
-    };
-    window.open(urls[provider], '_blank', 'noopener,noreferrer');
-    return;
-  }
-  const { invoke } = await import('@tauri-apps/api/core');
-  await invoke('open_ai_workspace', { provider });
-}
 
 export async function openExternal(url: string): Promise<void> {
   if (!isDesktop()) {
@@ -51,21 +31,45 @@ export async function nativeNotify(title: string, body?: string): Promise<void> 
   } catch { /* ignore */ }
 }
 
-export async function checkForUpdates(silent = true): Promise<{ available: boolean; version?: string }> {
-  if (!isDesktop()) return { available: false };
+/**
+ * Poll the updater endpoint. Returns metadata about an available update so
+ * callers can show an in-app notification. Installation is a separate
+ * explicit action via `installUpdate` — we never restart the app silently.
+ */
+export interface UpdateInfo {
+  version: string;
+  currentVersion?: string;
+  notes?: string;
+  install: () => Promise<void>;
+}
+
+export async function checkForUpdatesInfo(): Promise<UpdateInfo | null> {
+  if (!isDesktop()) return null;
   try {
     const { check } = await import('@tauri-apps/plugin-updater');
     const update = await check();
-    if (!update) return { available: false };
-    if (!silent) {
-      await update.downloadAndInstall();
-      const { relaunch } = await import('@tauri-apps/plugin-process');
-      await relaunch();
-    }
-    return { available: true, version: update.version };
+    if (!update) return null;
+    return {
+      version: update.version,
+      currentVersion: (update as any).currentVersion,
+      notes: (update as any).body,
+      install: async () => {
+        await update.downloadAndInstall();
+        const { relaunch } = await import('@tauri-apps/plugin-process');
+        await relaunch();
+      },
+    };
   } catch {
-    return { available: false };
+    return null;
   }
+}
+
+/** Legacy signature preserved for existing Settings panel. */
+export async function checkForUpdates(silent = true): Promise<{ available: boolean; version?: string }> {
+  const info = await checkForUpdatesInfo();
+  if (!info) return { available: false };
+  if (!silent) await info.install();
+  return { available: true, version: info.version };
 }
 
 export async function getDesktopVersion(): Promise<string | null> {
@@ -93,4 +97,24 @@ export function installExternalLinkHandler(): () => void {
   };
   document.addEventListener('click', handler);
   return () => document.removeEventListener('click', handler);
+}
+
+/**
+ * Apply a persistent zoom level to the webview. Web platforms honour CSS zoom,
+ * so this works reliably inside WebView2 (Windows) and WKWebView (macOS).
+ */
+export function applyDesktopZoom(level = 0.85): void {
+  if (!isDesktop() || typeof document === 'undefined') return;
+  // Non-standard `zoom` property is supported in Chromium/WebView2/WKWebView.
+  (document.documentElement.style as any).zoom = String(level);
+}
+
+
+/**
+ * Mark the root element so global CSS can hide the browser scrollbar and
+ * apply native-window styling without affecting the web build.
+ */
+export function markDesktopRoot(): void {
+  if (!isDesktop() || typeof document === 'undefined') return;
+  document.documentElement.classList.add('is-desktop');
 }

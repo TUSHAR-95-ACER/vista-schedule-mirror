@@ -40,7 +40,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
 const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
-const AIWorkspace = lazy(() => import("./pages/AIWorkspace"));
+
 
 import { DesktopBootstrap } from "@/components/desktop/DesktopBootstrap";
 import { OfflineBanner } from "@/components/desktop/OfflineBanner";
@@ -102,7 +102,7 @@ const App = () => (
               <Route path="/system-analytics" element={<Suspense fallback={<RouteFallback />}><SystemAnalytics /></Suspense>} />
               <Route path="/macro-news" element={<Navigate to="/" replace />} />
               <Route path="/macro-intelligence" element={<Suspense fallback={<RouteFallback />}><MacroIntelligence /></Suspense>} />
-              <Route path="/ai-workspace" element={<Suspense fallback={<RouteFallback />}><AIWorkspace /></Suspense>} />
+              <Route path="/ai-workspace" element={<Navigate to="/" replace />} />
             </Route>
             <Route path="*" element={<Suspense fallback={<RouteFallback />}><NotFound /></Suspense>} />
           </Routes>

@@ -22,7 +22,7 @@ export const TOGGLEABLE_PAGES = [
   { path: '/backtesting-lab', label: 'Backtest Lab', section: 'INTELLIGENCE' },
   { path: '/trading-rules', label: 'Trading Rules', section: 'SYSTEM' },
   { path: '/control-center', label: 'Control Center', section: 'SYSTEM' },
-  { path: '/ai-workspace', label: 'AI Workspace', section: 'SYSTEM' },
+  
   { path: '/calendar', label: 'Calendar', section: 'OVERVIEW' },
 ] as const;
 

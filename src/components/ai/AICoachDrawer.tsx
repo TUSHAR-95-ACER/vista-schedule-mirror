@@ -102,13 +102,22 @@ export function AICoachDrawer() {
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let buf = '';
-      const upsert = (chunk: string) => {
-        acc += chunk;
+      let pendingFlush = false;
+      const flush = () => {
+        pendingFlush = false;
+        const snapshot = acc;
         setMessages(prev => {
           const last = prev[prev.length - 1];
-          if (last?.role === 'assistant') return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: acc } : m);
-          return [...prev, { role: 'assistant', content: acc }];
+          if (last?.role === 'assistant') return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: snapshot } : m);
+          return [...prev, { role: 'assistant', content: snapshot }];
         });
+      };
+      const upsert = (chunk: string) => {
+        acc += chunk;
+        if (!pendingFlush) {
+          pendingFlush = true;
+          requestAnimationFrame(flush);
+        }
       };
       while (true) {
         const { done, value } = await reader.read();
@@ -125,6 +134,8 @@ export function AICoachDrawer() {
           catch { buf = line + '\n' + buf; break; }
         }
       }
+      // Final flush so the last frame lands even if RAF hasn't fired.
+      if (pendingFlush) flush();
     } catch (e: any) {
       if (e?.name !== 'AbortError') { console.error(e); toast.error('Chat error'); }
     }
