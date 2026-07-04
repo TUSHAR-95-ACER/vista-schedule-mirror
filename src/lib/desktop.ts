@@ -105,9 +105,8 @@ export function installExternalLinkHandler(): () => void {
  */
 export function applyDesktopZoom(level = 0.85): void {
   if (!isDesktop() || typeof document === 'undefined') return;
-  // @ts-expect-error non-standard but supported in Chromium/WebView2/WKWebView
-  document.documentElement.style.zoom = String(level);
-}
+  // Non-standard `zoom` property is supported in Chromium/WebView2/WKWebView.
+  (document.documentElement.style as any).zoom = String(level);
 
 /**
  * Mark the root element so global CSS can hide the browser scrollbar and
