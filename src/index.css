@@ -407,3 +407,45 @@
 }
 .rich-content a { color: hsl(var(--primary)); text-decoration: underline; }
 .rich-content mark { padding: 0 2px; border-radius: 3px; }
+
+/* ============================================================
+   Desktop shell overrides (Tauri) — kept out of the browser build.
+   Activated by <html class="is-desktop"> from markDesktopRoot().
+   ============================================================ */
+html.is-desktop,
+html.is-desktop body,
+html.is-desktop #root {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Refined scrollbar for internal scroll containers only */
+html.is-desktop ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html.is-desktop ::-webkit-scrollbar-track {
+  background: transparent;
+}
+html.is-desktop ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.22);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html.is-desktop ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+html.is-desktop * {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.28) transparent;
+}
+
+/* Prevent OS text-selection glow feeling browser-y on native chrome */
+html.is-desktop {
+  -webkit-user-select: text;
+  user-select: text;
+}
