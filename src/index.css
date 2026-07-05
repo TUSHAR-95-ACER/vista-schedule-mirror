@@ -441,6 +441,11 @@ html.is-desktop #root {
   box-sizing: border-box;
 }
 
+/* h-screen inside the padded root would overflow by the title-bar height. */
+html.is-desktop #root .h-screen {
+  height: calc(100vh - var(--desktop-titlebar-h)) !important;
+}
+
 /* Tighten hero paddings / gaps so cards fit the native window. */
 html.is-desktop .p-8  { padding: 1.25rem !important; }
 html.is-desktop .p-6  { padding: 1rem !important; }
