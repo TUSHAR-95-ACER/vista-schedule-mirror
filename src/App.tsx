@@ -108,6 +108,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<Suspense fallback={<RouteFallback />}><NotFound /></Suspense>} />
           </Routes>
+          </RealtimeSyncProvider>
         </BrowserRouter>
       </TooltipProvider>
     </PageVisibilityProvider>
