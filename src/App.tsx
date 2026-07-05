@@ -44,6 +44,7 @@ const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
 
 import { DesktopBootstrap } from "@/components/desktop/DesktopBootstrap";
 import { OfflineBanner } from "@/components/desktop/OfflineBanner";
+import { RealtimeSyncProvider } from "@/contexts/RealtimeSyncContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ const App = () => (
         <DesktopBootstrap />
         <OfflineBanner />
         <BrowserRouter>
+          <RealtimeSyncProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -106,6 +108,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<Suspense fallback={<RouteFallback />}><NotFound /></Suspense>} />
           </Routes>
+          </RealtimeSyncProvider>
         </BrowserRouter>
       </TooltipProvider>
     </PageVisibilityProvider>

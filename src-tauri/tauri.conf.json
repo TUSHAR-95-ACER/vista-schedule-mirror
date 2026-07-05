@@ -22,7 +22,9 @@
         "fullscreen": false,
         "center": true,
         "focus": true,
-        "decorations": true,
+        "decorations": false,
+        "transparent": false,
+        "shadow": true,
         "url": "https://master-journal-tg.lovable.app"
       }
     ],
@@ -32,8 +34,8 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "dmg", "app"],
-    "createUpdaterArtifacts": false,
+    "targets": ["nsis", "dmg", "app", "updater"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -43,7 +45,7 @@
     ],
     "category": "Finance",
     "shortDescription": "Professional trading journal — desktop edition",
-    "longDescription": "TG Master Journal desktop app: native window for the professional trading operating system. Auto-syncs with every web deploy — no manual reinstall needed for UI updates.",
+    "longDescription": "TG Master Journal desktop app: native window for the professional trading operating system. Auto-syncs with every web deploy and self-updates when a new native release ships.",
     "copyright": "© 2026 TG Master Journal",
     "publisher": "TG Master Journal",
     "windows": {
@@ -59,10 +61,10 @@
   },
   "plugins": {
     "updater": {
-      "active": false,
+      "active": true,
       "pubkey": "",
       "endpoints": [
-        "https://master-journal-tg.lovable.app/desktop-updates/{{target}}-{{arch}}/{{current_version}}"
+        "https://github.com/TG-MasterJournal/desktop-releases/releases/latest/download/latest.json"
       ]
     }
   }

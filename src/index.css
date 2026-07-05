@@ -411,8 +411,23 @@
 /* ============================================================
    Desktop shell overrides (Tauri) — kept out of the browser build.
    Activated by <html class="is-desktop"> from markDesktopRoot().
+
+   Philosophy: NO CSS `zoom`. All density comes from reflow —
+   smaller base font-size, tighter paddings, tighter cards. The app
+   uses the full window height like VS Code / Discord / TradingView.
    ============================================================ */
-html.is-desktop,
+html.is-desktop {
+  /* Custom title-bar height reserved at the very top of the window */
+  --desktop-titlebar-h: 34px;
+
+  /* Compact density — reflows components without visual shrink */
+  font-size: 14.5px;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
 html.is-desktop body,
 html.is-desktop #root {
   height: 100%;
@@ -420,32 +435,47 @@ html.is-desktop #root {
   overscroll-behavior: none;
 }
 
-/* Refined scrollbar for internal scroll containers only */
-html.is-desktop ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-html.is-desktop ::-webkit-scrollbar-track {
-  background: transparent;
-}
-html.is-desktop ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.22);
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-html.is-desktop ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.4);
-  background-clip: padding-box;
-  border: 2px solid transparent;
-}
-html.is-desktop * {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.28) transparent;
+/* Push the whole app under the custom title bar (no white strip). */
+html.is-desktop #root {
+  padding-top: var(--desktop-titlebar-h);
+  box-sizing: border-box;
 }
 
-/* Prevent OS text-selection glow feeling browser-y on native chrome */
-html.is-desktop {
-  -webkit-user-select: text;
-  user-select: text;
+/* h-screen inside the padded root would overflow by the title-bar height. */
+html.is-desktop #root .h-screen {
+  height: calc(100vh - var(--desktop-titlebar-h)) !important;
 }
+
+/* Tighten hero paddings / gaps so cards fit the native window. */
+html.is-desktop .p-8  { padding: 1.25rem !important; }
+html.is-desktop .p-6  { padding: 1rem !important; }
+html.is-desktop .py-8 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+html.is-desktop .py-6 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+html.is-desktop .px-8 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+html.is-desktop .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+html.is-desktop .gap-8 { gap: 1.25rem !important; }
+html.is-desktop .gap-6 { gap: 1rem !important; }
+
+/* Hide ALL scrollbars everywhere while keeping scroll functional
+   (wheel, touchpad, keyboard, and touch all still work). */
+html.is-desktop,
+html.is-desktop * {
+  scrollbar-width: none !important;      /* Firefox */
+  -ms-overflow-style: none !important;   /* legacy Edge/IE */
+}
+html.is-desktop ::-webkit-scrollbar,
+html.is-desktop *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
+}
+html.is-desktop ::-webkit-scrollbar-thumb,
+html.is-desktop ::-webkit-scrollbar-track,
+html.is-desktop ::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Elements marked with data-tauri-drag-region must not steal clicks
+   from their child controls. */
+[data-tauri-drag-region] > * { -webkit-app-region: no-drag; }

@@ -59,7 +59,8 @@ export async function checkForUpdatesInfo(): Promise<UpdateInfo | null> {
         await relaunch();
       },
     };
-  } catch {
+  } catch (e) {
+    console.warn('[desktop] update check failed', e);
     return null;
   }
 }
@@ -100,21 +101,50 @@ export function installExternalLinkHandler(): () => void {
 }
 
 /**
- * Apply a persistent zoom level to the webview. Web platforms honour CSS zoom,
- * so this works reliably inside WebView2 (Windows) and WKWebView (macOS).
- */
-export function applyDesktopZoom(level = 0.85): void {
-  if (!isDesktop() || typeof document === 'undefined') return;
-  // Non-standard `zoom` property is supported in Chromium/WebView2/WKWebView.
-  (document.documentElement.style as any).zoom = String(level);
-}
-
-
-/**
- * Mark the root element so global CSS can hide the browser scrollbar and
- * apply native-window styling without affecting the web build.
+ * Mark the root element so global CSS can apply desktop-specific reflow:
+ * denser paddings, smaller heading sizes, hidden scrollbars, custom
+ * title-bar spacing. Never uses CSS `zoom` — that produces empty space
+ * at the bottom of pages. All sizing is done via reflow tokens.
  */
 export function markDesktopRoot(): void {
   if (!isDesktop() || typeof document === 'undefined') return;
   document.documentElement.classList.add('is-desktop');
+}
+
+/** Native window control helpers (no-ops in the browser). */
+export async function winMinimize(): Promise<void> {
+  if (!isDesktop()) return;
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().minimize();
+  } catch (e) { console.warn('[desktop] minimize failed', e); }
+}
+export async function winToggleMaximize(): Promise<void> {
+  if (!isDesktop()) return;
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().toggleMaximize();
+  } catch (e) { console.warn('[desktop] toggleMaximize failed', e); }
+}
+export async function winClose(): Promise<void> {
+  if (!isDesktop()) return;
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().close();
+  } catch (e) { console.warn('[desktop] close failed', e); }
+}
+export async function winIsMaximized(): Promise<boolean> {
+  if (!isDesktop()) return false;
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    return await getCurrentWindow().isMaximized();
+  } catch { return false; }
+}
+export async function onWinResize(cb: () => void): Promise<() => void> {
+  if (!isDesktop()) return () => {};
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    const unlisten = await getCurrentWindow().onResized(() => cb());
+    return () => { try { unlisten(); } catch { /* */ } };
+  } catch { return () => {}; }
 }
