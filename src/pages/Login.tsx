@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Mail, Lock, User, LogIn } from 'lucide-react';
 import { RouteSeo } from '@/components/seo/RouteSeo';
+import { savePostLoginNext } from '@/components/auth/PostLoginRedirect';
 
 function safeNext(raw: string | null): string {
   if (!raw) return '/';
@@ -38,6 +39,7 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     setSubmitting(true);
+    savePostLoginNext(nextPath);
     try {
       await signInWithGoogle();
     } catch (err: any) {
