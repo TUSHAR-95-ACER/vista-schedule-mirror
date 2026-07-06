@@ -8,6 +8,7 @@ import { PageVisibilityProvider } from "@/contexts/PageVisibilityContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Login from "./pages/Login";
+import OAuthConsent from "./pages/OAuthConsent";
 
 
 // PERFORMANCE: Route-level code splitting. Each page only downloads when navigated to,
@@ -74,6 +75,7 @@ const App = () => (
           <RealtimeSyncProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Suspense fallback={<RouteFallback />}><Dashboard /></Suspense>} />
               <Route path="/trades" element={<Suspense fallback={<RouteFallback />}><Trades /></Suspense>} />
