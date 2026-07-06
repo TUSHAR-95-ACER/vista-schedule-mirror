@@ -70,6 +70,7 @@ export default function Login() {
       return;
     }
     setSubmitting(true);
+    savePostLoginNext(nextPath);
     try {
       await signUpWithEmail(email, password, fullName);
       toast({ title: 'Check your email', description: 'We sent a confirmation link to verify your account.' });
