@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,8 +9,16 @@ import { toast } from '@/hooks/use-toast';
 import { Mail, Lock, User, LogIn } from 'lucide-react';
 import { RouteSeo } from '@/components/seo/RouteSeo';
 
+function safeNext(raw: string | null): string {
+  if (!raw) return '/';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  return raw;
+}
+
 export default function Login() {
   const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const [params] = useSearchParams();
+  const nextPath = safeNext(params.get('next'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -26,7 +34,7 @@ export default function Login() {
     );
   }
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to={nextPath} replace />;
 
   const handleGoogleSignIn = async () => {
     setSubmitting(true);
