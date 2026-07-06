@@ -9,6 +9,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import Login from "./pages/Login";
 import OAuthConsent from "./pages/OAuthConsent";
+import { PostLoginRedirect } from "@/components/auth/PostLoginRedirect";
 
 
 // PERFORMANCE: Route-level code splitting. Each page only downloads when navigated to,
