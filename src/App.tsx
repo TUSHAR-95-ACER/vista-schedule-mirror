@@ -74,6 +74,7 @@ const App = () => (
         <OfflineBanner />
         <BrowserRouter>
           <RealtimeSyncProvider>
+          <PostLoginRedirect />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
