@@ -435,26 +435,63 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     });
   }, [enqueuePlanSave, user]);
 
+  // Concurrency-conflict retry: when another client (web ↔ desktop) has bumped
+  // the server revision between our reads and our RPC call, refetch the current
+  // revision from the DB, seed our local ref, and retry the save ONCE. This
+  // makes cross-device editing feel seamless — the user never sees "Save failed"
+  // just because the other window updated the record a moment earlier.
+  const isConcurrencyError = (err: any): boolean => {
+    const msg = String(err?.message || err?.error_description || err || '');
+    return /concurrency_conflict/i.test(msg);
+  };
+
+  const refetchWeeklyRevision = useCallback(async (id: string): Promise<number | null> => {
+    if (!user) return null;
+    const { data } = await db.from('weekly_plans')
+      .select('revision,updated_at')
+      .eq('id', id).eq('user_id', user.id).maybeSingle();
+    const rev = typeof data?.revision === 'number' ? data.revision : null;
+    if (rev != null) latestWeeklyRevision.current.set(id, rev);
+    return rev;
+  }, [user]);
+
+  const refetchDailyRevision = useCallback(async (id: string): Promise<number | null> => {
+    if (!user) return null;
+    const { data } = await db.from('daily_plans')
+      .select('revision,updated_at')
+      .eq('id', id).eq('user_id', user.id).maybeSingle();
+    const rev = typeof data?.revision === 'number' ? data.revision : null;
+    if (rev != null) latestDailyRevision.current.set(id, rev);
+    return rev;
+  }, [user]);
+
   const updateWeeklyPlan = useCallback((plan: WeeklyPlan) => {
     // Optimistic UI; revision is bumped only after the server confirms.
     setWeeklyPlans(s => s.map(p => p.id === plan.id ? plan : p));
     if (!user) return Promise.resolve();
     return enqueuePlanSave(weeklyPlanSaveQueue, plan.id, async () => {
-      const latest = latestWeeklyRevision.current.get(plan.id);
-      const planForSave = latest != null ? { ...plan, revision: latest } : plan;
-      const res = await saveWeeklyPlanRpc(planForSave);
+      const attempt = async (rev: number | null | undefined) => {
+        const planForSave = rev != null ? { ...plan, revision: rev } : plan;
+        return await saveWeeklyPlanRpc(planForSave);
+      };
+      let res: SavePlanResult;
+      try {
+        res = await attempt(latestWeeklyRevision.current.get(plan.id));
+      } catch (err) {
+        if (!isConcurrencyError(err)) throw err;
+        // Another client wrote first — refresh revision and retry once.
+        console.warn('[updateWeeklyPlan] concurrency conflict — refreshing revision and retrying', err);
+        const fresh = await refetchWeeklyRevision(plan.id);
+        res = await attempt(fresh);
+      }
       latestWeeklyRevision.current.set(plan.id, res.revision);
       setWeeklyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
       return res;
     }).catch(err => {
-      // Refuse-to-overwrite errors (placeholders / write-guard / concurrency)
-      // surface here. We keep the optimistic state so the user doesn't lose
-      // their edits — the next clean save will retry against the latest
-      // server revision.
       console.error('[updateWeeklyPlan] save rejected:', err);
       throw err;
     });
-  }, [enqueuePlanSave, user]);
+  }, [enqueuePlanSave, user, refetchWeeklyRevision]);
 
   const deleteWeeklyPlan = useCallback((id: string) => {
     setWeeklyPlans(s => s.filter(p => p.id !== id));
@@ -485,9 +522,19 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
     dailyPlanMediaCache.current.set(plan.id, plan);
     if (!user) return Promise.resolve();
     return enqueuePlanSave(dailyPlanSaveQueue, plan.id, async () => {
-      const latest = latestDailyRevision.current.get(plan.id);
-      const planForSave = latest != null ? { ...plan, revision: latest } : plan;
-      const res = await saveDailyPlanRpc(planForSave);
+      const attempt = async (rev: number | null | undefined) => {
+        const planForSave = rev != null ? { ...plan, revision: rev } : plan;
+        return await saveDailyPlanRpc(planForSave);
+      };
+      let res: SavePlanResult;
+      try {
+        res = await attempt(latestDailyRevision.current.get(plan.id));
+      } catch (err) {
+        if (!isConcurrencyError(err)) throw err;
+        console.warn('[updateDailyPlan] concurrency conflict — refreshing revision and retrying', err);
+        const fresh = await refetchDailyRevision(plan.id);
+        res = await attempt(fresh);
+      }
       latestDailyRevision.current.set(plan.id, res.revision);
       setDailyPlans(s => s.map(p => p.id === plan.id ? { ...p, revision: res.revision, updatedAt: res.updated_at } : p));
       const cached = dailyPlanMediaCache.current.get(plan.id);
@@ -497,7 +544,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       console.error('[updateDailyPlan] save rejected:', err);
       throw err;
     });
-  }, [enqueuePlanSave, user]);
+  }, [enqueuePlanSave, user, refetchDailyRevision]);
 
   const deleteDailyPlan = useCallback((id: string) => {
     setDailyPlans(s => s.filter(p => p.id !== id));
