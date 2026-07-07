@@ -412,31 +412,33 @@
    Desktop shell overrides (Tauri) — kept out of the browser build.
    Activated by <html class="is-desktop"> from markDesktopRoot().
 
-   Philosophy: NO CSS `zoom`. All density comes from reflow —
-   smaller base font-size, tighter paddings, tighter cards. The app
-   uses the full window height like VS Code / Discord / TradingView.
+   Philosophy: NO CSS `zoom`. Density comes from reflow — smaller base
+   font-size, tighter paddings, tighter cards, smaller controls. The
+   app uses the full window height like VS Code / Discord / TradingView.
+   Target: ~18-20% visually denser than the web build.
    ============================================================ */
 html.is-desktop {
-  /* Custom title-bar height reserved at the very top of the window */
-  --desktop-titlebar-h: 34px;
+  /* Slim, integrated title-bar (matches sidebar surface, no white strip) */
+  --desktop-titlebar-h: 28px;
 
-  /* Compact density — reflows components without visual shrink */
-  font-size: 14.5px;
+  /* Compact base font — reflows every rem-based measurement together. */
+  font-size: 13.5px;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-user-select: text;
   user-select: text;
 }
-html.is-desktop body,
-html.is-desktop #root {
+html.is-desktop body {
+  font-size: 13px;
+  line-height: 1.5;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
 }
-
-/* Push the whole app under the custom title bar (no white strip). */
 html.is-desktop #root {
+  height: 100%;
+  overflow: hidden;
   padding-top: var(--desktop-titlebar-h);
   box-sizing: border-box;
 }
@@ -446,33 +448,56 @@ html.is-desktop #root .h-screen {
   height: calc(100vh - var(--desktop-titlebar-h)) !important;
 }
 
-/* Tighten hero paddings / gaps so cards fit the native window. */
-html.is-desktop .p-8  { padding: 1.25rem !important; }
-html.is-desktop .p-6  { padding: 1rem !important; }
-html.is-desktop .py-8 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
-html.is-desktop .py-6 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
-html.is-desktop .px-8 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
-html.is-desktop .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
-html.is-desktop .gap-8 { gap: 1.25rem !important; }
-html.is-desktop .gap-6 { gap: 1rem !important; }
+/* ---------- Density: paddings, gaps, margins ---------- */
+html.is-desktop .p-8  { padding: 1.1rem !important; }
+html.is-desktop .p-7  { padding: 1rem !important; }
+html.is-desktop .p-6  { padding: 0.85rem !important; }
+html.is-desktop .p-5  { padding: 0.75rem !important; }
+html.is-desktop .p-4  { padding: 0.65rem !important; }
+html.is-desktop .py-8 { padding-top: 1.1rem !important; padding-bottom: 1.1rem !important; }
+html.is-desktop .py-6 { padding-top: 0.85rem !important; padding-bottom: 0.85rem !important; }
+html.is-desktop .py-4 { padding-top: 0.6rem !important; padding-bottom: 0.6rem !important; }
+html.is-desktop .px-8 { padding-left: 1.1rem !important; padding-right: 1.1rem !important; }
+html.is-desktop .px-6 { padding-left: 0.85rem !important; padding-right: 0.85rem !important; }
+html.is-desktop .gap-8 { gap: 1.1rem !important; }
+html.is-desktop .gap-6 { gap: 0.85rem !important; }
+html.is-desktop .gap-5 { gap: 0.7rem !important; }
+html.is-desktop .gap-4 { gap: 0.6rem !important; }
+html.is-desktop .space-y-8 > * + * { margin-top: 1.1rem !important; }
+html.is-desktop .space-y-6 > * + * { margin-top: 0.85rem !important; }
+html.is-desktop .space-y-4 > * + * { margin-top: 0.6rem !important; }
+html.is-desktop .mb-8 { margin-bottom: 1.1rem !important; }
+html.is-desktop .mb-6 { margin-bottom: 0.85rem !important; }
+html.is-desktop .mt-8 { margin-top: 1.1rem !important; }
+html.is-desktop .mt-6 { margin-top: 0.85rem !important; }
 
-/* Hide ALL scrollbars everywhere while keeping scroll functional
-   (wheel, touchpad, keyboard, and touch all still work). */
+/* ---------- Density: headings & metrics ---------- */
+html.is-desktop h1, html.is-desktop .text-4xl { font-size: 1.6rem !important; }
+html.is-desktop h2, html.is-desktop .text-3xl { font-size: 1.35rem !important; }
+html.is-desktop h3, html.is-desktop .text-2xl { font-size: 1.1rem !important; }
+html.is-desktop .text-xl { font-size: 1rem !important; }
+html.is-desktop .text-lg { font-size: 0.9375rem !important; }
+html.is-desktop .metric-large { font-size: clamp(1rem, 1.6vw, 1.25rem) !important; }
+
+/* ---------- Density: buttons, inputs ---------- */
+html.is-desktop button:not([data-tauri-drag-region] *):not(.no-desktop-shrink) {
+  min-height: 0;
+}
+html.is-desktop [data-slot="button"] { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+html.is-desktop .h-10 { height: 2.1rem !important; }
+html.is-desktop .h-9  { height: 1.9rem !important; }
+
+/* ---------- Hide scrollbars everywhere (scrolling still works) ---------- */
 html.is-desktop,
 html.is-desktop * {
-  scrollbar-width: none !important;      /* Firefox */
-  -ms-overflow-style: none !important;   /* legacy Edge/IE */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 html.is-desktop ::-webkit-scrollbar,
 html.is-desktop *::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
   display: none !important;
-  background: transparent !important;
-}
-html.is-desktop ::-webkit-scrollbar-thumb,
-html.is-desktop ::-webkit-scrollbar-track,
-html.is-desktop ::-webkit-scrollbar-corner {
   background: transparent !important;
 }
 
