@@ -290,6 +290,29 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   const latestDailyRevision = useRef<Map<string, number>>(new Map());
   const latestWeeklyRevision = useRef<Map<string, number>>(new Map());
 
+  // Cross-client sync (web ↔ desktop): when RealtimeSyncProvider emits an
+  // `mj:realtime` event for our plan tables, seed the latest revision so the
+  // next local save doesn't hit a stale-revision conflict. We intentionally do
+  // NOT overwrite unsaved local edits — only the revision pointer is updated.
+  useEffect(() => {
+    if (!user) return;
+    const onRealtime = (e: Event) => {
+      const detail: any = (e as CustomEvent).detail;
+      if (!detail || detail.event === 'DELETE') return;
+      const row = detail.new;
+      if (!row || row.user_id !== user.id) return;
+      const rev = typeof row.revision === 'number' ? row.revision : null;
+      if (rev == null) return;
+      if (detail.table === 'daily_plans') {
+        latestDailyRevision.current.set(row.id, rev);
+      } else if (detail.table === 'weekly_plans') {
+        latestWeeklyRevision.current.set(row.id, rev);
+      }
+    };
+    window.addEventListener('mj:realtime', onRealtime as EventListener);
+    return () => window.removeEventListener('mj:realtime', onRealtime as EventListener);
+  }, [user]);
+
   const enqueuePlanSave = useCallback((
     queue: React.MutableRefObject<Map<string, Promise<SavePlanResult | void>>>,
     id: string,
