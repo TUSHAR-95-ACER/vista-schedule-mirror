@@ -5,13 +5,13 @@ import { winClose, winIsMaximized, winMinimize, winToggleMaximize, onWinResize }
 /**
  * Custom frameless-window title bar for the Tauri desktop shell.
  *
- * Renders as a fixed 34px band at the very top of the window with:
- *   - a drag region (double-click toggles maximize — native behaviour)
- *   - product identity
- *   - minimize / maximize-restore / close controls (dark, no white strip)
+ * Design goals:
+ *   - Feels integrated with the sidebar (same dark surface, no white OS strip
+ *     and no extra black band above the app content).
+ *   - Slim 28px band, subtle bottom hairline that blends into the sidebar.
+ *   - Drag anywhere on the empty region — native controls on the right.
  *
- * The rest of the app is offset by CSS variable `--desktop-titlebar-h` set
- * in index.css when `html.is-desktop` is present.
+ * Inspired by Notion / Discord / VS Code title bars.
  */
 export function DesktopTitleBar() {
   const [maximized, setMaximized] = useState(false);
@@ -25,25 +25,23 @@ export function DesktopTitleBar() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-between select-none"
+      className="fixed top-0 left-0 right-0 z-[9999] flex items-stretch select-none"
       style={{
-        height: 'var(--desktop-titlebar-h, 34px)',
-        background: 'hsl(var(--background))',
-        borderBottom: '1px solid hsl(var(--border) / 0.5)',
+        height: 'var(--desktop-titlebar-h, 28px)',
+        background: 'hsl(var(--sidebar-background))',
+        borderBottom: '1px solid hsl(var(--sidebar-border) / 0.6)',
       }}
     >
-      {/* Drag region — everything except the buttons */}
+      {/* Drag region — spans the whole bar minus the buttons */}
       <div
         data-tauri-drag-region
-        className="flex-1 h-full flex items-center gap-2 px-3 text-[11px] font-medium tracking-wide text-muted-foreground"
+        className="flex-1 h-full flex items-center gap-1.5 pl-2.5 text-[10.5px] font-medium tracking-[0.02em]"
+        style={{ color: 'hsl(var(--sidebar-foreground) / 0.55)' }}
       >
         <span
           data-tauri-drag-region
-          className="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-primary/15 text-primary text-[9px] font-bold"
+          className="pointer-events-none uppercase"
         >
-          MJ
-        </span>
-        <span data-tauri-drag-region className="pointer-events-none">
           TG Master Journal
         </span>
       </div>
@@ -51,16 +49,16 @@ export function DesktopTitleBar() {
       {/* Window controls */}
       <div className="flex h-full items-stretch">
         <TitleBarButton onClick={winMinimize} aria-label="Minimize">
-          <Minus className="h-3.5 w-3.5" />
+          <Minus className="h-3 w-3" />
         </TitleBarButton>
         <TitleBarButton
           onClick={async () => { await winToggleMaximize(); setMaximized(await winIsMaximized()); }}
           aria-label={maximized ? 'Restore' : 'Maximize'}
         >
-          {maximized ? <Copy className="h-3 w-3" /> : <Square className="h-3 w-3" />}
+          {maximized ? <Copy className="h-2.5 w-2.5" /> : <Square className="h-2.5 w-2.5" />}
         </TitleBarButton>
         <TitleBarButton onClick={winClose} aria-label="Close" danger>
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3 w-3" />
         </TitleBarButton>
       </div>
     </div>
@@ -78,10 +76,10 @@ function TitleBarButton({
       type="button"
       onClick={onClick}
       className={
-        'w-11 h-full flex items-center justify-center text-muted-foreground transition-colors ' +
+        'w-11 h-full flex items-center justify-center transition-colors ' +
         (danger
-          ? 'hover:bg-destructive hover:text-destructive-foreground'
-          : 'hover:bg-muted/40 hover:text-foreground')
+          ? 'text-[hsl(var(--sidebar-foreground)/0.7)] hover:bg-destructive hover:text-destructive-foreground'
+          : 'text-[hsl(var(--sidebar-foreground)/0.7)] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))]')
       }
       {...rest}
     >
