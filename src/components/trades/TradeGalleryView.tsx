@@ -11,6 +11,7 @@ import { X, Download, ZoomIn } from 'lucide-react';
 import { getDayOfWeek } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LazyTradeImage } from './LazyTradeImage';
+import { getRawUrl } from '@/lib/mediaSlot';
 
 interface Props {
   trades: Trade[];
