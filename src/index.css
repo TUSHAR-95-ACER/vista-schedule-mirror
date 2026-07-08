@@ -488,13 +488,13 @@ html.is-desktop .h-10 { height: 2.1rem !important; }
 html.is-desktop .h-9  { height: 1.9rem !important; }
 
 /* ---------- Hide scrollbars everywhere (scrolling still works) ---------- */
-html.is-desktop,
-html.is-desktop * {
+html,
+html * {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
-html.is-desktop ::-webkit-scrollbar,
-html.is-desktop *::-webkit-scrollbar {
+html ::-webkit-scrollbar,
+html *::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
   display: none !important;
