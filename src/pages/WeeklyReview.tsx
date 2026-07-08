@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
-import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight, Sparkles, Loader2 } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight, Sparkles, Loader2, Video } from 'lucide-react';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
+import type { DailyReviewVideo as DailyReviewVideoMeta } from '@/types/trading';
 
 type WeeklyReviewNotes = {
   weeklyNarrative: string;
@@ -188,13 +190,16 @@ export default function WeeklyReview() {
   const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
   const [reviewNotes, setReviewNotes] = useState<WeeklyReviewNotes>(emptyReviewNotes);
+  const [reviewVideo, setReviewVideo] = useState<DailyReviewVideoMeta | null>(null);
 
   useEffect(() => {
     if (!user?.id || !latest?.week) {
       setReviewNotes(emptyReviewNotes());
+      setReviewVideo(null);
       return;
     }
     setReviewNotes(loadUserStorage<WeeklyReviewNotes>(`weeklyReviewNotes:${latest.week}`, user.id, emptyReviewNotes()));
+    setReviewVideo(loadUserStorage<DailyReviewVideoMeta | null>(`weeklyReviewVideo:${latest.week}`, user.id, null));
   }, [user?.id, latest?.week]);
 
   useEffect(() => {
@@ -202,6 +207,11 @@ export default function WeeklyReview() {
     const t = setTimeout(() => saveUserStorage(`weeklyReviewNotes:${latest.week}`, user.id, reviewNotes), 300);
     return () => clearTimeout(t);
   }, [user?.id, latest?.week, reviewNotes]);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) return;
+    saveUserStorage(`weeklyReviewVideo:${latest.week}`, user.id, reviewVideo);
+  }, [user?.id, latest?.week, reviewVideo]);
 
   const updateReviewNote = (field: keyof WeeklyReviewNotes, value: string) => {
     setReviewNotes(prev => ({ ...prev, [field]: value }));
@@ -489,6 +499,19 @@ export default function WeeklyReview() {
               </Card>
             ))}
           </div>
+
+          {/* Weekly Review Video — Google Drive embed (reuses DailyReviewVideo). */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs flex items-center gap-1.5 uppercase tracking-wider text-muted-foreground">
+                <Video className="h-3.5 w-3.5 text-emerald-500" /> Weekly Review Video
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DailyReviewVideo value={reviewVideo} onChange={setReviewVideo} />
+            </CardContent>
+          </Card>
+
 
           {/* All Weeks Table */}
           <Card>

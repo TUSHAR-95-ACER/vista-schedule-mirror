@@ -11,6 +11,7 @@ import { X, Download, ZoomIn } from 'lucide-react';
 import { getDayOfWeek } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LazyTradeImage } from './LazyTradeImage';
+import { getRawUrl } from '@/lib/mediaSlot';
 
 interface Props {
   trades: Trade[];
@@ -133,32 +134,37 @@ export function TradeGalleryView({ trades, onSelectTrade }: Props) {
                 </div>
 
                 {/* Full image */}
-                {(expandedTrade.executionImage || expandedTrade.predictionImage) && (
-                  <div className="space-y-3">
-                    {expandedTrade.executionImage && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1.5 font-medium">Execution Chart</p>
-                        <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(expandedTrade.executionImage!)}>
-                          <img src={expandedTrade.executionImage} alt="Execution" className="w-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                            <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                {(expandedTrade.executionImage || expandedTrade.predictionImage) && (() => {
+                  const execUrl = expandedTrade.executionImage ? getRawUrl(expandedTrade.executionImage) : '';
+                  const predUrl = expandedTrade.predictionImage ? getRawUrl(expandedTrade.predictionImage) : '';
+                  const isImg = (u: string) => !!u && /^(https?:|data:|blob:|\/)/.test(u);
+                  return (
+                    <div className="space-y-3">
+                      {isImg(execUrl) && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1.5 font-medium">Execution Chart</p>
+                          <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(execUrl)}>
+                            <img src={execUrl} alt="Execution" className="w-full object-cover" loading="lazy" decoding="async" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    {expandedTrade.predictionImage && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1.5 font-medium">Prediction Chart</p>
-                        <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(expandedTrade.predictionImage!)}>
-                          <img src={expandedTrade.predictionImage} alt="Prediction" className="w-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                            <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                      {isImg(predUrl) && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1.5 font-medium">Prediction Chart</p>
+                          <div className="relative group cursor-pointer rounded-lg overflow-hidden border border-border" onClick={() => setPreviewImage(predUrl)}>
+                            <img src={predUrl} alt="Prediction" className="w-full object-cover" loading="lazy" decoding="async" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Info grid */}
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">

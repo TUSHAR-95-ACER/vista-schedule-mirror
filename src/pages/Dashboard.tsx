@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { WeekdayChart } from '@/components/dashboard/WeekdayChart';
 import { HourChart } from '@/components/dashboard/HourChart';
+import { MonthlyChart } from '@/components/dashboard/MonthlyChart';
 import {
   TrendingUp,
   TrendingDown,
@@ -288,6 +289,14 @@ export default function Dashboard() {
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
           <ChartHeader title="By Time (P/L)" tooltip="Net P/L grouped by trade entry hour. Gold highlights your most profitable hour." />
           <div className="h-[200px] sm:h-[240px]"><HourChart trades={trades} /></div>
+        </div>
+      </div>
+
+      {/* By Month (P/L) */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 sm:mt-4">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
+          <ChartHeader title="By Month (P/L)" tooltip="P/L aggregated by calendar month across the selected trades." />
+          <div className="h-[200px] sm:h-[240px]"><MonthlyChart trades={trades} /></div>
         </div>
       </div>
 

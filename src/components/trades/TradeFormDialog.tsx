@@ -21,7 +21,7 @@ import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
   TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES, TradeStatus,
   ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
-  OrderType, ORDER_TYPES,
+  OrderType, ORDER_TYPES, TradeReviewAnswer,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -172,6 +172,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     curve: '' as 'Right' | 'Left' | 'Centre' | '',
     tradeAnalysis: undefined as Trade['tradeAnalysis'] | undefined,
     marketSentiment: undefined as number | undefined,
+    reviewAnswers: {} as Record<string, TradeReviewAnswer>,
   };
 
   const [form, setForm] = useState(defaultForm);
@@ -241,6 +242,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         curve: (editTrade as any).curve || '',
         tradeAnalysis: editTrade.tradeAnalysis,
         marketSentiment: editTrade.marketSentiment,
+        reviewAnswers: (editTrade.psychology as any)?.reviewAnswers || {},
       });
     } else {
       setForm(defaultForm);
@@ -482,6 +484,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         focus: form.focus,
         discipline: form.discipline,
         checklist: form.checklist,
+        reviewAnswers: form.reviewAnswers && Object.keys(form.reviewAnswers).length ? form.reviewAnswers : undefined,
       },
       mistakes: form.mistakes,
       grade: (form.grade || undefined) as TradeGrade | undefined,
@@ -917,6 +920,51 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
                   />
                 ))}
               </div>
+            </FormSection>
+
+            {/* ── TRADE REVIEW QUESTIONS ────────────────────────── */}
+            <FormSection title="Trade Review Questions" icon={<Brain className="h-3.5 w-3.5" />} accent="primary">
+              <p className="text-[10px] text-muted-foreground/70">Post-trade reflection. Optional — used for AI coaching, not for grading or analytics.</p>
+              {[
+                { id: 'reached1R', q: 'Did price reach +1R?' },
+                { id: 'hitTargetEventually', q: 'If not breakeven, did price eventually hit your target?' },
+                { id: 'followedPlan', q: 'Did you follow your original plan?' },
+                { id: 'properEntry', q: 'Was your entry executed at the planned level?' },
+                { id: 'managedRisk', q: 'Did you respect your predefined risk?' },
+              ].map(({ id, q }) => {
+                const val = form.reviewAnswers?.[id];
+                return (
+                  <div key={id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <span className="text-xs text-foreground/80 flex-1">{q}</span>
+                    <div className="flex gap-1.5 shrink-0">
+                      {(['yes', 'no', 'partial'] as TradeReviewAnswer[]).map(opt => {
+                        const active = val === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => {
+                              const next = { ...(form.reviewAnswers || {}) };
+                              if (active) delete next[id]; else next[id] = opt;
+                              set('reviewAnswers', next);
+                            }}
+                            className={cn(
+                              'px-3 py-1 rounded-md border text-[11px] font-semibold uppercase tracking-wider transition-all',
+                              active
+                                ? opt === 'yes' ? 'bg-success/15 border-success/40 text-success'
+                                  : opt === 'no' ? 'bg-destructive/15 border-destructive/40 text-destructive'
+                                  : 'bg-warning/15 border-warning/40 text-warning'
+                                : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
+                            )}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </FormSection>
 
             {/* ── MISTAKES ───────────────────────────────────────── */}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import type { Trade } from '@/types/trading';
+import { getRawUrl } from '@/lib/mediaSlot';
 
 interface Props {
   trade: Trade;
@@ -10,18 +11,17 @@ interface Props {
 }
 
 /**
- * Renders a trade chart image, lazily fetching the heavy base64 column
- * (executionImage / predictionImage) only once the card scrolls into view.
- * The list query never ships these blobs, which is the main perf win.
+ * Renders a trade chart image, lazily fetching the heavy media column
+ * once the card scrolls into view. Slot values may be raw URLs, data URLs,
+ * or encoded `urlmeta:` link previews — always resolve via getRawUrl.
  */
 export function LazyTradeImage({ trade, alt, className }: Props) {
   const { hydrateTradeMedia } = useTrading();
   const ref = useRef<HTMLDivElement | null>(null);
-  const [src, setSrc] = useState<string | null>(
-    trade.executionImage || trade.predictionImage || null
-  );
+  const initial = trade.executionImage || trade.predictionImage || null;
+  const [src, setSrc] = useState<string | null>(initial);
   const [loading, setLoading] = useState(false);
-  const [tried, setTried] = useState(Boolean(src));
+  const [tried, setTried] = useState(Boolean(initial));
 
   useEffect(() => {
     if (tried || !ref.current) return;
@@ -45,10 +45,19 @@ export function LazyTradeImage({ trade, alt, className }: Props) {
     return () => io.disconnect();
   }, [trade.id, hydrateTradeMedia, tried]);
 
+  const resolvedSrc = src ? getRawUrl(src) : null;
+  const isLoadable = !!resolvedSrc && /^(https?:|data:|blob:|\/)/.test(resolvedSrc);
+
   return (
     <div ref={ref} className={className}>
-      {src ? (
-        <img src={src} alt={alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
+      {isLoadable ? (
+        <img
+          src={resolvedSrc!}
+          alt={alt}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          decoding="async"
+        />
       ) : loading ? (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
           <Loader2 className="h-6 w-6 animate-spin" />
