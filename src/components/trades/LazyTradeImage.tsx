@@ -18,11 +18,10 @@ interface Props {
 export function LazyTradeImage({ trade, alt, className }: Props) {
   const { hydrateTradeMedia } = useTrading();
   const ref = useRef<HTMLDivElement | null>(null);
-  const [src, setSrc] = useState<string | null>(
-    trade.executionImage || trade.predictionImage || null
-  );
+  const initial = trade.executionImage || trade.predictionImage || null;
+  const [src, setSrc] = useState<string | null>(initial);
   const [loading, setLoading] = useState(false);
-  const [tried, setTried] = useState(Boolean(src));
+  const [tried, setTried] = useState(Boolean(initial));
 
   useEffect(() => {
     if (tried || !ref.current) return;
@@ -45,6 +44,10 @@ export function LazyTradeImage({ trade, alt, className }: Props) {
     io.observe(el);
     return () => io.disconnect();
   }, [trade.id, hydrateTradeMedia, tried]);
+
+  // Resolve encoded urlmeta:… slot values into a real image URL.
+  const resolvedSrc = src ? getRawUrl(src) : null;
+  const isLoadable = !!resolvedSrc && /^(https?:|data:|blob:|\/)/.test(resolvedSrc);
 
   return (
     <div ref={ref} className={className}>
