@@ -159,6 +159,8 @@ export const JOURNEY_EVENT_TYPES = [
   'Custom Event',
 ] as const;
 
+export type TradeReviewAnswer = 'yes' | 'no' | 'partial';
+
 export interface TradePsychology {
   emotion: Emotion;
   focus: number;
@@ -170,6 +172,11 @@ export interface TradePsychology {
     waitedConfirmation: boolean;
     riskRespected: boolean;
   };
+  /**
+   * Post-trade reflection answers keyed by question id. Optional — used for
+   * AI coaching + journal review. Does not participate in analytics/grading.
+   */
+  reviewAnswers?: Record<string, TradeReviewAnswer>;
 }
 
 export interface Transaction {
