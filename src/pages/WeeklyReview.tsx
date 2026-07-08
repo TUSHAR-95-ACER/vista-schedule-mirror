@@ -9,12 +9,14 @@ import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
-import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight, Sparkles, Loader2 } from 'lucide-react';
+import { Lightbulb, TrendingUp, TrendingDown, AlertTriangle, Trophy, Target, Brain, BarChart3, ChevronLeft, ChevronRight, Sparkles, Loader2, Video } from 'lucide-react';
 import { RichTextEditor } from '@/components/shared/RichTextEditor';
 import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
 import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
+import type { DailyReviewVideo as DailyReviewVideoMeta } from '@/types/trading';
 
 type WeeklyReviewNotes = {
   weeklyNarrative: string;
