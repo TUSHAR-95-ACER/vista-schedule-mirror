@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import type { Trade } from '@/types/trading';
+import { getRawUrl } from '@/lib/mediaSlot';
 
 interface Props {
   trade: Trade;
