@@ -190,13 +190,16 @@ export default function WeeklyReview() {
   const canNext = selectedIdx >= 0 && selectedIdx < weeklyData.length - 1;
   const plTrend = weeklyData.map(w => ({ name: w.weekName, pl: w.pl }));
   const [reviewNotes, setReviewNotes] = useState<WeeklyReviewNotes>(emptyReviewNotes);
+  const [reviewVideo, setReviewVideo] = useState<DailyReviewVideoMeta | null>(null);
 
   useEffect(() => {
     if (!user?.id || !latest?.week) {
       setReviewNotes(emptyReviewNotes());
+      setReviewVideo(null);
       return;
     }
     setReviewNotes(loadUserStorage<WeeklyReviewNotes>(`weeklyReviewNotes:${latest.week}`, user.id, emptyReviewNotes()));
+    setReviewVideo(loadUserStorage<DailyReviewVideoMeta | null>(`weeklyReviewVideo:${latest.week}`, user.id, null));
   }, [user?.id, latest?.week]);
 
   useEffect(() => {
@@ -204,6 +207,11 @@ export default function WeeklyReview() {
     const t = setTimeout(() => saveUserStorage(`weeklyReviewNotes:${latest.week}`, user.id, reviewNotes), 300);
     return () => clearTimeout(t);
   }, [user?.id, latest?.week, reviewNotes]);
+
+  useEffect(() => {
+    if (!user?.id || !latest?.week) return;
+    saveUserStorage(`weeklyReviewVideo:${latest.week}`, user.id, reviewVideo);
+  }, [user?.id, latest?.week, reviewVideo]);
 
   const updateReviewNote = (field: keyof WeeklyReviewNotes, value: string) => {
     setReviewNotes(prev => ({ ...prev, [field]: value }));
