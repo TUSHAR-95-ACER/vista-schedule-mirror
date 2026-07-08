@@ -292,6 +292,14 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* By Month (P/L) */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 mt-3 sm:mt-4">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-4 shadow-sm overflow-hidden">
+          <ChartHeader title="By Month (P/L)" tooltip="P/L aggregated by calendar month across the selected trades." />
+          <div className="h-[200px] sm:h-[240px]"><MonthlyChart trades={trades} /></div>
+        </div>
+      </div>
+
       {/* AI Insights — page bottom (universal) */}
       <div className="mt-4"><AIInsightsPanel page="Dashboard" payload={adaptTrades(trades)} /></div>
     </div>
