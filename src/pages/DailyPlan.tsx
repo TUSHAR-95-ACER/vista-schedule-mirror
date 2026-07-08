@@ -466,14 +466,15 @@ export default function DailyPlanPage() {
                 </div>
               </div>
 
-              {/* Market Location (Daily / 4H / 1H) — inline on the same row, v2+ only */}
+              {/* Market Location (Daily / 4H / 1H) — pill segmented rows, v2+ only.
+                  Matches the Market Condition pill pattern used above for visual consistency. */}
               {(localPlan.schemaVersion ?? 1) >= 2 && (
-                <div className="space-y-1.5 min-w-0">
+                <div className="space-y-2 min-w-0">
                   <div className="flex items-center gap-2">
                     <Crosshair className="h-3 w-3 text-muted-foreground" />
                     <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Location</Label>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="space-y-2">
                     {([
                       { key: 'marketLocationDaily', label: 'Daily' },
                       { key: 'marketLocation4H', label: '4H' },
@@ -481,9 +482,9 @@ export default function DailyPlanPage() {
                     ] as const).map(({ key, label }) => {
                       const current = pp[key] as MarketLocation | undefined;
                       return (
-                        <div key={key} className="flex items-center gap-2 min-w-0">
-                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-9 shrink-0">{label}</span>
-                          <div className="inline-flex flex-1 rounded-lg border border-border/50 bg-muted/30 p-0.5">
+                        <div key={key} className="flex items-center gap-3">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-10 shrink-0">{label}</span>
+                          <div className="flex flex-wrap gap-2">
                             {MARKET_LOCATIONS.map(opt => {
                               const active = current === opt;
                               return (
@@ -492,10 +493,10 @@ export default function DailyPlanPage() {
                                   type="button"
                                   onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
                                   className={cn(
-                                    'flex-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-all',
+                                    'inline-flex items-center px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
                                     active
-                                      ? 'bg-primary/15 text-primary shadow-sm'
-                                      : 'text-muted-foreground hover:text-foreground'
+                                      ? 'bg-primary/10 border-primary/40 text-primary'
+                                      : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
                                   )}
                                 >
                                   {opt}
@@ -512,6 +513,18 @@ export default function DailyPlanPage() {
             </div>
           </SectionCard>
 
+          {/* Daily / 4H reference charts — top of Prediction/Result stack (v2+) */}
+          {(localPlan.schemaVersion ?? 1) >= 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <SectionCard title="Daily View" icon={<BarChart3 className="h-3.5 w-3.5" />}>
+                <UnifiedMediaBox value={pp.dailyViewImage} onChange={v => updatePair(pp.id, { dailyViewImage: v })} label="Daily View" maxPreviewHeight="336px" />
+              </SectionCard>
+              <SectionCard title="4H View" icon={<BarChart3 className="h-3.5 w-3.5" />}>
+                <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
+              </SectionCard>
+            </div>
+          )}
+
           {/* Prediction + Result — side-by-side on desktop, stacked on mobile */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <SectionCard title="Prediction" icon={<Eye className="h-3.5 w-3.5" />} accent="primary">
@@ -524,9 +537,6 @@ export default function DailyPlanPage() {
                 placeholder="Expected price movement, key reasoning…"
                 className="border-0 shadow-none p-0 bg-transparent"
               />
-              {(localPlan.schemaVersion ?? 1) >= 2 && (
-                <UnifiedMediaBox value={pp.dailyViewImage} onChange={v => updatePair(pp.id, { dailyViewImage: v })} label="Daily View" maxPreviewHeight="336px" />
-              )}
             </SectionCard>
 
             <SectionCard title="Result" icon={<BarChart3 className="h-3.5 w-3.5" />} accent="success" badge="Post-Session">
@@ -540,9 +550,6 @@ export default function DailyPlanPage() {
                   className="font-journal"
                 />
               </div>
-              {(localPlan.schemaVersion ?? 1) >= 2 && (
-                <UnifiedMediaBox value={pp.fourHViewImage} onChange={v => updatePair(pp.id, { fourHViewImage: v })} label="4H View" maxPreviewHeight="336px" />
-              )}
             </SectionCard>
           </div>
         </div>
