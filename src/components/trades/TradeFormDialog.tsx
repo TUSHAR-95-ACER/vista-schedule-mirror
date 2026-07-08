@@ -21,7 +21,7 @@ import {
   Trade, Market, Session, MarketCondition, TradeDirection, TradeResult,
   TradeManagement, Emotion, Mistake, TradeGrade, TRADE_GRADES, TradeStatus,
   ALL_ASSETS, CONFLUENCE_OPTIONS, SETUPS, MARKET_ASSETS, ANALYSIS_ONLY_ASSETS,
-  OrderType, ORDER_TYPES,
+  OrderType, ORDER_TYPES, TradeReviewAnswer,
 } from '@/types/trading';
 import { calcActualRR, calcPlannedRR, calcProfitLoss, calcResult } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
