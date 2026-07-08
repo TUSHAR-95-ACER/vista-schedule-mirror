@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { WeekdayChart } from '@/components/dashboard/WeekdayChart';
 import { HourChart } from '@/components/dashboard/HourChart';
+import { MonthlyChart } from '@/components/dashboard/MonthlyChart';
 import {
   TrendingUp,
   TrendingDown,
