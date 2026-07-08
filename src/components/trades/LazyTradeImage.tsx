@@ -51,9 +51,15 @@ export function LazyTradeImage({ trade, alt, className }: Props) {
 
   return (
     <div ref={ref} className={className}>
-      {src ? (
-        <img src={src} alt={alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
-      ) : loading ? (
+      {isLoadable ? (
+        <img src={resolvedSrc!} alt={alt} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />)
+      : src && !isLoadable ? (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/60 px-3 text-center">
+          <ImageOff className="h-8 w-8" />
+          <span className="text-[10px] font-medium truncate max-w-full">Linked media</span>
+        </div>
+      ) : null }
+      {!isLoadable && (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
