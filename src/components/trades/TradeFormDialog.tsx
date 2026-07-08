@@ -484,6 +484,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         focus: form.focus,
         discipline: form.discipline,
         checklist: form.checklist,
+        reviewAnswers: form.reviewAnswers && Object.keys(form.reviewAnswers).length ? form.reviewAnswers : undefined,
       },
       mistakes: form.mistakes,
       grade: (form.grade || undefined) as TradeGrade | undefined,
