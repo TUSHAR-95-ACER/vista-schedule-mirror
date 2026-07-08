@@ -172,6 +172,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
     curve: '' as 'Right' | 'Left' | 'Centre' | '',
     tradeAnalysis: undefined as Trade['tradeAnalysis'] | undefined,
     marketSentiment: undefined as number | undefined,
+    reviewAnswers: {} as Record<string, TradeReviewAnswer>,
   };
 
   const [form, setForm] = useState(defaultForm);
