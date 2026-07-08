@@ -242,6 +242,7 @@ export function TradeFormDialog({ open, onOpenChange, editTrade }: Props) {
         curve: (editTrade as any).curve || '',
         tradeAnalysis: editTrade.tradeAnalysis,
         marketSentiment: editTrade.marketSentiment,
+        reviewAnswers: (editTrade.psychology as any)?.reviewAnswers || {},
       });
     } else {
       setForm(defaultForm);
