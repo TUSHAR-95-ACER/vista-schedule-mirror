@@ -477,8 +477,13 @@ export default function WeeklyPlanPage() {
         />
       </SectionCard>
 
+      {/* Weekly Review Video — Google Drive embed (reuses DailyReviewVideo component). */}
+      <SectionCard title="Weekly Review Video" icon={<Video className="h-3.5 w-3.5" />} accent="success" badge="Review">
+        <DailyReviewVideo value={reviewVideo} onChange={setReviewVideo} />
+      </SectionCard>
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
+
 
       {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">
