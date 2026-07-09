@@ -108,6 +108,17 @@ export default function WeeklyPlanPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
   const [marketsRaw, setMarketsRaw] = useState<string>('');
+  const [reviewVideo, setReviewVideo] = useState<DailyReviewVideoMeta | null>(null);
+
+  // Load Weekly Review Video from local user storage keyed by weekStart
+  useEffect(() => {
+    if (!authUser?.id || !localPlan?.weekStart) { setReviewVideo(null); return; }
+    setReviewVideo(loadUserStorage<DailyReviewVideoMeta | null>(`weeklyReviewVideo:${localPlan.weekStart}`, authUser.id, null));
+  }, [authUser?.id, localPlan?.weekStart]);
+  useEffect(() => {
+    if (!authUser?.id || !localPlan?.weekStart) return;
+    saveUserStorage(`weeklyReviewVideo:${localPlan.weekStart}`, authUser.id, reviewVideo);
+  }, [authUser?.id, localPlan?.weekStart, reviewVideo]);
 
   // Sync raw markets input when switching plans
   useEffect(() => {
