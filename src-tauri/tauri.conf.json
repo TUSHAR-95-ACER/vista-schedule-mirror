@@ -22,7 +22,7 @@
         "fullscreen": false,
         "center": true,
         "focus": true,
-        "decorations": false,
+        "decorations": true,
         "transparent": false,
         "shadow": true,
         "url": "https://master-journal-tg.lovable.app"
