@@ -99,6 +99,33 @@ fn main() {
                 }
             }
 
+            // Windows: force the native title bar into Dark Mode so it matches
+            // the app's dark theme instead of showing a bright white caption bar.
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(w) = app.get_webview_window("main") {
+                    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+                    if let Ok(handle) = w.window_handle() {
+                        if let RawWindowHandle::Win32(h) = handle.as_raw() {
+                            unsafe {
+                                use windows_sys::Win32::Foundation::{BOOL, HWND};
+                                use windows_sys::Win32::Graphics::Dwm::{
+                                    DwmSetWindowAttribute, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                };
+                                let hwnd: HWND = h.hwnd.get() as HWND;
+                                let dark: BOOL = 1;
+                                let _ = DwmSetWindowAttribute(
+                                    hwnd,
+                                    DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                    &dark as *const _ as *const _,
+                                    std::mem::size_of::<BOOL>() as u32,
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
             // System tray (all platforms — no-op if unsupported).
             let _ = build_tray(&handle);
 
