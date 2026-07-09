@@ -432,84 +432,54 @@ export default function DailyPlanPage() {
               )}
             </div>
 
-            {/* Bottom row: Market Condition (left) + Market Location (right, v2+ only) */}
+            {/* Bottom row: Market Condition + Market Location (v2+).
+                Uses the same Select dropdown as Predicted Bias / Actual Bias for visual consistency. */}
             <div className={cn(
               'grid gap-4 grid-cols-1',
-              (localPlan.schemaVersion ?? 1) >= 2 ? 'lg:grid-cols-[auto,1fr]' : ''
+              (localPlan.schemaVersion ?? 1) >= 2 ? 'md:grid-cols-4' : ''
             )}>
-              {/* Market Condition pills */}
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Condition</Label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { val: 'Trending' as const, emoji: '📈', label: 'Trending' },
-                    { val: 'Volatile' as const, emoji: '🌊', label: 'Volatile' },
-                    { val: 'Sideways' as const, emoji: '➡️', label: 'Sideways' },
-                  ].map(opt => {
-                    const active = pp.marketCondition === opt.val;
-                    return (
-                      <button
-                        key={opt.val}
-                        type="button"
-                        onClick={() => updatePair(pp.id, { marketCondition: active ? undefined : opt.val })}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
-                          active
-                            ? 'bg-primary/10 border-primary/40 text-primary'
-                            : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
-                        )}
-                      >
-                        <span>{opt.emoji}</span> {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <Select
+                  value={pp.marketCondition ?? 'none'}
+                  onValueChange={v => updatePair(pp.id, { marketCondition: v === 'none' ? undefined : (v as any) })}
+                >
+                  <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">—</SelectItem>
+                    <SelectItem value="Trending">📈 Trending</SelectItem>
+                    <SelectItem value="Volatile">🌊 Volatile</SelectItem>
+                    <SelectItem value="Sideways">➡️ Sideways</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Market Location (Daily / 4H / 1H) — pill segmented rows, v2+ only.
-                  Matches the Market Condition pill pattern used above for visual consistency. */}
-              {(localPlan.schemaVersion ?? 1) >= 2 && (
-                <div className="space-y-2 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Crosshair className="h-3 w-3 text-muted-foreground" />
-                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Location</Label>
+              {(localPlan.schemaVersion ?? 1) >= 2 && ([
+                { key: 'marketLocationDaily', label: 'Daily' },
+                { key: 'marketLocation4H', label: '4H' },
+                { key: 'marketLocation1H', label: '1H' },
+              ] as const).map(({ key, label }) => {
+                const current = pp[key] as MarketLocation | undefined;
+                return (
+                  <div key={key} className="space-y-1.5">
+                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Crosshair className="h-3 w-3" /> Market Location · {label}
+                    </Label>
+                    <Select
+                      value={current ?? 'none'}
+                      onValueChange={v => updatePair(pp.id, { [key]: v === 'none' ? undefined : (v as MarketLocation) } as Partial<DailyPairPlan>)}
+                    >
+                      <SelectTrigger className="w-full rounded-lg h-9 text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">—</SelectItem>
+                        {MARKET_LOCATIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="space-y-2">
-                    {([
-                      { key: 'marketLocationDaily', label: 'Daily' },
-                      { key: 'marketLocation4H', label: '4H' },
-                      { key: 'marketLocation1H', label: '1H' },
-                    ] as const).map(({ key, label }) => {
-                      const current = pp[key] as MarketLocation | undefined;
-                      return (
-                        <div key={key} className="flex items-center gap-3">
-                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-10 shrink-0">{label}</span>
-                          <div className="flex flex-wrap gap-2">
-                            {MARKET_LOCATIONS.map(opt => {
-                              const active = current === opt;
-                              return (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => updatePair(pp.id, { [key]: active ? undefined : opt } as Partial<DailyPairPlan>)}
-                                  className={cn(
-                                    'inline-flex items-center px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all',
-                                    active
-                                      ? 'bg-primary/10 border-primary/40 text-primary'
-                                      : 'bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50'
-                                  )}
-                                >
-                                  {opt}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                );
+              })}
             </div>
           </SectionCard>
 

@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AutoExpandTextarea } from '@/components/shared/AutoExpandTextarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Newspaper, NotebookPen, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, BarChart3, TrendingUp, Eye, Save, Newspaper, NotebookPen, ArrowLeft, Video } from 'lucide-react';
+import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
+import { loadUserStorage, saveUserStorage } from '@/lib/userStorage';
+import type { DailyReviewVideo as DailyReviewVideoMeta } from '@/types/trading';
 import { WeeklyPlan, PairAnalysis, ALL_ASSETS } from '@/types/trading';
 import { cn } from '@/lib/utils';
 import { UnifiedMediaBox } from '@/components/shared/UnifiedMediaBox';
@@ -105,6 +108,17 @@ export default function WeeklyPlanPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localPlan, setLocalPlan] = useState<WeeklyPlan | null>(null);
   const [marketsRaw, setMarketsRaw] = useState<string>('');
+  const [reviewVideo, setReviewVideo] = useState<DailyReviewVideoMeta | null>(null);
+
+  // Load Weekly Review Video from local user storage keyed by weekStart
+  useEffect(() => {
+    if (!authUser?.id || !localPlan?.weekStart) { setReviewVideo(null); return; }
+    setReviewVideo(loadUserStorage<DailyReviewVideoMeta | null>(`weeklyReviewVideo:${localPlan.weekStart}`, authUser.id, null));
+  }, [authUser?.id, localPlan?.weekStart]);
+  useEffect(() => {
+    if (!authUser?.id || !localPlan?.weekStart) return;
+    saveUserStorage(`weeklyReviewVideo:${localPlan.weekStart}`, authUser.id, reviewVideo);
+  }, [authUser?.id, localPlan?.weekStart, reviewVideo]);
 
   // Sync raw markets input when switching plans
   useEffect(() => {
@@ -463,8 +477,13 @@ export default function WeeklyPlanPage() {
         />
       </SectionCard>
 
+      {/* Weekly Review Video — Google Drive embed (reuses DailyReviewVideo component). */}
+      <SectionCard title="Weekly Review Video" icon={<Video className="h-3.5 w-3.5" />} accent="success" badge="Review">
+        <DailyReviewVideo value={reviewVideo} onChange={setReviewVideo} />
+      </SectionCard>
 
       <AIInsightsPanel page="Weekly Plan" payload={adaptWeeklyPlan(localPlan)} />
+
 
       {/* Sticky autosave status — Notion-style */}
       <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none">

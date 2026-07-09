@@ -500,17 +500,8 @@ export default function WeeklyReview() {
             ))}
           </div>
 
-          {/* Weekly Review Video — Google Drive embed (reuses DailyReviewVideo). */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs flex items-center gap-1.5 uppercase tracking-wider text-muted-foreground">
-                <Video className="h-3.5 w-3.5 text-emerald-500" /> Weekly Review Video
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DailyReviewVideo value={reviewVideo} onChange={setReviewVideo} />
-            </CardContent>
-          </Card>
+          {/* Weekly Review Video moved to Weekly Plan page. */}
+
 
 
           {/* All Weeks Table */}

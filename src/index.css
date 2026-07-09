@@ -439,14 +439,9 @@ html.is-desktop body {
 html.is-desktop #root {
   height: 100%;
   overflow: hidden;
-  padding-top: var(--desktop-titlebar-h);
   box-sizing: border-box;
 }
 
-/* h-screen inside the padded root would overflow by the title-bar height. */
-html.is-desktop #root .h-screen {
-  height: calc(100vh - var(--desktop-titlebar-h)) !important;
-}
 
 /* ---------- Density: paddings, gaps, margins ---------- */
 html.is-desktop .p-8  { padding: 1.1rem !important; }
