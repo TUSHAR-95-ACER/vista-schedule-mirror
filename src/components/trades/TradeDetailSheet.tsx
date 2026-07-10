@@ -8,6 +8,7 @@ import { ExternalLink, Download, ZoomIn, X, ChevronDown, Image, Calendar, Tag, T
 import { cn } from '@/lib/utils';
 import { getDayOfWeek } from '@/lib/calculations';
 import { useTrading } from '@/contexts/TradingContext';
+import { SmartImg } from '@/components/shared/SmartImg';
 
 import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
