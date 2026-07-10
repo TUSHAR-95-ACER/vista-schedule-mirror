@@ -248,21 +248,22 @@ export default function Notebook() {
   const saveDraft = () => {
     if (!draft.pair || !draft.category) return;
     const journal = serializeJournal(draft.journal || emptyJournal());
+    let saved: NotebookEntry;
     if (isEditing) {
-      persist(entries.map(e => e.id === draft.id ? {
-        ...e,
+      saved = {
+        ...(entries.find(e => e.id === draft.id) as NotebookEntry),
         date: draft.date,
         pair: draft.pair,
         category: draft.category,
         bias: draft.bias,
         journal,
-        // Clear legacy fields once migrated
         notes: undefined,
         keyLevels: undefined,
         image: undefined,
-      } : e));
+      };
+      persist(entries.map(e => e.id === draft.id ? saved : e));
     } else {
-      const entry: NotebookEntry = {
+      saved = {
         id: crypto.randomUUID(),
         date: draft.date,
         pair: draft.pair,
@@ -271,13 +272,17 @@ export default function Notebook() {
         journal,
         createdAt: new Date().toISOString(),
       };
-      persist([entry, ...entries]);
+      persist([saved, ...entries]);
     }
+    upsertToDb(saved).catch(() => { /* keep local, will retry next save */ });
     if (user && !isEditing) clearLocalDraft(DRAFT_SCOPE, user.id);
     setEditorOpen(false);
   };
 
-  const deleteEntry = (id: string) => persist(entries.filter(e => e.id !== id));
+  const deleteEntry = (id: string) => {
+    persist(entries.filter(e => e.id !== id));
+    deleteFromDb(id).catch(() => { /* best-effort */ });
+  };
 
   const filtered = openCategory ? entries.filter(e => e.category === openCategory) : entries;
 
