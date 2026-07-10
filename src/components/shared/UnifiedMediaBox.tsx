@@ -10,7 +10,6 @@ import { uploadJournalMedia } from '@/lib/journalUpload';
 import { toast } from '@/hooks/use-toast';
 import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
 import { SmartImg } from '@/components/shared/SmartImg';
-import { useResolvedMediaUrl } from '@/lib/mediaUrl';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';

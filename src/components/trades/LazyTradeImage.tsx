@@ -3,6 +3,7 @@ import { ImageOff, Loader2 } from 'lucide-react';
 import { useTrading } from '@/contexts/TradingContext';
 import type { Trade } from '@/types/trading';
 import { getRawUrl } from '@/lib/mediaSlot';
+import { SmartImg } from '@/components/shared/SmartImg';
 
 interface Props {
   trade: Trade;
@@ -51,7 +52,7 @@ export function LazyTradeImage({ trade, alt, className }: Props) {
   return (
     <div ref={ref} className={className}>
       {isLoadable ? (
-        <img
+        <SmartImg
           src={resolvedSrc!}
           alt={alt}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
