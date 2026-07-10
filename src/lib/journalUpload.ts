@@ -70,14 +70,21 @@ export async function deleteJournalMedia(path: string): Promise<void> {
   await supabase.storage.from(BUCKET).remove([path]);
 }
 
-/** Refresh signed URLs for stored MediaAsset[] (signed URLs expire). */
+/**
+ * Refresh signed URLs for stored MediaAsset[]. Handles both:
+ *  - items that already carry a `path` (modern uploads), and
+ *  - legacy/migrated items whose `url` embeds the storage path (extracted
+ *    via extractJournalPath) so historical Notebook/Plan media doesn't 400.
+ */
 export async function refreshSignedUrls<T extends { path?: string; url?: string }>(items: T[]): Promise<T[]> {
+  const { extractJournalPath } = await import('@/lib/mediaUrl');
   return Promise.all(
     items.map(async (it) => {
-      if (!it.path) return it;
+      const path = it.path ?? extractJournalPath(it.url);
+      if (!path) return it;
       try {
-        const url = await getSignedUrl(it.path);
-        return { ...it, url };
+        const url = await getSignedUrl(path);
+        return { ...it, path, url };
       } catch {
         return it;
       }
