@@ -82,7 +82,7 @@ export default function Notebook() {
   const upsertToDb = async (entry: NotebookEntry) => {
     if (!user) return;
     localEchoRef.current.add(entry.id);
-    const payload = {
+    const payload: any = {
       user_id: user.id,
       entry_id: entry.id,
       date: entry.date,
