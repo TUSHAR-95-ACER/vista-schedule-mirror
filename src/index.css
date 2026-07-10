@@ -499,3 +499,55 @@ html *::-webkit-scrollbar {
 /* Elements marked with data-tauri-drag-region must not steal clicks
    from their child controls. */
 [data-tauri-drag-region] > * { -webkit-app-region: no-drag; }
+
+/* ============================================================
+   Recharts crosshair — theme-aware.
+   The default vertical hover line is pure white which is far too bright
+   on the dark palette. Route it through the shared muted-foreground token
+   so light theme stays crisp and dark theme becomes a subtle guide.
+   Applied globally so every chart (Dashboard, Analytics, Monthly P/L, etc.)
+   inherits without per-chart configuration.
+   ============================================================ */
+.recharts-tooltip-cursor {
+  stroke: hsl(var(--muted-foreground) / 0.35) !important;
+  stroke-width: 1px !important;
+}
+:root.dark .recharts-tooltip-cursor,
+.dark .recharts-tooltip-cursor {
+  stroke: rgba(255, 255, 255, 0.18) !important;
+}
+/* Rectangular cursor (bar-chart hover) — softer fill on both themes. */
+rect.recharts-tooltip-cursor {
+  fill: hsl(var(--muted) / 0.18) !important;
+  stroke: none !important;
+}
+
+/* ============================================================
+   Desktop density pass #2 — an additional ~15% tightening of the
+   already-compact desktop layout. Keeps the reflow approach (no zoom).
+   ============================================================ */
+html.is-desktop { font-size: 12.75px; }
+html.is-desktop body { font-size: 12.5px; line-height: 1.45; }
+html.is-desktop .p-8 { padding: 0.9rem !important; }
+html.is-desktop .p-6 { padding: 0.7rem !important; }
+html.is-desktop .p-5 { padding: 0.6rem !important; }
+html.is-desktop .p-4 { padding: 0.5rem !important; }
+html.is-desktop .p-3 { padding: 0.4rem !important; }
+html.is-desktop .py-6 { padding-top: 0.7rem !important; padding-bottom: 0.7rem !important; }
+html.is-desktop .py-4 { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; }
+html.is-desktop .py-3 { padding-top: 0.35rem !important; padding-bottom: 0.35rem !important; }
+html.is-desktop .gap-6 { gap: 0.65rem !important; }
+html.is-desktop .gap-5 { gap: 0.55rem !important; }
+html.is-desktop .gap-4 { gap: 0.5rem !important; }
+html.is-desktop .gap-3 { gap: 0.4rem !important; }
+html.is-desktop .space-y-6 > * + * { margin-top: 0.7rem !important; }
+html.is-desktop .space-y-4 > * + * { margin-top: 0.5rem !important; }
+html.is-desktop .space-y-3 > * + * { margin-top: 0.4rem !important; }
+html.is-desktop .h-10 { height: 1.9rem !important; }
+html.is-desktop .h-9  { height: 1.75rem !important; }
+html.is-desktop .h-8  { height: 1.55rem !important; }
+html.is-desktop table th, html.is-desktop table td { padding-top: 0.35rem !important; padding-bottom: 0.35rem !important; }
+html.is-desktop [data-slot="button"] { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+html.is-desktop h1, html.is-desktop .text-4xl { font-size: 1.45rem !important; }
+html.is-desktop h2, html.is-desktop .text-3xl { font-size: 1.2rem !important; }
+html.is-desktop h3, html.is-desktop .text-2xl { font-size: 1rem !important; }
