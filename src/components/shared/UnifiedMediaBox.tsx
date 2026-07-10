@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { uploadJournalMedia } from '@/lib/journalUpload';
 import { toast } from '@/hooks/use-toast';
 import { decodeLinkMeta, encodeLinkMeta, faviconFor, screenshotFor, isScreenshotBlocked, type LinkMeta } from '@/lib/mediaSlot';
+import { SmartImg } from '@/components/shared/SmartImg';
+import { useResolvedMediaUrl } from '@/lib/mediaUrl';
 
 export interface MediaItem {
   type: 'image' | 'video' | 'url';
@@ -399,7 +401,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
               style={{ aspectRatio: forceAspect.replace('/', ' / ') }}
               onClick={() => { setZoom(1); setViewerOpen(true); }}
             >
-              <img
+              <SmartImg
                 src={rawUrl}
                 alt={label}
                 loading="lazy"
@@ -409,7 +411,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
             </div>
           ) : (
             /* Image preview — intrinsic aspect ratio, capped at 80% of legacy display height */
-            <img
+            <SmartImg
               src={rawUrl}
               alt={label}
               style={{ width: '80%', maxWidth: '100%', height: 'auto', maxHeight: maxPreviewHeight, objectFit: 'contain' }}
@@ -444,7 +446,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                 <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg" onClick={() => setZoom(1)}>Reset</Button>
               </div>
               <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
-                <img src={value} alt={label} loading="lazy" decoding="async" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }} className="max-w-full transition-transform duration-200" />
+                <SmartImg src={rawUrl} alt={label} loading="lazy" decoding="async" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }} className="max-w-full transition-transform duration-200" />
               </div>
             </DialogContent>
           </Dialog>
