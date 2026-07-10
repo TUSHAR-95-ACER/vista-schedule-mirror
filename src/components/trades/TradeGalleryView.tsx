@@ -12,6 +12,7 @@ import { getDayOfWeek } from '@/lib/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LazyTradeImage } from './LazyTradeImage';
 import { getRawUrl } from '@/lib/mediaSlot';
+import { SmartImg } from '@/components/shared/SmartImg';
 
 interface Props {
   trades: Trade[];
