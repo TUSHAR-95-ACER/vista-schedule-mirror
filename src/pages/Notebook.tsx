@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTrading } from '@/contexts/TradingContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHeader, MetricCard } from '@/components/shared/MetricCard';
@@ -18,6 +18,7 @@ import { refreshSignedUrls } from '@/lib/journalUpload';
 import { useAICoach } from '@/contexts/AICoachContext';
 import { saveDraft as saveLocalDraft, loadDraft as loadLocalDraft, clearDraft as clearLocalDraft } from '@/lib/draftStorage';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NotebookEntry {
   id: string;
@@ -59,29 +60,132 @@ export default function Notebook() {
   const [isEditing, setIsEditing] = useState(false);
   const { setNote: setAINote } = useAICoach();
 
+  // Track which entry ids we've already broadcast so realtime echoes don't
+  // trigger redundant renders while still catching writes from other clients.
+  const localEchoRef = useRef<Set<string>>(new Set());
+
+  const rowToEntry = (row: any): NotebookEntry => ({
+    id: row.entry_id,
+    date: row.date || '',
+    pair: row.pair || '',
+    category: row.category || '',
+    bias: row.bias || '',
+    journal: (row.journal && typeof row.journal === 'object')
+      ? { text: row.journal.text || '', media: Array.isArray(row.journal.media) ? row.journal.media : [] }
+      : emptyJournal(),
+    notes: row.legacy_notes ?? undefined,
+    keyLevels: row.legacy_key_levels ?? undefined,
+    image: row.legacy_image ?? undefined,
+    createdAt: row.created_at || new Date().toISOString(),
+  });
+
+  const upsertToDb = async (entry: NotebookEntry) => {
+    if (!user) return;
+    localEchoRef.current.add(entry.id);
+    const payload: any = {
+      user_id: user.id,
+      entry_id: entry.id,
+      date: entry.date,
+      pair: entry.pair,
+      category: entry.category,
+      bias: entry.bias,
+      journal: entry.journal || emptyJournal(),
+      legacy_notes: entry.notes ?? null,
+      legacy_key_levels: entry.keyLevels ?? null,
+      legacy_image: entry.image ?? null,
+    };
+    const { error } = await supabase
+      .from('notebook_entries')
+      .upsert(payload, { onConflict: 'user_id,entry_id' });
+    if (error) console.warn('[Notebook] upsert failed', error.message);
+  };
+
+  const deleteFromDb = async (entryId: string) => {
+    if (!user) return;
+    localEchoRef.current.add(entryId);
+    await supabase.from('notebook_entries').delete().eq('user_id', user.id).eq('entry_id', entryId);
+  };
+
   useEffect(() => {
     if (!user) { setEntries([]); return; }
-    const loaded = loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []);
-    setEntries(loaded);
 
-    // Re-sign expired Supabase Storage URLs so historical notebook thumbnails render
-    // instead of breaking. Runs once per mount; legacy data-URL images are untouched.
+    // Seed from local cache immediately so the UI has data before the network round-trip.
+    const local = loadUserStorage<NotebookEntry[]>(STORAGE_KEY, user.id, []);
+    setEntries(local);
+
     let cancelled = false;
+
+    // Load canonical rows from DB and merge with local (DB wins per entry_id).
     (async () => {
-      const refreshed = await Promise.all(loaded.map(async (e) => {
-        const j = coerceRichJournal(e.journal, e.notes, e.image);
-        const needsRefresh = j.media.some(m => m.path && !m.legacy);
-        if (!needsRefresh) return e;
-        try {
-          const media = await refreshSignedUrls(j.media);
-          return { ...e, journal: { text: j.text, media } };
-        } catch {
-          return e;
+      const { data: rows, error } = await supabase
+        .from('notebook_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (cancelled) return;
+
+      if (error) {
+        console.warn('[Notebook] DB load failed, using local only', error.message);
+      } else {
+        const dbEntries = (rows || []).map(rowToEntry);
+        const dbIds = new Set(dbEntries.map(e => e.id));
+        // First-run migration: push local-only entries up to DB so both clients converge.
+        const localOnly = local.filter(e => !dbIds.has(e.id));
+        for (const e of localOnly) upsertToDb(e).catch(() => { /* best-effort */ });
+        const merged = [...dbEntries, ...localOnly];
+        setEntries(merged);
+        saveUserStorage(STORAGE_KEY, user.id, merged);
+
+        // Re-sign expired Supabase Storage URLs so historical thumbnails render.
+        const refreshed = await Promise.all(merged.map(async (e) => {
+          const j = coerceRichJournal(e.journal, e.notes, e.image);
+          const needsRefresh = j.media.some(m => m.path || (m.url && /\/storage\/v1\/object\//.test(m.url)));
+          if (!needsRefresh) return e;
+          try {
+            const media = await refreshSignedUrls(j.media);
+            return { ...e, journal: { text: j.text, media } };
+          } catch { return e; }
+        }));
+        if (!cancelled) {
+          setEntries(refreshed);
+          saveUserStorage(STORAGE_KEY, user.id, refreshed);
         }
-      }));
-      if (!cancelled) setEntries(refreshed);
+      }
     })();
-    return () => { cancelled = true; };
+
+    // Live cross-device sync via the shared RealtimeSyncProvider event bus.
+    const onRealtime = (ev: Event) => {
+      const { table, event, new: newRow, old: oldRow } = (ev as CustomEvent).detail || {};
+      if (table !== 'notebook_entries') return;
+      const row = newRow || oldRow;
+      if (!row) return;
+      // Ignore our own echoes.
+      if (row.entry_id && localEchoRef.current.has(row.entry_id)) {
+        localEchoRef.current.delete(row.entry_id);
+        return;
+      }
+      setEntries(prev => {
+        let next: NotebookEntry[];
+        if (event === 'DELETE') {
+          next = prev.filter(e => e.id !== row.entry_id);
+        } else {
+          const mapped = rowToEntry(newRow);
+          const idx = prev.findIndex(e => e.id === mapped.id);
+          next = idx >= 0
+            ? prev.map((e, i) => i === idx ? mapped : e)
+            : [mapped, ...prev];
+        }
+        if (user) saveUserStorage(STORAGE_KEY, user.id, next);
+        return next;
+      });
+    };
+    window.addEventListener('mj:realtime', onRealtime);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('mj:realtime', onRealtime);
+    };
   }, [user]);
 
   // Register the open notebook entry as AI Coach context
@@ -144,21 +248,22 @@ export default function Notebook() {
   const saveDraft = () => {
     if (!draft.pair || !draft.category) return;
     const journal = serializeJournal(draft.journal || emptyJournal());
+    let saved: NotebookEntry;
     if (isEditing) {
-      persist(entries.map(e => e.id === draft.id ? {
-        ...e,
+      saved = {
+        ...(entries.find(e => e.id === draft.id) as NotebookEntry),
         date: draft.date,
         pair: draft.pair,
         category: draft.category,
         bias: draft.bias,
         journal,
-        // Clear legacy fields once migrated
         notes: undefined,
         keyLevels: undefined,
         image: undefined,
-      } : e));
+      };
+      persist(entries.map(e => e.id === draft.id ? saved : e));
     } else {
-      const entry: NotebookEntry = {
+      saved = {
         id: crypto.randomUUID(),
         date: draft.date,
         pair: draft.pair,
@@ -167,13 +272,17 @@ export default function Notebook() {
         journal,
         createdAt: new Date().toISOString(),
       };
-      persist([entry, ...entries]);
+      persist([saved, ...entries]);
     }
+    upsertToDb(saved).catch(() => { /* keep local, will retry next save */ });
     if (user && !isEditing) clearLocalDraft(DRAFT_SCOPE, user.id);
     setEditorOpen(false);
   };
 
-  const deleteEntry = (id: string) => persist(entries.filter(e => e.id !== id));
+  const deleteEntry = (id: string) => {
+    persist(entries.filter(e => e.id !== id));
+    deleteFromDb(id).catch(() => { /* best-effort */ });
+  };
 
   const filtered = openCategory ? entries.filter(e => e.category === openCategory) : entries;
 

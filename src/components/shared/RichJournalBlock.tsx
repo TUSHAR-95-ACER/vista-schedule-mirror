@@ -12,6 +12,7 @@ import {
 } from '@/lib/journalUpload';
 import { isAcceptedImage, isAcceptedVideo, isAcceptedMedia, VIDEO_ACCEPT_ATTR, IMAGE_VIDEO_ACCEPT_ATTR } from '@/lib/mediaTypes';
 import { toast } from '@/hooks/use-toast';
+import { SmartImg } from '@/components/shared/SmartImg';
 
 export interface MediaAsset {
   id: string;
@@ -207,7 +208,7 @@ export function RichJournalBlock({
                   onClick={() => setLightbox(m)}
                   className="block w-full"
                 >
-                  <img
+                  <SmartImg
                     src={m.url}
                     alt={m.name || 'media'}
                     className="w-full h-32 object-contain bg-muted/20"
@@ -271,7 +272,7 @@ export function RichJournalBlock({
           className="fixed inset-0 z-50 bg-background/90 backdrop-blur flex items-center justify-center p-6"
           onClick={() => setLightbox(null)}
         >
-          <img src={lightbox.url} alt="" loading="lazy" decoding="async" className="max-h-full max-w-full rounded-xl object-contain" />
+          <SmartImg src={lightbox.url} alt="" loading="lazy" decoding="async" className="max-h-full max-w-full rounded-xl object-contain" />
         </div>
       )}
     </div>

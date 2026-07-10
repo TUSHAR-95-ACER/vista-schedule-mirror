@@ -35,6 +35,7 @@ const SYNCED_TABLES = [
   'macro_analyses',
   'macro_predictions',
   'macro_cycles',
+  'notebook_entries',
 ] as const;
 
 export function RealtimeSyncProvider({ children }: { children: React.ReactNode }) {

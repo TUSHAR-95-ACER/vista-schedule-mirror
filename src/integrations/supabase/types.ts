@@ -443,6 +443,54 @@ export type Database = {
         }
         Relationships: []
       }
+      notebook_entries: {
+        Row: {
+          bias: string
+          category: string
+          created_at: string
+          date: string
+          entry_id: string
+          id: string
+          journal: Json
+          legacy_image: string | null
+          legacy_key_levels: string | null
+          legacy_notes: string | null
+          pair: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bias?: string
+          category?: string
+          created_at?: string
+          date?: string
+          entry_id: string
+          id?: string
+          journal?: Json
+          legacy_image?: string | null
+          legacy_key_levels?: string | null
+          legacy_notes?: string | null
+          pair?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bias?: string
+          category?: string
+          created_at?: string
+          date?: string
+          entry_id?: string
+          id?: string
+          journal?: Json
+          legacy_image?: string | null
+          legacy_key_levels?: string | null
+          legacy_notes?: string | null
+          pair?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_audit_log: {
         Row: {
           created_at: string
