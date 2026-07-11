@@ -42,6 +42,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
 const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
+const TradingChecklist = lazy(() => import("./pages/TradingChecklist"));
 
 
 import { DesktopBootstrap } from "@/components/desktop/DesktopBootstrap";
