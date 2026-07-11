@@ -13,6 +13,7 @@ export const TOGGLEABLE_PAGES = [
   { path: '/psychology', label: 'Psychology', section: 'PLANNING & REVIEW' },
   { path: '/mistakes', label: 'Mistakes', section: 'PLANNING & REVIEW' },
   { path: '/setup-playbook', label: 'Setup Playbook', section: 'PLANNING & REVIEW' },
+  { path: '/trading-checklist', label: 'Trading Checklist', section: 'PLANNING & REVIEW' },
   { path: '/analytics', label: 'Analytics', section: 'INTELLIGENCE' },
   { path: '/bias-analytics', label: 'Bias Analytics', section: 'INTELLIGENCE' },
   { path: '/behavior-patterns', label: 'Behavior', section: 'INTELLIGENCE' },

@@ -108,18 +108,35 @@ fn main() {
                     if let Ok(handle) = w.window_handle() {
                         if let RawWindowHandle::Win32(h) = handle.as_raw() {
                             unsafe {
-                                use windows_sys::Win32::Foundation::{BOOL, HWND};
-                                use windows_sys::Win32::Graphics::Dwm::{
-                                    DwmSetWindowAttribute, DWMWA_USE_IMMERSIVE_DARK_MODE,
-                                };
+                                use windows_sys::Win32::Foundation::{BOOL, HWND, HRESULT};
+                                use windows_sys::Win32::Graphics::Dwm::DwmSetWindowAttribute;
+                                // 20 = DWMWA_USE_IMMERSIVE_DARK_MODE (Win10 2004+/Win11).
+                                // 19 = pre-2004 legacy attribute; try as fallback.
+                                const DWMWA_USE_IMMERSIVE_DARK_MODE_NEW: u32 = 20;
+                                const DWMWA_USE_IMMERSIVE_DARK_MODE_OLD: u32 = 19;
                                 let hwnd: HWND = h.hwnd.get() as HWND;
                                 let dark: BOOL = 1;
-                                let _ = DwmSetWindowAttribute(
+                                let hr_new: HRESULT = DwmSetWindowAttribute(
                                     hwnd,
-                                    DWMWA_USE_IMMERSIVE_DARK_MODE,
+                                    DWMWA_USE_IMMERSIVE_DARK_MODE_NEW,
                                     &dark as *const _ as *const _,
                                     std::mem::size_of::<BOOL>() as u32,
                                 );
+                                eprintln!("[dark-titlebar] DwmSetWindowAttribute(20) hr=0x{:08x}", hr_new as u32);
+                                if hr_new != 0 {
+                                    let hr_old: HRESULT = DwmSetWindowAttribute(
+                                        hwnd,
+                                        DWMWA_USE_IMMERSIVE_DARK_MODE_OLD,
+                                        &dark as *const _ as *const _,
+                                        std::mem::size_of::<BOOL>() as u32,
+                                    );
+                                    eprintln!("[dark-titlebar] fallback DwmSetWindowAttribute(19) hr=0x{:08x}", hr_old as u32);
+                                }
+                                // Force a non-client repaint so the caption re-renders in dark mode
+                                // immediately, without needing a resize/focus toggle.
+                                use windows_sys::Win32::UI::WindowsAndMessaging::{SetWindowPos, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_NOACTIVATE};
+                                let _ = SetWindowPos(hwnd, std::ptr::null_mut(), 0, 0, 0, 0,
+                                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
                             }
                         }
                     }

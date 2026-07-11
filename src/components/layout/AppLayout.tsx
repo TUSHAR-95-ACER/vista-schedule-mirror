@@ -15,6 +15,7 @@ const PATH_LABELS: Record<string, string> = {
   '/macro-intelligence': 'Macro Intelligence',
   '/weekly-plan': 'Weekly Plans',
   '/daily-plan': 'Daily Plans',
+  '/trading-checklist': 'Trading Checklist',
   '/weekly-review': 'Weekly Review',
   '/psychology': 'Psychology',
   '/mistakes': 'Mistakes',
