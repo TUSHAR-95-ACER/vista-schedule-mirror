@@ -101,7 +101,8 @@ const App = () => (
               <Route path="/research-lab/analytics" element={<Suspense fallback={<RouteFallback />}><ResearchAnalytics /></Suspense>} />
               <Route path="/research-lab/:strategyId" element={<Suspense fallback={<RouteFallback />}><ResearchStrategy /></Suspense>} />
               <Route path="/research-lab/:strategyId/test/:testId" element={<Suspense fallback={<RouteFallback />}><ResearchTest /></Suspense>} />
-              <Route path="/daily-checklist" element={<Navigate to="/" replace />} />
+              <Route path="/trading-checklist" element={<Suspense fallback={<RouteFallback />}><TradingChecklist /></Suspense>} />
+              <Route path="/daily-checklist" element={<Navigate to="/trading-checklist" replace />} />
               <Route path="/backtesting-lab" element={<Navigate to="/" replace />} />
               <Route path="/ai-coach" element={<Navigate to="/" replace />} />
               <Route path="/calendar" element={<Suspense fallback={<RouteFallback />}><CalendarPage /></Suspense>} />

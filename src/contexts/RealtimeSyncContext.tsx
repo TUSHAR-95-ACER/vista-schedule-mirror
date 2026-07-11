@@ -36,6 +36,8 @@ const SYNCED_TABLES = [
   'macro_predictions',
   'macro_cycles',
   'notebook_entries',
+  'trading_checklists',
+  'trading_checklist_templates',
 ] as const;
 
 export function RealtimeSyncProvider({ children }: { children: React.ReactNode }) {
