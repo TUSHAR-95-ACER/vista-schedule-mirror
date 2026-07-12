@@ -25,6 +25,7 @@
         "decorations": true,
         "transparent": false,
         "shadow": true,
+        "theme": "Dark",
         "url": "https://master-journal-tg.lovable.app"
       }
     ],
