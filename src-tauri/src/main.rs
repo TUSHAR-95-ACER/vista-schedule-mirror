@@ -89,6 +89,13 @@ fn main() {
         .setup(|app| {
             let handle = app.handle().clone();
 
+            // Force Dark theme on all windows — Tauri v2's official cross-platform
+            // way to get a dark native title bar on Windows. Applied BEFORE the
+            // first frame is painted so no white caption ever flashes.
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_theme(Some(tauri::Theme::Dark));
+            }
+
             // Explicitly remove any auto-attached native menu so the window
             // shows no menu bar on Windows/Linux. macOS keeps the standard
             // system app menu (required by the platform).
