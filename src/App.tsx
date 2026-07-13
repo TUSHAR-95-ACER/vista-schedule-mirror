@@ -45,8 +45,6 @@ const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
 const TradingChecklist = lazy(() => import("./pages/TradingChecklist"));
 
 
-import { DesktopBootstrap } from "@/components/desktop/DesktopBootstrap";
-import { OfflineBanner } from "@/components/desktop/OfflineBanner";
 import { RealtimeSyncProvider } from "@/contexts/RealtimeSyncContext";
 
 const queryClient = new QueryClient({
@@ -71,8 +69,6 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <DesktopBootstrap />
-        <OfflineBanner />
         <BrowserRouter>
           <RealtimeSyncProvider>
           <PostLoginRedirect />
