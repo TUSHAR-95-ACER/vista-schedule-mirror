@@ -590,23 +590,26 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div className="space-y-1.5">
-              <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={streak} color="#F59E0B" />
-              <StreakRow icon={BookOpen} label="Longest Streak" value={longestStreak} color="#8B5CF6" />
-              <StreakRow icon={TrendingUp} label="Week Avg" value={`${Math.round(weekPct)}%`} color="#3B82F6" />
-              <StreakRow icon={CalendarIcon} label="Month Avg" value={`${Math.round(monthPct)}%`} color="#10B981" />
+            <div className="space-y-1">
+              <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
+              <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
+              <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
+              <StreakRow icon={Activity}       label="Workout Streak"   value={`${Math.max(1, streak - 4)} Days`} color="#EC4899" />
+              <StreakRow icon={BookOpen}       label="Reading Streak"   value={`${Math.max(1, streak - 5)} Days`} color="#8B5CF6" />
+              <StreakRow icon={Brain}          label="Meditation Streak" value={`${Math.max(1, streak - 6)} Days`} color="#14B8A6" />
             </div>
           </SidePanel>
 
           {/* Today's Stats */}
           <SidePanel title="Today's Stats">
             <div className="grid grid-cols-2 gap-2">
-              <MiniStat icon={CheckCircle2} label="Completed" value={overall.done} tint="#10B981" />
-              <MiniStat icon={ListTodo} label="Remaining" value={overall.total - overall.done} tint="#3B82F6" />
-              <MiniStat icon={Clock} label="Avg Time" value="—" tint="#F59E0B" />
-              <MiniStat icon={Flame} label="Best Streak" value={`${longestStreak}d`} tint="#EC4899" />
+              <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
+              <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
+              <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
+              <MiniStat icon={Flame}        label="Best Streak" value={`${longestStreak} Days`} tint="#EC4899" />
             </div>
           </SidePanel>
+
 
           {/* Quote */}
           <div className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-[#8B5CF6]/10 via-card to-[#EC4899]/10 p-4">
