@@ -476,7 +476,7 @@ export default function TradingChecklist() {
         <div className="space-y-3">
           {/* KPI grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} />
+            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} ring={{ pct: overall.pct }} />
             <KpiCard icon={LayoutGrid} label="Sections" value={sections.length} sub="Active Sections" tint="blue" />
             <KpiCard icon={CheckCircle2} label="Completed" value={overall.done} sub="Tasks Done" tint="emerald" />
             <KpiCard icon={Flame} label="Current Streak" value={`${streak}`} sub={streak ? 'Days · Keep it up!' : 'Start today'} tint="amber" />
