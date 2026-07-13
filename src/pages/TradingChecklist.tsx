@@ -126,33 +126,39 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
 }
 
 // ---------- KPI Card (compact, tinted background like reference) ----------
-function KpiCard({ icon: Icon, label, value, sub, tint, trend }: {
+function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
+  ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string}> = {
-    violet:  { bg:'bg-[#8B5CF6]/10', ring:'ring-[#8B5CF6]/25', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/20 to-transparent' },
-    blue:    { bg:'bg-[#3B82F6]/10', ring:'ring-[#3B82F6]/25', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/20 to-transparent' },
-    emerald: { bg:'bg-[#10B981]/10', ring:'ring-[#10B981]/25', ic:'text-[#34D399]', grad:'from-[#10B981]/20 to-transparent' },
-    amber:   { bg:'bg-[#F59E0B]/10', ring:'ring-[#F59E0B]/25', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/20 to-transparent' },
+  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string; glow:string}> = {
+    violet:  { bg:'bg-[#8B5CF6]/15', ring:'ring-[#8B5CF6]/30', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/25 via-[#8B5CF6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(139,92,246,0.55)]' },
+    blue:    { bg:'bg-[#3B82F6]/15', ring:'ring-[#3B82F6]/30', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/25 via-[#3B82F6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(59,130,246,0.55)]' },
+    emerald: { bg:'bg-[#10B981]/15', ring:'ring-[#10B981]/30', ic:'text-[#34D399]', grad:'from-[#10B981]/25 via-[#10B981]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(16,185,129,0.55)]' },
+    amber:   { bg:'bg-[#F59E0B]/15', ring:'ring-[#F59E0B]/30', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/25 via-[#F59E0B]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(245,158,11,0.55)]' },
   };
   const t = tintMap[tint];
   return (
-    <div className={cn('relative overflow-hidden rounded-xl border border-border/60 bg-card px-3.5 py-3 ring-1', t.ring, 'transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-16px_rgba(0,0,0,0.6)]')}>
+    <div className={cn('relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 px-4 py-3.5 ring-1 backdrop-blur-sm', t.ring, t.glow, 'transition-all hover:-translate-y-0.5')}>
       <div className={cn('absolute inset-0 bg-gradient-to-br pointer-events-none', t.grad)} />
       <div className="relative flex items-center gap-3">
-        <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center', t.bg)}>
-          <Icon className={cn('h-5 w-5', t.ic)} />
-        </div>
+        {ring ? (
+          <ProgressRing value={ring.pct} size={54} stroke={5} gradientId={`kpi-${tint}`} gradient={ring.gradient ?? ['#8B5CF6','#EC4899','#3B82F6']} />
+        ) : (
+          <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center', t.bg)}>
+            <Icon className={cn('h-5 w-5', t.ic)} />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
-          <p className="font-heading font-bold text-xl leading-tight text-foreground">{value}</p>
-          {sub && <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{sub}</p>}
+          <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground/90 font-medium">{label}</p>
+          <p className="font-heading font-bold text-[22px] leading-[1.1] text-foreground tabular-nums">{value}</p>
+          {sub && <p className="text-[10.5px] text-muted-foreground/70 mt-0.5 truncate">{sub}</p>}
+          {trend && <p className="mt-0.5 text-[10px] text-emerald-400 font-medium">▲ {trend}</p>}
         </div>
       </div>
-      {trend && <p className="relative mt-1.5 text-[10px] text-emerald-400/90 font-medium">▲ {trend}</p>}
     </div>
   );
 }
+
 
 // ---------- Helpers ----------
 function computeSectionPct(s: ChecklistSection) {
@@ -402,7 +408,15 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="p-5 max-w-[1600px] mx-auto space-y-4">
+    <div className="relative min-h-full bg-[#070917]">
+      {/* Ambient background: subtle navy + soft glows (matches reference) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full blur-[120px] opacity-[0.18] bg-[radial-gradient(closest-side,#6366F1,transparent)]" />
+        <div className="absolute top-40 -right-32 h-[380px] w-[380px] rounded-full blur-[110px] opacity-[0.14] bg-[radial-gradient(closest-side,#EC4899,transparent)]" />
+        <div className="absolute bottom-0 -left-32 h-[420px] w-[420px] rounded-full blur-[130px] opacity-[0.12] bg-[radial-gradient(closest-side,#10B981,transparent)]" />
+      </div>
+      <div className="relative p-5 max-w-[1600px] mx-auto space-y-4">
+
       {/* ============ HEADER ============ */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -718,9 +732,20 @@ export default function TradingChecklist() {
         onDuplicate={duplicateTemplate}
         onSaveCurrent={saveAsTemplate}
       />
+
+      {/* Floating action button (matches reference bottom-right) */}
+      <button
+        onClick={() => setCustomizeOpen(true)}
+        aria-label="Open customize"
+        className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] shadow-[0_18px_40px_-12px_rgba(139,92,246,0.7)] flex items-center justify-center text-white hover:scale-105 transition-transform z-30"
+      >
+        <ListChecks className="h-5 w-5" />
+      </button>
+      </div>
     </div>
   );
 }
+
 
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
