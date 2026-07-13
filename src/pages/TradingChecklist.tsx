@@ -491,33 +491,36 @@ export default function TradingChecklist() {
               const p = paletteFor(s.color);
               return (
                 <div key={s.id} className={cn(
-                  'group rounded-xl border border-border/60 bg-card overflow-hidden transition-all',
-                  'hover:border-primary/30 hover:shadow-[0_10px_30px_-18px_hsl(var(--primary)/0.5)]'
+                  'group relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm overflow-hidden transition-all',
+                  'shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]',
+                  'hover:border-white/[0.12] hover:-translate-y-[1px]'
                 )}>
+                  {/* subtle accent glow on left edge */}
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, opacity: 0.55 }} />
                   {/* header */}
-                  <div className="flex items-center gap-3 px-3.5 py-3">
+                  <div className="flex items-center gap-3 px-4 py-3">
                     <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-grab" />
-                    <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center shrink-0 shadow-[0_4px_16px_-6px_rgba(0,0,0,0.6)]')}
+                    <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]')}
                       style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
-                      <Icon className="h-4.5 w-4.5 text-white" />
+                      <Icon className="h-5 w-5 text-white" />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono text-muted-foreground/70">{idx + 1}.</span>
-                        <h3 className="font-heading font-semibold text-[13px] text-foreground truncate">{s.title}</h3>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[12px] font-heading font-bold text-foreground/60">{idx + 1}.</span>
+                        <h3 className="font-heading font-bold text-[13.5px] text-foreground truncate tracking-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[10.5px] text-muted-foreground/80 mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[10.5px] text-muted-foreground/75 mt-0.5 truncate">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={38} stroke={3.5} />
-                      <span className="text-[11px] text-muted-foreground font-mono tabular-nums w-9 text-right">
+                      <MiniRing value={pct} color={p.from} size={40} stroke={3.5} />
+                      <span className="text-[11.5px] text-muted-foreground/90 font-mono tabular-nums w-9 text-right">
                         {s.items.filter(i => i.done).length} / {s.items.length}
                       </span>
-                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-accent transition">
+                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
                         <Pencil className="h-3 w-3" />
                       </button>
                       <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-accent transition">
+                        className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
                         {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </button>
                     </div>
@@ -525,12 +528,12 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="border-t border-border/50 px-3.5 py-2.5 animate-fade-in">
+                    <div className="border-t border-white/[0.05] px-3.5 py-2.5 animate-fade-in">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                         {s.items.map((i) => (
                           <div key={i.id} className={cn(
-                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 hover:border-primary/30 transition-all cursor-pointer',
-                            i.done && 'bg-[hsl(var(--primary))]/[0.06] border-primary/25'
+                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-lg border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all cursor-pointer',
+                            i.done && 'bg-[hsl(var(--primary))]/[0.08] border-primary/25'
                           )}
                           onClick={() => toggleItem(s.id, i.id)}>
                             <Checkbox
@@ -542,6 +545,7 @@ export default function TradingChecklist() {
                             <span className={cn('text-[12px] flex-1 truncate leading-snug', i.done && 'line-through text-muted-foreground')}>
                               {i.label}
                             </span>
+                            <GripVertical className="h-3 w-3 text-muted-foreground/30 opacity-0 group-hover/item:opacity-100" />
                             <button onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
                               className="opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition"
                               aria-label="Remove item">
@@ -557,11 +561,12 @@ export default function TradingChecklist() {
               );
             })}
 
-            <Button variant="outline" className="w-full h-10 gap-2 border-dashed text-xs text-muted-foreground hover:text-foreground" onClick={addSection}>
+            <Button variant="outline" className="w-full h-11 gap-2 border-dashed border-[#8B5CF6]/30 bg-transparent text-[12px] text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/50" onClick={addSection}>
               <Plus className="h-3.5 w-3.5" /> Add New Section
             </Button>
           </div>
         </div>
+
 
         {/* -------- RIGHT SIDEBAR -------- */}
         <aside className="space-y-3">
