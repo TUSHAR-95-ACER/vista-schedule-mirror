@@ -763,30 +763,46 @@ function SidePanel({ title, action, children }: { title: string; action?: React.
   );
 }
 
+function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
+  // Deterministic tiny sparkline to visually match the reference trend micro-charts.
+  const pts = Array.from({ length: 8 }, (_, i) => {
+    const n = Math.sin((i + seed) * 1.3) * 0.5 + 0.5;
+    const y = 12 - n * 10;
+    return `${i * 6},${y.toFixed(1)}`;
+  }).join(' ');
+  return (
+    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-2 py-1">
-      <div className="h-6 w-6 rounded-md flex items-center justify-center" style={{ background: `${color}22` }}>
-        <Icon className="h-3 w-3" style={{ color }} />
+    <div className="flex items-center gap-2 py-1.5">
+      <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
+        <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
-      <span className="text-[11px] text-foreground/80 flex-1">{label}</span>
+      <span className="text-[11.5px] text-foreground/85 flex-1 truncate">{label}</span>
       <span className="text-[11px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
-      <TrendingUp className="h-3 w-3" style={{ color: `${color}aa` }} />
+      <Sparkline color={color} seed={label.length} />
     </div>
   );
 }
 
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-background/40 p-2">
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <Icon className="h-3 w-3" style={{ color: tint }} />
-        <p className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</p>
+    <div className="rounded-xl border border-white/[0.06] bg-[#0b1020]/60 p-2.5 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.12]" style={{ background: `radial-gradient(120% 120% at 100% 0%, ${tint}, transparent 60%)` }} />
+      <div className="relative flex items-center gap-1.5 mb-0.5">
+        <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="text-[13px] font-heading font-bold text-foreground tabular-nums">{value}</p>
+      <p className="relative text-[15px] font-heading font-bold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }
+
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
