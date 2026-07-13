@@ -753,15 +753,16 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-xl border border-border/60 bg-card p-3.5">
+    <div className="relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm p-3.5 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
       <div className="flex items-center justify-between mb-2.5">
-        <h3 className="font-heading font-semibold text-[11.5px] uppercase tracking-wider text-foreground/90">{title}</h3>
+        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.1em] text-foreground/90">{title}</h3>
         {action}
       </div>
       {children}
     </div>
   );
 }
+
 
 function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
   // Deterministic tiny sparkline to visually match the reference trend micro-charts.
