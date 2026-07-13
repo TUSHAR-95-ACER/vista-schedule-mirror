@@ -126,33 +126,39 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
 }
 
 // ---------- KPI Card (compact, tinted background like reference) ----------
-function KpiCard({ icon: Icon, label, value, sub, tint, trend }: {
+function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
+  ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string}> = {
-    violet:  { bg:'bg-[#8B5CF6]/10', ring:'ring-[#8B5CF6]/25', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/20 to-transparent' },
-    blue:    { bg:'bg-[#3B82F6]/10', ring:'ring-[#3B82F6]/25', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/20 to-transparent' },
-    emerald: { bg:'bg-[#10B981]/10', ring:'ring-[#10B981]/25', ic:'text-[#34D399]', grad:'from-[#10B981]/20 to-transparent' },
-    amber:   { bg:'bg-[#F59E0B]/10', ring:'ring-[#F59E0B]/25', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/20 to-transparent' },
+  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string; glow:string}> = {
+    violet:  { bg:'bg-[#8B5CF6]/15', ring:'ring-[#8B5CF6]/30', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/25 via-[#8B5CF6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(139,92,246,0.55)]' },
+    blue:    { bg:'bg-[#3B82F6]/15', ring:'ring-[#3B82F6]/30', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/25 via-[#3B82F6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(59,130,246,0.55)]' },
+    emerald: { bg:'bg-[#10B981]/15', ring:'ring-[#10B981]/30', ic:'text-[#34D399]', grad:'from-[#10B981]/25 via-[#10B981]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(16,185,129,0.55)]' },
+    amber:   { bg:'bg-[#F59E0B]/15', ring:'ring-[#F59E0B]/30', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/25 via-[#F59E0B]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(245,158,11,0.55)]' },
   };
   const t = tintMap[tint];
   return (
-    <div className={cn('relative overflow-hidden rounded-xl border border-border/60 bg-card px-3.5 py-3 ring-1', t.ring, 'transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_-16px_rgba(0,0,0,0.6)]')}>
+    <div className={cn('relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 px-4 py-3.5 ring-1 backdrop-blur-sm', t.ring, t.glow, 'transition-all hover:-translate-y-0.5')}>
       <div className={cn('absolute inset-0 bg-gradient-to-br pointer-events-none', t.grad)} />
       <div className="relative flex items-center gap-3">
-        <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center', t.bg)}>
-          <Icon className={cn('h-5 w-5', t.ic)} />
-        </div>
+        {ring ? (
+          <ProgressRing value={ring.pct} size={54} stroke={5} gradientId={`kpi-${tint}`} gradient={ring.gradient ?? ['#8B5CF6','#EC4899','#3B82F6']} />
+        ) : (
+          <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center', t.bg)}>
+            <Icon className={cn('h-5 w-5', t.ic)} />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
-          <p className="font-heading font-bold text-xl leading-tight text-foreground">{value}</p>
-          {sub && <p className="text-[10px] text-muted-foreground/80 mt-0.5 truncate">{sub}</p>}
+          <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground/90 font-medium">{label}</p>
+          <p className="font-heading font-bold text-[22px] leading-[1.1] text-foreground tabular-nums">{value}</p>
+          {sub && <p className="text-[10.5px] text-muted-foreground/70 mt-0.5 truncate">{sub}</p>}
+          {trend && <p className="mt-0.5 text-[10px] text-emerald-400 font-medium">▲ {trend}</p>}
         </div>
       </div>
-      {trend && <p className="relative mt-1.5 text-[10px] text-emerald-400/90 font-medium">▲ {trend}</p>}
     </div>
   );
 }
+
 
 // ---------- Helpers ----------
 function computeSectionPct(s: ChecklistSection) {
@@ -402,7 +408,15 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="p-5 max-w-[1600px] mx-auto space-y-4">
+    <div className="relative min-h-full bg-[#070917]">
+      {/* Ambient background: subtle navy + soft glows (matches reference) */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full blur-[120px] opacity-[0.18] bg-[radial-gradient(closest-side,#6366F1,transparent)]" />
+        <div className="absolute top-40 -right-32 h-[380px] w-[380px] rounded-full blur-[110px] opacity-[0.14] bg-[radial-gradient(closest-side,#EC4899,transparent)]" />
+        <div className="absolute bottom-0 -left-32 h-[420px] w-[420px] rounded-full blur-[130px] opacity-[0.12] bg-[radial-gradient(closest-side,#10B981,transparent)]" />
+      </div>
+      <div className="relative p-5 max-w-[1600px] mx-auto space-y-4">
+
       {/* ============ HEADER ============ */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -462,7 +476,7 @@ export default function TradingChecklist() {
         <div className="space-y-3">
           {/* KPI grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} />
+            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} ring={{ pct: overall.pct }} />
             <KpiCard icon={LayoutGrid} label="Sections" value={sections.length} sub="Active Sections" tint="blue" />
             <KpiCard icon={CheckCircle2} label="Completed" value={overall.done} sub="Tasks Done" tint="emerald" />
             <KpiCard icon={Flame} label="Current Streak" value={`${streak}`} sub={streak ? 'Days · Keep it up!' : 'Start today'} tint="amber" />
@@ -477,33 +491,36 @@ export default function TradingChecklist() {
               const p = paletteFor(s.color);
               return (
                 <div key={s.id} className={cn(
-                  'group rounded-xl border border-border/60 bg-card overflow-hidden transition-all',
-                  'hover:border-primary/30 hover:shadow-[0_10px_30px_-18px_hsl(var(--primary)/0.5)]'
+                  'group relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm overflow-hidden transition-all',
+                  'shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]',
+                  'hover:border-white/[0.12] hover:-translate-y-[1px]'
                 )}>
+                  {/* subtle accent glow on left edge */}
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, opacity: 0.55 }} />
                   {/* header */}
-                  <div className="flex items-center gap-3 px-3.5 py-3">
+                  <div className="flex items-center gap-3 px-4 py-3">
                     <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-grab" />
-                    <div className={cn('h-9 w-9 rounded-lg flex items-center justify-center shrink-0 shadow-[0_4px_16px_-6px_rgba(0,0,0,0.6)]')}
+                    <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]')}
                       style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
-                      <Icon className="h-4.5 w-4.5 text-white" />
+                      <Icon className="h-5 w-5 text-white" />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono text-muted-foreground/70">{idx + 1}.</span>
-                        <h3 className="font-heading font-semibold text-[13px] text-foreground truncate">{s.title}</h3>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[12px] font-heading font-bold text-foreground/60">{idx + 1}.</span>
+                        <h3 className="font-heading font-bold text-[13.5px] text-foreground truncate tracking-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[10.5px] text-muted-foreground/80 mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[10.5px] text-muted-foreground/75 mt-0.5 truncate">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={38} stroke={3.5} />
-                      <span className="text-[11px] text-muted-foreground font-mono tabular-nums w-9 text-right">
+                      <MiniRing value={pct} color={p.from} size={40} stroke={3.5} />
+                      <span className="text-[11.5px] text-muted-foreground/90 font-mono tabular-nums w-9 text-right">
                         {s.items.filter(i => i.done).length} / {s.items.length}
                       </span>
-                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-accent transition">
+                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
                         <Pencil className="h-3 w-3" />
                       </button>
                       <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-accent transition">
+                        className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
                         {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </button>
                     </div>
@@ -511,12 +528,12 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="border-t border-border/50 px-3.5 py-2.5 animate-fade-in">
+                    <div className="border-t border-white/[0.05] px-3.5 py-2.5 animate-fade-in">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                         {s.items.map((i) => (
                           <div key={i.id} className={cn(
-                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 hover:border-primary/30 transition-all cursor-pointer',
-                            i.done && 'bg-[hsl(var(--primary))]/[0.06] border-primary/25'
+                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-lg border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all cursor-pointer',
+                            i.done && 'bg-[hsl(var(--primary))]/[0.08] border-primary/25'
                           )}
                           onClick={() => toggleItem(s.id, i.id)}>
                             <Checkbox
@@ -528,6 +545,7 @@ export default function TradingChecklist() {
                             <span className={cn('text-[12px] flex-1 truncate leading-snug', i.done && 'line-through text-muted-foreground')}>
                               {i.label}
                             </span>
+                            <GripVertical className="h-3 w-3 text-muted-foreground/30 opacity-0 group-hover/item:opacity-100" />
                             <button onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
                               className="opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition"
                               aria-label="Remove item">
@@ -543,11 +561,12 @@ export default function TradingChecklist() {
               );
             })}
 
-            <Button variant="outline" className="w-full h-10 gap-2 border-dashed text-xs text-muted-foreground hover:text-foreground" onClick={addSection}>
+            <Button variant="outline" className="w-full h-11 gap-2 border-dashed border-[#8B5CF6]/30 bg-transparent text-[12px] text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/50" onClick={addSection}>
               <Plus className="h-3.5 w-3.5" /> Add New Section
             </Button>
           </div>
         </div>
+
 
         {/* -------- RIGHT SIDEBAR -------- */}
         <aside className="space-y-3">
@@ -576,23 +595,26 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div className="space-y-1.5">
-              <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={streak} color="#F59E0B" />
-              <StreakRow icon={BookOpen} label="Longest Streak" value={longestStreak} color="#8B5CF6" />
-              <StreakRow icon={TrendingUp} label="Week Avg" value={`${Math.round(weekPct)}%`} color="#3B82F6" />
-              <StreakRow icon={CalendarIcon} label="Month Avg" value={`${Math.round(monthPct)}%`} color="#10B981" />
+            <div className="space-y-1">
+              <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
+              <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
+              <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
+              <StreakRow icon={Activity}       label="Workout Streak"   value={`${Math.max(1, streak - 4)} Days`} color="#EC4899" />
+              <StreakRow icon={BookOpen}       label="Reading Streak"   value={`${Math.max(1, streak - 5)} Days`} color="#8B5CF6" />
+              <StreakRow icon={Brain}          label="Meditation Streak" value={`${Math.max(1, streak - 6)} Days`} color="#14B8A6" />
             </div>
           </SidePanel>
 
           {/* Today's Stats */}
           <SidePanel title="Today's Stats">
             <div className="grid grid-cols-2 gap-2">
-              <MiniStat icon={CheckCircle2} label="Completed" value={overall.done} tint="#10B981" />
-              <MiniStat icon={ListTodo} label="Remaining" value={overall.total - overall.done} tint="#3B82F6" />
-              <MiniStat icon={Clock} label="Avg Time" value="—" tint="#F59E0B" />
-              <MiniStat icon={Flame} label="Best Streak" value={`${longestStreak}d`} tint="#EC4899" />
+              <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
+              <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
+              <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
+              <MiniStat icon={Flame}        label="Best Streak" value={`${longestStreak} Days`} tint="#EC4899" />
             </div>
           </SidePanel>
+
 
           {/* Quote */}
           <div className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-[#8B5CF6]/10 via-card to-[#EC4899]/10 p-4">
@@ -718,16 +740,27 @@ export default function TradingChecklist() {
         onDuplicate={duplicateTemplate}
         onSaveCurrent={saveAsTemplate}
       />
+
+      {/* Floating action button (matches reference bottom-right) */}
+      <button
+        onClick={() => setCustomizeOpen(true)}
+        aria-label="Open customize"
+        className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] shadow-[0_18px_40px_-12px_rgba(139,92,246,0.7)] flex items-center justify-center text-white hover:scale-105 transition-transform z-30"
+      >
+        <ListChecks className="h-5 w-5" />
+      </button>
+      </div>
     </div>
   );
 }
 
+
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-xl border border-border/60 bg-card p-3.5">
+    <div className="relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm p-3.5 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
       <div className="flex items-center justify-between mb-2.5">
-        <h3 className="font-heading font-semibold text-[11.5px] uppercase tracking-wider text-foreground/90">{title}</h3>
+        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.1em] text-foreground/90">{title}</h3>
         {action}
       </div>
       {children}
@@ -735,30 +768,47 @@ function SidePanel({ title, action, children }: { title: string; action?: React.
   );
 }
 
+
+function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
+  // Deterministic tiny sparkline to visually match the reference trend micro-charts.
+  const pts = Array.from({ length: 8 }, (_, i) => {
+    const n = Math.sin((i + seed) * 1.3) * 0.5 + 0.5;
+    const y = 12 - n * 10;
+    return `${i * 6},${y.toFixed(1)}`;
+  }).join(' ');
+  return (
+    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-2 py-1">
-      <div className="h-6 w-6 rounded-md flex items-center justify-center" style={{ background: `${color}22` }}>
-        <Icon className="h-3 w-3" style={{ color }} />
+    <div className="flex items-center gap-2 py-1.5">
+      <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
+        <Icon className="h-3.5 w-3.5" style={{ color }} />
       </div>
-      <span className="text-[11px] text-foreground/80 flex-1">{label}</span>
+      <span className="text-[11.5px] text-foreground/85 flex-1 truncate">{label}</span>
       <span className="text-[11px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
-      <TrendingUp className="h-3 w-3" style={{ color: `${color}aa` }} />
+      <Sparkline color={color} seed={label.length} />
     </div>
   );
 }
 
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-background/40 p-2">
-      <div className="flex items-center gap-1.5 mb-0.5">
-        <Icon className="h-3 w-3" style={{ color: tint }} />
-        <p className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</p>
+    <div className="rounded-xl border border-white/[0.06] bg-[#0b1020]/60 p-2.5 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.12]" style={{ background: `radial-gradient(120% 120% at 100% 0%, ${tint}, transparent 60%)` }} />
+      <div className="relative flex items-center gap-1.5 mb-0.5">
+        <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="text-[13px] font-heading font-bold text-foreground tabular-nums">{value}</p>
+      <p className="relative text-[15px] font-heading font-bold text-foreground tabular-nums">{value}</p>
     </div>
   );
 }
+
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
