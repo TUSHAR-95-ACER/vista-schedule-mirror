@@ -46,24 +46,24 @@ const ICON_KEYS = Object.keys(ICONS);
 // Per-section vivid tokens (matches reference gradient palette)
 type Palette = { key: string; from: string; to: string; ring: string; dot: string; soft: string };
 const PALETTES: Palette[] = [
-  { key: 'amber',   from: '#F59E0B', to: '#F97316', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#F97316]/5' },
+  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' },
   { key: 'blue',    from: '#3B82F6', to: '#2563EB', ring: 'stroke-[#3B82F6]', dot: 'bg-[#3B82F6]', soft: 'from-[#3B82F6]/25 to-[#2563EB]/5' },
   { key: 'emerald', from: '#10B981', to: '#059669', ring: 'stroke-[#10B981]', dot: 'bg-[#10B981]', soft: 'from-[#10B981]/25 to-[#059669]/5' },
-  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' },
-  { key: 'rose',    from: '#F43F5E', to: '#E11D48', ring: 'stroke-[#F43F5E]', dot: 'bg-[#F43F5E]', soft: 'from-[#F43F5E]/25 to-[#E11D48]/5' },
-  { key: 'indigo',  from: '#6366F1', to: '#4F46E5', ring: 'stroke-[#6366F1]', dot: 'bg-[#6366F1]', soft: 'from-[#6366F1]/25 to-[#4F46E5]/5' },
+  { key: 'amber',   from: '#F59E0B', to: '#D97706', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#D97706]/5' },
+  { key: 'rose',    from: '#EC4899', to: '#DB2777', ring: 'stroke-[#EC4899]', dot: 'bg-[#EC4899]', soft: 'from-[#EC4899]/25 to-[#DB2777]/5' },
+  { key: 'indigo',  from: '#8B5CF6', to: '#6366F1', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#6366F1]/5' },
   { key: 'teal',    from: '#14B8A6', to: '#0D9488', ring: 'stroke-[#14B8A6]', dot: 'bg-[#14B8A6]', soft: 'from-[#14B8A6]/25 to-[#0D9488]/5' },
 ];
 const paletteFor = (key: string) => PALETTES.find(p => p.key === key) ?? PALETTES[0];
 
 const DEFAULT_SECTIONS: () => ChecklistSection[] = () => [
-  { id: uid(), title: 'Morning Routine', description: 'Start your day with intention', icon: 'Sun', color: 'amber',
+  { id: uid(), title: 'Morning Routine', description: 'Start your day with intention', icon: 'Sun', color: 'violet',
     items: ['Wake up before 6:00 AM','Drink 500ml water','Meditation','Read 10 pages','Exercise / Workout'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Market Preparation', description: 'Analyze the market. Plan ahead.', icon: 'TrendingUp', color: 'blue',
     items: ['Economic calendar checked','High impact news reviewed','Weekly bias reviewed','Daily bias confirmed','Watchlist updated','Alerts placed','Trading levels marked'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Daily Planning', description: 'Focus on what matters.', icon: 'Target', color: 'emerald',
     items: ['Top 3 goals written','Trading session selected','Daily objectives written','Break schedule planned'].map(l => ({ id: uid(), label: l, done: false })) },
-  { id: uid(), title: 'Learning & Improvement', description: 'Never stop learning.', icon: 'GraduationCap', color: 'violet',
+  { id: uid(), title: 'Learning & Improvement', description: 'Never stop learning.', icon: 'GraduationCap', color: 'amber',
     items: ['Review previous trades','Study one trading concept','Reading trading book / article','Watch educational video','Update notebook if needed'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Health & Lifestyle', description: 'A healthy body. A sharp mind.', icon: 'Heart', color: 'rose',
     items: ['Drink 2L water','Exercise completed','Healthy meals','Stretching','7-8 hours sleep','No junk food','Vitamins / Supplements'].map(l => ({ id: uid(), label: l, done: false })) },
@@ -125,34 +125,47 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- KPI Card (compact, tinted background like reference) ----------
+// ---------- KPI Card (reference-spec: 120px, radius 18, tinted overlay) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string; glow:string}> = {
-    violet:  { bg:'bg-[#8B5CF6]/15', ring:'ring-[#8B5CF6]/30', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/25 via-[#8B5CF6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(139,92,246,0.55)]' },
-    blue:    { bg:'bg-[#3B82F6]/15', ring:'ring-[#3B82F6]/30', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/25 via-[#3B82F6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(59,130,246,0.55)]' },
-    emerald: { bg:'bg-[#10B981]/15', ring:'ring-[#10B981]/30', ic:'text-[#34D399]', grad:'from-[#10B981]/25 via-[#10B981]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(16,185,129,0.55)]' },
-    amber:   { bg:'bg-[#F59E0B]/15', ring:'ring-[#F59E0B]/30', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/25 via-[#F59E0B]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(245,158,11,0.55)]' },
+  const tintMap: Record<string,{overlay:string; iconBg:string; ic:string; glow:string}> = {
+    violet:  { overlay:'bg-[#7C3AED]/[0.09]', iconBg:'bg-[#7C3AED]/20', ic:'text-[#C4B5FD]', glow:'hover:shadow-[0_14px_36px_rgba(124,58,237,0.28)]' },
+    blue:    { overlay:'bg-[#3B82F6]/[0.09]', iconBg:'bg-[#2563EB]/20', ic:'text-[#93C5FD]', glow:'hover:shadow-[0_14px_36px_rgba(59,130,246,0.28)]' },
+    emerald: { overlay:'bg-[#10B981]/[0.09]', iconBg:'bg-[#10B981]/20', ic:'text-[#6EE7B7]', glow:'hover:shadow-[0_14px_36px_rgba(16,185,129,0.28)]' },
+    amber:   { overlay:'bg-[#F59E0B]/[0.09]', iconBg:'bg-[#F59E0B]/20', ic:'text-[#FCD34D]', glow:'hover:shadow-[0_14px_36px_rgba(245,158,11,0.28)]' },
   };
   const t = tintMap[tint];
   return (
-    <div className={cn('relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 px-4 py-3.5 ring-1 backdrop-blur-sm', t.ring, t.glow, 'transition-all hover:-translate-y-0.5')}>
-      <div className={cn('absolute inset-0 bg-gradient-to-br pointer-events-none', t.grad)} />
-      <div className="relative flex items-center gap-3">
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-[#121A2C] px-6',
+        'shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out hover:-translate-y-0.5',
+        t.glow,
+      )}
+      style={{ height: 120 }}
+    >
+      <div className={cn('absolute inset-0 pointer-events-none', t.overlay)} />
+      <div className="relative flex items-center gap-4 h-full">
         {ring ? (
-          <ProgressRing value={ring.pct} size={54} stroke={5} gradientId={`kpi-${tint}`} gradient={ring.gradient ?? ['#8B5CF6','#EC4899','#3B82F6']} />
+          <ProgressRing
+            value={ring.pct}
+            size={72}
+            stroke={8}
+            gradientId={`kpi-${tint}`}
+            gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
+          />
         ) : (
-          <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center', t.bg)}>
+          <div className={cn('h-12 w-12 rounded-[14px] flex items-center justify-center shrink-0', t.iconBg)}>
             <Icon className={cn('h-5 w-5', t.ic)} />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground/90 font-medium">{label}</p>
-          <p className="font-heading font-bold text-[22px] leading-[1.1] text-foreground tabular-nums">{value}</p>
-          {sub && <p className="text-[10.5px] text-muted-foreground/70 mt-0.5 truncate">{sub}</p>}
-          {trend && <p className="mt-0.5 text-[10px] text-emerald-400 font-medium">▲ {trend}</p>}
+          <p className="text-[12px] font-medium text-[#A7B0C2] mb-1">{label}</p>
+          <p className="font-heading font-bold text-[28px] leading-none text-white tabular-nums">{value}</p>
+          {sub && <p className="text-[11px] text-[#6B7488] mt-1.5 truncate">{sub}</p>}
+          {trend && <p className="mt-1 text-[11px] text-[#34D399] font-medium">▲ {trend}</p>}
         </div>
       </div>
     </div>
@@ -408,185 +421,256 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="relative min-h-full bg-[#070917]">
-      {/* Ambient background: subtle navy + soft glows (matches reference) */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full blur-[120px] opacity-[0.18] bg-[radial-gradient(closest-side,#6366F1,transparent)]" />
-        <div className="absolute top-40 -right-32 h-[380px] w-[380px] rounded-full blur-[110px] opacity-[0.14] bg-[radial-gradient(closest-side,#EC4899,transparent)]" />
-        <div className="absolute bottom-0 -left-32 h-[420px] w-[420px] rounded-full blur-[130px] opacity-[0.12] bg-[radial-gradient(closest-side,#10B981,transparent)]" />
-      </div>
-      <div className="relative p-5 max-w-[1600px] mx-auto space-y-4">
+    <div className="relative min-h-full bg-[#0B1020]">
+      {/* Overlay gradient per spec */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, rgba(92,63,255,0.05), transparent 20%)' }}
+      />
+      <div className="relative px-6 py-6 max-w-[1720px] mx-auto">
 
       {/* ============ HEADER ============ */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary/25 to-primary/5 border border-primary/40 flex items-center justify-center shadow-[0_0_20px_-8px_hsl(var(--primary)/0.6)]">
-            <CheckSquare className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <div>
-            <h1 className="font-heading font-bold text-[22px] leading-tight text-foreground tracking-tight">Daily Checklist</h1>
-            <p className="text-[11px] text-muted-foreground">Build habits. Stay consistent. Master your routine.</p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="font-heading font-bold text-white tracking-tight" style={{ fontSize: 44, lineHeight: 1.1 }}>
+            Daily Checklist
+          </h1>
+          <p className="mt-2 text-[18px] font-normal text-[#A7B0C2]" style={{ lineHeight: 1.6 }}>
+            Build habits. Stay consistent. Master your routine.
+          </p>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-card px-1.5 py-1">
-            <Button variant="ghost" size="sm" onClick={() => setDate(subDays(date, 1))} className="h-6 w-6 p-0"><ChevronLeft className="h-3.5 w-3.5" /></Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 rounded-[14px] border border-[#2B3346] bg-[#111827] px-2" style={{ height: 46 }}>
+            <CalendarIcon className="h-4 w-4 text-[#A7B0C2] ml-1" />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 gap-1.5 px-2 text-xs font-medium">
-                  <CalendarIcon className="h-3 w-3" />
-                  {format(date, 'd MMM yyyy')}
-                </Button>
+                <button className="px-2 text-[15px] font-medium text-white hover:text-white/90 transition">
+                  {format(date, 'd MMMM yyyy')}
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
                 <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
               </PopoverContent>
             </Popover>
-            <Button variant="ghost" size="sm" onClick={() => setDate(addDays(date, 1))} className="h-6 w-6 p-0"><ChevronRightIcon className="h-3.5 w-3.5" /></Button>
+            <button onClick={() => setDate(subDays(date, 1))} className="h-8 w-8 rounded-md flex items-center justify-center text-[#A7B0C2] hover:text-white hover:bg-white/5 transition">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button onClick={() => setDate(addDays(date, 1))} className="h-8 w-8 rounded-md flex items-center justify-center text-[#A7B0C2] hover:text-white hover:bg-white/5 transition">
+              <ChevronRightIcon className="h-4 w-4" />
+            </button>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setDate(new Date())} className="h-8 text-xs">Today</Button>
-          <Button variant="outline" size="sm" onClick={() => setCustomizeOpen(true)} className="h-8 gap-1.5 text-xs">
-            <Settings2 className="h-3.5 w-3.5" /> Customize
-          </Button>
+          <button
+            onClick={() => setDate(new Date())}
+            className="px-4 rounded-[14px] border border-[#2B3346] bg-[#111827] hover:bg-[#1B2336] text-white text-[15px] font-semibold transition-colors"
+            style={{ height: 46 }}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setCustomizeOpen(true)}
+            className="px-4 rounded-[14px] border border-[#2B3346] bg-[#111827] hover:bg-[#1B2336] text-white text-[15px] font-semibold flex items-center gap-2 transition-colors"
+            style={{ height: 46 }}
+          >
+            <Settings2 className="h-4 w-4" /> Customize
+          </button>
         </div>
       </div>
 
       {/* ============ TABS + NEW SECTION ============ */}
-      <div className="flex items-center justify-between border-b border-border/60">
-        <div className="flex items-center gap-0">
+      <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
+        <div className="flex items-center gap-9">
           {(['checklist','templates','analytics','history'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
+            <button
+              key={t}
+              onClick={() => setTab(t)}
               className={cn(
-                'relative px-4 py-2.5 text-xs font-medium capitalize transition-colors',
-                tab === t ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-              )}>
+                'relative text-[15px] font-medium capitalize transition-colors flex items-center',
+                tab === t ? 'text-white' : 'text-[#AAB3C5] hover:text-white'
+              )}
+              style={{ height: 44 }}
+            >
               {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#F43F5E]" />}
+              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[3px] rounded-full bg-[#8B5CF6]" />}
             </button>
           ))}
         </div>
-        <Button size="sm" onClick={addSection} className="h-8 gap-1.5 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] hover:opacity-90 text-white shadow-[0_6px_20px_-8px_rgba(139,92,246,0.6)]">
-          <Plus className="h-3.5 w-3.5" /> New Section
-        </Button>
+        <button
+          onClick={addSection}
+          className="px-5 rounded-[14px] text-white text-[15px] font-semibold flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          style={{
+            height: 46,
+            background: 'linear-gradient(135deg, #A855F7, #6366F1)',
+            boxShadow: '0 8px 24px rgba(139,92,246,0.35)',
+          }}
+        >
+          <Plus className="h-4 w-4" /> New Section
+        </button>
       </div>
 
       {tab === 'checklist' && (
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4">
+      <div className="grid grid-cols-1 gap-5" style={{ gridTemplateColumns: 'minmax(0,1fr) 380px' }}>
         {/* -------- LEFT -------- */}
-        <div className="space-y-3">
+        <div>
           {/* KPI grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} ring={{ pct: overall.pct }} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+            <KpiCard
+              icon={ListChecks}
+              label="Overall Progress"
+              value={`${overall.done} / ${overall.total}`}
+              sub="Tasks Completed"
+              tint="violet"
+              trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined}
+              ring={{ pct: overall.pct, gradient: ['#EC4899', '#8B5CF6'] }}
+            />
             <KpiCard icon={LayoutGrid} label="Sections" value={sections.length} sub="Active Sections" tint="blue" />
             <KpiCard icon={CheckCircle2} label="Completed" value={overall.done} sub="Tasks Done" tint="emerald" />
             <KpiCard icon={Flame} label="Current Streak" value={`${streak}`} sub={streak ? 'Days · Keep it up!' : 'Start today'} tint="amber" />
           </div>
 
           {/* Sections */}
-          <div className="space-y-2.5">
+          <div className="space-y-5">
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
               const Icon = ICONS[s.icon] ?? ListTodo;
               const p = paletteFor(s.color);
               return (
-                <div key={s.id} className={cn(
-                  'group relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm overflow-hidden transition-all',
-                  'shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]',
-                  'hover:border-white/[0.12] hover:-translate-y-[1px]'
-                )}>
-                  {/* subtle accent glow on left edge */}
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, opacity: 0.55 }} />
+                <div
+                  key={s.id}
+                  className={cn(
+                    'group relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] overflow-hidden',
+                    'shadow-[0_10px_32px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-0.5'
+                  )}
+                >
+                  {/* Left accent border (4px) */}
+                  <div
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[4px] rounded-[4px]"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})` }}
+                  />
+
                   {/* header */}
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-grab" />
-                    <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]')}
-                      style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
-                      <Icon className="h-5 w-5 text-white" />
+                  <div className="flex items-center gap-4 p-6 pl-8">
+                    <GripVertical className="h-4 w-4 text-white/25 shrink-0 cursor-grab" />
+                    <div
+                      className="h-14 w-14 rounded-[16px] flex items-center justify-center shrink-0"
+                      style={{
+                        background: `linear-gradient(180deg, ${p.from}, ${p.to})`,
+                        boxShadow: `0 0 25px ${p.from}4D`,
+                      }}
+                    >
+                      <Icon className="h-6 w-6 text-white" />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[12px] font-heading font-bold text-foreground/60">{idx + 1}.</span>
-                        <h3 className="font-heading font-bold text-[13.5px] text-foreground truncate tracking-tight">{s.title}</h3>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-heading font-bold text-[22px] text-white/50 tabular-nums">{idx + 1}.</span>
+                        <h3 className="font-heading font-bold text-[24px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[10.5px] text-muted-foreground/75 mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[15px] text-[#94A3B8] mt-0.5 truncate">{s.description}</p>}
                     </button>
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={40} stroke={3.5} />
-                      <span className="text-[11.5px] text-muted-foreground/90 font-mono tabular-nums w-9 text-right">
+                    <div className="flex items-center gap-3 shrink-0">
+                      <MiniRing value={pct} color={p.from} size={56} stroke={7} />
+                      <span className="text-[15px] text-white/80 font-mono tabular-nums w-14 text-right">
                         {s.items.filter(i => i.done).length} / {s.items.length}
                       </span>
-                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
-                        <Pencil className="h-3 w-3" />
+                      <button
+                        onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                      >
+                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </button>
-                      <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
-                        {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      <button
+                        onClick={() => setCustomizeOpen(true)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="border-t border-white/[0.05] px-3.5 py-2.5 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <div className="px-6 pb-5 pl-8 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                         {s.items.map((i) => (
-                          <div key={i.id} className={cn(
-                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-lg border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all cursor-pointer',
-                            i.done && 'bg-[hsl(var(--primary))]/[0.08] border-primary/25'
-                          )}
-                          onClick={() => toggleItem(s.id, i.id)}>
-                            <Checkbox
-                              checked={i.done}
-                              onCheckedChange={() => toggleItem(s.id, i.id)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                            />
-                            <span className={cn('text-[12px] flex-1 truncate leading-snug', i.done && 'line-through text-muted-foreground')}>
+                          <div
+                            key={i.id}
+                            onClick={() => toggleItem(s.id, i.id)}
+                            className={cn(
+                              'group/item flex items-center gap-3 px-3.5 rounded-[10px] border border-white/[0.04] bg-[#1A2235]',
+                              'hover:bg-[#232D43] transition-all cursor-pointer'
+                            )}
+                            style={{ height: 42 }}
+                          >
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
+                              className={cn(
+                                'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
+                                i.done ? 'border-transparent' : 'border-white/30 hover:border-white/50'
+                              )}
+                              style={i.done ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})` } : undefined}
+                            >
+                              {i.done && (
+                                <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
+                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </button>
+                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/40' : 'text-white/90')}>
                               {i.label}
                             </span>
-                            <GripVertical className="h-3 w-3 text-muted-foreground/30 opacity-0 group-hover/item:opacity-100" />
-                            <button onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition"
-                              aria-label="Remove item">
-                              <Trash2 className="h-3 w-3" />
+                            <button
+                              onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
+                              className="opacity-0 group-hover/item:opacity-100 text-white/40 hover:text-red-400 transition"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         ))}
                       </div>
-                      <AddItemInline onAdd={(l) => addItem(s.id, l)} />
+                      <AddItemInline onAdd={(l) => addItem(s.id, l)} color={p.from} />
                     </div>
                   )}
                 </div>
               );
             })}
 
-            <Button variant="outline" className="w-full h-11 gap-2 border-dashed border-[#8B5CF6]/30 bg-transparent text-[12px] text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/50" onClick={addSection}>
-              <Plus className="h-3.5 w-3.5" /> Add New Section
-            </Button>
+            <button
+              onClick={addSection}
+              className="w-full flex items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#8B5CF6]/40 bg-transparent text-[14px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/60 transition"
+              style={{ height: 48 }}
+            >
+              <Plus className="h-4 w-4" /> Add New Section
+            </button>
           </div>
         </div>
 
-
-        {/* -------- RIGHT SIDEBAR -------- */}
-        <aside className="space-y-3">
+        {/* -------- RIGHT SIDEBAR (380px) -------- */}
+        <aside className="space-y-5">
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
-            {saving && <span className="absolute right-4 top-4 text-[9px] text-muted-foreground animate-pulse">Saving…</span>}
-            <div className="flex items-center justify-center py-1">
-              <ProgressRing value={overall.pct} size={150} stroke={10} gradientId="ring-overall" label="Overall" sublabel={`${overall.done}/${overall.total}`}
-                gradient={['#8B5CF6','#3B82F6','#EC4899']} />
+            {saving && <span className="absolute right-5 top-5 text-[10px] text-white/40 animate-pulse">Saving…</span>}
+            <div className="flex items-center justify-center py-2">
+              <ProgressRing
+                value={overall.pct}
+                size={180}
+                stroke={14}
+                gradientId="ring-overall"
+                label="Overall"
+                gradient={['#8B5CF6', '#3B82F6', '#06B6D4', '#F59E0B', '#F97316', '#EC4899']}
+              />
             </div>
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-4 space-y-2">
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
                 return (
-                  <div key={s.id} className="flex items-center gap-2 text-[11px]">
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: p.from }} />
-                    <span className="flex-1 truncate text-foreground/80">{s.title}</span>
-                    <span className="text-muted-foreground font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-muted-foreground/60 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="flex items-center gap-2.5 text-[12.5px]">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: p.from }} />
+                    <span className="flex-1 truncate text-white/85">{s.title}</span>
+                    <span className="text-white/60 font-mono tabular-nums">{Math.round(pct)}%</span>
+                    <span className="text-white/40 font-mono tabular-nums w-9 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
                   </div>
                 );
               })}
@@ -595,7 +679,7 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div className="space-y-1">
+            <div>
               <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
               <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
               <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
@@ -605,9 +689,9 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-          {/* Today's Stats */}
+          {/* Today's Stats — 2x2 grid, 82px */}
           <SidePanel title="Today's Stats">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
               <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
               <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
@@ -615,17 +699,20 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-
-          {/* Quote */}
-          <div className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-[#8B5CF6]/10 via-card to-[#EC4899]/10 p-4">
-            <QuoteIcon className="absolute right-3 top-3 h-8 w-8 text-primary/20" />
-            <p className="text-[11.5px] italic text-foreground/90 leading-relaxed">"{quote.text}"</p>
-            <p className="mt-2 text-[10px] text-muted-foreground">— {quote.author}</p>
+          {/* Quote Card */}
+          <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5">
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.08]"
+              style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+            />
+            <QuoteIcon className="absolute right-4 bottom-4 h-10 w-10 text-white/15" />
+            <p className="relative text-[13px] italic text-white/90 leading-relaxed pr-8">"{quote.text}"</p>
+            <p className="relative mt-3 text-[11px] text-white/50">— {quote.author}</p>
           </div>
 
-          {/* Item Types (legend) */}
+          {/* Item Types */}
           <SidePanel title="Item Types">
-            <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+            <div className="grid grid-cols-2 gap-2.5">
               <TypeChip icon={CheckSquare} label="Checkbox" color="#3B82F6" />
               <TypeChip icon={Hash} label="Number" color="#10B981" />
               <TypeChip icon={Star} label="Rating" color="#F59E0B" />
@@ -636,22 +723,27 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Templates */}
-          <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[10px] text-primary hover:underline">View all</button>}>
-            <div className="space-y-1.5">
+          <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[11px] text-[#A78BFA] hover:underline">View all</button>}>
+            <div className="space-y-2">
               {(templates as any[]).slice(0,4).map(t => (
-                <button key={t.id} onClick={() => applyTemplate(t)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 transition text-left">
-                  <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-[11px] flex-1 truncate">{t.name}</span>
-                  <span className="text-[10px] text-primary">Use</span>
+                <button
+                  key={t.id}
+                  onClick={() => applyTemplate(t)}
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[10px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
+                  style={{ height: 38 }}
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
+                  <span className="text-[12.5px] flex-1 truncate text-white/85">{t.name}</span>
+                  <span className="text-[11px] text-[#A78BFA]">Use</span>
                 </button>
               ))}
-              {!templates.length && <p className="text-[10.5px] text-muted-foreground py-2">No templates yet.</p>}
+              {!templates.length && <p className="text-[11px] text-white/40 py-2">No templates yet.</p>}
             </div>
           </SidePanel>
 
           {/* Quick Actions */}
           <SidePanel title="Quick Actions">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <ActionBtn icon={Upload} label="Import from Template" onClick={() => setTemplatesOpen(true)} />
               <ActionBtn icon={Download} label="Export Checklist" onClick={exportJson} />
               <ActionBtn icon={CheckCircle2} label="Complete All" onClick={completeAll} />
@@ -661,6 +753,7 @@ export default function TradingChecklist() {
         </aside>
       </div>
       )}
+
 
       {tab === 'templates' && (
         <div className="rounded-xl border border-border/60 bg-card p-6">
@@ -741,13 +834,19 @@ export default function TradingChecklist() {
         onSaveCurrent={saveAsTemplate}
       />
 
-      {/* Floating action button (matches reference bottom-right) */}
+      {/* Floating action button — 64px per spec */}
       <button
         onClick={() => setCustomizeOpen(true)}
         aria-label="Open customize"
-        className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] shadow-[0_18px_40px_-12px_rgba(139,92,246,0.7)] flex items-center justify-center text-white hover:scale-105 transition-transform z-30"
+        className="fixed h-16 w-16 rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 z-30"
+        style={{
+          bottom: 24,
+          right: 24,
+          background: 'linear-gradient(135deg, #A855F7, #EC4899)',
+          boxShadow: '0 12px 32px rgba(168,85,247,0.40)',
+        }}
       >
-        <ListChecks className="h-5 w-5" />
+        <ListChecks className="h-6 w-6" />
       </button>
       </div>
     </div>
@@ -758,9 +857,9 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm p-3.5 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
-      <div className="flex items-center justify-between mb-2.5">
-        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.1em] text-foreground/90">{title}</h3>
+    <div className="relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5 shadow-[0_10px_32px_rgba(0,0,0,0.35)]">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-heading font-semibold text-[13px] text-white tracking-tight">{title}</h3>
         {action}
       </div>
       {children}
@@ -770,27 +869,29 @@ function SidePanel({ title, action, children }: { title: string; action?: React.
 
 
 function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
-  // Deterministic tiny sparkline to visually match the reference trend micro-charts.
   const pts = Array.from({ length: 8 }, (_, i) => {
     const n = Math.sin((i + seed) * 1.3) * 0.5 + 0.5;
     const y = 12 - n * 10;
     return `${i * 6},${y.toFixed(1)}`;
   }).join(' ');
   return (
-    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={52} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-2 py-1.5">
-      <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
-        <Icon className="h-3.5 w-3.5" style={{ color }} />
+    <div className="flex items-center gap-3" style={{ height: 48 }}>
+      <div
+        className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+        style={{ background: `linear-gradient(135deg, ${color}33, ${color}11)`, boxShadow: `inset 0 0 0 1px ${color}33` }}
+      >
+        <Icon className="h-4 w-4" style={{ color }} />
       </div>
-      <span className="text-[11.5px] text-foreground/85 flex-1 truncate">{label}</span>
-      <span className="text-[11px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
+      <span className="text-[12.5px] text-white/85 flex-1 truncate">{label}</span>
+      <span className="text-[12.5px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
       <Sparkline color={color} seed={label.length} />
     </div>
   );
@@ -798,13 +899,15 @@ function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: stri
 
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0b1020]/60 p-2.5 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.12]" style={{ background: `radial-gradient(120% 120% at 100% 0%, ${tint}, transparent 60%)` }} />
-      <div className="relative flex items-center gap-1.5 mb-0.5">
+    <div
+      className="relative overflow-hidden rounded-[12px] bg-[#1A2235] px-3 py-2.5 flex flex-col justify-center"
+      style={{ height: 82 }}
+    >
+      <div className="flex items-center gap-1.5 mb-1">
         <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-[11px] text-white/60">{label}</p>
       </div>
-      <p className="relative text-[15px] font-heading font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-[18px] font-heading font-bold text-white tabular-nums leading-none">{value}</p>
     </div>
   );
 }
@@ -812,34 +915,49 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-background/40 px-2 py-1.5">
-      <Icon className="h-3 w-3" style={{ color }} />
-      <span className="text-foreground/80 truncate">{label}</span>
+    <div className="flex items-center gap-2 rounded-[12px] bg-[#1A2235] px-3" style={{ height: 60 }}>
+      <Icon className="h-4 w-4" style={{ color }} />
+      <span className="text-[12.5px] text-white/85 truncate">{label}</span>
     </div>
   );
 }
 
 function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 hover:border-primary/30 transition text-left">
-      <Icon className="h-3.5 w-3.5 text-primary" />
-      <span className="text-[11px] text-foreground/85 flex-1">{label}</span>
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2.5 px-3 rounded-[12px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
+      style={{ height: 48 }}
+    >
+      <Icon className="h-4 w-4 text-[#A78BFA]" />
+      <span className="text-[13px] text-white/90 flex-1">{label}</span>
     </button>
   );
 }
 
-function AddItemInline({ onAdd }: { onAdd: (label: string) => void }) {
+function AddItemInline({ onAdd, color = '#8B5CF6' }: { onAdd: (label: string) => void; color?: string }) {
   const [v, setV] = useState('');
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
-      className="mt-2 flex items-center gap-2">
-      <Input value={v} onChange={(e) => setV(e.target.value)} placeholder="+ Add Item" className="h-7 text-[11px] border-dashed" />
-      <Button type="submit" size="sm" variant="outline" className="h-7 gap-1 text-[11px]" disabled={!v.trim()}>
-        <Plus className="h-3 w-3" /> Add
-      </Button>
+    <form
+      onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
+      className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-dashed px-3.5"
+      style={{ height: 42, borderColor: '#313A50' }}
+    >
+      <Plus className="h-3.5 w-3.5" style={{ color }} />
+      <input
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        placeholder="Add Item"
+        className="flex-1 bg-transparent border-0 outline-none text-[13px] text-white/90 placeholder:text-white/40"
+        style={{ color: v ? '#fff' : undefined }}
+      />
+      {v.trim() && (
+        <button type="submit" className="text-[12px] font-medium" style={{ color }}>Add</button>
+      )}
     </form>
   );
 }
+
 
 function CustomizeDialog(props: {
   open: boolean; onOpenChange: (b: boolean) => void;
