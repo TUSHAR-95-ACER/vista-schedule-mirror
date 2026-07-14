@@ -421,48 +421,92 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="relative min-h-full bg-[#070917]">
-      {/* Ambient background: subtle navy + soft glows (matches reference) */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[900px] rounded-full blur-[120px] opacity-[0.18] bg-[radial-gradient(closest-side,#6366F1,transparent)]" />
-        <div className="absolute top-40 -right-32 h-[380px] w-[380px] rounded-full blur-[110px] opacity-[0.14] bg-[radial-gradient(closest-side,#EC4899,transparent)]" />
-        <div className="absolute bottom-0 -left-32 h-[420px] w-[420px] rounded-full blur-[130px] opacity-[0.12] bg-[radial-gradient(closest-side,#10B981,transparent)]" />
-      </div>
-      <div className="relative p-5 max-w-[1600px] mx-auto space-y-4">
+    <div className="relative min-h-full bg-[#0B1020]">
+      {/* Overlay gradient per spec */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'linear-gradient(180deg, rgba(92,63,255,0.05), transparent 20%)' }}
+      />
+      <div className="relative px-6 py-6 max-w-[1720px] mx-auto">
 
       {/* ============ HEADER ============ */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary/25 to-primary/5 border border-primary/40 flex items-center justify-center shadow-[0_0_20px_-8px_hsl(var(--primary)/0.6)]">
-            <CheckSquare className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <div>
-            <h1 className="font-heading font-bold text-[22px] leading-tight text-foreground tracking-tight">Daily Checklist</h1>
-            <p className="text-[11px] text-muted-foreground">Build habits. Stay consistent. Master your routine.</p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="font-heading font-bold text-white tracking-tight" style={{ fontSize: 44, lineHeight: 1.1 }}>
+            Daily Checklist
+          </h1>
+          <p className="mt-2 text-[18px] font-normal text-[#A7B0C2]" style={{ lineHeight: 1.6 }}>
+            Build habits. Stay consistent. Master your routine.
+          </p>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 bg-card px-1.5 py-1">
-            <Button variant="ghost" size="sm" onClick={() => setDate(subDays(date, 1))} className="h-6 w-6 p-0"><ChevronLeft className="h-3.5 w-3.5" /></Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 rounded-[14px] border border-[#2B3346] bg-[#111827] px-2" style={{ height: 46 }}>
+            <CalendarIcon className="h-4 w-4 text-[#A7B0C2] ml-1" />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 gap-1.5 px-2 text-xs font-medium">
-                  <CalendarIcon className="h-3 w-3" />
-                  {format(date, 'd MMM yyyy')}
-                </Button>
+                <button className="px-2 text-[15px] font-medium text-white hover:text-white/90 transition">
+                  {format(date, 'd MMMM yyyy')}
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
                 <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
               </PopoverContent>
             </Popover>
-            <Button variant="ghost" size="sm" onClick={() => setDate(addDays(date, 1))} className="h-6 w-6 p-0"><ChevronRightIcon className="h-3.5 w-3.5" /></Button>
+            <button onClick={() => setDate(subDays(date, 1))} className="h-8 w-8 rounded-md flex items-center justify-center text-[#A7B0C2] hover:text-white hover:bg-white/5 transition">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button onClick={() => setDate(addDays(date, 1))} className="h-8 w-8 rounded-md flex items-center justify-center text-[#A7B0C2] hover:text-white hover:bg-white/5 transition">
+              <ChevronRightIcon className="h-4 w-4" />
+            </button>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setDate(new Date())} className="h-8 text-xs">Today</Button>
-          <Button variant="outline" size="sm" onClick={() => setCustomizeOpen(true)} className="h-8 gap-1.5 text-xs">
-            <Settings2 className="h-3.5 w-3.5" /> Customize
-          </Button>
+          <button
+            onClick={() => setDate(new Date())}
+            className="px-4 rounded-[14px] border border-[#2B3346] bg-[#111827] hover:bg-[#1B2336] text-white text-[15px] font-semibold transition-colors"
+            style={{ height: 46 }}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setCustomizeOpen(true)}
+            className="px-4 rounded-[14px] border border-[#2B3346] bg-[#111827] hover:bg-[#1B2336] text-white text-[15px] font-semibold flex items-center gap-2 transition-colors"
+            style={{ height: 46 }}
+          >
+            <Settings2 className="h-4 w-4" /> Customize
+          </button>
         </div>
       </div>
+
+      {/* ============ TABS + NEW SECTION ============ */}
+      <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
+        <div className="flex items-center gap-9">
+          {(['checklist','templates','analytics','history'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={cn(
+                'relative text-[15px] font-medium capitalize transition-colors flex items-center',
+                tab === t ? 'text-white' : 'text-[#AAB3C5] hover:text-white'
+              )}
+              style={{ height: 44 }}
+            >
+              {t === 'checklist' ? 'My Checklist' : t}
+              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[3px] rounded-full bg-[#8B5CF6]" />}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={addSection}
+          className="px-5 rounded-[14px] text-white text-[15px] font-semibold flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          style={{
+            height: 46,
+            background: 'linear-gradient(135deg, #A855F7, #6366F1)',
+            boxShadow: '0 8px 24px rgba(139,92,246,0.35)',
+          }}
+        >
+          <Plus className="h-4 w-4" /> New Section
+        </button>
+      </div>
+
 
       {/* ============ TABS + NEW SECTION ============ */}
       <div className="flex items-center justify-between border-b border-border/60">
