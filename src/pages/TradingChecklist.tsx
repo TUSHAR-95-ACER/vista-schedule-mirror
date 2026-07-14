@@ -125,34 +125,47 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- KPI Card (compact, tinted background like reference) ----------
+// ---------- KPI Card (reference-spec: 120px, radius 18, tinted overlay) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{bg:string; ring:string; ic:string; grad:string; glow:string}> = {
-    violet:  { bg:'bg-[#8B5CF6]/15', ring:'ring-[#8B5CF6]/30', ic:'text-[#A78BFA]', grad:'from-[#8B5CF6]/25 via-[#8B5CF6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(139,92,246,0.55)]' },
-    blue:    { bg:'bg-[#3B82F6]/15', ring:'ring-[#3B82F6]/30', ic:'text-[#60A5FA]', grad:'from-[#3B82F6]/25 via-[#3B82F6]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(59,130,246,0.55)]' },
-    emerald: { bg:'bg-[#10B981]/15', ring:'ring-[#10B981]/30', ic:'text-[#34D399]', grad:'from-[#10B981]/25 via-[#10B981]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(16,185,129,0.55)]' },
-    amber:   { bg:'bg-[#F59E0B]/15', ring:'ring-[#F59E0B]/30', ic:'text-[#FBBF24]', grad:'from-[#F59E0B]/25 via-[#F59E0B]/5 to-transparent', glow:'shadow-[0_18px_40px_-24px_rgba(245,158,11,0.55)]' },
+  const tintMap: Record<string,{overlay:string; iconBg:string; ic:string; glow:string}> = {
+    violet:  { overlay:'bg-[#7C3AED]/[0.09]', iconBg:'bg-[#7C3AED]/20', ic:'text-[#C4B5FD]', glow:'hover:shadow-[0_14px_36px_rgba(124,58,237,0.28)]' },
+    blue:    { overlay:'bg-[#3B82F6]/[0.09]', iconBg:'bg-[#2563EB]/20', ic:'text-[#93C5FD]', glow:'hover:shadow-[0_14px_36px_rgba(59,130,246,0.28)]' },
+    emerald: { overlay:'bg-[#10B981]/[0.09]', iconBg:'bg-[#10B981]/20', ic:'text-[#6EE7B7]', glow:'hover:shadow-[0_14px_36px_rgba(16,185,129,0.28)]' },
+    amber:   { overlay:'bg-[#F59E0B]/[0.09]', iconBg:'bg-[#F59E0B]/20', ic:'text-[#FCD34D]', glow:'hover:shadow-[0_14px_36px_rgba(245,158,11,0.28)]' },
   };
   const t = tintMap[tint];
   return (
-    <div className={cn('relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 px-4 py-3.5 ring-1 backdrop-blur-sm', t.ring, t.glow, 'transition-all hover:-translate-y-0.5')}>
-      <div className={cn('absolute inset-0 bg-gradient-to-br pointer-events-none', t.grad)} />
-      <div className="relative flex items-center gap-3">
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-[#121A2C] px-6',
+        'shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out hover:-translate-y-0.5',
+        t.glow,
+      )}
+      style={{ height: 120 }}
+    >
+      <div className={cn('absolute inset-0 pointer-events-none', t.overlay)} />
+      <div className="relative flex items-center gap-4 h-full">
         {ring ? (
-          <ProgressRing value={ring.pct} size={54} stroke={5} gradientId={`kpi-${tint}`} gradient={ring.gradient ?? ['#8B5CF6','#EC4899','#3B82F6']} />
+          <ProgressRing
+            value={ring.pct}
+            size={72}
+            stroke={8}
+            gradientId={`kpi-${tint}`}
+            gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
+          />
         ) : (
-          <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center', t.bg)}>
+          <div className={cn('h-12 w-12 rounded-[14px] flex items-center justify-center shrink-0', t.iconBg)}>
             <Icon className={cn('h-5 w-5', t.ic)} />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground/90 font-medium">{label}</p>
-          <p className="font-heading font-bold text-[22px] leading-[1.1] text-foreground tabular-nums">{value}</p>
-          {sub && <p className="text-[10.5px] text-muted-foreground/70 mt-0.5 truncate">{sub}</p>}
-          {trend && <p className="mt-0.5 text-[10px] text-emerald-400 font-medium">▲ {trend}</p>}
+          <p className="text-[12px] font-medium text-[#A7B0C2] mb-1">{label}</p>
+          <p className="font-heading font-bold text-[28px] leading-none text-white tabular-nums">{value}</p>
+          {sub && <p className="text-[11px] text-[#6B7488] mt-1.5 truncate">{sub}</p>}
+          {trend && <p className="mt-1 text-[11px] text-[#34D399] font-medium">▲ {trend}</p>}
         </div>
       </div>
     </div>
