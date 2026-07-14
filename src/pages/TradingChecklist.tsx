@@ -46,24 +46,24 @@ const ICON_KEYS = Object.keys(ICONS);
 // Per-section vivid tokens (matches reference gradient palette)
 type Palette = { key: string; from: string; to: string; ring: string; dot: string; soft: string };
 const PALETTES: Palette[] = [
-  { key: 'amber',   from: '#F59E0B', to: '#F97316', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#F97316]/5' },
+  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' },
   { key: 'blue',    from: '#3B82F6', to: '#2563EB', ring: 'stroke-[#3B82F6]', dot: 'bg-[#3B82F6]', soft: 'from-[#3B82F6]/25 to-[#2563EB]/5' },
   { key: 'emerald', from: '#10B981', to: '#059669', ring: 'stroke-[#10B981]', dot: 'bg-[#10B981]', soft: 'from-[#10B981]/25 to-[#059669]/5' },
-  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' },
-  { key: 'rose',    from: '#F43F5E', to: '#E11D48', ring: 'stroke-[#F43F5E]', dot: 'bg-[#F43F5E]', soft: 'from-[#F43F5E]/25 to-[#E11D48]/5' },
-  { key: 'indigo',  from: '#6366F1', to: '#4F46E5', ring: 'stroke-[#6366F1]', dot: 'bg-[#6366F1]', soft: 'from-[#6366F1]/25 to-[#4F46E5]/5' },
+  { key: 'amber',   from: '#F59E0B', to: '#D97706', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#D97706]/5' },
+  { key: 'rose',    from: '#EC4899', to: '#DB2777', ring: 'stroke-[#EC4899]', dot: 'bg-[#EC4899]', soft: 'from-[#EC4899]/25 to-[#DB2777]/5' },
+  { key: 'indigo',  from: '#8B5CF6', to: '#6366F1', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#6366F1]/5' },
   { key: 'teal',    from: '#14B8A6', to: '#0D9488', ring: 'stroke-[#14B8A6]', dot: 'bg-[#14B8A6]', soft: 'from-[#14B8A6]/25 to-[#0D9488]/5' },
 ];
 const paletteFor = (key: string) => PALETTES.find(p => p.key === key) ?? PALETTES[0];
 
 const DEFAULT_SECTIONS: () => ChecklistSection[] = () => [
-  { id: uid(), title: 'Morning Routine', description: 'Start your day with intention', icon: 'Sun', color: 'amber',
+  { id: uid(), title: 'Morning Routine', description: 'Start your day with intention', icon: 'Sun', color: 'violet',
     items: ['Wake up before 6:00 AM','Drink 500ml water','Meditation','Read 10 pages','Exercise / Workout'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Market Preparation', description: 'Analyze the market. Plan ahead.', icon: 'TrendingUp', color: 'blue',
     items: ['Economic calendar checked','High impact news reviewed','Weekly bias reviewed','Daily bias confirmed','Watchlist updated','Alerts placed','Trading levels marked'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Daily Planning', description: 'Focus on what matters.', icon: 'Target', color: 'emerald',
     items: ['Top 3 goals written','Trading session selected','Daily objectives written','Break schedule planned'].map(l => ({ id: uid(), label: l, done: false })) },
-  { id: uid(), title: 'Learning & Improvement', description: 'Never stop learning.', icon: 'GraduationCap', color: 'violet',
+  { id: uid(), title: 'Learning & Improvement', description: 'Never stop learning.', icon: 'GraduationCap', color: 'amber',
     items: ['Review previous trades','Study one trading concept','Reading trading book / article','Watch educational video','Update notebook if needed'].map(l => ({ id: uid(), label: l, done: false })) },
   { id: uid(), title: 'Health & Lifestyle', description: 'A healthy body. A sharp mind.', icon: 'Heart', color: 'rose',
     items: ['Drink 2L water','Exercise completed','Healthy meals','Stretching','7-8 hours sleep','No junk food','Vitamins / Supplements'].map(l => ({ id: uid(), label: l, done: false })) },
