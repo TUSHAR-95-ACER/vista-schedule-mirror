@@ -507,26 +507,6 @@ export default function TradingChecklist() {
         </button>
       </div>
 
-
-      {/* ============ TABS + NEW SECTION ============ */}
-      <div className="flex items-center justify-between border-b border-border/60">
-        <div className="flex items-center gap-0">
-          {(['checklist','templates','analytics','history'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={cn(
-                'relative px-4 py-2.5 text-xs font-medium capitalize transition-colors',
-                tab === t ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-              )}>
-              {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-gradient-to-r from-[#8B5CF6] via-[#3B82F6] to-[#F43F5E]" />}
-            </button>
-          ))}
-        </div>
-        <Button size="sm" onClick={addSection} className="h-8 gap-1.5 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] hover:opacity-90 text-white shadow-[0_6px_20px_-8px_rgba(139,92,246,0.6)]">
-          <Plus className="h-3.5 w-3.5" /> New Section
-        </Button>
-      </div>
-
       {tab === 'checklist' && (
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4">
         {/* -------- LEFT -------- */}
