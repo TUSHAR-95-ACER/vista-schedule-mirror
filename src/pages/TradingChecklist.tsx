@@ -834,13 +834,19 @@ export default function TradingChecklist() {
         onSaveCurrent={saveAsTemplate}
       />
 
-      {/* Floating action button (matches reference bottom-right) */}
+      {/* Floating action button — 64px per spec */}
       <button
         onClick={() => setCustomizeOpen(true)}
         aria-label="Open customize"
-        className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] shadow-[0_18px_40px_-12px_rgba(139,92,246,0.7)] flex items-center justify-center text-white hover:scale-105 transition-transform z-30"
+        className="fixed h-16 w-16 rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 z-30"
+        style={{
+          bottom: 24,
+          right: 24,
+          background: 'linear-gradient(135deg, #A855F7, #EC4899)',
+          boxShadow: '0 12px 32px rgba(168,85,247,0.40)',
+        }}
       >
-        <ListChecks className="h-5 w-5" />
+        <ListChecks className="h-6 w-6" />
       </button>
       </div>
     </div>
@@ -851,9 +857,9 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm p-3.5 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
-      <div className="flex items-center justify-between mb-2.5">
-        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.1em] text-foreground/90">{title}</h3>
+    <div className="relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5 shadow-[0_10px_32px_rgba(0,0,0,0.35)]">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-heading font-semibold text-[13px] text-white tracking-tight">{title}</h3>
         {action}
       </div>
       {children}
@@ -863,27 +869,29 @@ function SidePanel({ title, action, children }: { title: string; action?: React.
 
 
 function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
-  // Deterministic tiny sparkline to visually match the reference trend micro-charts.
   const pts = Array.from({ length: 8 }, (_, i) => {
     const n = Math.sin((i + seed) * 1.3) * 0.5 + 0.5;
     const y = 12 - n * 10;
     return `${i * 6},${y.toFixed(1)}`;
   }).join(' ');
   return (
-    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={52} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-2 py-1.5">
-      <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
-        <Icon className="h-3.5 w-3.5" style={{ color }} />
+    <div className="flex items-center gap-3" style={{ height: 48 }}>
+      <div
+        className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
+        style={{ background: `linear-gradient(135deg, ${color}33, ${color}11)`, boxShadow: `inset 0 0 0 1px ${color}33` }}
+      >
+        <Icon className="h-4 w-4" style={{ color }} />
       </div>
-      <span className="text-[11.5px] text-foreground/85 flex-1 truncate">{label}</span>
-      <span className="text-[11px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
+      <span className="text-[12.5px] text-white/85 flex-1 truncate">{label}</span>
+      <span className="text-[12.5px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
       <Sparkline color={color} seed={label.length} />
     </div>
   );
@@ -891,13 +899,15 @@ function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: stri
 
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#0b1020]/60 p-2.5 relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.12]" style={{ background: `radial-gradient(120% 120% at 100% 0%, ${tint}, transparent 60%)` }} />
-      <div className="relative flex items-center gap-1.5 mb-0.5">
+    <div
+      className="relative overflow-hidden rounded-[12px] bg-[#1A2235] px-3 py-2.5 flex flex-col justify-center"
+      style={{ height: 82 }}
+    >
+      <div className="flex items-center gap-1.5 mb-1">
         <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-[11px] text-white/60">{label}</p>
       </div>
-      <p className="relative text-[15px] font-heading font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-[18px] font-heading font-bold text-white tabular-nums leading-none">{value}</p>
     </div>
   );
 }
@@ -905,34 +915,49 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-background/40 px-2 py-1.5">
-      <Icon className="h-3 w-3" style={{ color }} />
-      <span className="text-foreground/80 truncate">{label}</span>
+    <div className="flex items-center gap-2 rounded-[12px] bg-[#1A2235] px-3" style={{ height: 60 }}>
+      <Icon className="h-4 w-4" style={{ color }} />
+      <span className="text-[12.5px] text-white/85 truncate">{label}</span>
     </div>
   );
 }
 
 function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 hover:border-primary/30 transition text-left">
-      <Icon className="h-3.5 w-3.5 text-primary" />
-      <span className="text-[11px] text-foreground/85 flex-1">{label}</span>
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-2.5 px-3 rounded-[12px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
+      style={{ height: 48 }}
+    >
+      <Icon className="h-4 w-4 text-[#A78BFA]" />
+      <span className="text-[13px] text-white/90 flex-1">{label}</span>
     </button>
   );
 }
 
-function AddItemInline({ onAdd }: { onAdd: (label: string) => void }) {
+function AddItemInline({ onAdd, color = '#8B5CF6' }: { onAdd: (label: string) => void; color?: string }) {
   const [v, setV] = useState('');
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
-      className="mt-2 flex items-center gap-2">
-      <Input value={v} onChange={(e) => setV(e.target.value)} placeholder="+ Add Item" className="h-7 text-[11px] border-dashed" />
-      <Button type="submit" size="sm" variant="outline" className="h-7 gap-1 text-[11px]" disabled={!v.trim()}>
-        <Plus className="h-3 w-3" /> Add
-      </Button>
+    <form
+      onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
+      className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-dashed px-3.5"
+      style={{ height: 42, borderColor: '#313A50' }}
+    >
+      <Plus className="h-3.5 w-3.5" style={{ color }} />
+      <input
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        placeholder="Add Item"
+        className="flex-1 bg-transparent border-0 outline-none text-[13px] text-white/90 placeholder:text-white/40"
+        style={{ color: v ? '#fff' : undefined }}
+      />
+      {v.trim() && (
+        <button type="submit" className="text-[12px] font-medium" style={{ color }}>Add</button>
+      )}
     </form>
   );
 }
+
 
 function CustomizeDialog(props: {
   open: boolean; onOpenChange: (b: boolean) => void;
