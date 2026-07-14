@@ -508,122 +508,169 @@ export default function TradingChecklist() {
       </div>
 
       {tab === 'checklist' && (
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-4">
+      <div className="grid grid-cols-1 gap-5" style={{ gridTemplateColumns: 'minmax(0,1fr) 380px' }}>
         {/* -------- LEFT -------- */}
-        <div className="space-y-3">
+        <div>
           {/* KPI grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard icon={ListChecks} label="Overall Progress" value={`${Math.round(overall.pct)}%`} sub={`${overall.done} / ${overall.total}  Tasks Completed`} tint="violet" trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined} ring={{ pct: overall.pct }} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+            <KpiCard
+              icon={ListChecks}
+              label="Overall Progress"
+              value={`${overall.done} / ${overall.total}`}
+              sub="Tasks Completed"
+              tint="violet"
+              trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined}
+              ring={{ pct: overall.pct, gradient: ['#EC4899', '#8B5CF6'] }}
+            />
             <KpiCard icon={LayoutGrid} label="Sections" value={sections.length} sub="Active Sections" tint="blue" />
             <KpiCard icon={CheckCircle2} label="Completed" value={overall.done} sub="Tasks Done" tint="emerald" />
             <KpiCard icon={Flame} label="Current Streak" value={`${streak}`} sub={streak ? 'Days · Keep it up!' : 'Start today'} tint="amber" />
           </div>
 
           {/* Sections */}
-          <div className="space-y-2.5">
+          <div className="space-y-5">
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
               const Icon = ICONS[s.icon] ?? ListTodo;
               const p = paletteFor(s.color);
               return (
-                <div key={s.id} className={cn(
-                  'group relative rounded-2xl border border-white/[0.06] bg-[#0f1424]/70 backdrop-blur-sm overflow-hidden transition-all',
-                  'shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]',
-                  'hover:border-white/[0.12] hover:-translate-y-[1px]'
-                )}>
-                  {/* subtle accent glow on left edge */}
-                  <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, opacity: 0.55 }} />
+                <div
+                  key={s.id}
+                  className={cn(
+                    'group relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] overflow-hidden',
+                    'shadow-[0_10px_32px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-0.5'
+                  )}
+                >
+                  {/* Left accent border (4px) */}
+                  <div
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[4px] rounded-[4px]"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})` }}
+                  />
+
                   {/* header */}
-                  <div className="flex items-center gap-3 px-4 py-3">
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 cursor-grab" />
-                    <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-[0_6px_20px_-8px_rgba(0,0,0,0.6)]')}
-                      style={{ background: `linear-gradient(135deg, ${p.from}, ${p.to})` }}>
-                      <Icon className="h-5 w-5 text-white" />
+                  <div className="flex items-center gap-4 p-6 pl-8">
+                    <GripVertical className="h-4 w-4 text-white/25 shrink-0 cursor-grab" />
+                    <div
+                      className="h-14 w-14 rounded-[16px] flex items-center justify-center shrink-0"
+                      style={{
+                        background: `linear-gradient(180deg, ${p.from}, ${p.to})`,
+                        boxShadow: `0 0 25px ${p.from}4D`,
+                      }}
+                    >
+                      <Icon className="h-6 w-6 text-white" />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[12px] font-heading font-bold text-foreground/60">{idx + 1}.</span>
-                        <h3 className="font-heading font-bold text-[13.5px] text-foreground truncate tracking-tight">{s.title}</h3>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-heading font-bold text-[22px] text-white/50 tabular-nums">{idx + 1}.</span>
+                        <h3 className="font-heading font-bold text-[24px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[10.5px] text-muted-foreground/75 mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[15px] text-[#94A3B8] mt-0.5 truncate">{s.description}</p>}
                     </button>
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={40} stroke={3.5} />
-                      <span className="text-[11.5px] text-muted-foreground/90 font-mono tabular-nums w-9 text-right">
+                    <div className="flex items-center gap-3 shrink-0">
+                      <MiniRing value={pct} color={p.from} size={56} stroke={7} />
+                      <span className="text-[15px] text-white/80 font-mono tabular-nums w-14 text-right">
                         {s.items.filter(i => i.done).length} / {s.items.length}
                       </span>
-                      <button onClick={() => setCustomizeOpen(true)} className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
-                        <Pencil className="h-3 w-3" />
+                      <button
+                        onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                      >
+                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </button>
-                      <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground/70 hover:text-foreground hover:bg-white/5 transition">
-                        {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      <button
+                        onClick={() => setCustomizeOpen(true)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="border-t border-white/[0.05] px-3.5 py-2.5 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <div className="px-6 pb-5 pl-8 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                         {s.items.map((i) => (
-                          <div key={i.id} className={cn(
-                            'group/item flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-lg border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all cursor-pointer',
-                            i.done && 'bg-[hsl(var(--primary))]/[0.08] border-primary/25'
-                          )}
-                          onClick={() => toggleItem(s.id, i.id)}>
-                            <Checkbox
-                              checked={i.done}
-                              onCheckedChange={() => toggleItem(s.id, i.id)}
-                              onClick={(e) => e.stopPropagation()}
-                              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                            />
-                            <span className={cn('text-[12px] flex-1 truncate leading-snug', i.done && 'line-through text-muted-foreground')}>
+                          <div
+                            key={i.id}
+                            onClick={() => toggleItem(s.id, i.id)}
+                            className={cn(
+                              'group/item flex items-center gap-3 px-3.5 rounded-[10px] border border-white/[0.04] bg-[#1A2235]',
+                              'hover:bg-[#232D43] transition-all cursor-pointer'
+                            )}
+                            style={{ height: 42 }}
+                          >
+                            <button
+                              onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
+                              className={cn(
+                                'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
+                                i.done ? 'border-transparent' : 'border-white/30 hover:border-white/50'
+                              )}
+                              style={i.done ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})` } : undefined}
+                            >
+                              {i.done && (
+                                <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
+                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </button>
+                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/40' : 'text-white/90')}>
                               {i.label}
                             </span>
-                            <GripVertical className="h-3 w-3 text-muted-foreground/30 opacity-0 group-hover/item:opacity-100" />
-                            <button onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-muted-foreground hover:text-destructive transition"
-                              aria-label="Remove item">
-                              <Trash2 className="h-3 w-3" />
+                            <button
+                              onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
+                              className="opacity-0 group-hover/item:opacity-100 text-white/40 hover:text-red-400 transition"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         ))}
                       </div>
-                      <AddItemInline onAdd={(l) => addItem(s.id, l)} />
+                      <AddItemInline onAdd={(l) => addItem(s.id, l)} color={p.from} />
                     </div>
                   )}
                 </div>
               );
             })}
 
-            <Button variant="outline" className="w-full h-11 gap-2 border-dashed border-[#8B5CF6]/30 bg-transparent text-[12px] text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/50" onClick={addSection}>
-              <Plus className="h-3.5 w-3.5" /> Add New Section
-            </Button>
+            <button
+              onClick={addSection}
+              className="w-full flex items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#8B5CF6]/40 bg-transparent text-[14px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/60 transition"
+              style={{ height: 48 }}
+            >
+              <Plus className="h-4 w-4" /> Add New Section
+            </button>
           </div>
         </div>
 
-
-        {/* -------- RIGHT SIDEBAR -------- */}
-        <aside className="space-y-3">
+        {/* -------- RIGHT SIDEBAR (380px) -------- */}
+        <aside className="space-y-5">
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
-            {saving && <span className="absolute right-4 top-4 text-[9px] text-muted-foreground animate-pulse">Saving…</span>}
-            <div className="flex items-center justify-center py-1">
-              <ProgressRing value={overall.pct} size={150} stroke={10} gradientId="ring-overall" label="Overall" sublabel={`${overall.done}/${overall.total}`}
-                gradient={['#8B5CF6','#3B82F6','#EC4899']} />
+            {saving && <span className="absolute right-5 top-5 text-[10px] text-white/40 animate-pulse">Saving…</span>}
+            <div className="flex items-center justify-center py-2">
+              <ProgressRing
+                value={overall.pct}
+                size={180}
+                stroke={14}
+                gradientId="ring-overall"
+                label="Overall"
+                gradient={['#8B5CF6', '#3B82F6', '#06B6D4', '#F59E0B', '#F97316', '#EC4899']}
+              />
             </div>
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-4 space-y-2">
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
                 return (
-                  <div key={s.id} className="flex items-center gap-2 text-[11px]">
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: p.from }} />
-                    <span className="flex-1 truncate text-foreground/80">{s.title}</span>
-                    <span className="text-muted-foreground font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-muted-foreground/60 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="flex items-center gap-2.5 text-[12.5px]">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: p.from }} />
+                    <span className="flex-1 truncate text-white/85">{s.title}</span>
+                    <span className="text-white/60 font-mono tabular-nums">{Math.round(pct)}%</span>
+                    <span className="text-white/40 font-mono tabular-nums w-9 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
                   </div>
                 );
               })}
@@ -632,7 +679,7 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div className="space-y-1">
+            <div>
               <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
               <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
               <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
@@ -642,9 +689,9 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-          {/* Today's Stats */}
+          {/* Today's Stats — 2x2 grid, 82px */}
           <SidePanel title="Today's Stats">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
               <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
               <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
@@ -652,17 +699,20 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-
-          {/* Quote */}
-          <div className="relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-[#8B5CF6]/10 via-card to-[#EC4899]/10 p-4">
-            <QuoteIcon className="absolute right-3 top-3 h-8 w-8 text-primary/20" />
-            <p className="text-[11.5px] italic text-foreground/90 leading-relaxed">"{quote.text}"</p>
-            <p className="mt-2 text-[10px] text-muted-foreground">— {quote.author}</p>
+          {/* Quote Card */}
+          <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5">
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.08]"
+              style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+            />
+            <QuoteIcon className="absolute right-4 bottom-4 h-10 w-10 text-white/15" />
+            <p className="relative text-[13px] italic text-white/90 leading-relaxed pr-8">"{quote.text}"</p>
+            <p className="relative mt-3 text-[11px] text-white/50">— {quote.author}</p>
           </div>
 
-          {/* Item Types (legend) */}
+          {/* Item Types */}
           <SidePanel title="Item Types">
-            <div className="grid grid-cols-2 gap-1.5 text-[10.5px]">
+            <div className="grid grid-cols-2 gap-2.5">
               <TypeChip icon={CheckSquare} label="Checkbox" color="#3B82F6" />
               <TypeChip icon={Hash} label="Number" color="#10B981" />
               <TypeChip icon={Star} label="Rating" color="#F59E0B" />
@@ -673,22 +723,27 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Templates */}
-          <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[10px] text-primary hover:underline">View all</button>}>
-            <div className="space-y-1.5">
+          <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[11px] text-[#A78BFA] hover:underline">View all</button>}>
+            <div className="space-y-2">
               {(templates as any[]).slice(0,4).map(t => (
-                <button key={t.id} onClick={() => applyTemplate(t)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md border border-border/40 bg-background/40 hover:bg-accent/60 transition text-left">
-                  <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-[11px] flex-1 truncate">{t.name}</span>
-                  <span className="text-[10px] text-primary">Use</span>
+                <button
+                  key={t.id}
+                  onClick={() => applyTemplate(t)}
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[10px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
+                  style={{ height: 38 }}
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
+                  <span className="text-[12.5px] flex-1 truncate text-white/85">{t.name}</span>
+                  <span className="text-[11px] text-[#A78BFA]">Use</span>
                 </button>
               ))}
-              {!templates.length && <p className="text-[10.5px] text-muted-foreground py-2">No templates yet.</p>}
+              {!templates.length && <p className="text-[11px] text-white/40 py-2">No templates yet.</p>}
             </div>
           </SidePanel>
 
           {/* Quick Actions */}
           <SidePanel title="Quick Actions">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <ActionBtn icon={Upload} label="Import from Template" onClick={() => setTemplatesOpen(true)} />
               <ActionBtn icon={Download} label="Export Checklist" onClick={exportJson} />
               <ActionBtn icon={CheckCircle2} label="Complete All" onClick={completeAll} />
@@ -698,6 +753,7 @@ export default function TradingChecklist() {
         </aside>
       </div>
       )}
+
 
       {tab === 'templates' && (
         <div className="rounded-xl border border-border/60 bg-card p-6">
