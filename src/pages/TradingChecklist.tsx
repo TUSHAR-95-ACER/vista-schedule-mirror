@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { format, addDays, subDays, startOfWeek, startOfMonth, differenceInCalendarDays } from 'date-fns';
 import {
   ChevronDown, ChevronRight, Plus, Trash2, GripVertical, RotateCcw,
@@ -240,35 +240,52 @@ export default function TradingChecklist() {
 
   const [sections, setSections] = useState<ChecklistSection[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const hydratedKeyRef = useRef<string | null>(null);
+  const dirtyRef = useRef(false);
+  const inflightRef = useRef(false);
 
+  // Reset hydration marker whenever the target date changes.
+  useEffect(() => {
+    hydratedKeyRef.current = null;
+    dirtyRef.current = false;
+    setHydrated(false);
+  }, [key, user?.id]);
+
+  // Hydrate local state from the server exactly once per date, and never
+  // clobber a pending local edit with a stale realtime refetch.
   useEffect(() => {
     if (!user) return;
-    setHydrated(false);
-    if (row?.sections) setSections(row.sections as ChecklistSection[]);
-    else setSections(DEFAULT_SECTIONS());
-    // allow persist after next tick
+    if (hydratedKeyRef.current === key) return; // already hydrated for this date
+    if (row === undefined) return; // query still loading
+    if (dirtyRef.current || inflightRef.current) return; // don't overwrite unsaved edits
+    setSections(row?.sections ? (row.sections as ChecklistSection[]) : DEFAULT_SECTIONS());
+    hydratedKeyRef.current = key;
     const t = setTimeout(() => setHydrated(true), 50);
     return () => clearTimeout(t);
   }, [row, user, key]);
 
   const persist = useCallback(async (next: ChecklistSection[]) => {
     if (!user) return;
+    inflightRef.current = true;
     setSaving(true);
     try {
       const { error } = await supabase.from('trading_checklists' as any).upsert({
         user_id: user.id, date: key, sections: next as any,
       }, { onConflict: 'user_id,date' });
       if (error) throw error;
+      dirtyRef.current = false;
       qc.invalidateQueries({ queryKey: ['trading_checklists_history', user.id] });
     } catch (e: any) {
       toast.error('Save failed', { description: e?.message ?? String(e) });
     } finally {
+      inflightRef.current = false;
       setSaving(false);
     }
   }, [user, key, qc]);
 
   useEffect(() => {
     if (!user || !hydrated) return;
+    dirtyRef.current = true;
     const t = setTimeout(() => persist(sections), 400);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
