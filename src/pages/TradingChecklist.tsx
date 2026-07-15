@@ -421,13 +421,13 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="relative min-h-full bg-[#0B1020]">
+    <div className="relative min-h-full bg-[#0B1020] [&_h1]:!normal-case [&_h2]:!normal-case [&_h3]:!normal-case [&_h4]:!normal-case">
       {/* Overlay gradient per spec */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: 'linear-gradient(180deg, rgba(92,63,255,0.05), transparent 20%)' }}
       />
-      <div className="relative px-6 py-6 max-w-[1720px] mx-auto">
+      <div className="relative px-6 py-6 max-w-[1440px] mx-auto">
 
       {/* ============ HEADER ============ */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
