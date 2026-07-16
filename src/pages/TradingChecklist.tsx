@@ -506,29 +506,29 @@ export default function TradingChecklist() {
 
       {/* ============ TABS + NEW SECTION ============ */}
       <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
-        <div className="flex items-center gap-9">
+        <div className="flex items-center gap-8">
           {(['checklist','templates','analytics','history'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'relative text-[15px] font-medium capitalize transition-colors flex items-center',
-                tab === t ? 'text-white' : 'text-[#AAB3C5] hover:text-white'
+                'relative text-[14px] font-medium capitalize transition-colors flex items-center',
+                tab === t ? 'text-white' : 'text-[#8A93A6] hover:text-white'
               )}
               style={{ height: 44 }}
             >
               {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[3px] rounded-full bg-[#8B5CF6]" />}
+              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[2.5px] rounded-full bg-[#8B5CF6]" />}
             </button>
           ))}
         </div>
         <button
           onClick={addSection}
-          className="px-5 rounded-[14px] text-white text-[15px] font-semibold flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          className="px-5 rounded-[12px] text-white text-[14px] font-semibold flex items-center gap-2 transition-transform hover:scale-[1.02]"
           style={{
-            height: 46,
+            height: 42,
             background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-            boxShadow: '0 8px 24px rgba(139,92,246,0.35)',
+            boxShadow: '0 8px 22px rgba(139,92,246,0.35)',
           }}
         >
           <Plus className="h-4 w-4" /> New Section
@@ -536,7 +536,7 @@ export default function TradingChecklist() {
       </div>
 
       {tab === 'checklist' && (
-      <div className="grid grid-cols-1 gap-5" style={{ gridTemplateColumns: 'minmax(0,1fr) 380px' }}>
+      <div className="grid grid-cols-1 gap-6" style={{ gridTemplateColumns: 'minmax(0,1fr) 360px' }}>
         {/* -------- LEFT -------- */}
         <div>
           {/* KPI grid */}
