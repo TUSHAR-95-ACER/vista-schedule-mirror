@@ -438,41 +438,36 @@ export default function TradingChecklist() {
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
 
   return (
-    <div className="relative min-h-full bg-[#0A0E1A] [&_h1]:!normal-case [&_h2]:!normal-case [&_h3]:!normal-case [&_h4]:!normal-case">
-      {/* Ambient top overlay glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[360px]"
-        style={{ background: 'radial-gradient(ellipse 900px 320px at 50% -80px, rgba(139,92,246,0.10), transparent 70%)' }}
-      />
-      <div className="relative px-8 py-7 max-w-[1560px] mx-auto">
+    <div className="relative min-h-full bg-black [&_h1]:!normal-case [&_h2]:!normal-case [&_h3]:!normal-case [&_h4]:!normal-case">
+      <div className="relative px-10 pt-12 pb-10 max-w-[1440px] mx-auto">
 
       {/* ============ HEADER ============ */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-7">
-        <div className="flex items-start gap-3">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
+        <div className="flex items-start gap-3.5">
           <div
-            className="h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0 mt-1.5"
+            className="h-11 w-11 rounded-[12px] flex items-center justify-center shrink-0 mt-1"
             style={{
               background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-              boxShadow: '0 6px 18px rgba(139,92,246,0.35)',
+              boxShadow: '0 8px 22px rgba(139,92,246,0.35)',
             }}
           >
-            <CheckSquare className="h-5 w-5 text-white" strokeWidth={2.5} />
+            <CheckSquare className="h-[22px] w-[22px] text-white" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-white tracking-tight" style={{ fontSize: 40, lineHeight: 1.1 }}>
+            <h1 className="font-heading font-bold text-white tracking-tight" style={{ fontSize: 34, lineHeight: 1.15, letterSpacing: '-0.02em' }}>
               Daily Checklist
             </h1>
-            <p className="mt-2 text-[15px] font-normal text-[#8A93A6]" style={{ lineHeight: 1.5 }}>
+            <p className="mt-1.5 text-[14px] font-normal text-[#6B7280]" style={{ lineHeight: 1.5 }}>
               Build habits. Stay consistent. Master your routine.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="flex items-center gap-1 rounded-[12px] border border-white/[0.06] bg-[#0F1526] px-2 shadow-[0_4px_14px_rgba(0,0,0,0.35)]" style={{ height: 44 }}>
-            <CalendarIcon className="h-4 w-4 text-[#8A93A6] ml-1.5" />
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] px-2" style={{ height: 40 }}>
+            <CalendarIcon className="h-4 w-4 text-[#6B7280] ml-1.5" />
             <Popover>
               <PopoverTrigger asChild>
-                <button className="px-2 text-[14px] font-medium text-white hover:text-white/90 transition">
+                <button className="px-2 text-[13px] font-medium text-white hover:text-white/90 transition">
                   {format(date, 'd MMMM yyyy')}
                 </button>
               </PopoverTrigger>
@@ -480,24 +475,24 @@ export default function TradingChecklist() {
                 <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
               </PopoverContent>
             </Popover>
-            <button onClick={() => setDate(subDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#8A93A6] hover:text-white hover:bg-white/5 transition">
+            <button onClick={() => setDate(subDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/5 transition">
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button onClick={() => setDate(addDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#8A93A6] hover:text-white hover:bg-white/5 transition">
+            <button onClick={() => setDate(addDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/5 transition">
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
           <button
             onClick={() => setDate(new Date())}
-            className="px-4 rounded-[12px] border border-white/[0.06] bg-[#0F1526] hover:bg-[#151C31] text-white text-[14px] font-semibold transition-colors shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-            style={{ height: 44 }}
+            className="px-4 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] hover:bg-[#111111] text-white text-[13px] font-medium transition-colors"
+            style={{ height: 40 }}
           >
             Today
           </button>
           <button
             onClick={() => setCustomizeOpen(true)}
-            className="px-4 rounded-[12px] border border-white/[0.06] bg-[#0F1526] hover:bg-[#151C31] text-white text-[14px] font-semibold flex items-center gap-2 transition-colors shadow-[0_4px_14px_rgba(0,0,0,0.35)]"
-            style={{ height: 44 }}
+            className="px-4 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] hover:bg-[#111111] text-white text-[13px] font-medium flex items-center gap-2 transition-colors"
+            style={{ height: 40 }}
           >
             <Settings2 className="h-4 w-4" /> Customize
           </button>
@@ -505,30 +500,30 @@ export default function TradingChecklist() {
       </div>
 
       {/* ============ TABS + NEW SECTION ============ */}
-      <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
+      <div className="flex items-center justify-between border-b border-white/[0.06] mb-7">
         <div className="flex items-center gap-8">
           {(['checklist','templates','analytics','history'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'relative text-[14px] font-medium capitalize transition-colors flex items-center',
-                tab === t ? 'text-white' : 'text-[#8A93A6] hover:text-white'
+                'relative text-[13.5px] font-medium capitalize transition-colors flex items-center',
+                tab === t ? 'text-white' : 'text-[#6B7280] hover:text-white'
               )}
-              style={{ height: 44 }}
+              style={{ height: 42 }}
             >
               {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[2.5px] rounded-full bg-[#8B5CF6]" />}
+              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-[#8B5CF6]" />}
             </button>
           ))}
         </div>
         <button
           onClick={addSection}
-          className="px-5 rounded-[12px] text-white text-[14px] font-semibold flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          className="px-4 rounded-[10px] text-white text-[13px] font-medium flex items-center gap-2 transition-transform hover:scale-[1.02]"
           style={{
-            height: 42,
+            height: 40,
             background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-            boxShadow: '0 8px 22px rgba(139,92,246,0.35)',
+            boxShadow: '0 6px 18px rgba(139,92,246,0.30)',
           }}
         >
           <Plus className="h-4 w-4" /> New Section
