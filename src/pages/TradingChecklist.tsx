@@ -901,9 +901,10 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5 shadow-[0_10px_32px_rgba(0,0,0,0.35)]">
+    <div className="relative rounded-[20px] border border-white/[0.06] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]" style={{ background: '#0A0F1C' }}>
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-semibold text-[13px] text-white tracking-tight">{title}</h3>
+        <h3 className="font-heading font-semibold text-[12px] uppercase tracking-[0.1em] text-white/85">{title}</h3>
         {action}
       </div>
       {children}
