@@ -125,47 +125,56 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- KPI Card (reference-spec: 120px, radius 18, tinted overlay) ----------
+// ---------- KPI Card (Phase 2: deep-black surface, tinted wash, refined type) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{overlay:string; iconBg:string; ic:string; glow:string}> = {
-    violet:  { overlay:'bg-[#7C3AED]/[0.09]', iconBg:'bg-[#7C3AED]/20', ic:'text-[#C4B5FD]', glow:'hover:shadow-[0_14px_36px_rgba(124,58,237,0.28)]' },
-    blue:    { overlay:'bg-[#3B82F6]/[0.09]', iconBg:'bg-[#2563EB]/20', ic:'text-[#93C5FD]', glow:'hover:shadow-[0_14px_36px_rgba(59,130,246,0.28)]' },
-    emerald: { overlay:'bg-[#10B981]/[0.09]', iconBg:'bg-[#10B981]/20', ic:'text-[#6EE7B7]', glow:'hover:shadow-[0_14px_36px_rgba(16,185,129,0.28)]' },
-    amber:   { overlay:'bg-[#F59E0B]/[0.09]', iconBg:'bg-[#F59E0B]/20', ic:'text-[#FCD34D]', glow:'hover:shadow-[0_14px_36px_rgba(245,158,11,0.28)]' },
+  const tintMap: Record<string,{wash:string; iconBg:string; accent:string; glow:string}> = {
+    violet:  { wash:'radial-gradient(120% 140% at 100% 0%, rgba(139,92,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#8B5CF6,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(139,92,246,0.55)]' },
+    blue:    { wash:'radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#3B82F6,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(59,130,246,0.55)]' },
+    emerald: { wash:'radial-gradient(120% 140% at 100% 0%, rgba(16,185,129,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#10B981,#047857)', accent:'#34D399', glow:'hover:shadow-[0_18px_44px_-12px_rgba(16,185,129,0.55)]' },
+    amber:   { wash:'radial-gradient(120% 140% at 100% 0%, rgba(245,158,11,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#F59E0B,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_18px_44px_-12px_rgba(245,158,11,0.55)]' },
   };
   const t = tintMap[tint];
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-[#121A2C] px-6',
-        'shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out hover:-translate-y-0.5',
+        'group relative overflow-hidden rounded-[20px] border border-white/[0.06] px-5',
+        'shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out hover:-translate-y-[2px]',
         t.glow,
       )}
-      style={{ height: 120 }}
+      style={{ height: 128, background: '#0A0F1C' }}
     >
-      <div className={cn('absolute inset-0 pointer-events-none', t.overlay)} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}55, transparent)` }} />
       <div className="relative flex items-center gap-4 h-full">
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={72}
-            stroke={8}
+            size={80}
+            stroke={9}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
           />
         ) : (
-          <div className={cn('h-12 w-12 rounded-[14px] flex items-center justify-center shrink-0', t.iconBg)}>
-            <Icon className={cn('h-5 w-5', t.ic)} />
+          <div
+            className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
+            style={{ background: t.iconBg, boxShadow: `0 8px 20px -6px ${t.accent}80, inset 0 1px 0 rgba(255,255,255,0.18)` }}
+          >
+            <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-medium text-[#A7B0C2] mb-1">{label}</p>
-          <p className="font-heading font-bold text-[28px] leading-none text-white tabular-nums">{value}</p>
-          {sub && <p className="text-[11px] text-[#6B7488] mt-1.5 truncate">{sub}</p>}
-          {trend && <p className="mt-1 text-[11px] text-[#34D399] font-medium">▲ {trend}</p>}
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#8B93A7] mb-1.5">{label}</p>
+          <p className="font-heading font-bold text-[30px] leading-none text-white tabular-nums tracking-tight">{value}</p>
+          {sub && <p className="text-[11.5px] text-[#6B7488] mt-2 truncate">{sub}</p>}
+          {trend && (
+            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#34D399]">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#34D399] shadow-[0_0_8px_#34D399]" />
+              {trend}
+            </p>
+          )}
         </div>
       </div>
     </div>
