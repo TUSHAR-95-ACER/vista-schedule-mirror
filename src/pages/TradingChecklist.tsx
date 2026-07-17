@@ -570,50 +570,58 @@ export default function TradingChecklist() {
                 <div
                   key={s.id}
                   className={cn(
-                    'group relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] overflow-hidden',
-                    'shadow-[0_10px_32px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out',
-                    'hover:-translate-y-0.5'
+                    'group relative rounded-[20px] border border-white/[0.06] overflow-hidden',
+                    'shadow-[0_12px_36px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-[2px] hover:border-white/[0.10]'
                   )}
+                  style={{ background: '#0A0F1C' }}
                 >
-                  {/* Left accent border (4px) */}
+                  {/* Ambient tint wash */}
                   <div
-                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[4px] rounded-[4px]"
-                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})` }}
+                    className="absolute inset-0 pointer-events-none opacity-70"
+                    style={{ background: `radial-gradient(80% 100% at 0% 0%, ${p.from}18, transparent 55%)` }}
+                  />
+                  {/* Top hairline */}
+                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}55, transparent)` }} />
+                  {/* Left accent bar (3px) */}
+                  <div
+                    className="pointer-events-none absolute top-3 bottom-3 left-3 w-[3px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 12px ${p.from}88` }}
                   />
 
                   {/* header */}
-                  <div className="flex items-center gap-4 p-6 pl-8">
-                    <GripVertical className="h-4 w-4 text-white/25 shrink-0 cursor-grab" />
+                  <div className="relative flex items-center gap-4 px-6 pl-7 py-5">
+                    <GripVertical className="h-4 w-4 text-white/20 shrink-0 cursor-grab" />
                     <div
-                      className="h-14 w-14 rounded-[16px] flex items-center justify-center shrink-0"
+                      className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
                       style={{
-                        background: `linear-gradient(180deg, ${p.from}, ${p.to})`,
-                        boxShadow: `0 0 25px ${p.from}4D`,
+                        background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
+                        boxShadow: `0 10px 24px -6px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.18)`,
                       }}
                     >
-                      <Icon className="h-6 w-6 text-white" />
+                      <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-bold text-[22px] text-white/50 tabular-nums">{idx + 1}.</span>
-                        <h3 className="font-heading font-bold text-[24px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
+                        <span className="font-heading font-bold text-[15px] text-white/35 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                        <h3 className="font-heading font-bold text-[19px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[15px] text-[#94A3B8] mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[12.5px] text-[#7A8299] mt-0.5 truncate">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-3 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={56} stroke={7} />
-                      <span className="text-[15px] text-white/80 font-mono tabular-nums w-14 text-right">
-                        {s.items.filter(i => i.done).length} / {s.items.length}
+                      <MiniRing value={pct} color={p.from} size={44} stroke={5} />
+                      <span className="text-[12.5px] text-white/70 font-mono tabular-nums w-12 text-right">
+                        {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
                       <button
                         onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
                       >
                         {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => setCustomizeOpen(true)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
@@ -622,25 +630,29 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="px-6 pb-5 pl-8 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div className="relative px-6 pb-5 pl-7 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3.5 rounded-[10px] border border-white/[0.04] bg-[#1A2235]',
-                              'hover:bg-[#232D43] transition-all cursor-pointer'
+                              'group/item flex items-center gap-3 px-3.5 rounded-[11px] border transition-all cursor-pointer',
+                              i.done
+                                ? 'border-white/[0.04] bg-white/[0.02]'
+                                : 'border-white/[0.05] bg-[#111827]/60 hover:bg-[#1A2338] hover:border-white/[0.10]'
                             )}
-                            style={{ height: 42 }}
+                            style={{ height: 44 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
                               className={cn(
                                 'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
-                                i.done ? 'border-transparent' : 'border-white/30 hover:border-white/50'
+                                i.done ? 'border-transparent' : 'border-white/25 hover:border-white/50'
                               )}
-                              style={i.done ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})` } : undefined}
+                              style={i.done
+                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 10px ${p.from}66` }
+                                : undefined}
                             >
                               {i.done && (
                                 <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
@@ -648,12 +660,12 @@ export default function TradingChecklist() {
                                 </svg>
                               )}
                             </button>
-                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/40' : 'text-white/90')}>
+                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/35' : 'text-white/90')}>
                               {i.label}
                             </span>
                             <button
                               onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-white/40 hover:text-red-400 transition"
+                              className="opacity-0 group-hover/item:opacity-100 text-white/35 hover:text-red-400 transition"
                               aria-label="Remove item"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
