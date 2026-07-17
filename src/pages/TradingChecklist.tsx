@@ -125,47 +125,56 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- KPI Card (reference-spec: 120px, radius 18, tinted overlay) ----------
+// ---------- KPI Card (Phase 2: deep-black surface, tinted wash, refined type) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
-  const tintMap: Record<string,{overlay:string; iconBg:string; ic:string; glow:string}> = {
-    violet:  { overlay:'bg-[#7C3AED]/[0.09]', iconBg:'bg-[#7C3AED]/20', ic:'text-[#C4B5FD]', glow:'hover:shadow-[0_14px_36px_rgba(124,58,237,0.28)]' },
-    blue:    { overlay:'bg-[#3B82F6]/[0.09]', iconBg:'bg-[#2563EB]/20', ic:'text-[#93C5FD]', glow:'hover:shadow-[0_14px_36px_rgba(59,130,246,0.28)]' },
-    emerald: { overlay:'bg-[#10B981]/[0.09]', iconBg:'bg-[#10B981]/20', ic:'text-[#6EE7B7]', glow:'hover:shadow-[0_14px_36px_rgba(16,185,129,0.28)]' },
-    amber:   { overlay:'bg-[#F59E0B]/[0.09]', iconBg:'bg-[#F59E0B]/20', ic:'text-[#FCD34D]', glow:'hover:shadow-[0_14px_36px_rgba(245,158,11,0.28)]' },
+  const tintMap: Record<string,{wash:string; iconBg:string; accent:string; glow:string}> = {
+    violet:  { wash:'radial-gradient(120% 140% at 100% 0%, rgba(139,92,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#8B5CF6,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(139,92,246,0.55)]' },
+    blue:    { wash:'radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#3B82F6,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(59,130,246,0.55)]' },
+    emerald: { wash:'radial-gradient(120% 140% at 100% 0%, rgba(16,185,129,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#10B981,#047857)', accent:'#34D399', glow:'hover:shadow-[0_18px_44px_-12px_rgba(16,185,129,0.55)]' },
+    amber:   { wash:'radial-gradient(120% 140% at 100% 0%, rgba(245,158,11,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#F59E0B,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_18px_44px_-12px_rgba(245,158,11,0.55)]' },
   };
   const t = tintMap[tint];
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-[#121A2C] px-6',
-        'shadow-[0_8px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out hover:-translate-y-0.5',
+        'group relative overflow-hidden rounded-[20px] border border-white/[0.06] px-5',
+        'shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out hover:-translate-y-[2px]',
         t.glow,
       )}
-      style={{ height: 120 }}
+      style={{ height: 128, background: '#0A0F1C' }}
     >
-      <div className={cn('absolute inset-0 pointer-events-none', t.overlay)} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}55, transparent)` }} />
       <div className="relative flex items-center gap-4 h-full">
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={72}
-            stroke={8}
+            size={80}
+            stroke={9}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
           />
         ) : (
-          <div className={cn('h-12 w-12 rounded-[14px] flex items-center justify-center shrink-0', t.iconBg)}>
-            <Icon className={cn('h-5 w-5', t.ic)} />
+          <div
+            className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
+            style={{ background: t.iconBg, boxShadow: `0 8px 20px -6px ${t.accent}80, inset 0 1px 0 rgba(255,255,255,0.18)` }}
+          >
+            <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-medium text-[#A7B0C2] mb-1">{label}</p>
-          <p className="font-heading font-bold text-[28px] leading-none text-white tabular-nums">{value}</p>
-          {sub && <p className="text-[11px] text-[#6B7488] mt-1.5 truncate">{sub}</p>}
-          {trend && <p className="mt-1 text-[11px] text-[#34D399] font-medium">▲ {trend}</p>}
+          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#8B93A7] mb-1.5">{label}</p>
+          <p className="font-heading font-bold text-[30px] leading-none text-white tabular-nums tracking-tight">{value}</p>
+          {sub && <p className="text-[11.5px] text-[#6B7488] mt-2 truncate">{sub}</p>}
+          {trend && (
+            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#34D399]">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#34D399] shadow-[0_0_8px_#34D399]" />
+              {trend}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -561,50 +570,58 @@ export default function TradingChecklist() {
                 <div
                   key={s.id}
                   className={cn(
-                    'group relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] overflow-hidden',
-                    'shadow-[0_10px_32px_rgba(0,0,0,0.35)] transition-all duration-200 ease-out',
-                    'hover:-translate-y-0.5'
+                    'group relative rounded-[20px] border border-white/[0.06] overflow-hidden',
+                    'shadow-[0_12px_36px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-[2px] hover:border-white/[0.10]'
                   )}
+                  style={{ background: '#0A0F1C' }}
                 >
-                  {/* Left accent border (4px) */}
+                  {/* Ambient tint wash */}
                   <div
-                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[4px] rounded-[4px]"
-                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})` }}
+                    className="absolute inset-0 pointer-events-none opacity-70"
+                    style={{ background: `radial-gradient(80% 100% at 0% 0%, ${p.from}18, transparent 55%)` }}
+                  />
+                  {/* Top hairline */}
+                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}55, transparent)` }} />
+                  {/* Left accent bar (3px) */}
+                  <div
+                    className="pointer-events-none absolute top-3 bottom-3 left-3 w-[3px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 12px ${p.from}88` }}
                   />
 
                   {/* header */}
-                  <div className="flex items-center gap-4 p-6 pl-8">
-                    <GripVertical className="h-4 w-4 text-white/25 shrink-0 cursor-grab" />
+                  <div className="relative flex items-center gap-4 px-6 pl-7 py-5">
+                    <GripVertical className="h-4 w-4 text-white/20 shrink-0 cursor-grab" />
                     <div
-                      className="h-14 w-14 rounded-[16px] flex items-center justify-center shrink-0"
+                      className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
                       style={{
-                        background: `linear-gradient(180deg, ${p.from}, ${p.to})`,
-                        boxShadow: `0 0 25px ${p.from}4D`,
+                        background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
+                        boxShadow: `0 10px 24px -6px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.18)`,
                       }}
                     >
-                      <Icon className="h-6 w-6 text-white" />
+                      <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-bold text-[22px] text-white/50 tabular-nums">{idx + 1}.</span>
-                        <h3 className="font-heading font-bold text-[24px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
+                        <span className="font-heading font-bold text-[15px] text-white/35 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                        <h3 className="font-heading font-bold text-[19px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[15px] text-[#94A3B8] mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[12.5px] text-[#7A8299] mt-0.5 truncate">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-3 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={56} stroke={7} />
-                      <span className="text-[15px] text-white/80 font-mono tabular-nums w-14 text-right">
-                        {s.items.filter(i => i.done).length} / {s.items.length}
+                      <MiniRing value={pct} color={p.from} size={44} stroke={5} />
+                      <span className="text-[12.5px] text-white/70 font-mono tabular-nums w-12 text-right">
+                        {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
                       <button
                         onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
                       >
                         {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </button>
                       <button
                         onClick={() => setCustomizeOpen(true)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
@@ -613,25 +630,29 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="px-6 pb-5 pl-8 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div className="relative px-6 pb-5 pl-7 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3.5 rounded-[10px] border border-white/[0.04] bg-[#1A2235]',
-                              'hover:bg-[#232D43] transition-all cursor-pointer'
+                              'group/item flex items-center gap-3 px-3.5 rounded-[11px] border transition-all cursor-pointer',
+                              i.done
+                                ? 'border-white/[0.04] bg-white/[0.02]'
+                                : 'border-white/[0.05] bg-[#111827]/60 hover:bg-[#1A2338] hover:border-white/[0.10]'
                             )}
-                            style={{ height: 42 }}
+                            style={{ height: 44 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
                               className={cn(
                                 'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
-                                i.done ? 'border-transparent' : 'border-white/30 hover:border-white/50'
+                                i.done ? 'border-transparent' : 'border-white/25 hover:border-white/50'
                               )}
-                              style={i.done ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})` } : undefined}
+                              style={i.done
+                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 10px ${p.from}66` }
+                                : undefined}
                             >
                               {i.done && (
                                 <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
@@ -639,12 +660,12 @@ export default function TradingChecklist() {
                                 </svg>
                               )}
                             </button>
-                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/40' : 'text-white/90')}>
+                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/35' : 'text-white/90')}>
                               {i.label}
                             </span>
                             <button
                               onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-white/40 hover:text-red-400 transition"
+                              className="opacity-0 group-hover/item:opacity-100 text-white/35 hover:text-red-400 transition"
                               aria-label="Remove item"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -880,9 +901,10 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5 shadow-[0_10px_32px_rgba(0,0,0,0.35)]">
+    <div className="relative rounded-[20px] border border-white/[0.06] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]" style={{ background: '#0A0F1C' }}>
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-semibold text-[13px] text-white tracking-tight">{title}</h3>
+        <h3 className="font-heading font-semibold text-[12px] uppercase tracking-[0.1em] text-white/85">{title}</h3>
         {action}
       </div>
       {children}
