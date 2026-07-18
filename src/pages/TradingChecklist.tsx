@@ -571,7 +571,7 @@ export default function TradingChecklist() {
           </div>
 
           {/* Sections */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
@@ -581,105 +581,106 @@ export default function TradingChecklist() {
                 <div
                   key={s.id}
                   className={cn(
-                    'group relative rounded-[20px] border border-white/[0.06] overflow-hidden',
-                    'shadow-[0_12px_36px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out',
-                    'hover:-translate-y-[2px] hover:border-white/[0.10]'
+                    'group relative rounded-[16px] border border-white/[0.04] overflow-hidden',
+                    'shadow-[0_16px_44px_-18px_rgba(0,0,0,0.75)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-[1px] hover:border-white/[0.07]'
                   )}
-                  style={{ background: '#0A0F1C' }}
+                  style={{ background: '#080B14' }}
                 >
                   {/* Ambient tint wash */}
                   <div
-                    className="absolute inset-0 pointer-events-none opacity-70"
-                    style={{ background: `radial-gradient(80% 100% at 0% 0%, ${p.from}18, transparent 55%)` }}
+                    className="absolute inset-0 pointer-events-none opacity-60"
+                    style={{ background: `radial-gradient(70% 100% at 0% 0%, ${p.from}14, transparent 55%)` }}
                   />
                   {/* Top hairline */}
-                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}55, transparent)` }} />
-                  {/* Left accent bar (3px) */}
+                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}33, transparent)` }} />
+                  {/* Left accent bar — softer, blurred glow, integrated */}
                   <div
-                    className="pointer-events-none absolute top-3 bottom-3 left-3 w-[3px] rounded-full"
-                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 12px ${p.from}88` }}
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[3px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 14px ${p.from}66, 0 0 4px ${p.from}` }}
                   />
 
-                  {/* header */}
-                  <div className="relative flex items-center gap-4 px-6 pl-7 py-5">
-                    <GripVertical className="h-4 w-4 text-white/20 shrink-0 cursor-grab" />
+                  {/* header — tighter */}
+                  <div className="relative flex items-center gap-3 px-5 pl-6 py-3.5">
+                    <GripVertical className="h-3.5 w-3.5 text-white/15 shrink-0 cursor-grab" />
                     <div
-                      className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
+                      className="h-[42px] w-[42px] rounded-[12px] flex items-center justify-center shrink-0 relative overflow-hidden"
                       style={{
                         background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
-                        boxShadow: `0 10px 24px -6px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.18)`,
+                        boxShadow: `0 8px 20px -8px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
                       }}
                     >
-                      <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
+                      <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14), transparent)' }} />
+                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.2} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-bold text-[15px] text-white/35 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
-                        <h3 className="font-heading font-bold text-[19px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-heading font-semibold text-[13px] text-white/30 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                        <h3 className="font-heading font-semibold text-[16px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[12.5px] text-[#7A8299] mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[11.5px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
                     </button>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={44} stroke={5} />
-                      <span className="text-[12.5px] text-white/70 font-mono tabular-nums w-12 text-right">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <MiniRing value={pct} color={p.from} size={38} stroke={4} />
+                      <span className="text-[12px] text-white/65 font-mono tabular-nums w-10 text-right">
                         {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
                       <button
                         onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
+                        className="h-7 w-7 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.04] transition"
                       >
-                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {isCollapsed ? <ChevronRight className="h-[14px] w-[14px]" /> : <ChevronDown className="h-[14px] w-[14px]" />}
                       </button>
                       <button
                         onClick={() => setCustomizeOpen(true)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
+                        className="h-7 w-7 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.04] transition"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="relative px-6 pb-5 pl-7 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="relative px-5 pb-3.5 pl-6 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3.5 rounded-[11px] border transition-all cursor-pointer',
+                              'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
                               i.done
-                                ? 'border-white/[0.04] bg-white/[0.02]'
-                                : 'border-white/[0.05] bg-[#111827]/60 hover:bg-[#1A2338] hover:border-white/[0.10]'
+                                ? 'border-white/[0.03] bg-white/[0.015]'
+                                : 'border-white/[0.04] bg-[#0D111C] hover:bg-[#141A28] hover:border-white/[0.08]'
                             )}
-                            style={{ height: 44 }}
+                            style={{ height: 38 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
                               className={cn(
-                                'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
+                                'h-[18px] w-[18px] rounded-[5px] border-2 flex items-center justify-center shrink-0 transition-all self-center',
                                 i.done ? 'border-transparent' : 'border-white/25 hover:border-white/50'
                               )}
                               style={i.done
-                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 10px ${p.from}66` }
+                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 8px ${p.from}55` }
                                 : undefined}
                             >
                               {i.done && (
-                                <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
-                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <svg viewBox="0 0 20 20" fill="none" className="h-[11px] w-[11px] text-white">
+                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                               )}
                             </button>
-                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/35' : 'text-white/90')}>
+                            <span className={cn('text-[12.5px] flex-1 truncate', i.done ? 'line-through text-white/30' : 'text-white/88')}>
                               {i.label}
                             </span>
                             <button
                               onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-white/35 hover:text-red-400 transition"
+                              className="opacity-0 group-hover/item:opacity-100 text-white/30 hover:text-red-400 transition"
                               aria-label="Remove item"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
@@ -690,6 +691,7 @@ export default function TradingChecklist() {
                 </div>
               );
             })}
+
 
             <button
               onClick={addSection}
