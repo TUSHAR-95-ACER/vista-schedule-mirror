@@ -915,10 +915,10 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[20px] border border-white/[0.06] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]" style={{ background: '#0A0F1C' }}>
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-semibold text-[12px] uppercase tracking-[0.1em] text-white/85">{title}</h3>
+    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.11em] text-white/75">{title}</h3>
         {action}
       </div>
       {children}
@@ -934,23 +934,23 @@ function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
     return `${i * 6},${y.toFixed(1)}`;
   }).join(' ');
   return (
-    <svg width={52} height={14} viewBox="0 0 48 14" className="shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
     </svg>
   );
 }
 
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-3" style={{ height: 48 }}>
+    <div className="flex items-center gap-3" style={{ height: 42 }}>
       <div
-        className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-        style={{ background: `linear-gradient(135deg, ${color}33, ${color}11)`, boxShadow: `inset 0 0 0 1px ${color}33` }}
+        className="h-8 w-8 rounded-[10px] flex items-center justify-center shrink-0"
+        style={{ background: `linear-gradient(135deg, ${color}2A, ${color}0D)`, boxShadow: `inset 0 0 0 1px ${color}2A, inset 0 1px 0 rgba(255,255,255,0.05)` }}
       >
-        <Icon className="h-4 w-4" style={{ color }} />
+        <Icon className="h-[14px] w-[14px]" style={{ color }} />
       </div>
-      <span className="text-[12.5px] text-white/85 flex-1 truncate">{label}</span>
-      <span className="text-[12.5px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
+      <span className="text-[12px] text-white/85 flex-1 truncate">{label}</span>
+      <span className="text-[12px] font-heading font-semibold tabular-nums" style={{ color }}>{value}</span>
       <Sparkline color={color} seed={label.length} />
     </div>
   );
@@ -959,14 +959,14 @@ function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: stri
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[12px] bg-[#1A2235] px-3 py-2.5 flex flex-col justify-center"
-      style={{ height: 82 }}
+      className="relative overflow-hidden rounded-[11px] border border-white/[0.04] px-3 py-2 flex flex-col justify-center"
+      style={{ height: 74, background: '#0D111C' }}
     >
       <div className="flex items-center gap-1.5 mb-1">
-        <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
-        <p className="text-[11px] text-white/60">{label}</p>
+        <Icon className="h-[13px] w-[13px]" style={{ color: tint }} />
+        <p className="text-[10.5px] text-white/55 uppercase tracking-wider">{label}</p>
       </div>
-      <p className="text-[18px] font-heading font-bold text-white tabular-nums leading-none">{value}</p>
+      <p className="text-[20px] font-heading font-bold text-white tabular-nums leading-none tracking-[-0.02em]">{value}</p>
     </div>
   );
 }
@@ -974,9 +974,9 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-[12px] bg-[#1A2235] px-3" style={{ height: 60 }}>
-      <Icon className="h-4 w-4" style={{ color }} />
-      <span className="text-[12.5px] text-white/85 truncate">{label}</span>
+    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#0D111C' }}>
+      <Icon className="h-[15px] w-[15px]" style={{ color }} />
+      <span className="text-[12px] text-white/85 truncate">{label}</span>
     </div>
   );
 }
@@ -985,11 +985,11 @@ function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; o
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-3 rounded-[12px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
-      style={{ height: 48 }}
+      className="w-full flex items-center gap-2.5 px-3 rounded-[11px] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.02] transition-all text-left group"
+      style={{ height: 40, background: '#0D111C' }}
     >
-      <Icon className="h-4 w-4 text-[#A78BFA]" />
-      <span className="text-[13px] text-white/90 flex-1">{label}</span>
+      <Icon className="h-[14px] w-[14px] text-[#A78BFA] transition-transform group-hover:scale-110" />
+      <span className="text-[12.5px] text-white/85 flex-1 group-hover:text-white">{label}</span>
     </button>
   );
 }
@@ -999,23 +999,23 @@ function AddItemInline({ onAdd, color = '#8B5CF6' }: { onAdd: (label: string) =>
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
-      className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-dashed px-3.5"
-      style={{ height: 42, borderColor: '#313A50' }}
+      className="mt-2 flex items-center gap-2 rounded-[9px] border border-dashed px-3"
+      style={{ height: 36, borderColor: '#232B3F' }}
     >
-      <Plus className="h-3.5 w-3.5" style={{ color }} />
+      <Plus className="h-3 w-3" style={{ color }} />
       <input
         value={v}
         onChange={(e) => setV(e.target.value)}
         placeholder="Add Item"
-        className="flex-1 bg-transparent border-0 outline-none text-[13px] text-white/90 placeholder:text-white/40"
-        style={{ color: v ? '#fff' : undefined }}
+        className="flex-1 bg-transparent border-0 outline-none text-[12.5px] text-white/90 placeholder:text-white/35"
       />
       {v.trim() && (
-        <button type="submit" className="text-[12px] font-medium" style={{ color }}>Add</button>
+        <button type="submit" className="text-[11.5px] font-medium" style={{ color }}>Add</button>
       )}
     </form>
   );
 }
+
 
 
 function CustomizeDialog(props: {
