@@ -125,53 +125,57 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- KPI Card (Phase 2: deep-black surface, tinted wash, refined type) ----------
+// ---------- KPI Card (Phase 2 polish: shorter, softer, glass icons) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
   const tintMap: Record<string,{wash:string; iconBg:string; accent:string; glow:string}> = {
-    violet:  { wash:'radial-gradient(120% 140% at 100% 0%, rgba(139,92,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#8B5CF6,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(139,92,246,0.55)]' },
-    blue:    { wash:'radial-gradient(120% 140% at 100% 0%, rgba(59,130,246,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#3B82F6,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_18px_44px_-12px_rgba(59,130,246,0.55)]' },
-    emerald: { wash:'radial-gradient(120% 140% at 100% 0%, rgba(16,185,129,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#10B981,#047857)', accent:'#34D399', glow:'hover:shadow-[0_18px_44px_-12px_rgba(16,185,129,0.55)]' },
-    amber:   { wash:'radial-gradient(120% 140% at 100% 0%, rgba(245,158,11,0.16), transparent 55%)', iconBg:'linear-gradient(135deg,#F59E0B,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_18px_44px_-12px_rgba(245,158,11,0.55)]' },
+    violet:  { wash:'radial-gradient(110% 130% at 100% 0%, rgba(139,92,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#9D6BFF,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(139,92,246,0.55)]' },
+    blue:    { wash:'radial-gradient(110% 130% at 100% 0%, rgba(59,130,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#4C93FF,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(59,130,246,0.55)]' },
+    emerald: { wash:'radial-gradient(110% 130% at 100% 0%, rgba(16,185,129,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#22C58A,#047857)', accent:'#34D399', glow:'hover:shadow-[0_22px_48px_-18px_rgba(16,185,129,0.55)]' },
+    amber:   { wash:'radial-gradient(110% 130% at 100% 0%, rgba(245,158,11,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#FBB040,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_22px_48px_-18px_rgba(245,158,11,0.55)]' },
   };
   const t = tintMap[tint];
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[20px] border border-white/[0.06] px-5',
-        'shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out hover:-translate-y-[2px]',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-5',
+        'shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ height: 128, background: '#0A0F1C' }}
+      style={{ height: 118, background: '#080B14' }}
     >
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}55, transparent)` }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}33, transparent)` }} />
       <div className="relative flex items-center gap-4 h-full">
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={80}
-            stroke={9}
+            size={74}
+            stroke={7}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
           />
         ) : (
           <div
-            className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
-            style={{ background: t.iconBg, boxShadow: `0 8px 20px -6px ${t.accent}80, inset 0 1px 0 rgba(255,255,255,0.18)` }}
+            className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
+            style={{
+              background: t.iconBg,
+              boxShadow: `0 6px 16px -6px ${t.accent}66, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
+            }}
           >
-            <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
+            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14), transparent)' }} />
+            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.2} />
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#8B93A7] mb-1.5">{label}</p>
-          <p className="font-heading font-bold text-[30px] leading-none text-white tabular-nums tracking-tight">{value}</p>
-          {sub && <p className="text-[11.5px] text-[#6B7488] mt-2 truncate">{sub}</p>}
+          <p className="text-[10.5px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1">{label}</p>
+          <p className="font-heading font-bold text-[32px] leading-none text-white tabular-nums tracking-[-0.02em]">{value}</p>
+          {sub && <p className="text-[11px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
           {trend && (
-            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#34D399]">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#34D399] shadow-[0_0_8px_#34D399]" />
+            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399]">
+              <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399]" />
               {trend}
             </p>
           )}
@@ -180,6 +184,7 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
     </div>
   );
 }
+
 
 
 // ---------- Helpers ----------
@@ -448,35 +453,35 @@ export default function TradingChecklist() {
 
   return (
     <div className="relative min-h-full bg-black [&_h1]:!normal-case [&_h2]:!normal-case [&_h3]:!normal-case [&_h4]:!normal-case">
-      <div className="relative px-10 pt-12 pb-10 max-w-[1440px] mx-auto">
+      <div className="relative px-10 pt-10 pb-10 max-w-[1440px] mx-auto">
 
       {/* ============ HEADER ============ */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-        <div className="flex items-start gap-3.5">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-7">
+        <div className="flex items-start gap-3">
           <div
-            className="h-11 w-11 rounded-[12px] flex items-center justify-center shrink-0 mt-1"
+            className="h-[38px] w-[38px] rounded-[11px] flex items-center justify-center shrink-0 mt-[3px] relative"
             style={{
               background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-              boxShadow: '0 8px 22px rgba(139,92,246,0.35)',
+              boxShadow: '0 4px 14px -2px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
             }}
           >
-            <CheckSquare className="h-[22px] w-[22px] text-white" strokeWidth={2.5} />
+            <CheckSquare className="h-[19px] w-[19px] text-white" strokeWidth={2.4} />
           </div>
           <div>
-            <h1 className="font-heading font-bold text-white tracking-tight" style={{ fontSize: 34, lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+            <h1 className="font-heading font-semibold text-white" style={{ fontSize: 28, lineHeight: 1.15, letterSpacing: '-0.025em' }}>
               Daily Checklist
             </h1>
-            <p className="mt-1.5 text-[14px] font-normal text-[#6B7280]" style={{ lineHeight: 1.5 }}>
+            <p className="mt-1 text-[12.5px] font-normal text-[#5C6472]" style={{ lineHeight: 1.4 }}>
               Build habits. Stay consistent. Master your routine.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] px-2" style={{ height: 40 }}>
-            <CalendarIcon className="h-4 w-4 text-[#6B7280] ml-1.5" />
+          <div className="flex items-center gap-1 rounded-[9px] border border-white/[0.05] bg-[#080808] px-2" style={{ height: 36 }}>
+            <CalendarIcon className="h-[14px] w-[14px] text-[#5C6472] ml-1" />
             <Popover>
               <PopoverTrigger asChild>
-                <button className="px-2 text-[13px] font-medium text-white hover:text-white/90 transition">
+                <button className="px-1.5 text-[12.5px] font-medium text-white/95 hover:text-white transition">
                   {format(date, 'd MMMM yyyy')}
                 </button>
               </PopoverTrigger>
@@ -484,60 +489,66 @@ export default function TradingChecklist() {
                 <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
               </PopoverContent>
             </Popover>
-            <button onClick={() => setDate(subDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/5 transition">
-              <ChevronLeft className="h-4 w-4" />
+            <button onClick={() => setDate(subDays(date, 1))} className="h-[26px] w-[26px] rounded-md flex items-center justify-center text-[#5C6472] hover:text-white hover:bg-white/[0.04] transition">
+              <ChevronLeft className="h-[14px] w-[14px]" />
             </button>
-            <button onClick={() => setDate(addDays(date, 1))} className="h-7 w-7 rounded-md flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/5 transition">
-              <ChevronRightIcon className="h-4 w-4" />
+            <button onClick={() => setDate(addDays(date, 1))} className="h-[26px] w-[26px] rounded-md flex items-center justify-center text-[#5C6472] hover:text-white hover:bg-white/[0.04] transition">
+              <ChevronRightIcon className="h-[14px] w-[14px]" />
             </button>
           </div>
           <button
             onClick={() => setDate(new Date())}
-            className="px-4 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] hover:bg-[#111111] text-white text-[13px] font-medium transition-colors"
-            style={{ height: 40 }}
+            className="px-3.5 rounded-[9px] border border-white/[0.05] bg-[#080808] hover:bg-[#0F0F0F] hover:border-white/[0.1] text-white/95 text-[12.5px] font-medium transition-all"
+            style={{ height: 36 }}
           >
             Today
           </button>
           <button
             onClick={() => setCustomizeOpen(true)}
-            className="px-4 rounded-[10px] border border-white/[0.08] bg-[#0A0A0A] hover:bg-[#111111] text-white text-[13px] font-medium flex items-center gap-2 transition-colors"
-            style={{ height: 40 }}
+            className="px-3.5 rounded-[9px] border border-white/[0.05] bg-[#080808] hover:bg-[#0F0F0F] hover:border-white/[0.1] text-white/95 text-[12.5px] font-medium flex items-center gap-1.5 transition-all"
+            style={{ height: 36 }}
           >
-            <Settings2 className="h-4 w-4" /> Customize
+            <Settings2 className="h-[14px] w-[14px]" /> Customize
           </button>
         </div>
       </div>
 
       {/* ============ TABS + NEW SECTION ============ */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] mb-7">
-        <div className="flex items-center gap-8">
+      <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
+        <div className="flex items-center gap-7">
           {(['checklist','templates','analytics','history'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'relative text-[13.5px] font-medium capitalize transition-colors flex items-center',
-                tab === t ? 'text-white' : 'text-[#6B7280] hover:text-white'
+                'relative text-[13px] font-medium capitalize transition-colors flex items-center',
+                tab === t ? 'text-white' : 'text-[#5C6472] hover:text-white/80'
               )}
-              style={{ height: 42 }}
+              style={{ height: 40 }}
             >
               {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-[#8B5CF6]" />}
+              {tab === t && (
+                <span
+                  className="absolute left-0 right-0 -bottom-px h-[1.5px]"
+                  style={{ background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.5)' }}
+                />
+              )}
             </button>
           ))}
         </div>
         <button
           onClick={addSection}
-          className="px-4 rounded-[10px] text-white text-[13px] font-medium flex items-center gap-2 transition-transform hover:scale-[1.02]"
+          className="px-3.5 rounded-[9px] text-white text-[12.5px] font-medium flex items-center gap-1.5 transition-all hover:brightness-110"
           style={{
-            height: 40,
+            height: 36,
             background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-            boxShadow: '0 6px 18px rgba(139,92,246,0.30)',
+            boxShadow: '0 4px 14px -2px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
           }}
         >
-          <Plus className="h-4 w-4" /> New Section
+          <Plus className="h-[14px] w-[14px]" /> New Section
         </button>
       </div>
+
 
       {tab === 'checklist' && (
       <div className="grid grid-cols-1 gap-6" style={{ gridTemplateColumns: 'minmax(0,1fr) 360px' }}>
@@ -560,7 +571,7 @@ export default function TradingChecklist() {
           </div>
 
           {/* Sections */}
-          <div className="space-y-5">
+          <div className="space-y-4">
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
@@ -570,105 +581,106 @@ export default function TradingChecklist() {
                 <div
                   key={s.id}
                   className={cn(
-                    'group relative rounded-[20px] border border-white/[0.06] overflow-hidden',
-                    'shadow-[0_12px_36px_rgba(0,0,0,0.5)] transition-all duration-200 ease-out',
-                    'hover:-translate-y-[2px] hover:border-white/[0.10]'
+                    'group relative rounded-[16px] border border-white/[0.04] overflow-hidden',
+                    'shadow-[0_16px_44px_-18px_rgba(0,0,0,0.75)] transition-all duration-200 ease-out',
+                    'hover:-translate-y-[1px] hover:border-white/[0.07]'
                   )}
-                  style={{ background: '#0A0F1C' }}
+                  style={{ background: '#080B14' }}
                 >
                   {/* Ambient tint wash */}
                   <div
-                    className="absolute inset-0 pointer-events-none opacity-70"
-                    style={{ background: `radial-gradient(80% 100% at 0% 0%, ${p.from}18, transparent 55%)` }}
+                    className="absolute inset-0 pointer-events-none opacity-60"
+                    style={{ background: `radial-gradient(70% 100% at 0% 0%, ${p.from}14, transparent 55%)` }}
                   />
                   {/* Top hairline */}
-                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}55, transparent)` }} />
-                  {/* Left accent bar (3px) */}
+                  <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}33, transparent)` }} />
+                  {/* Left accent bar — softer, blurred glow, integrated */}
                   <div
-                    className="pointer-events-none absolute top-3 bottom-3 left-3 w-[3px] rounded-full"
-                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 12px ${p.from}88` }}
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[3px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from}, ${p.to})`, boxShadow: `0 0 14px ${p.from}66, 0 0 4px ${p.from}` }}
                   />
 
-                  {/* header */}
-                  <div className="relative flex items-center gap-4 px-6 pl-7 py-5">
-                    <GripVertical className="h-4 w-4 text-white/20 shrink-0 cursor-grab" />
+                  {/* header — tighter */}
+                  <div className="relative flex items-center gap-3 px-5 pl-6 py-3.5">
+                    <GripVertical className="h-3.5 w-3.5 text-white/15 shrink-0 cursor-grab" />
                     <div
-                      className="h-[52px] w-[52px] rounded-[15px] flex items-center justify-center shrink-0"
+                      className="h-[42px] w-[42px] rounded-[12px] flex items-center justify-center shrink-0 relative overflow-hidden"
                       style={{
                         background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
-                        boxShadow: `0 10px 24px -6px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.18)`,
+                        boxShadow: `0 8px 20px -8px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
                       }}
                     >
-                      <Icon className="h-[22px] w-[22px] text-white" strokeWidth={2.2} />
+                      <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14), transparent)' }} />
+                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.2} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-heading font-bold text-[15px] text-white/35 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
-                        <h3 className="font-heading font-bold text-[19px] text-white truncate tracking-tight leading-tight">{s.title}</h3>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-heading font-semibold text-[13px] text-white/30 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
+                        <h3 className="font-heading font-semibold text-[16px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[12.5px] text-[#7A8299] mt-0.5 truncate">{s.description}</p>}
+                      {s.description && <p className="text-[11.5px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
                     </button>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={44} stroke={5} />
-                      <span className="text-[12.5px] text-white/70 font-mono tabular-nums w-12 text-right">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <MiniRing value={pct} color={p.from} size={38} stroke={4} />
+                      <span className="text-[12px] text-white/65 font-mono tabular-nums w-10 text-right">
                         {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
                       <button
                         onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
+                        className="h-7 w-7 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.04] transition"
                       >
-                        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {isCollapsed ? <ChevronRight className="h-[14px] w-[14px]" /> : <ChevronDown className="h-[14px] w-[14px]" />}
                       </button>
                       <button
                         onClick={() => setCustomizeOpen(true)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition"
+                        className="h-7 w-7 rounded-md flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.04] transition"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="relative px-6 pb-5 pl-7 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="relative px-5 pb-3.5 pl-6 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3.5 rounded-[11px] border transition-all cursor-pointer',
+                              'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
                               i.done
-                                ? 'border-white/[0.04] bg-white/[0.02]'
-                                : 'border-white/[0.05] bg-[#111827]/60 hover:bg-[#1A2338] hover:border-white/[0.10]'
+                                ? 'border-white/[0.03] bg-white/[0.015]'
+                                : 'border-white/[0.04] bg-[#0D111C] hover:bg-[#141A28] hover:border-white/[0.08]'
                             )}
-                            style={{ height: 44 }}
+                            style={{ height: 38 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
                               className={cn(
-                                'h-5 w-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-all',
+                                'h-[18px] w-[18px] rounded-[5px] border-2 flex items-center justify-center shrink-0 transition-all self-center',
                                 i.done ? 'border-transparent' : 'border-white/25 hover:border-white/50'
                               )}
                               style={i.done
-                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 10px ${p.from}66` }
+                                ? { background: `linear-gradient(135deg, ${p.from}, ${p.to})`, boxShadow: `0 0 8px ${p.from}55` }
                                 : undefined}
                             >
                               {i.done && (
-                                <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3 text-white">
-                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <svg viewBox="0 0 20 20" fill="none" className="h-[11px] w-[11px] text-white">
+                                  <path d="M5 10l3 3 7-7" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                               )}
                             </button>
-                            <span className={cn('text-[13px] flex-1 truncate', i.done ? 'line-through text-white/35' : 'text-white/90')}>
+                            <span className={cn('text-[12.5px] flex-1 truncate', i.done ? 'line-through text-white/30' : 'text-white/88')}>
                               {i.label}
                             </span>
                             <button
                               onClick={(e) => { e.stopPropagation(); removeItem(s.id, i.id); }}
-                              className="opacity-0 group-hover/item:opacity-100 text-white/35 hover:text-red-400 transition"
+                              className="opacity-0 group-hover/item:opacity-100 text-white/30 hover:text-red-400 transition"
                               aria-label="Remove item"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
@@ -680,41 +692,42 @@ export default function TradingChecklist() {
               );
             })}
 
+
             <button
               onClick={addSection}
-              className="w-full flex items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#8B5CF6]/40 bg-transparent text-[14px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/60 transition"
-              style={{ height: 48 }}
+              className="w-full flex items-center justify-center gap-2 rounded-[12px] border border-dashed border-[#8B5CF6]/35 bg-transparent text-[13px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/55 transition"
+              style={{ height: 42 }}
             >
-              <Plus className="h-4 w-4" /> Add New Section
+              <Plus className="h-3.5 w-3.5" /> Add New Section
             </button>
           </div>
         </div>
 
-        {/* -------- RIGHT SIDEBAR (380px) -------- */}
-        <aside className="space-y-5">
+        {/* -------- RIGHT SIDEBAR -------- */}
+        <aside className="space-y-4">
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
-            {saving && <span className="absolute right-5 top-5 text-[10px] text-white/40 animate-pulse">Saving…</span>}
-            <div className="flex items-center justify-center py-2">
+            {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
+            <div className="flex items-center justify-center py-1">
               <ProgressRing
                 value={overall.pct}
-                size={180}
-                stroke={14}
+                size={172}
+                stroke={12}
                 gradientId="ring-overall"
                 label="Overall"
                 gradient={['#8B5CF6', '#3B82F6', '#06B6D4', '#F59E0B', '#F97316', '#EC4899']}
               />
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-1.5">
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
                 return (
-                  <div key={s.id} className="flex items-center gap-2.5 text-[12.5px]">
-                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: p.from }} />
-                    <span className="flex-1 truncate text-white/85">{s.title}</span>
-                    <span className="text-white/60 font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-white/40 font-mono tabular-nums w-9 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="flex items-center gap-2.5 text-[12px]">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}88` }} />
+                    <span className="flex-1 truncate text-white/80">{s.title}</span>
+                    <span className="text-white/55 font-mono tabular-nums">{Math.round(pct)}%</span>
+                    <span className="text-white/35 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
                   </div>
                 );
               })}
@@ -723,7 +736,7 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div>
+            <div className="space-y-0.5">
               <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
               <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
               <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
@@ -733,9 +746,9 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-          {/* Today's Stats — 2x2 grid, 82px */}
+          {/* Today's Stats — 2x2 grid */}
           <SidePanel title="Today's Stats">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
               <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
               <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
@@ -744,19 +757,19 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Quote Card */}
-          <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5">
+          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
             <div
-              className="absolute inset-0 pointer-events-none opacity-[0.08]"
-              style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+              className="absolute inset-0 pointer-events-none opacity-[0.10]"
+              style={{ background: 'radial-gradient(120% 100% at 100% 0%, #8B5CF6 0%, transparent 45%), radial-gradient(120% 100% at 0% 100%, #EC4899 0%, transparent 45%)' }}
             />
-            <QuoteIcon className="absolute right-4 bottom-4 h-10 w-10 text-white/15" />
-            <p className="relative text-[13px] italic text-white/90 leading-relaxed pr-8">"{quote.text}"</p>
-            <p className="relative mt-3 text-[11px] text-white/50">— {quote.author}</p>
+            <QuoteIcon className="absolute right-3 bottom-3 h-8 w-8 text-white/[0.08]" strokeWidth={1.5} />
+            <p className="relative text-[12.5px] italic text-white/88 leading-relaxed pr-6">"{quote.text}"</p>
+            <p className="relative mt-2.5 text-[10.5px] text-white/45">— {quote.author}</p>
           </div>
 
           {/* Item Types */}
           <SidePanel title="Item Types">
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <TypeChip icon={CheckSquare} label="Checkbox" color="#3B82F6" />
               <TypeChip icon={Hash} label="Number" color="#10B981" />
               <TypeChip icon={Star} label="Rating" color="#F59E0B" />
@@ -768,26 +781,26 @@ export default function TradingChecklist() {
 
           {/* Templates */}
           <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[11px] text-[#A78BFA] hover:underline">View all</button>}>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {(templates as any[]).slice(0,4).map(t => (
                 <button
                   key={t.id}
                   onClick={() => applyTemplate(t)}
-                  className="w-full flex items-center gap-2.5 px-3 rounded-[10px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
-                  style={{ height: 38 }}
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#0D111C] hover:bg-[#141A28] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
+                  style={{ height: 34 }}
                 >
                   <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
-                  <span className="text-[12.5px] flex-1 truncate text-white/85">{t.name}</span>
-                  <span className="text-[11px] text-[#A78BFA]">Use</span>
+                  <span className="text-[12px] flex-1 truncate text-white/85">{t.name}</span>
+                  <span className="text-[10.5px] text-[#A78BFA]">Use</span>
                 </button>
               ))}
-              {!templates.length && <p className="text-[11px] text-white/40 py-2">No templates yet.</p>}
+              {!templates.length && <p className="text-[11px] text-white/40 py-1">No templates yet.</p>}
             </div>
           </SidePanel>
 
           {/* Quick Actions */}
           <SidePanel title="Quick Actions">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <ActionBtn icon={Upload} label="Import from Template" onClick={() => setTemplatesOpen(true)} />
               <ActionBtn icon={Download} label="Export Checklist" onClick={exportJson} />
               <ActionBtn icon={CheckCircle2} label="Complete All" onClick={completeAll} />
@@ -795,6 +808,7 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
         </aside>
+
       </div>
       )}
 
@@ -901,10 +915,10 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[20px] border border-white/[0.06] p-5 shadow-[0_12px_36px_rgba(0,0,0,0.5)]" style={{ background: '#0A0F1C' }}>
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-semibold text-[12px] uppercase tracking-[0.1em] text-white/85">{title}</h3>
+    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.11em] text-white/75">{title}</h3>
         {action}
       </div>
       {children}
@@ -920,23 +934,23 @@ function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
     return `${i * 6},${y.toFixed(1)}`;
   }).join(' ');
   return (
-    <svg width={52} height={14} viewBox="0 0 48 14" className="shrink-0">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
     </svg>
   );
 }
 
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-3" style={{ height: 48 }}>
+    <div className="flex items-center gap-3" style={{ height: 42 }}>
       <div
-        className="h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0"
-        style={{ background: `linear-gradient(135deg, ${color}33, ${color}11)`, boxShadow: `inset 0 0 0 1px ${color}33` }}
+        className="h-8 w-8 rounded-[10px] flex items-center justify-center shrink-0"
+        style={{ background: `linear-gradient(135deg, ${color}2A, ${color}0D)`, boxShadow: `inset 0 0 0 1px ${color}2A, inset 0 1px 0 rgba(255,255,255,0.05)` }}
       >
-        <Icon className="h-4 w-4" style={{ color }} />
+        <Icon className="h-[14px] w-[14px]" style={{ color }} />
       </div>
-      <span className="text-[12.5px] text-white/85 flex-1 truncate">{label}</span>
-      <span className="text-[12.5px] font-heading font-bold tabular-nums" style={{ color }}>{value}</span>
+      <span className="text-[12px] text-white/85 flex-1 truncate">{label}</span>
+      <span className="text-[12px] font-heading font-semibold tabular-nums" style={{ color }}>{value}</span>
       <Sparkline color={color} seed={label.length} />
     </div>
   );
@@ -945,14 +959,14 @@ function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: stri
 function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string; value: string | number; tint: string }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[12px] bg-[#1A2235] px-3 py-2.5 flex flex-col justify-center"
-      style={{ height: 82 }}
+      className="relative overflow-hidden rounded-[11px] border border-white/[0.04] px-3 py-2 flex flex-col justify-center"
+      style={{ height: 74, background: '#0D111C' }}
     >
       <div className="flex items-center gap-1.5 mb-1">
-        <Icon className="h-3.5 w-3.5" style={{ color: tint }} />
-        <p className="text-[11px] text-white/60">{label}</p>
+        <Icon className="h-[13px] w-[13px]" style={{ color: tint }} />
+        <p className="text-[10.5px] text-white/55 uppercase tracking-wider">{label}</p>
       </div>
-      <p className="text-[18px] font-heading font-bold text-white tabular-nums leading-none">{value}</p>
+      <p className="text-[20px] font-heading font-bold text-white tabular-nums leading-none tracking-[-0.02em]">{value}</p>
     </div>
   );
 }
@@ -960,9 +974,9 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-[12px] bg-[#1A2235] px-3" style={{ height: 60 }}>
-      <Icon className="h-4 w-4" style={{ color }} />
-      <span className="text-[12.5px] text-white/85 truncate">{label}</span>
+    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#0D111C' }}>
+      <Icon className="h-[15px] w-[15px]" style={{ color }} />
+      <span className="text-[12px] text-white/85 truncate">{label}</span>
     </div>
   );
 }
@@ -971,11 +985,11 @@ function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; o
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-3 rounded-[12px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
-      style={{ height: 48 }}
+      className="w-full flex items-center gap-2.5 px-3 rounded-[11px] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.02] transition-all text-left group"
+      style={{ height: 40, background: '#0D111C' }}
     >
-      <Icon className="h-4 w-4 text-[#A78BFA]" />
-      <span className="text-[13px] text-white/90 flex-1">{label}</span>
+      <Icon className="h-[14px] w-[14px] text-[#A78BFA] transition-transform group-hover:scale-110" />
+      <span className="text-[12.5px] text-white/85 flex-1 group-hover:text-white">{label}</span>
     </button>
   );
 }
@@ -985,23 +999,23 @@ function AddItemInline({ onAdd, color = '#8B5CF6' }: { onAdd: (label: string) =>
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); onAdd(v); setV(''); }}
-      className="mt-2.5 flex items-center gap-2 rounded-[10px] border border-dashed px-3.5"
-      style={{ height: 42, borderColor: '#313A50' }}
+      className="mt-2 flex items-center gap-2 rounded-[9px] border border-dashed px-3"
+      style={{ height: 36, borderColor: '#232B3F' }}
     >
-      <Plus className="h-3.5 w-3.5" style={{ color }} />
+      <Plus className="h-3 w-3" style={{ color }} />
       <input
         value={v}
         onChange={(e) => setV(e.target.value)}
         placeholder="Add Item"
-        className="flex-1 bg-transparent border-0 outline-none text-[13px] text-white/90 placeholder:text-white/40"
-        style={{ color: v ? '#fff' : undefined }}
+        className="flex-1 bg-transparent border-0 outline-none text-[12.5px] text-white/90 placeholder:text-white/35"
       />
       {v.trim() && (
-        <button type="submit" className="text-[12px] font-medium" style={{ color }}>Add</button>
+        <button type="submit" className="text-[11.5px] font-medium" style={{ color }}>Add</button>
       )}
     </form>
   );
 }
+
 
 
 function CustomizeDialog(props: {
