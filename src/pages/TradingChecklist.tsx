@@ -695,39 +695,39 @@ export default function TradingChecklist() {
 
             <button
               onClick={addSection}
-              className="w-full flex items-center justify-center gap-2 rounded-[14px] border border-dashed border-[#8B5CF6]/40 bg-transparent text-[14px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/60 transition"
-              style={{ height: 48 }}
+              className="w-full flex items-center justify-center gap-2 rounded-[12px] border border-dashed border-[#8B5CF6]/35 bg-transparent text-[13px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/55 transition"
+              style={{ height: 42 }}
             >
-              <Plus className="h-4 w-4" /> Add New Section
+              <Plus className="h-3.5 w-3.5" /> Add New Section
             </button>
           </div>
         </div>
 
-        {/* -------- RIGHT SIDEBAR (380px) -------- */}
-        <aside className="space-y-5">
+        {/* -------- RIGHT SIDEBAR -------- */}
+        <aside className="space-y-4">
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
-            {saving && <span className="absolute right-5 top-5 text-[10px] text-white/40 animate-pulse">Saving…</span>}
-            <div className="flex items-center justify-center py-2">
+            {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
+            <div className="flex items-center justify-center py-1">
               <ProgressRing
                 value={overall.pct}
-                size={180}
-                stroke={14}
+                size={172}
+                stroke={12}
                 gradientId="ring-overall"
                 label="Overall"
                 gradient={['#8B5CF6', '#3B82F6', '#06B6D4', '#F59E0B', '#F97316', '#EC4899']}
               />
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-1.5">
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
                 return (
-                  <div key={s.id} className="flex items-center gap-2.5 text-[12.5px]">
-                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: p.from }} />
-                    <span className="flex-1 truncate text-white/85">{s.title}</span>
-                    <span className="text-white/60 font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-white/40 font-mono tabular-nums w-9 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="flex items-center gap-2.5 text-[12px]">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}88` }} />
+                    <span className="flex-1 truncate text-white/80">{s.title}</span>
+                    <span className="text-white/55 font-mono tabular-nums">{Math.round(pct)}%</span>
+                    <span className="text-white/35 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
                   </div>
                 );
               })}
@@ -736,7 +736,7 @@ export default function TradingChecklist() {
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
-            <div>
+            <div className="space-y-0.5">
               <StreakRow icon={ClipboardCheck} label="Checklist Streak" value={`${streak} Days`} color="#F59E0B" />
               <StreakRow icon={BookOpen}       label="Journal Streak"   value={`${Math.max(streak, longestStreak - 4)} Days`} color="#10B981" />
               <StreakRow icon={TrendingUp}     label="Trading Plan Streak" value={`${Math.max(1, streak - 3)} Days`} color="#3B82F6" />
@@ -746,9 +746,9 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
 
-          {/* Today's Stats — 2x2 grid, 82px */}
+          {/* Today's Stats — 2x2 grid */}
           <SidePanel title="Today's Stats">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
               <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
               <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
@@ -757,19 +757,19 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Quote Card */}
-          <div className="relative overflow-hidden rounded-[18px] border border-white/[0.05] bg-[#141C2D] p-5">
+          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
             <div
-              className="absolute inset-0 pointer-events-none opacity-[0.08]"
-              style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+              className="absolute inset-0 pointer-events-none opacity-[0.10]"
+              style={{ background: 'radial-gradient(120% 100% at 100% 0%, #8B5CF6 0%, transparent 45%), radial-gradient(120% 100% at 0% 100%, #EC4899 0%, transparent 45%)' }}
             />
-            <QuoteIcon className="absolute right-4 bottom-4 h-10 w-10 text-white/15" />
-            <p className="relative text-[13px] italic text-white/90 leading-relaxed pr-8">"{quote.text}"</p>
-            <p className="relative mt-3 text-[11px] text-white/50">— {quote.author}</p>
+            <QuoteIcon className="absolute right-3 bottom-3 h-8 w-8 text-white/[0.08]" strokeWidth={1.5} />
+            <p className="relative text-[12.5px] italic text-white/88 leading-relaxed pr-6">"{quote.text}"</p>
+            <p className="relative mt-2.5 text-[10.5px] text-white/45">— {quote.author}</p>
           </div>
 
           {/* Item Types */}
           <SidePanel title="Item Types">
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <TypeChip icon={CheckSquare} label="Checkbox" color="#3B82F6" />
               <TypeChip icon={Hash} label="Number" color="#10B981" />
               <TypeChip icon={Star} label="Rating" color="#F59E0B" />
@@ -781,26 +781,26 @@ export default function TradingChecklist() {
 
           {/* Templates */}
           <SidePanel title="Templates" action={<button onClick={() => setTemplatesOpen(true)} className="text-[11px] text-[#A78BFA] hover:underline">View all</button>}>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {(templates as any[]).slice(0,4).map(t => (
                 <button
                   key={t.id}
                   onClick={() => applyTemplate(t)}
-                  className="w-full flex items-center gap-2.5 px-3 rounded-[10px] bg-[#1A2235] hover:bg-[#232D43] transition text-left"
-                  style={{ height: 38 }}
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#0D111C] hover:bg-[#141A28] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
+                  style={{ height: 34 }}
                 >
                   <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
-                  <span className="text-[12.5px] flex-1 truncate text-white/85">{t.name}</span>
-                  <span className="text-[11px] text-[#A78BFA]">Use</span>
+                  <span className="text-[12px] flex-1 truncate text-white/85">{t.name}</span>
+                  <span className="text-[10.5px] text-[#A78BFA]">Use</span>
                 </button>
               ))}
-              {!templates.length && <p className="text-[11px] text-white/40 py-2">No templates yet.</p>}
+              {!templates.length && <p className="text-[11px] text-white/40 py-1">No templates yet.</p>}
             </div>
           </SidePanel>
 
           {/* Quick Actions */}
           <SidePanel title="Quick Actions">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <ActionBtn icon={Upload} label="Import from Template" onClick={() => setTemplatesOpen(true)} />
               <ActionBtn icon={Download} label="Export Checklist" onClick={exportJson} />
               <ActionBtn icon={CheckCircle2} label="Complete All" onClick={completeAll} />
@@ -808,6 +808,7 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
         </aside>
+
       </div>
       )}
 
