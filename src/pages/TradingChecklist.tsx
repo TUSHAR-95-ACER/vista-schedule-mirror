@@ -581,7 +581,7 @@ export default function TradingChecklist() {
               sub="Tasks Completed"
               tint="violet"
               trend={trendVsY > 0 ? `${trendVsY}% vs yesterday` : undefined}
-              ring={{ pct: overall.pct, gradient: ['#EC4899', '#8B5CF6'] }}
+              ring={{ pct: overall.pct, gradient: ['#8B5CF6', '#6366F1', '#3B82F6'] }}
             />
             <KpiCard icon={LayoutGrid} label="Sections" value={sections.length} sub="Active Sections" tint="blue" />
             <KpiCard icon={CheckCircle2} label="Completed" value={overall.done} sub="Tasks Done" tint="emerald" />
