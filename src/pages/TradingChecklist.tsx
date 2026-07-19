@@ -629,12 +629,12 @@ export default function TradingChecklist() {
                     <div
                       className="h-[42px] w-[42px] rounded-[12px] flex items-center justify-center shrink-0 relative overflow-hidden"
                       style={{
-                        background: `linear-gradient(135deg, ${p.from}, ${p.to})`,
-                        boxShadow: `0 8px 20px -8px ${p.from}80, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
+                        background: `linear-gradient(160deg, ${p.from} 0%, ${p.from} 40%, ${p.to} 100%)`,
+                        boxShadow: `0 10px 22px -8px ${p.from}90, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.22)`,
                       }}
                     >
-                      <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14), transparent)' }} />
-                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.2} />
+                      <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
+                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.4} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-1.5">
