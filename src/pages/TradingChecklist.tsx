@@ -724,10 +724,13 @@ export default function TradingChecklist() {
               <Plus className="h-3.5 w-3.5" /> Add New Section
             </button>
           </div>
+          </>)}
         </div>
 
         {/* -------- RIGHT SIDEBAR -------- */}
+        {tab === 'checklist' && (
         <aside className="space-y-4">
+
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
             {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
