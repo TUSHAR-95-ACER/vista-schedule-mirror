@@ -155,14 +155,17 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-5',
-        'shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.035] px-5',
+        'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.85)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.075]',
         t.glow,
       )}
       style={{ height: 118, background: '#080B14' }}
     >
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}33, transparent)` }} />
+      {/* subtle top lighting pass */}
+      <div className="absolute inset-x-0 top-0 h-[60%] pointer-events-none"
+        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.045), transparent 60%)' }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}40, transparent)` }} />
       <div className="relative flex items-center gap-4 h-full">
         {ring ? (
           <ProgressRing
@@ -170,18 +173,18 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
             size={74}
             stroke={7}
             gradientId={`kpi-${tint}`}
-            gradient={ring.gradient ?? ['#EC4899', '#8B5CF6']}
+            gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
           />
         ) : (
           <div
             className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{
               background: t.iconBg,
-              boxShadow: `0 6px 16px -6px ${t.accent}66, inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15)`,
+              boxShadow: `0 8px 20px -6px ${t.accent}70, 0 0 0 1px rgba(255,255,255,0.05) inset, inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.22)`,
             }}
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.14), transparent)' }} />
-            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.2} />
+            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.20), transparent)' }} />
+            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.15))' }} />
           </div>
         )}
         <div className="min-w-0 flex-1">
