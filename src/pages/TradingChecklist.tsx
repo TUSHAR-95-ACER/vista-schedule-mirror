@@ -834,9 +834,10 @@ export default function TradingChecklist() {
             </div>
           </SidePanel>
         </aside>
+        )}
 
       </div>
-      )}
+
 
 
       {tab === 'templates' && (
