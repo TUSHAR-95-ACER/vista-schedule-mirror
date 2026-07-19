@@ -73,35 +73,50 @@ const DEFAULT_SECTIONS: () => ChecklistSection[] = () => [
     items: ['Read 10 pages','Practice gratitude','Family time','No unnecessary screen time','Sleep before 11 PM','Learn something new'].map(l => ({ id: uid(), label: l, done: false })) },
 ];
 
-// ---------- Progress Ring (multi-color gradient like reference) ----------
-function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', label, sublabel, gradient = ['#8B5CF6','#3B82F6','#F43F5E'] }: {
+// ---------- Progress Ring (layered concentric guides + gradient arc) ----------
+function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', label, sublabel, gradient = ['#8B5CF6','#6366F1','#3B82F6'] }: {
   value: number; size?: number; stroke?: number; gradientId?: string; label?: string; sublabel?: string; gradient?: string[];
 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   const dash = (pct / 100) * c;
+  const guideOffsets = [stroke + 3, stroke * 2 + 6, stroke * 3 + 9];
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90 overflow-visible" shapeRendering="geometricPrecision">
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-            {gradient.map((c, i) => (
-              <stop key={i} offset={`${(i / (gradient.length - 1)) * 100}%`} stopColor={c} />
+            {gradient.map((cc, i) => (
+              <stop key={i} offset={`${(i / (gradient.length - 1)) * 100}%`} stopColor={cc} />
             ))}
           </linearGradient>
+          <filter id={`${gradientId}-glow`} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation={Math.max(1.2, stroke * 0.28)} result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="hsl(var(--border))" strokeOpacity={0.4} strokeWidth={stroke} fill="none" />
+        {guideOffsets.map((off, i) => {
+          const rr = r - off;
+          if (rr <= 2) return null;
+          return (
+            <circle key={i} cx={size/2} cy={size/2} r={rr}
+              stroke="#FFFFFF" strokeOpacity={0.05 - i * 0.012} strokeWidth={1} fill="none" />
+          );
+        })}
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="#FFFFFF" strokeOpacity={0.07} strokeWidth={stroke} fill="none" />
         <circle cx={size / 2} cy={size / 2} r={r}
           stroke={`url(#${gradientId})`} strokeWidth={stroke} strokeLinecap="round" fill="none"
-          strokeDasharray={`${dash} ${c - dash}`} style={{ transition: 'stroke-dasharray 600ms cubic-bezier(0.22,1,0.36,1)' }} />
+          strokeDasharray={`${dash} ${c - dash}`}
+          filter={`url(#${gradientId}-glow)`}
+          style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading font-bold text-foreground leading-none" style={{ fontSize: size * 0.24 }}>
+        <span className="font-heading font-bold text-white leading-none tracking-[-0.02em]" style={{ fontSize: size * 0.24 }}>
           {Math.round(pct)}%
         </span>
-        {label && <span className="text-[9px] uppercase tracking-wider text-muted-foreground mt-1">{label}</span>}
-        {sublabel && <span className="text-[9px] text-muted-foreground/70">{sublabel}</span>}
+        {label && <span className="text-[9.5px] uppercase tracking-[0.14em] text-white/45 mt-1.5">{label}</span>}
+        {sublabel && <span className="text-[9px] text-white/35">{sublabel}</span>}
       </div>
     </div>
   );
@@ -115,12 +130,12 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   const dash = (pct / 100) * c;
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={r} stroke="hsl(var(--border))" strokeOpacity={0.35} strokeWidth={stroke} fill="none" />
+      <svg width={size} height={size} className="-rotate-90" shapeRendering="geometricPrecision">
+        <circle cx={size/2} cy={size/2} r={r} stroke="#FFFFFF" strokeOpacity={0.08} strokeWidth={stroke} fill="none" />
         <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} strokeLinecap="round" fill="none"
-          strokeDasharray={`${dash} ${c - dash}`} style={{ transition: 'stroke-dasharray 500ms ease' }} />
+          strokeDasharray={`${dash} ${c - dash}`} style={{ transition: 'stroke-dasharray 500ms cubic-bezier(0.22,1,0.36,1)', filter: `drop-shadow(0 0 3px ${color}66)` }} />
       </svg>
-      <span className="absolute text-[9px] font-bold text-foreground">{Math.round(pct)}%</span>
+      <span className="absolute text-[9.5px] font-semibold text-white tabular-nums">{Math.round(pct)}%</span>
     </div>
   );
 }
