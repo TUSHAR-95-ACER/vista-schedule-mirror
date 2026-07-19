@@ -734,17 +734,17 @@ export default function TradingChecklist() {
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
             {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
-            <div className="flex items-center justify-center py-1">
+            <div className="relative flex items-center justify-center py-2 rounded-[12px]" style={{ background: 'rgba(0,0,0,0.22)' }}>
               <ProgressRing
                 value={overall.pct}
                 size={172}
                 stroke={12}
                 gradientId="ring-overall"
                 label="Overall"
-                gradient={['#8B5CF6', '#3B82F6', '#06B6D4', '#F59E0B', '#F97316', '#EC4899']}
+                gradient={['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4']}
               />
             </div>
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-3 space-y-1.5 rounded-[10px] px-2.5 py-2" style={{ background: 'rgba(0,0,0,0.20)' }}>
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
