@@ -531,47 +531,47 @@ export default function TradingChecklist() {
         </div>
       </div>
 
-      {/* ============ TABS + NEW SECTION ============ */}
-      <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
-        <div className="flex items-center gap-7">
-          {(['checklist','templates','analytics','history'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={cn(
-                'relative text-[13px] font-medium capitalize transition-colors flex items-center',
-                tab === t ? 'text-white' : 'text-[#5C6472] hover:text-white/80'
-              )}
-              style={{ height: 40 }}
-            >
-              {t === 'checklist' ? 'My Checklist' : t}
-              {tab === t && (
-                <span
-                  className="absolute left-0 right-0 -bottom-px h-[1.5px]"
-                  style={{ background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.5)' }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={addSection}
-          className="px-3.5 rounded-[9px] text-white text-[12.5px] font-medium flex items-center gap-1.5 transition-all hover:brightness-110"
-          style={{
-            height: 36,
-            background: 'linear-gradient(135deg, #A855F7, #6366F1)',
-            boxShadow: '0 4px 14px -2px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
-          }}
-        >
-          <Plus className="h-[14px] w-[14px]" /> New Section
-        </button>
-      </div>
-
-
-      {tab === 'checklist' && (
+      {/* ============ MAIN GRID (tabs sit inside left col so sidebar aligns) ============ */}
       <div className="grid grid-cols-1 gap-6" style={{ gridTemplateColumns: 'minmax(0,1fr) 360px' }}>
-        {/* -------- LEFT -------- */}
+        {/* -------- LEFT COLUMN -------- */}
         <div>
+          {/* Tabs + New Section */}
+          <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
+            <div className="flex items-center gap-7">
+              {(['checklist','templates','analytics','history'] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={cn(
+                    'relative text-[13px] font-medium capitalize transition-colors flex items-center',
+                    tab === t ? 'text-white' : 'text-[#5C6472] hover:text-white/80'
+                  )}
+                  style={{ height: 40 }}
+                >
+                  {t === 'checklist' ? 'My Checklist' : t}
+                  {tab === t && (
+                    <span
+                      className="absolute left-0 right-0 -bottom-px h-[1.5px]"
+                      style={{ background: '#8B5CF6', boxShadow: '0 0 8px rgba(139,92,246,0.5)' }}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={addSection}
+              className="px-3.5 rounded-[9px] text-white text-[12.5px] font-medium flex items-center gap-1.5 transition-all hover:brightness-110"
+              style={{
+                height: 36,
+                background: 'linear-gradient(135deg, #A855F7, #6366F1)',
+                boxShadow: '0 4px 14px -2px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+              }}
+            >
+              <Plus className="h-[14px] w-[14px]" /> New Section
+            </button>
+          </div>
+
+          {tab === 'checklist' && (<>
           {/* KPI grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <KpiCard
