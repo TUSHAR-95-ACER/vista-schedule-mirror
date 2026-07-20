@@ -691,7 +691,8 @@ export default function TradingChecklist() {
                     'shadow-[0_16px_44px_-18px_rgba(0,0,0,0.75)] transition-all duration-200 ease-out',
                     'hover:-translate-y-[1px] hover:border-white/[0.07]'
                   )}
-                  style={{ background: '#080B14' }}
+                  style={{ background: '#050505' }}
+
                 >
                   {/* Ambient tint wash */}
                   <div
