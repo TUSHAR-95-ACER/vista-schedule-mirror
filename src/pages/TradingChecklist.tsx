@@ -140,38 +140,126 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
+// ---------- Multi-ring Progress Overview (outer gradient + concentric per-section rings) ----------
+function MultiRingProgress({
+  overallPct,
+  rings,
+  size = 208,
+}: {
+  overallPct: number;
+  rings: { color: string; pct: number }[];
+  size?: number;
+}) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerStroke = 14;
+  const outerR = (size - outerStroke) / 2 - 2;
+  const outerC = 2 * Math.PI * outerR;
+  const outerDash = (Math.max(0, Math.min(100, overallPct)) / 100) * outerC;
+
+  // Inner concentric rings — thin, colored per section, radius decreases inward.
+  const innerStroke = 3;
+  const gap = 4;
+  const firstR = outerR - outerStroke / 2 - gap - innerStroke;
+  const step = innerStroke + gap;
+
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90 overflow-visible" shapeRendering="geometricPrecision">
+        <defs>
+          <linearGradient id="mrp-outer" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stopColor="#8B5CF6" />
+            <stop offset="35%"  stopColor="#3B82F6" />
+            <stop offset="70%"  stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#F59E0B" />
+          </linearGradient>
+          <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        {/* Outer track + progress */}
+        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.05} strokeWidth={outerStroke} fill="none" />
+        <circle
+          cx={cx} cy={cy} r={outerR}
+          stroke="url(#mrp-outer)" strokeWidth={outerStroke} strokeLinecap="round" fill="none"
+          strokeDasharray={`${outerDash} ${outerC - outerDash}`}
+          filter="url(#mrp-glow)"
+          style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }}
+        />
+
+        {/* Inner concentric rings — one per section */}
+        {rings.map((ring, i) => {
+          const r = firstR - i * step;
+          if (r < 10) return null;
+          const c = 2 * Math.PI * r;
+          const pct = Math.max(0, Math.min(100, ring.pct));
+          const d = (pct / 100) * c;
+          return (
+            <g key={i}>
+              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={innerStroke} fill="none" />
+              <circle
+                cx={cx} cy={cy} r={r}
+                stroke={ring.color} strokeWidth={innerStroke} strokeLinecap="round" fill="none"
+                strokeDasharray={`${d} ${c - d}`}
+                style={{
+                  transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
+                  filter: `drop-shadow(0 0 3px ${ring.color}80)`,
+                }}
+              />
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="font-heading font-bold text-white leading-none tracking-[-0.03em]"
+          style={{ fontSize: 34 }}
+        >
+          {Math.round(overallPct)}%
+        </span>
+        <span className="text-[10px] uppercase tracking-[0.16em] text-white/50 mt-1.5">Overall</span>
+      </div>
+    </div>
+  );
+}
+
 // ---------- KPI Card (Phase 2 polish: shorter, softer, glass icons) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
   ring?: { pct: number; gradient?: string[] };
 }) {
   const tintMap: Record<string,{wash:string; iconBg:string; accent:string; glow:string}> = {
-    violet:  { wash:'radial-gradient(110% 130% at 100% 0%, rgba(139,92,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#9D6BFF,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(139,92,246,0.55)]' },
-    blue:    { wash:'radial-gradient(110% 130% at 100% 0%, rgba(59,130,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#4C93FF,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(59,130,246,0.55)]' },
-    emerald: { wash:'radial-gradient(110% 130% at 100% 0%, rgba(16,185,129,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#22C58A,#047857)', accent:'#34D399', glow:'hover:shadow-[0_22px_48px_-18px_rgba(16,185,129,0.55)]' },
-    amber:   { wash:'radial-gradient(110% 130% at 100% 0%, rgba(245,158,11,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#FBB040,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_22px_48px_-18px_rgba(245,158,11,0.55)]' },
+    violet:  { wash:'radial-gradient(130% 130% at 100% 0%, rgba(139,92,246,0.22), transparent 60%)', iconBg:'linear-gradient(135deg,#9D6BFF,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(139,92,246,0.45)]' },
+    blue:    { wash:'radial-gradient(130% 130% at 100% 0%, rgba(59,130,246,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#4C93FF,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(59,130,246,0.45)]' },
+    emerald: { wash:'radial-gradient(130% 130% at 100% 0%, rgba(16,185,129,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#22C58A,#047857)', accent:'#34D399', glow:'hover:shadow-[0_22px_48px_-18px_rgba(16,185,129,0.45)]' },
+    amber:   { wash:'radial-gradient(130% 130% at 100% 0%, rgba(245,158,11,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#FBB040,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_22px_48px_-18px_rgba(245,158,11,0.45)]' },
   };
   const t = tintMap[tint];
+  const valueStr = String(value);
+  const valueFontPx = valueStr.length > 9 ? 22 : valueStr.length > 6 ? 26 : 30;
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.035] px-5',
-        'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.85)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.075]',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4',
+        'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ height: 118, background: '#080B14' }}
+      style={{ height: 118, background: '#050505' }}
     >
+      {/* Only subtle ambient color tint — card stays visually black */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
-      {/* subtle top lighting pass */}
-      <div className="absolute inset-x-0 top-0 h-[60%] pointer-events-none"
-        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.045), transparent 60%)' }} />
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}40, transparent)` }} />
-      <div className="relative flex items-center gap-4 h-full">
+      <div className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
+        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.035), transparent 60%)' }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}30, transparent)` }} />
+      <div className="relative flex items-center gap-3.5 h-full">
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={74}
-            stroke={7}
+            size={82}
+            stroke={9}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
           />
@@ -180,21 +268,21 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
             className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{
               background: t.iconBg,
-              boxShadow: `0 8px 20px -6px ${t.accent}70, 0 0 0 1px rgba(255,255,255,0.05) inset, inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.22)`,
+              boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
             }}
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.20), transparent)' }} />
-            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.15))' }} />
+            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
+            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1">{label}</p>
-          <p className="font-heading font-bold text-[32px] leading-none text-white tabular-nums tracking-[-0.02em]">{value}</p>
-          {sub && <p className="text-[11px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
+        <div className="min-w-0 flex-1 flex flex-col justify-center">
+          <p className="text-[10px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1 truncate">{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }}>{value}</p>
+          {sub && <p className="text-[10.5px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
           {trend && (
-            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399]">
-              <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399]" />
-              {trend}
+            <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#34D399] min-w-0">
+              <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
+              <span className="truncate">{trend}</span>
             </p>
           )}
         </div>
@@ -603,7 +691,8 @@ export default function TradingChecklist() {
                     'shadow-[0_16px_44px_-18px_rgba(0,0,0,0.75)] transition-all duration-200 ease-out',
                     'hover:-translate-y-[1px] hover:border-white/[0.07]'
                   )}
-                  style={{ background: '#080B14' }}
+                  style={{ background: '#050505' }}
+
                 >
                   {/* Ambient tint wash */}
                   <div
@@ -675,7 +764,7 @@ export default function TradingChecklist() {
                               'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
                               i.done
                                 ? 'border-white/[0.03] bg-white/[0.015]'
-                                : 'border-white/[0.04] bg-[#0D111C] hover:bg-[#141A28] hover:border-white/[0.08]'
+                                : 'border-white/[0.04] bg-[#0A0A0A] hover:bg-[#101010] hover:border-white/[0.08]'
                             )}
                             style={{ height: 38 }}
                           >
@@ -734,31 +823,33 @@ export default function TradingChecklist() {
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
             {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
-            <div className="relative flex items-center justify-center py-2 rounded-[12px]" style={{ background: 'rgba(0,0,0,0.22)' }}>
-              <ProgressRing
-                value={overall.pct}
-                size={172}
-                stroke={12}
-                gradientId="ring-overall"
-                label="Overall"
-                gradient={['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4']}
+            <div className="relative flex items-center justify-center py-1.5 rounded-[12px]" style={{ background: 'rgba(0,0,0,0.35)' }}>
+              <MultiRingProgress
+                overallPct={overall.pct}
+                rings={sections.map(s => ({ color: paletteFor(s.color).from, pct: computeSectionPct(s) }))}
+                size={210}
               />
             </div>
-            <div className="mt-3 space-y-1.5 rounded-[10px] px-2.5 py-2" style={{ background: 'rgba(0,0,0,0.20)' }}>
+            <div
+              className="mt-3 rounded-[10px] px-2.5 py-2 grid gap-y-1.5 items-center"
+              style={{ background: 'rgba(0,0,0,0.30)', gridTemplateColumns: 'auto minmax(0,1fr) auto auto', columnGap: 10 }}
+            >
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
+                const done = s.items.filter(i => i.done).length;
                 return (
-                  <div key={s.id} className="flex items-center gap-2.5 text-[12px]">
-                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}88` }} />
-                    <span className="flex-1 truncate text-white/80">{s.title}</span>
-                    <span className="text-white/55 font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-white/35 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="contents text-[12px]">
+                    <span className="h-2 w-2 rounded-full" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}AA` }} />
+                    <span className="truncate text-white/80">{s.title}</span>
+                    <span className="text-white/60 font-mono tabular-nums text-right">{Math.round(pct)}%</span>
+                    <span className="text-white/35 font-mono tabular-nums text-right tracking-tight">{done}/{s.items.length}</span>
                   </div>
                 );
               })}
             </div>
           </SidePanel>
+
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
@@ -783,7 +874,7 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Quote Card */}
-          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
+          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#050505' }}>
             <div
               className="absolute inset-0 pointer-events-none opacity-[0.10]"
               style={{ background: 'radial-gradient(120% 100% at 100% 0%, #8B5CF6 0%, transparent 45%), radial-gradient(120% 100% at 0% 100%, #EC4899 0%, transparent 45%)' }}
@@ -812,7 +903,7 @@ export default function TradingChecklist() {
                 <button
                   key={t.id}
                   onClick={() => applyTemplate(t)}
-                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#0D111C] hover:bg-[#141A28] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#0A0A0A] hover:bg-[#101010] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
                   style={{ height: 34 }}
                 >
                   <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
@@ -942,7 +1033,7 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#080B14' }}>
+    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#050505' }}>
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.11em] text-white/75">{title}</h3>
@@ -987,7 +1078,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
   return (
     <div
       className="relative overflow-hidden rounded-[11px] border border-white/[0.04] px-3 py-2 flex flex-col justify-center"
-      style={{ height: 74, background: '#0D111C' }}
+      style={{ height: 74, background: '#0A0A0A' }}
     >
       <div className="flex items-center gap-1.5 mb-1">
         <Icon className="h-[13px] w-[13px]" style={{ color: tint }} />
@@ -1001,7 +1092,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#0D111C' }}>
+    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#0A0A0A' }}>
       <Icon className="h-[15px] w-[15px]" style={{ color }} />
       <span className="text-[12px] text-white/85 truncate">{label}</span>
     </div>
@@ -1013,7 +1104,7 @@ function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; o
     <button
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 rounded-[11px] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.02] transition-all text-left group"
-      style={{ height: 40, background: '#0D111C' }}
+      style={{ height: 40, background: '#0A0A0A' }}
     >
       <Icon className="h-[14px] w-[14px] text-[#A78BFA] transition-transform group-hover:scale-110" />
       <span className="text-[12.5px] text-white/85 flex-1 group-hover:text-white">{label}</span>
