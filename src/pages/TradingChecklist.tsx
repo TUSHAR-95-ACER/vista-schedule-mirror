@@ -764,7 +764,7 @@ export default function TradingChecklist() {
                               'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
                               i.done
                                 ? 'border-white/[0.03] bg-white/[0.015]'
-                                : 'border-white/[0.04] bg-[#0D111C] hover:bg-[#141A28] hover:border-white/[0.08]'
+                                : 'border-white/[0.04] bg-[#0A0A0A] hover:bg-[#101010] hover:border-white/[0.08]'
                             )}
                             style={{ height: 38 }}
                           >
