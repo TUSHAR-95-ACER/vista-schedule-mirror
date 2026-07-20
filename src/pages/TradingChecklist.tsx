@@ -140,6 +140,92 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
+// ---------- Multi-ring Progress Overview (outer gradient + concentric per-section rings) ----------
+function MultiRingProgress({
+  overallPct,
+  rings,
+  size = 208,
+}: {
+  overallPct: number;
+  rings: { color: string; pct: number }[];
+  size?: number;
+}) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerStroke = 14;
+  const outerR = (size - outerStroke) / 2 - 2;
+  const outerC = 2 * Math.PI * outerR;
+  const outerDash = (Math.max(0, Math.min(100, overallPct)) / 100) * outerC;
+
+  // Inner concentric rings — thin, colored per section, radius decreases inward.
+  const innerStroke = 3;
+  const gap = 4;
+  const firstR = outerR - outerStroke / 2 - gap - innerStroke;
+  const step = innerStroke + gap;
+
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90 overflow-visible" shapeRendering="geometricPrecision">
+        <defs>
+          <linearGradient id="mrp-outer" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"   stopColor="#8B5CF6" />
+            <stop offset="35%"  stopColor="#3B82F6" />
+            <stop offset="70%"  stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#F59E0B" />
+          </linearGradient>
+          <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        {/* Outer track + progress */}
+        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.05} strokeWidth={outerStroke} fill="none" />
+        <circle
+          cx={cx} cy={cy} r={outerR}
+          stroke="url(#mrp-outer)" strokeWidth={outerStroke} strokeLinecap="round" fill="none"
+          strokeDasharray={`${outerDash} ${outerC - outerDash}`}
+          filter="url(#mrp-glow)"
+          style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }}
+        />
+
+        {/* Inner concentric rings — one per section */}
+        {rings.map((ring, i) => {
+          const r = firstR - i * step;
+          if (r < 10) return null;
+          const c = 2 * Math.PI * r;
+          const pct = Math.max(0, Math.min(100, ring.pct));
+          const d = (pct / 100) * c;
+          return (
+            <g key={i}>
+              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={innerStroke} fill="none" />
+              <circle
+                cx={cx} cy={cy} r={r}
+                stroke={ring.color} strokeWidth={innerStroke} strokeLinecap="round" fill="none"
+                strokeDasharray={`${d} ${c - d}`}
+                style={{
+                  transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
+                  filter: `drop-shadow(0 0 3px ${ring.color}80)`,
+                }}
+              />
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="font-heading font-bold text-white leading-none tracking-[-0.03em]"
+          style={{ fontSize: 34 }}
+        >
+          {Math.round(overallPct)}%
+        </span>
+        <span className="text-[10px] uppercase tracking-[0.16em] text-white/50 mt-1.5">Overall</span>
+      </div>
+    </div>
+  );
+}
+
 // ---------- KPI Card (Phase 2 polish: shorter, softer, glass icons) ----------
 function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   icon: any; label: string; value: string | number; sub?: string; tint: 'violet'|'blue'|'emerald'|'amber'; trend?: string;
