@@ -823,31 +823,33 @@ export default function TradingChecklist() {
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
             {saving && <span className="absolute right-4 top-4 text-[10px] text-white/40 animate-pulse">Saving…</span>}
-            <div className="relative flex items-center justify-center py-2 rounded-[12px]" style={{ background: 'rgba(0,0,0,0.22)' }}>
-              <ProgressRing
-                value={overall.pct}
-                size={172}
-                stroke={12}
-                gradientId="ring-overall"
-                label="Overall"
-                gradient={['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4']}
+            <div className="relative flex items-center justify-center py-1.5 rounded-[12px]" style={{ background: 'rgba(0,0,0,0.35)' }}>
+              <MultiRingProgress
+                overallPct={overall.pct}
+                rings={sections.map(s => ({ color: paletteFor(s.color).from, pct: computeSectionPct(s) }))}
+                size={210}
               />
             </div>
-            <div className="mt-3 space-y-1.5 rounded-[10px] px-2.5 py-2" style={{ background: 'rgba(0,0,0,0.20)' }}>
+            <div
+              className="mt-3 rounded-[10px] px-2.5 py-2 grid gap-y-1.5 items-center"
+              style={{ background: 'rgba(0,0,0,0.30)', gridTemplateColumns: 'auto minmax(0,1fr) auto auto', columnGap: 10 }}
+            >
               {sections.map((s) => {
                 const pct = computeSectionPct(s);
                 const p = paletteFor(s.color);
+                const done = s.items.filter(i => i.done).length;
                 return (
-                  <div key={s.id} className="flex items-center gap-2.5 text-[12px]">
-                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}88` }} />
-                    <span className="flex-1 truncate text-white/80">{s.title}</span>
-                    <span className="text-white/55 font-mono tabular-nums">{Math.round(pct)}%</span>
-                    <span className="text-white/35 font-mono tabular-nums w-8 text-right">{s.items.filter(i => i.done).length}/{s.items.length}</span>
+                  <div key={s.id} className="contents text-[12px]">
+                    <span className="h-2 w-2 rounded-full" style={{ background: p.from, boxShadow: `0 0 6px ${p.from}AA` }} />
+                    <span className="truncate text-white/80">{s.title}</span>
+                    <span className="text-white/60 font-mono tabular-nums text-right">{Math.round(pct)}%</span>
+                    <span className="text-white/35 font-mono tabular-nums text-right tracking-tight">{done}/{s.items.length}</span>
                   </div>
                 );
               })}
             </div>
           </SidePanel>
+
 
           {/* Streak Tracker */}
           <SidePanel title="Streak Tracker">
