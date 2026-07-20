@@ -232,32 +232,34 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   ring?: { pct: number; gradient?: string[] };
 }) {
   const tintMap: Record<string,{wash:string; iconBg:string; accent:string; glow:string}> = {
-    violet:  { wash:'radial-gradient(110% 130% at 100% 0%, rgba(139,92,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#9D6BFF,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(139,92,246,0.55)]' },
-    blue:    { wash:'radial-gradient(110% 130% at 100% 0%, rgba(59,130,246,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#4C93FF,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(59,130,246,0.55)]' },
-    emerald: { wash:'radial-gradient(110% 130% at 100% 0%, rgba(16,185,129,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#22C58A,#047857)', accent:'#34D399', glow:'hover:shadow-[0_22px_48px_-18px_rgba(16,185,129,0.55)]' },
-    amber:   { wash:'radial-gradient(110% 130% at 100% 0%, rgba(245,158,11,0.10), transparent 55%)', iconBg:'linear-gradient(135deg,#FBB040,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_22px_48px_-18px_rgba(245,158,11,0.55)]' },
+    violet:  { wash:'radial-gradient(130% 130% at 100% 0%, rgba(139,92,246,0.22), transparent 60%)', iconBg:'linear-gradient(135deg,#9D6BFF,#6D28D9)', accent:'#A78BFA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(139,92,246,0.45)]' },
+    blue:    { wash:'radial-gradient(130% 130% at 100% 0%, rgba(59,130,246,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#4C93FF,#1D4ED8)', accent:'#60A5FA', glow:'hover:shadow-[0_22px_48px_-18px_rgba(59,130,246,0.45)]' },
+    emerald: { wash:'radial-gradient(130% 130% at 100% 0%, rgba(16,185,129,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#22C58A,#047857)', accent:'#34D399', glow:'hover:shadow-[0_22px_48px_-18px_rgba(16,185,129,0.45)]' },
+    amber:   { wash:'radial-gradient(130% 130% at 100% 0%, rgba(245,158,11,0.22), transparent 60%)',  iconBg:'linear-gradient(135deg,#FBB040,#B45309)', accent:'#FBBF24', glow:'hover:shadow-[0_22px_48px_-18px_rgba(245,158,11,0.45)]' },
   };
   const t = tintMap[tint];
+  const valueStr = String(value);
+  const valueFontPx = valueStr.length > 9 ? 22 : valueStr.length > 6 ? 26 : 30;
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.035] px-5',
-        'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.85)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.075]',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4',
+        'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ height: 118, background: '#080B14' }}
+      style={{ height: 118, background: '#050505' }}
     >
+      {/* Only subtle ambient color tint — card stays visually black */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
-      {/* subtle top lighting pass */}
-      <div className="absolute inset-x-0 top-0 h-[60%] pointer-events-none"
-        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.045), transparent 60%)' }} />
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}40, transparent)` }} />
-      <div className="relative flex items-center gap-4 h-full">
+      <div className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
+        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.035), transparent 60%)' }} />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}30, transparent)` }} />
+      <div className="relative flex items-center gap-3.5 h-full">
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={74}
-            stroke={7}
+            size={82}
+            stroke={9}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
           />
@@ -266,21 +268,21 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
             className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{
               background: t.iconBg,
-              boxShadow: `0 8px 20px -6px ${t.accent}70, 0 0 0 1px rgba(255,255,255,0.05) inset, inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.22)`,
+              boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
             }}
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.20), transparent)' }} />
-            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.15))' }} />
+            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
+            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1">{label}</p>
-          <p className="font-heading font-bold text-[32px] leading-none text-white tabular-nums tracking-[-0.02em]">{value}</p>
-          {sub && <p className="text-[11px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
+        <div className="min-w-0 flex-1 flex flex-col justify-center">
+          <p className="text-[10px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1 truncate">{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }}>{value}</p>
+          {sub && <p className="text-[10.5px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
           {trend && (
-            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399]">
-              <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399]" />
-              {trend}
+            <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#34D399] min-w-0">
+              <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
+              <span className="truncate">{trend}</span>
             </p>
           )}
         </div>
