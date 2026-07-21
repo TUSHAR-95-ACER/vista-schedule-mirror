@@ -73,7 +73,7 @@ const DEFAULT_SECTIONS: () => ChecklistSection[] = () => [
     items: ['Read 10 pages','Practice gratitude','Family time','No unnecessary screen time','Sleep before 11 PM','Learn something new'].map(l => ({ id: uid(), label: l, done: false })) },
 ];
 
-// ---------- Progress Ring (layered concentric guides + gradient arc) ----------
+// ---------- Progress Ring (single clean arc, no decorative concentric guides) ----------
 function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', label, sublabel, gradient = ['#8B5CF6','#6366F1','#3B82F6'] }: {
   value: number; size?: number; stroke?: number; gradientId?: string; label?: string; sublabel?: string; gradient?: string[];
 }) {
@@ -81,7 +81,6 @@ function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', l
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   const dash = (pct / 100) * c;
-  const guideOffsets = [stroke + 3, stroke * 2 + 6, stroke * 3 + 9];
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90 overflow-visible" shapeRendering="geometricPrecision">
@@ -92,19 +91,11 @@ function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', l
             ))}
           </linearGradient>
           <filter id={`${gradientId}-glow`} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation={Math.max(1.2, stroke * 0.28)} result="b" />
+            <feGaussianBlur stdDeviation={Math.max(1.2, stroke * 0.32)} result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        {guideOffsets.map((off, i) => {
-          const rr = r - off;
-          if (rr <= 2) return null;
-          return (
-            <circle key={i} cx={size/2} cy={size/2} r={rr}
-              stroke="#FFFFFF" strokeOpacity={0.05 - i * 0.012} strokeWidth={1} fill="none" />
-          );
-        })}
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="#FFFFFF" strokeOpacity={0.07} strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="#FFFFFF" strokeOpacity={0.06} strokeWidth={stroke} fill="none" />
         <circle cx={size / 2} cy={size / 2} r={r}
           stroke={`url(#${gradientId})`} strokeWidth={stroke} strokeLinecap="round" fill="none"
           strokeDasharray={`${dash} ${c - dash}`}
@@ -112,7 +103,7 @@ function ProgressRing({ value, size = 96, stroke = 8, gradientId = 'ringGrad', l
           style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading font-bold text-white leading-none tracking-[-0.02em]" style={{ fontSize: size * 0.24 }}>
+        <span className="font-heading font-bold text-white leading-none tracking-[-0.02em]" style={{ fontSize: size * 0.26 }}>
           {Math.round(pct)}%
         </span>
         {label && <span className="text-[9.5px] uppercase tracking-[0.14em] text-white/45 mt-1.5">{label}</span>}
@@ -140,11 +131,11 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- Multi-ring Progress Overview (outer gradient + concentric per-section rings) ----------
+// ---------- Multi-ring Progress Overview (thick outer + evenly-spaced thin per-section rings) ----------
 function MultiRingProgress({
   overallPct,
   rings,
-  size = 208,
+  size = 220,
 }: {
   overallPct: number;
   rings: { color: string; pct: number }[];
@@ -152,16 +143,17 @@ function MultiRingProgress({
 }) {
   const cx = size / 2;
   const cy = size / 2;
-  const outerStroke = 14;
+  const outerStroke = 16;
   const outerR = (size - outerStroke) / 2 - 2;
   const outerC = 2 * Math.PI * outerR;
   const outerDash = (Math.max(0, Math.min(100, overallPct)) / 100) * outerC;
 
-  // Inner concentric rings — thin, colored per section, radius decreases inward.
-  const innerStroke = 3;
-  const gap = 4;
-  const firstR = outerR - outerStroke / 2 - gap - innerStroke;
-  const step = innerStroke + gap;
+  // Compute even spacing for exactly `rings.length` inner rings between outer edge and center label
+  const innerStroke = 2.5;
+  const innerAreaOuter = outerR - outerStroke / 2 - 10;   // start below outer track
+  const innerAreaInner = 44;                              // reserve space for center text
+  const span = innerAreaOuter - innerAreaInner;
+  const step = rings.length > 0 ? span / rings.length : 0;
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
@@ -174,13 +166,13 @@ function MultiRingProgress({
             <stop offset="100%" stopColor="#F59E0B" />
           </linearGradient>
           <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="b" />
+            <feGaussianBlur stdDeviation="3.5" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* Outer track + progress */}
-        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.05} strokeWidth={outerStroke} fill="none" />
+        {/* Outer track + progress (dominant) */}
+        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={outerStroke} fill="none" />
         <circle
           cx={cx} cy={cy} r={outerR}
           stroke="url(#mrp-outer)" strokeWidth={outerStroke} strokeLinecap="round" fill="none"
@@ -189,23 +181,23 @@ function MultiRingProgress({
           style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }}
         />
 
-        {/* Inner concentric rings — one per section */}
+        {/* Inner concentric rings — exactly one thin ring per section, evenly spaced */}
         {rings.map((ring, i) => {
-          const r = firstR - i * step;
-          if (r < 10) return null;
+          const r = innerAreaOuter - (i + 0.5) * step;
+          if (r < 8) return null;
           const c = 2 * Math.PI * r;
           const pct = Math.max(0, Math.min(100, ring.pct));
           const d = (pct / 100) * c;
           return (
             <g key={i}>
-              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={innerStroke} fill="none" />
+              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.035} strokeWidth={innerStroke} fill="none" />
               <circle
                 cx={cx} cy={cy} r={r}
                 stroke={ring.color} strokeWidth={innerStroke} strokeLinecap="round" fill="none"
                 strokeDasharray={`${d} ${c - d}`}
                 style={{
                   transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
-                  filter: `drop-shadow(0 0 3px ${ring.color}80)`,
+                  filter: `drop-shadow(0 0 2.5px ${ring.color}99)`,
                 }}
               />
             </g>
@@ -239,15 +231,17 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   };
   const t = tintMap[tint];
   const valueStr = String(value);
-  const valueFontPx = valueStr.length > 9 ? 22 : valueStr.length > 6 ? 26 : 30;
+  // Auto-shrink to guarantee no clipping across any label/value length
+  const valueFontPx = valueStr.length > 10 ? 20 : valueStr.length > 7 ? 24 : valueStr.length > 4 ? 28 : 32;
+  const labelClamp = "text-[10.5px] font-medium uppercase tracking-[0.08em] text-[#8A93A6]";
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4 py-4',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ height: 118, background: '#050505' }}
+      style={{ minHeight: 132, background: '#050505' }}
     >
       {/* Only subtle ambient color tint — card stays visually black */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
@@ -258,14 +252,14 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={82}
-            stroke={9}
+            size={80}
+            stroke={8}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
           />
         ) : (
           <div
-            className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
+            className="h-[46px] w-[46px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{
               background: t.iconBg,
               boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
@@ -276,11 +270,11 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
           </div>
         )}
         <div className="min-w-0 flex-1 flex flex-col justify-center">
-          <p className="text-[10px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1 truncate">{label}</p>
-          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }}>{value}</p>
-          {sub && <p className="text-[10.5px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
+          <p className={cn(labelClamp, "mb-1 truncate")} title={label}>{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
+          {sub && <p className="text-[11px] text-[#6B7385] mt-1.5 truncate" title={sub}>{sub}</p>}
           {trend && (
-            <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#34D399] min-w-0">
+            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399] min-w-0">
               <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
               <span className="truncate">{trend}</span>
             </p>
@@ -701,15 +695,15 @@ export default function TradingChecklist() {
                   />
                   {/* Top hairline */}
                   <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}33, transparent)` }} />
-                  {/* Left accent bar — directional lighting: brightest top, fades down */}
+                  {/* Left accent bar — glow concentrated in top 25-30%, fades to near-black */}
                   <div
-                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[3px] rounded-full"
-                    style={{ background: `linear-gradient(180deg, ${p.from} 0%, ${p.from}CC 25%, ${p.to}66 60%, ${p.to}1A 100%)` }}
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[2.5px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from} 0%, ${p.from}B3 15%, ${p.to}40 35%, ${p.to}0D 60%, rgba(0,0,0,0) 100%)` }}
                   />
-                  {/* Accent glow — concentrated at top, fades away */}
+                  {/* Accent glow — bloom only near icon area */}
                   <div
-                    className="pointer-events-none absolute top-1 left-0 w-[18px] h-[70px] rounded-full blur-[12px] opacity-70"
-                    style={{ background: `radial-gradient(60% 60% at 30% 20%, ${p.from}, transparent 70%)` }}
+                    className="pointer-events-none absolute top-0 left-0 w-[26px] h-[80px] rounded-full blur-[14px] opacity-80"
+                    style={{ background: `radial-gradient(55% 55% at 25% 18%, ${p.from}, transparent 72%)` }}
                   />
 
                   {/* header — tighter */}
