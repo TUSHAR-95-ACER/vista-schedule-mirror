@@ -231,15 +231,17 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   };
   const t = tintMap[tint];
   const valueStr = String(value);
-  const valueFontPx = valueStr.length > 9 ? 22 : valueStr.length > 6 ? 26 : 30;
+  // Auto-shrink to guarantee no clipping across any label/value length
+  const valueFontPx = valueStr.length > 10 ? 20 : valueStr.length > 7 ? 24 : valueStr.length > 4 ? 28 : 32;
+  const labelClamp = "text-[10.5px] font-medium uppercase tracking-[0.08em] text-[#8A93A6]";
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4 py-4',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ height: 118, background: '#050505' }}
+      style={{ minHeight: 132, background: '#050505' }}
     >
       {/* Only subtle ambient color tint — card stays visually black */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
@@ -250,14 +252,14 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
         {ring ? (
           <ProgressRing
             value={ring.pct}
-            size={82}
-            stroke={9}
+            size={80}
+            stroke={8}
             gradientId={`kpi-${tint}`}
             gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
           />
         ) : (
           <div
-            className="h-[48px] w-[48px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
+            className="h-[46px] w-[46px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{
               background: t.iconBg,
               boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
@@ -268,11 +270,11 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
           </div>
         )}
         <div className="min-w-0 flex-1 flex flex-col justify-center">
-          <p className="text-[10px] font-medium uppercase tracking-[0.09em] text-[#7B8399] mb-1 truncate">{label}</p>
-          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }}>{value}</p>
-          {sub && <p className="text-[10.5px] text-[#5C6472] mt-1.5 truncate">{sub}</p>}
+          <p className={cn(labelClamp, "mb-1 truncate")} title={label}>{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
+          {sub && <p className="text-[11px] text-[#6B7385] mt-1.5 truncate" title={sub}>{sub}</p>}
           {trend && (
-            <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#34D399] min-w-0">
+            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399] min-w-0">
               <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
               <span className="truncate">{trend}</span>
             </p>
