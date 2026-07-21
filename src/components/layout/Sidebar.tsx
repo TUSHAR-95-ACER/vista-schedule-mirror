@@ -115,13 +115,13 @@ export function Sidebar() {
       <aside
         style={{ width: expanded ? WIDE : SLIM }}
         className={cn(
-          "absolute inset-y-0 left-0 z-50 flex flex-col bg-card border-r border-border/80 transition-[width] duration-150 ease-out overflow-hidden",
+          "absolute inset-y-0 left-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border/80 transition-[width] duration-150 ease-out overflow-hidden",
           expanded && !pinned && "shadow-[0_8px_40px_-4px_rgba(0,0,0,0.55)] border-r-foreground/10"
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-2 px-2.5 h-11 border-b border-border shrink-0">
-          <div className="h-7 w-7 rounded-md border border-border bg-background flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-2 px-2.5 h-11 border-b border-sidebar-border/80 shrink-0">
+          <div className="h-7 w-7 rounded-md border border-sidebar-border bg-sidebar-accent flex items-center justify-center shrink-0">
             <span className="text-foreground font-heading font-bold text-[10px]">MJ</span>
           </div>
           {expanded && (
@@ -134,7 +134,7 @@ export function Sidebar() {
             <button
               onClick={togglePin}
               title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
-              className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors shrink-0"
+              className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors shrink-0"
             >
               {pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
             </button>
@@ -148,7 +148,7 @@ export function Sidebar() {
               {expanded ? (
                 <p className="px-2.5 mb-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">{section.title}</p>
               ) : (
-                <div className="mx-2 mb-1.5 h-px bg-border/60" />
+                <div className="mx-2 mb-1.5 h-px bg-sidebar-border/60" />
               )}
               <div className={cn("px-1.5", expanded ? "grid grid-cols-2 gap-1" : "flex flex-col gap-1")}>
                 {section.items.map(item => {
@@ -164,10 +164,10 @@ export function Sidebar() {
                           ? "h-[52px] px-1.5 py-1.5"
                           : "h-9 w-9 mx-auto border-transparent",
                         active
-                          ? "bg-gradient-to-br from-primary/15 via-card to-[hsl(var(--gold)/0.12)] border-[hsl(var(--gold)/0.55)] text-foreground shadow-[inset_0_0_0_1px_hsl(var(--gold)/0.25),0_0_12px_-2px_hsl(var(--gold)/0.35)]"
+                          ? "bg-gradient-to-br from-primary/15 via-sidebar to-[hsl(var(--gold)/0.12)] border-[hsl(var(--gold)/0.55)] text-foreground shadow-[inset_0_0_0_1px_hsl(var(--gold)/0.25),0_0_12px_-2px_hsl(var(--gold)/0.35)]"
                           : expanded
-                            ? "bg-card border-border/60 text-foreground/75 hover:bg-accent hover:text-foreground hover:border-border"
-                            : "text-foreground/70 hover:bg-accent hover:text-foreground"
+                            ? "bg-sidebar border-sidebar-border/60 text-foreground/75 hover:bg-sidebar-accent hover:text-foreground hover:border-sidebar-border"
+                            : "text-foreground/70 hover:bg-sidebar-accent hover:text-foreground"
                       )}
                     >
                       <item.icon className={cn("shrink-0 transition-colors", expanded ? "h-4 w-4" : "h-4 w-4", active && "text-gold drop-shadow-[0_0_4px_hsl(var(--gold)/0.6)]")} />
@@ -186,7 +186,7 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-border shrink-0">
+        <div className="border-t border-sidebar-border shrink-0">
           <button
             onClick={signOut}
             title="Logout"
