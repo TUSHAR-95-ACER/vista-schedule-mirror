@@ -131,18 +131,6 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- Multi-ring Progress Overview (outer gradient + concentric per-section rings) ----------
-function MultiRingProgress({
-  overallPct,
-  rings,
-  size = 208,
-}: {
-  overallPct: number;
-  rings: { color: string; pct: number }[];
-  size?: number;
-}) {
-  const cx = size / 2;
-  const cy = size / 2;
 // ---------- Multi-ring Progress Overview (thick outer + evenly-spaced thin per-section rings) ----------
 function MultiRingProgress({
   overallPct,
