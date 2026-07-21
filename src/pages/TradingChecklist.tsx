@@ -143,16 +143,29 @@ function MultiRingProgress({
 }) {
   const cx = size / 2;
   const cy = size / 2;
-  const outerStroke = 14;
+// ---------- Multi-ring Progress Overview (thick outer + evenly-spaced thin per-section rings) ----------
+function MultiRingProgress({
+  overallPct,
+  rings,
+  size = 220,
+}: {
+  overallPct: number;
+  rings: { color: string; pct: number }[];
+  size?: number;
+}) {
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerStroke = 16;
   const outerR = (size - outerStroke) / 2 - 2;
   const outerC = 2 * Math.PI * outerR;
   const outerDash = (Math.max(0, Math.min(100, overallPct)) / 100) * outerC;
 
-  // Inner concentric rings — thin, colored per section, radius decreases inward.
-  const innerStroke = 3;
-  const gap = 4;
-  const firstR = outerR - outerStroke / 2 - gap - innerStroke;
-  const step = innerStroke + gap;
+  // Compute even spacing for exactly `rings.length` inner rings between outer edge and center label
+  const innerStroke = 2.5;
+  const innerAreaOuter = outerR - outerStroke / 2 - 10;   // start below outer track
+  const innerAreaInner = 44;                              // reserve space for center text
+  const span = innerAreaOuter - innerAreaInner;
+  const step = rings.length > 0 ? span / rings.length : 0;
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
@@ -165,13 +178,13 @@ function MultiRingProgress({
             <stop offset="100%" stopColor="#F59E0B" />
           </linearGradient>
           <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="b" />
+            <feGaussianBlur stdDeviation="3.5" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* Outer track + progress */}
-        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.05} strokeWidth={outerStroke} fill="none" />
+        {/* Outer track + progress (dominant) */}
+        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={outerStroke} fill="none" />
         <circle
           cx={cx} cy={cy} r={outerR}
           stroke="url(#mrp-outer)" strokeWidth={outerStroke} strokeLinecap="round" fill="none"
@@ -180,23 +193,23 @@ function MultiRingProgress({
           style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }}
         />
 
-        {/* Inner concentric rings — one per section */}
+        {/* Inner concentric rings — exactly one thin ring per section, evenly spaced */}
         {rings.map((ring, i) => {
-          const r = firstR - i * step;
-          if (r < 10) return null;
+          const r = innerAreaOuter - (i + 0.5) * step;
+          if (r < 8) return null;
           const c = 2 * Math.PI * r;
           const pct = Math.max(0, Math.min(100, ring.pct));
           const d = (pct / 100) * c;
           return (
             <g key={i}>
-              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={innerStroke} fill="none" />
+              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.035} strokeWidth={innerStroke} fill="none" />
               <circle
                 cx={cx} cy={cy} r={r}
                 stroke={ring.color} strokeWidth={innerStroke} strokeLinecap="round" fill="none"
                 strokeDasharray={`${d} ${c - d}`}
                 style={{
                   transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
-                  filter: `drop-shadow(0 0 3px ${ring.color}80)`,
+                  filter: `drop-shadow(0 0 2.5px ${ring.color}99)`,
                 }}
               />
             </g>
