@@ -695,15 +695,15 @@ export default function TradingChecklist() {
                   />
                   {/* Top hairline */}
                   <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${p.from}33, transparent)` }} />
-                  {/* Left accent bar — directional lighting: brightest top, fades down */}
+                  {/* Left accent bar — glow concentrated in top 25-30%, fades to near-black */}
                   <div
-                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[3px] rounded-full"
-                    style={{ background: `linear-gradient(180deg, ${p.from} 0%, ${p.from}CC 25%, ${p.to}66 60%, ${p.to}1A 100%)` }}
+                    className="pointer-events-none absolute top-2.5 bottom-2.5 left-2.5 w-[2.5px] rounded-full"
+                    style={{ background: `linear-gradient(180deg, ${p.from} 0%, ${p.from}B3 15%, ${p.to}40 35%, ${p.to}0D 60%, rgba(0,0,0,0) 100%)` }}
                   />
-                  {/* Accent glow — concentrated at top, fades away */}
+                  {/* Accent glow — bloom only near icon area */}
                   <div
-                    className="pointer-events-none absolute top-1 left-0 w-[18px] h-[70px] rounded-full blur-[12px] opacity-70"
-                    style={{ background: `radial-gradient(60% 60% at 30% 20%, ${p.from}, transparent 70%)` }}
+                    className="pointer-events-none absolute top-0 left-0 w-[26px] h-[80px] rounded-full blur-[14px] opacity-80"
+                    style={{ background: `radial-gradient(55% 55% at 25% 18%, ${p.from}, transparent 72%)` }}
                   />
 
                   {/* header — tighter */}
