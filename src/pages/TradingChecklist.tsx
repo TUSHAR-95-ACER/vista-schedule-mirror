@@ -131,11 +131,11 @@ function MiniRing({ value, color, size = 40, stroke = 4 }: { value: number; colo
   );
 }
 
-// ---------- Multi-ring Progress Overview (thick outer + evenly-spaced thin per-section rings) ----------
+// ---------- Progress Overview: exactly two circular systems ----------
 function MultiRingProgress({
   overallPct,
   rings,
-  size = 220,
+  size = 160,
 }: {
   overallPct: number;
   rings: { color: string; pct: number }[];
@@ -143,36 +143,37 @@ function MultiRingProgress({
 }) {
   const cx = size / 2;
   const cy = size / 2;
-  const outerStroke = 16;
-  const outerR = (size - outerStroke) / 2 - 2;
+  const outerStroke = 17;
+  const innerStroke = 17;
+  const ringGap = 9;
+  const outerR = size / 2 - outerStroke / 2 - 4;
+  const innerR = outerR - outerStroke / 2 - ringGap - innerStroke / 2;
   const outerC = 2 * Math.PI * outerR;
-  const outerDash = (Math.max(0, Math.min(100, overallPct)) / 100) * outerC;
-
-  // Compute even spacing for exactly `rings.length` inner rings between outer edge and center label
-  const innerStroke = 2.5;
-  const innerAreaOuter = outerR - outerStroke / 2 - 10;   // start below outer track
-  const innerAreaInner = 44;                              // reserve space for center text
-  const span = innerAreaOuter - innerAreaInner;
-  const step = rings.length > 0 ? span / rings.length : 0;
+  const innerC = 2 * Math.PI * innerR;
+  const pct = Math.max(0, Math.min(100, overallPct));
+  const outerDash = (pct / 100) * outerC;
+  const segmentCount = Math.max(rings.length, 1);
+  const segmentSpan = innerC / segmentCount;
+  const segmentGap = 4;
+  const segmentLength = Math.max(0, segmentSpan - segmentGap);
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90 overflow-visible" shapeRendering="geometricPrecision">
         <defs>
           <linearGradient id="mrp-outer" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%"   stopColor="#8B5CF6" />
-            <stop offset="35%"  stopColor="#3B82F6" />
-            <stop offset="70%"  stopColor="#06B6D4" />
-            <stop offset="100%" stopColor="#F59E0B" />
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="45%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#8B5CF6" />
           </linearGradient>
           <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3.5" result="b" />
+            <feGaussianBlur stdDeviation="3" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* Outer track + progress (dominant) */}
-        <circle cx={cx} cy={cy} r={outerR} stroke="#FFFFFF" strokeOpacity={0.045} strokeWidth={outerStroke} fill="none" />
+        {/* Ring 1: overall progress only */}
+        <circle cx={cx} cy={cy} r={outerR} stroke="#11141D" strokeOpacity={0.82} strokeWidth={outerStroke} fill="none" />
         <circle
           cx={cx} cy={cy} r={outerR}
           stroke="url(#mrp-outer)" strokeWidth={outerStroke} strokeLinecap="round" fill="none"
@@ -181,26 +182,27 @@ function MultiRingProgress({
           style={{ transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)' }}
         />
 
-        {/* Inner concentric rings — exactly one thin ring per section, evenly spaced */}
+        {/* Ring 2: one shared section ring, split into 7 colored progress segments */}
+        <circle cx={cx} cy={cy} r={innerR} stroke="#11141D" strokeOpacity={0.82} strokeWidth={innerStroke} fill="none" />
         {rings.map((ring, i) => {
-          const r = innerAreaOuter - (i + 0.5) * step;
-          if (r < 8) return null;
-          const c = 2 * Math.PI * r;
-          const pct = Math.max(0, Math.min(100, ring.pct));
-          const d = (pct / 100) * c;
+          const sectionPct = Math.max(0, Math.min(100, ring.pct));
+          const d = (sectionPct / 100) * segmentLength;
+          if (d <= 0) return null;
           return (
-            <g key={i}>
-              <circle cx={cx} cy={cy} r={r} stroke="#FFFFFF" strokeOpacity={0.035} strokeWidth={innerStroke} fill="none" />
-              <circle
-                cx={cx} cy={cy} r={r}
-                stroke={ring.color} strokeWidth={innerStroke} strokeLinecap="round" fill="none"
-                strokeDasharray={`${d} ${c - d}`}
-                style={{
-                  transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
-                  filter: `drop-shadow(0 0 2.5px ${ring.color}99)`,
-                }}
-              />
-            </g>
+            <circle
+              key={i}
+              cx={cx} cy={cy} r={innerR}
+              stroke={ring.color}
+              strokeWidth={innerStroke}
+              strokeLinecap="round"
+              fill="none"
+              strokeDasharray={`${d} ${innerC - d}`}
+              strokeDashoffset={-(i * segmentSpan + segmentGap / 2)}
+              style={{
+                transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
+                filter: `drop-shadow(0 0 3px ${ring.color}90)`,
+              }}
+            />
           );
         })}
       </svg>
@@ -208,11 +210,11 @@ function MultiRingProgress({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
           className="font-heading font-bold text-white leading-none tracking-[-0.03em]"
-          style={{ fontSize: 34 }}
+          style={{ fontSize: 29 }}
         >
-          {Math.round(overallPct)}%
+          {Math.round(pct)}%
         </span>
-        <span className="text-[10px] uppercase tracking-[0.16em] text-white/50 mt-1.5">Overall</span>
+        <span className="text-[9px] uppercase tracking-[0.16em] text-white/50 mt-1">Overall</span>
       </div>
     </div>
   );
@@ -821,7 +823,7 @@ export default function TradingChecklist() {
               <MultiRingProgress
                 overallPct={overall.pct}
                 rings={sections.map(s => ({ color: paletteFor(s.color).from, pct: computeSectionPct(s) }))}
-                size={210}
+                size={160}
               />
             </div>
             <div
