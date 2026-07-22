@@ -233,52 +233,54 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   };
   const t = tintMap[tint];
   const valueStr = String(value);
-  // Auto-shrink to guarantee no clipping across any label/value length
-  const valueFontPx = valueStr.length > 10 ? 20 : valueStr.length > 7 ? 24 : valueStr.length > 4 ? 28 : 32;
-  const labelClamp = "text-[10.5px] font-medium uppercase tracking-[0.08em] text-[#8A93A6]";
+  // Auto-shrink to guarantee no clipping across any value length
+  const valueFontPx = valueStr.length > 10 ? 20 : valueStr.length > 7 ? 24 : valueStr.length > 4 ? 28 : 30;
+  const labelClamp = "text-[10.5px] font-medium uppercase tracking-[0.08em] text-[#8A93A6] whitespace-nowrap";
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-4 py-4',
+        'group relative overflow-hidden rounded-[16px] border border-white/[0.04] px-3.5 py-4',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ minHeight: 132, background: '#050505' }}
+      style={{ minHeight: 128, background: '#050505' }}
     >
       {/* Only subtle ambient color tint — card stays visually black */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
       <div className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
         style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.035), transparent 60%)' }} />
       <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}30, transparent)` }} />
-      <div className="relative flex items-center gap-3.5 h-full">
-        {ring ? (
-          <ProgressRing
-            value={ring.pct}
-            size={80}
-            stroke={8}
-            gradientId={`kpi-${tint}`}
-            gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
-          />
-        ) : (
-          <div
-            className="h-[46px] w-[46px] rounded-[13px] flex items-center justify-center shrink-0 relative overflow-hidden"
-            style={{
-              background: t.iconBg,
-              boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
-            }}
-          >
-            <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
-            <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
-          </div>
-        )}
+      <div className="relative flex items-center gap-3 h-full">
+        <div className="shrink-0">
+          {ring ? (
+            <ProgressRing
+              value={ring.pct}
+              size={62}
+              stroke={7}
+              gradientId={`kpi-${tint}`}
+              gradient={ring.gradient ?? ['#8B5CF6', '#6366F1', '#3B82F6']}
+            />
+          ) : (
+            <div
+              className="h-[44px] w-[44px] rounded-[12px] flex items-center justify-center relative overflow-hidden"
+              style={{
+                background: t.iconBg,
+                boxShadow: `0 8px 22px -6px ${t.accent}80, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.22)`,
+              }}
+            >
+              <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
+              <Icon className="h-[20px] w-[20px] text-white relative" strokeWidth={2.3} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
+            </div>
+          )}
+        </div>
         <div className="min-w-0 flex-1 flex flex-col justify-center">
-          <p className={cn(labelClamp, "mb-1 truncate")} title={label}>{label}</p>
-          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] truncate" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
-          {sub && <p className="text-[11px] text-[#6B7385] mt-1.5 truncate" title={sub}>{sub}</p>}
+          <p className={labelClamp} title={label}>{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] mt-1 whitespace-nowrap" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
+          {sub && <p className="text-[11px] text-[#6B7385] mt-1.5 whitespace-nowrap" title={sub}>{sub}</p>}
           {trend && (
-            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399] min-w-0">
+            <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-semibold text-[#34D399] whitespace-nowrap">
               <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
-              <span className="truncate">{trend}</span>
+              <span>{trend}</span>
             </p>
           )}
         </div>
