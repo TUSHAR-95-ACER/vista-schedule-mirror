@@ -187,6 +187,40 @@ function JournalBehaviorPanel({ prefs, update }: { prefs: any; update: (k: strin
   );
 }
 
+function MCPIntegrationPanel() {
+  const mcpUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mcp`;
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
+  };
+
+  return (
+    <SettingCard title="ChatGPT / MCP Integration" description="Connect ChatGPT, Claude, or Cursor to your journal">
+      <div className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          Use this URL to connect external AI assistants to TG Master Journal via MCP. They will be able to read your recent trades, daily plans, and performance stats after you authorize them.
+        </p>
+        <div className="flex items-center gap-2">
+          <Input value={mcpUrl} readOnly className="h-8 text-xs font-mono rounded-lg flex-1" />
+          <Button onClick={copy} variant="outline" size="sm" className="text-xs">
+            {copied ? 'Copied' : 'Copy URL'}
+          </Button>
+        </div>
+        <ol className="text-[11px] text-muted-foreground list-decimal pl-4 space-y-1">
+          <li>Copy the MCP URL above.</li>
+          <li>In ChatGPT / Claude / Cursor, add a new MCP server and paste this URL.</li>
+          <li>Sign in when prompted and approve the connection on the consent screen.</li>
+        </ol>
+      </div>
+    </SettingCard>
+  );
+}
+
 function AISettingsPanel({ prefs, update }: { prefs: any; update: (k: string, v: any) => void }) {
   return (
     <div className="space-y-5">
@@ -218,6 +252,7 @@ function AISettingsPanel({ prefs, update }: { prefs: any; update: (k: string, v:
           <Switch checked={prefs.autoGenerateInsights ?? false} onCheckedChange={v => update('autoGenerateInsights', v)} />
         </SettingRow>
       </SettingCard>
+      <MCPIntegrationPanel />
     </div>
   );
 }

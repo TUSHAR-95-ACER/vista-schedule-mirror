@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ArrowLeftRight, Wallet,
   Brain, Target, FlaskConical, ClipboardList, BarChart3,
   Pin, PinOff, BookOpen, FileText,
-  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, LogOut, Settings, Activity, MessageCircle, Compass, ClipboardCheck } from 'lucide-react';
+  Eye, Gem, Sparkles, Shield, Crosshair, Sliders, Beaker, LogOut, Settings, Activity, MessageCircle, Compass, ClipboardCheck, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem { path: string; label: string; icon: any; }
@@ -39,6 +39,7 @@ const sections: NavSection[] = [
   {
     title: 'INTELLIGENCE',
     items: [
+      { path: '/chat', label: 'AI Assistant', icon: Bot },
       { path: '/analytics', label: 'Analytics', icon: BarChart3 },
       { path: '/bias-analytics', label: 'Bias Analytics', icon: Crosshair },
       { path: '/behavior-patterns', label: 'Behavior', icon: Eye },

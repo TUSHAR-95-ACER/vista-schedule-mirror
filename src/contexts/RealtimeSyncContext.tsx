@@ -38,6 +38,8 @@ const SYNCED_TABLES = [
   'notebook_entries',
   'trading_checklists',
   'trading_checklist_templates',
+  'chat_threads',
+  'chat_messages',
 ] as const;
 
 export function RealtimeSyncProvider({ children }: { children: React.ReactNode }) {
