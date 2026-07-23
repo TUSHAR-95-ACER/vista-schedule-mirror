@@ -225,7 +225,6 @@ function ThreadRow({
 function ChatWindow({ threadId }: { threadId: string }) {
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -261,12 +260,6 @@ function ChatWindow({ threadId }: { threadId: string }) {
   );
 
   const { messages, sendMessage, status, error } = useChat({ chat });
-
-  useEffect(() => {
-    if (status === 'ready' && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [status, threadId]);
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
