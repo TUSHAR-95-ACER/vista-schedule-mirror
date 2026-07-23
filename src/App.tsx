@@ -43,6 +43,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const SystemAnalytics = lazy(() => import("./pages/SystemAnalytics"));
 const MacroIntelligence = lazy(() => import("./pages/MacroIntelligence"));
 const TradingChecklist = lazy(() => import("./pages/TradingChecklist"));
+const ChatGPTAssistant = lazy(() => import("./pages/ChatGPTAssistant"));
 
 
 import { RealtimeSyncProvider } from "@/contexts/RealtimeSyncContext";
@@ -98,6 +99,8 @@ const App = () => (
               <Route path="/research-lab/:strategyId" element={<Suspense fallback={<RouteFallback />}><ResearchStrategy /></Suspense>} />
               <Route path="/research-lab/:strategyId/test/:testId" element={<Suspense fallback={<RouteFallback />}><ResearchTest /></Suspense>} />
               <Route path="/trading-checklist" element={<Suspense fallback={<RouteFallback />}><TradingChecklist /></Suspense>} />
+              <Route path="/chat" element={<Suspense fallback={<RouteFallback />}><ChatGPTAssistant /></Suspense>} />
+              <Route path="/chat/:threadId" element={<Suspense fallback={<RouteFallback />}><ChatGPTAssistant /></Suspense>} />
               <Route path="/daily-checklist" element={<Navigate to="/trading-checklist" replace />} />
               <Route path="/backtesting-lab" element={<Navigate to="/" replace />} />
               <Route path="/ai-coach" element={<Navigate to="/" replace />} />
