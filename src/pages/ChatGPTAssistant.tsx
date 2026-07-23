@@ -332,7 +332,6 @@ function ChatWindow({ threadId }: { threadId: string }) {
         <div className="max-w-3xl mx-auto">
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputTextarea
-              ref={textareaRef}
               placeholder="Ask about your journal, trades, or plans..."
               disabled={isBusy}
               className="min-h-[56px]"
