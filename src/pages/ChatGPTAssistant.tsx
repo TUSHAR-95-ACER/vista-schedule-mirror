@@ -241,9 +241,14 @@ function ChatWindow({ threadId }: { threadId: string }) {
     () =>
       new DefaultChatTransport({
         api: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chatgpt-assistant`,
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        headers: async () => {
+          const { data } = await supabase.auth.getSession();
+          return {
+            Authorization: `Bearer ${data.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          };
         },
+
         body: { threadId },
       }),
     [threadId],
