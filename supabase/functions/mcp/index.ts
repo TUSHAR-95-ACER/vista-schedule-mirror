@@ -39,28 +39,194 @@ var list_recent_trades_default = defineTool({
   }
 });
 
-// src/lib/mcp/tools/get-trade-stats.ts
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.100.1";
+// src/lib/mcp/tools/list-trades.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z2 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp/lib/client.ts
+import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.100.1";
 function supabaseForUser2(ctx) {
   return createClient2(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
-var get_trade_stats_default = defineTool2({
+function unauthenticated() {
+  return {
+    content: [{ type: "text", text: "Not authenticated. Sign in to TG Master Journal first." }],
+    isError: true
+  };
+}
+function failure(message) {
+  return { content: [{ type: "text", text: message }], isError: true };
+}
+function ok(payload) {
+  return {
+    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+    structuredContent: payload
+  };
+}
+var isWin = (r) => String(r ?? "").toLowerCase() === "win";
+var isLoss = (r) => String(r ?? "").toLowerCase() === "loss";
+var isBreakeven = (r) => String(r ?? "").toLowerCase() === "breakeven";
+var isExecuted = (row) => (isWin(row.result) || isLoss(row.result) || isBreakeven(row.result)) && String(row.status ?? "Complete").toLowerCase() !== "draft";
+var num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+var round = (v, d = 2) => +v.toFixed(d);
+
+// src/lib/mcp/tools/list-trades.ts
+var TRADE_LIST_FIELDS = "id,date,entry_time,exit_time,market,asset,direction,session,setup,grade,result,status,planned_rr,actual_rr,pips,profit_loss,market_condition,timeframe";
+var list_trades_default = defineTool2({
+  name: "list_trades",
+  title: "List and filter trades",
+  description: "List the signed-in user's trades with optional filters (pair/asset, session, setup, grade, result, direction, market, date range) plus sorting and pagination. Returns core trade fields.",
+  inputSchema: {
+    asset: z2.string().optional().describe("Filter by pair/asset symbol, e.g. XAUUSD."),
+    session: z2.string().optional().describe("Filter by session, e.g. London, New York."),
+    setup: z2.string().optional().describe("Filter by setup name."),
+    grade: z2.string().optional().describe("Filter by trade grade: A+, A, B, C."),
+    result: z2.string().optional().describe("Filter by result: Win, Loss, Breakeven, Untriggered Setup, Cancelled."),
+    direction: z2.string().optional().describe("Filter by direction: Long or Short."),
+    market: z2.string().optional().describe("Filter by market, e.g. Forex, Crypto, Indices."),
+    from: z2.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z2.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    min_rr: z2.number().optional().describe("Only trades whose actual RR is >= this value."),
+    sort: z2.string().optional().describe("Sort field: date, profit_loss, actual_rr, planned_rr. Default date."),
+    order: z2.string().optional().describe("Sort order: asc or desc. Default desc."),
+    limit: z2.number().int().min(1).max(200).default(50).describe("Page size (1-200). Default 50."),
+    offset: z2.number().int().min(0).default(0).describe("Rows to skip for pagination. Default 0.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const {
+      asset,
+      session,
+      setup,
+      grade,
+      result,
+      direction,
+      market,
+      from,
+      to,
+      min_rr,
+      sort,
+      order,
+      limit,
+      offset
+    } = input;
+    const sortField = ["date", "profit_loss", "actual_rr", "planned_rr"].includes(String(sort)) ? String(sort) : "date";
+    const ascending = String(order ?? "desc").toLowerCase() === "asc";
+    const take = limit ?? 50;
+    const skip = offset ?? 0;
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("trades").select(TRADE_LIST_FIELDS, { count: "exact" }).eq("user_id", ctx.getUserId());
+    if (asset) q = q.ilike("asset", asset);
+    if (session) q = q.ilike("session", session);
+    if (setup) q = q.ilike("setup", setup);
+    if (grade) q = q.eq("grade", grade);
+    if (result) q = q.ilike("result", result);
+    if (direction) q = q.ilike("direction", direction);
+    if (market) q = q.ilike("market", market);
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    if (typeof min_rr === "number") q = q.gte("actual_rr", min_rr);
+    const { data, error, count } = await q.order(sortField, { ascending }).range(skip, skip + take - 1);
+    if (error) return failure(error.message);
+    return ok({
+      trades: data ?? [],
+      pagination: {
+        limit: take,
+        offset: skip,
+        returned: (data ?? []).length,
+        total: count ?? null,
+        has_more: count != null ? skip + (data ?? []).length < count : null
+      }
+    });
+  }
+});
+
+// src/lib/mcp/tools/get-trade.ts
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z3 } from "npm:zod@^3.25.76";
+var get_trade_default = defineTool3({
+  name: "get_trade",
+  title: "Get a trade by ID",
+  description: "Fetch one full trade record (including notes, confluences, psychology, management and analysis) by its ID, scoped to the signed-in user.",
+  inputSchema: {
+    id: z3.string().describe("The trade ID.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ id }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    const { data, error } = await sb.from("trades").select("*").eq("user_id", ctx.getUserId()).eq("id", id).maybeSingle();
+    if (error) return failure(error.message);
+    if (!data) return failure(`No trade found with id "${id}".`);
+    return ok({ trade: data });
+  }
+});
+
+// src/lib/mcp/tools/search-trades.ts
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z4 } from "npm:zod@^3.25.76";
+var search_trades_default = defineTool4({
+  name: "search_trades",
+  title: "Search trades by text",
+  description: "Free-text search across the signed-in user's trades. Matches notes, setup, asset, session and grade. Use for questions like 'losing XAUUSD trades' or 'trades where I mention FOMO'.",
+  inputSchema: {
+    query: z4.string().describe("Text to search for in notes, setup, asset or session."),
+    limit: z4.number().int().min(1).max(100).default(25).describe("Max rows to return. Default 25."),
+    offset: z4.number().int().min(0).default(0).describe("Rows to skip for pagination.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ query, limit, offset }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const take = limit ?? 25;
+    const skip = offset ?? 0;
+    const term = String(query).replace(/[,()]/g, " ").trim();
+    if (!term) return failure("Query must not be empty.");
+    const pattern = `%${term}%`;
+    const sb = supabaseForUser2(ctx);
+    const { data, error, count } = await sb.from("trades").select(`${TRADE_LIST_FIELDS},notes`, { count: "exact" }).eq("user_id", ctx.getUserId()).or(
+      [
+        `notes.ilike.${pattern}`,
+        `setup.ilike.${pattern}`,
+        `asset.ilike.${pattern}`,
+        `session.ilike.${pattern}`,
+        `grade.ilike.${pattern}`
+      ].join(",")
+    ).order("date", { ascending: false }).range(skip, skip + take - 1);
+    if (error) return failure(error.message);
+    return ok({
+      query: term,
+      matches: data ?? [],
+      pagination: { limit: take, offset: skip, returned: (data ?? []).length, total: count ?? null }
+    });
+  }
+});
+
+// src/lib/mcp/tools/get-trade-stats.ts
+import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.100.1";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z5 } from "npm:zod@^3.25.76";
+function supabaseForUser3(ctx) {
+  return createClient3(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+var get_trade_stats_default = defineTool5({
   name: "get_trade_stats",
   title: "Get trade performance stats",
   description: "Compute aggregate performance stats (trade count, win rate, total P/L, average R) across the signed-in user's trades, optionally filtered to the last N days.",
   inputSchema: {
-    days: z2.number().int().min(1).max(3650).optional().describe("Only include trades from the last N days. Omit for all-time stats.")
+    days: z5.number().int().min(1).max(3650).optional().describe("Only include trades from the last N days. Omit for all-time stats.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ days }, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Not authenticated." }], isError: true };
-    const sb = supabaseForUser2(ctx);
+    const sb = supabaseForUser3(ctx);
     let q = sb.from("trades").select("profit_loss,actual_rr,result,date").eq("user_id", ctx.getUserId());
     if (days) {
       const since = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
@@ -92,29 +258,233 @@ var get_trade_stats_default = defineTool2({
   }
 });
 
+// src/lib/mcp/tools/get-performance-metrics.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z6 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp/lib/analytics.ts
+function computeMetrics(rows) {
+  const executed = rows.filter(isExecuted);
+  const wins = executed.filter((r) => isWin(r.result));
+  const losses = executed.filter((r) => isLoss(r.result));
+  const breakevens = executed.filter((r) => isBreakeven(r.result));
+  const grossProfit = wins.reduce((s, r) => s + Math.max(num(r.profit_loss), 0), 0);
+  const grossLoss = Math.abs(losses.reduce((s, r) => s + Math.min(num(r.profit_loss), 0), 0));
+  const netPnl = executed.reduce((s, r) => s + num(r.profit_loss), 0);
+  const winRate = executed.length ? wins.length / executed.length * 100 : 0;
+  const avgWin = wins.length ? grossProfit / wins.length : 0;
+  const avgLoss = losses.length ? grossLoss / losses.length : 0;
+  const rValues = executed.map((r) => Number(r.actual_rr)).filter((v) => Number.isFinite(v));
+  const avgR = rValues.length ? rValues.reduce((a, b) => a + b, 0) / rValues.length : 0;
+  const plannedR = executed.map((r) => Number(r.planned_rr)).filter((v) => Number.isFinite(v));
+  return {
+    total_trades: rows.length,
+    executed_trades: executed.length,
+    wins: wins.length,
+    losses: losses.length,
+    breakevens: breakevens.length,
+    win_rate_pct: round(winRate),
+    net_profit_loss: round(netPnl),
+    gross_profit: round(grossProfit),
+    gross_loss: round(grossLoss),
+    profit_factor: grossLoss > 0 ? round(grossProfit / grossLoss, 3) : grossProfit > 0 ? null : 0,
+    expectancy_per_trade: executed.length ? round(netPnl / executed.length) : 0,
+    expectancy_r: round(winRate / 100 * (avgLoss ? avgWin / avgLoss : 0) - (1 - winRate / 100), 3),
+    average_win: round(avgWin),
+    average_loss: round(avgLoss),
+    average_actual_r: round(avgR, 3),
+    average_planned_r: plannedR.length ? round(plannedR.reduce((a, b) => a + b, 0) / plannedR.length, 3) : 0,
+    best_trade: executed.length ? round(Math.max(...executed.map((r) => num(r.profit_loss)))) : 0,
+    worst_trade: executed.length ? round(Math.min(...executed.map((r) => num(r.profit_loss)))) : 0
+  };
+}
+function groupPerformance(rows, key) {
+  const buckets = /* @__PURE__ */ new Map();
+  for (const row of rows.filter(isExecuted)) {
+    const k = String(row[key] ?? "Unspecified");
+    buckets.set(k, [...buckets.get(k) ?? [], row]);
+  }
+  return [...buckets.entries()].map(([label, group]) => {
+    const m = computeMetrics(group);
+    return {
+      label,
+      trades: m.executed_trades,
+      win_rate_pct: m.win_rate_pct,
+      net_profit_loss: m.net_profit_loss,
+      profit_factor: m.profit_factor,
+      average_actual_r: m.average_actual_r
+    };
+  }).sort((a, b) => b.net_profit_loss - a.net_profit_loss);
+}
+function monthKey(date) {
+  return (date ?? "").slice(0, 7);
+}
+function weekStart(date) {
+  if (!date) return "";
+  const d = /* @__PURE__ */ new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return "";
+  const day = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+function equityCurve(rows, startingBalance = 0) {
+  let running = startingBalance;
+  let peak = startingBalance;
+  let maxDrawdown = 0;
+  const points = rows.filter(isExecuted).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).map((r) => {
+    running += num(r.profit_loss);
+    peak = Math.max(peak, running);
+    maxDrawdown = Math.max(maxDrawdown, peak - running);
+    return { date: r.date, pnl: round(num(r.profit_loss)), equity: round(running) };
+  });
+  return { points, ending_equity: round(running), peak_equity: round(peak), max_drawdown: round(maxDrawdown) };
+}
+
+// src/lib/mcp/tools/get-performance-metrics.ts
+var get_performance_metrics_default = defineTool6({
+  name: "get_performance_metrics",
+  title: "Get performance metrics",
+  description: "Compute the signed-in user's performance metrics: win rate, net P/L, profit factor, expectancy, average win/loss and average R. Optionally scoped to a date range, and optionally broken down by session, asset, setup or grade.",
+  inputSchema: {
+    from: z6.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z6.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    days: z6.number().int().min(1).max(3650).optional().describe("Alternative to from/to: last N days."),
+    group_by: z6.string().optional().describe("Optional breakdown dimension: session, asset, setup or grade.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ from, to, days, group_by }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("trades").select("date,asset,session,setup,grade,result,status,profit_loss,actual_rr,planned_rr").eq("user_id", ctx.getUserId());
+    const start = from ?? (days ? new Date(Date.now() - days * 864e5).toISOString().slice(0, 10) : void 0);
+    if (start) q = q.gte("date", start);
+    if (to) q = q.lte("date", to);
+    const { data, error } = await q;
+    if (error) return failure(error.message);
+    const rows = data ?? [];
+    const dim = ["session", "asset", "setup", "grade"].includes(String(group_by)) ? String(group_by) : null;
+    return ok({
+      window: { from: start ?? null, to: to ?? null },
+      metrics: computeMetrics(rows),
+      breakdown: dim ? { dimension: dim, groups: groupPerformance(rows, dim) } : null
+    });
+  }
+});
+
+// src/lib/mcp/tools/get-dashboard-summary.ts
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.0";
+var get_dashboard_summary_default = defineTool7({
+  name: "get_dashboard_summary",
+  title: "Get dashboard summary",
+  description: "High-level snapshot of the signed-in user's journal: all-time and last-30-day performance, top sessions and pairs, account balances, and the most recent trades.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (_input, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    const uid = ctx.getUserId();
+    const [tradesRes, accountsRes, recentRes] = await Promise.all([
+      sb.from("trades").select("date,asset,session,setup,grade,result,status,profit_loss,actual_rr,planned_rr").eq("user_id", uid),
+      sb.from("trading_accounts").select("id,name,broker,type,currency,starting_balance,current_size,status,stage").eq("user_id", uid),
+      sb.from("trades").select("id,date,asset,direction,session,setup,grade,result,profit_loss,actual_rr").eq("user_id", uid).order("date", { ascending: false }).limit(10)
+    ]);
+    if (tradesRes.error) return failure(tradesRes.error.message);
+    const rows = tradesRes.data ?? [];
+    const since = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+    const last30 = rows.filter((r) => String(r.date ?? "") >= since);
+    return ok({
+      all_time: computeMetrics(rows),
+      last_30_days: computeMetrics(last30),
+      top_sessions: groupPerformance(rows, "session").slice(0, 5),
+      top_pairs: groupPerformance(rows, "asset").slice(0, 5),
+      accounts: accountsRes.error ? [] : accountsRes.data ?? [],
+      recent_trades: recentRes.error ? [] : recentRes.data ?? []
+    });
+  }
+});
+
+// src/lib/mcp/tools/get-equity-curve.ts
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z7 } from "npm:zod@^3.25.76";
+var get_equity_curve_default = defineTool8({
+  name: "get_equity_curve",
+  title: "Get equity curve",
+  description: "Return the signed-in user's cumulative P/L curve over time, with peak equity and max drawdown. Optionally scoped to a date range and offset by a starting balance.",
+  inputSchema: {
+    from: z7.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z7.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    starting_balance: z7.number().optional().describe("Balance the curve starts from. Default 0.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ from, to, starting_balance }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("trades").select("date,result,status,profit_loss").eq("user_id", ctx.getUserId());
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    const { data, error } = await q;
+    if (error) return failure(error.message);
+    return ok(equityCurve(data ?? [], starting_balance ?? 0));
+  }
+});
+
+// src/lib/mcp/tools/get-period-stats.ts
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z8 } from "npm:zod@^3.25.76";
+var get_period_stats_default = defineTool9({
+  name: "get_period_stats",
+  title: "Get monthly or weekly statistics",
+  description: "Break the signed-in user's performance down by month or by week (net P/L, win rate, profit factor, trade count per period). Useful for month-over-month comparison and weekly reporting.",
+  inputSchema: {
+    period: z8.string().optional().describe("Bucket size: 'month' (default) or 'week'."),
+    from: z8.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z8.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    limit: z8.number().int().min(1).max(60).default(12).describe("Max periods returned, most recent first. Default 12.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ period, from, to, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("trades").select("date,result,status,profit_loss,actual_rr,planned_rr").eq("user_id", ctx.getUserId());
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    const { data, error } = await q;
+    if (error) return failure(error.message);
+    const bucketBy = String(period ?? "month").toLowerCase() === "week" ? weekStart : monthKey;
+    const buckets = /* @__PURE__ */ new Map();
+    for (const row of data ?? []) {
+      const key = bucketBy(row.date);
+      if (!key) continue;
+      buckets.set(key, [...buckets.get(key) ?? [], row]);
+    }
+    const periods = [...buckets.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, limit ?? 12).map(([key, rows]) => ({ period: key, ...computeMetrics(rows) }));
+    return ok({ granularity: String(period ?? "month").toLowerCase() === "week" ? "week" : "month", periods });
+  }
+});
+
 // src/lib/mcp/tools/get-daily-plan.ts
-import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.100.1";
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { z as z3 } from "npm:zod@^3.25.76";
-function supabaseForUser3(ctx) {
-  return createClient3(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.100.1";
+import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z9 } from "npm:zod@^3.25.76";
+function supabaseForUser4(ctx) {
+  return createClient4(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
     global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
-var get_daily_plan_default = defineTool3({
+var get_daily_plan_default = defineTool10({
   name: "get_daily_plan",
   title: "Get daily trading plan",
   description: "Fetch the signed-in user's daily trading plan for a specific date (YYYY-MM-DD). Defaults to today when no date is supplied.",
   inputSchema: {
-    date: z3.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Plan date in YYYY-MM-DD. Defaults to today.")
+    date: z9.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Plan date in YYYY-MM-DD. Defaults to today.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ date }, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Not authenticated." }], isError: true };
     const target = date ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-    const sb = supabaseForUser3(ctx);
+    const sb = supabaseForUser4(ctx);
     const { data, error } = await sb.from("daily_plans").select("*").eq("user_id", ctx.getUserId()).eq("date", target).maybeSingle();
     if (error)
       return { content: [{ type: "text", text: error.message }], isError: true };
@@ -130,18 +500,218 @@ var get_daily_plan_default = defineTool3({
   }
 });
 
+// src/lib/mcp/tools/list-daily-plans.ts
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z10 } from "npm:zod@^3.25.76";
+var list_daily_plans_default = defineTool11({
+  name: "list_daily_plans",
+  title: "List daily plans",
+  description: "List the signed-in user's daily plans with bias, session focus, risk limits, review status and pair count. Use `get_daily_plan` for the full detail of one day.",
+  inputSchema: {
+    from: z10.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z10.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    reviewed: z10.boolean().optional().describe("Filter by whether the plan has been reviewed."),
+    limit: z10.number().int().min(1).max(100).default(20).describe("Page size. Default 20."),
+    offset: z10.number().int().min(0).default(0).describe("Rows to skip for pagination.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ from, to, reviewed, limit, offset }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const take = limit ?? 20;
+    const skip = offset ?? 0;
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("daily_plans").select("id,date,daily_bias,session_focus,max_trades,risk_limit,pair_count,took_trades,reviewed,updated_at", {
+      count: "exact"
+    }).eq("user_id", ctx.getUserId());
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    if (typeof reviewed === "boolean") q = q.eq("reviewed", reviewed);
+    const { data, error, count } = await q.order("date", { ascending: false }).range(skip, skip + take - 1);
+    if (error) return failure(error.message);
+    return ok({
+      plans: data ?? [],
+      pagination: { limit: take, offset: skip, returned: (data ?? []).length, total: count ?? null }
+    });
+  }
+});
+
+// src/lib/mcp/tools/get-weekly-plan.ts
+import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z11 } from "npm:zod@^3.25.76";
+var get_weekly_plan_default = defineTool12({
+  name: "get_weekly_plan",
+  title: "Get weekly plan and review",
+  description: "Fetch the signed-in user's weekly plan (bias, markets, setups, key levels, risk, goals, per-pair analyses, news and review notes) for a given week start date. Defaults to the most recent week.",
+  inputSchema: {
+    week_start: z11.string().optional().describe("Week start date in YYYY-MM-DD. Omit for the latest week.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ week_start }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("weekly_plans").select("*").eq("user_id", ctx.getUserId());
+    if (week_start) q = q.eq("week_start", week_start);
+    const { data, error } = await q.order("week_start", { ascending: false }).limit(1);
+    if (error) return failure(error.message);
+    const plan = (data ?? [])[0] ?? null;
+    if (!plan)
+      return ok({ week_start: week_start ?? null, plan: null, note: "No weekly plan found." });
+    return ok({ week_start: plan.week_start, plan });
+  }
+});
+
+// src/lib/mcp/tools/get-checklist.ts
+import { defineTool as defineTool13 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z12 } from "npm:zod@^3.25.76";
+function progress(sections) {
+  const list = Array.isArray(sections) ? sections : [];
+  const total = list.reduce((a, s) => a + (s.items?.length ?? 0), 0);
+  const done = list.reduce((a, s) => a + (s.items ?? []).filter((i) => i.done).length, 0);
+  return {
+    total_items: total,
+    completed_items: done,
+    completion_pct: total ? round(done / total * 100) : 0,
+    sections_completed: list.filter((s) => (s.items?.length ?? 0) > 0 && (s.items ?? []).every((i) => i.done)).length,
+    sections_total: list.length
+  };
+}
+function streak(rows) {
+  const perfect = new Set(rows.filter((r) => progress(r.sections).completion_pct === 100).map((r) => r.date));
+  let current = 0;
+  const cursor = /* @__PURE__ */ new Date();
+  for (; ; ) {
+    const key = cursor.toISOString().slice(0, 10);
+    if (perfect.has(key)) {
+      current += 1;
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+      continue;
+    }
+    if (current === 0 && key === (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)) {
+      cursor.setUTCDate(cursor.getUTCDate() - 1);
+      continue;
+    }
+    break;
+  }
+  let best = 0;
+  let run = 0;
+  let prev = null;
+  for (const day of [...perfect].sort()) {
+    if (prev) {
+      const gap = (Date.parse(`${day}T00:00:00Z`) - Date.parse(`${prev}T00:00:00Z`)) / 864e5;
+      run = gap === 1 ? run + 1 : 1;
+    } else run = 1;
+    best = Math.max(best, run);
+    prev = day;
+  }
+  return { current_streak_days: current, longest_streak_days: best, perfect_days: perfect.size };
+}
+var get_checklist_default = defineTool13({
+  name: "get_checklist",
+  title: "Get trading checklist, progress and streak",
+  description: "Fetch the signed-in user's daily trading checklist for a date (defaults to today) with per-section progress, plus recent history and completion streaks.",
+  inputSchema: {
+    date: z12.string().optional().describe("Checklist date in YYYY-MM-DD. Defaults to today."),
+    history_days: z12.number().int().min(0).max(365).default(30).describe("How many days of history to include. Default 30, 0 to skip.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ date, history_days }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const sb = supabaseForUser2(ctx);
+    const uid = ctx.getUserId();
+    const target = date ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const days = history_days ?? 30;
+    const { data: today, error } = await sb.from("trading_checklists").select("date,sections,updated_at").eq("user_id", uid).eq("date", target).maybeSingle();
+    if (error) return failure(error.message);
+    let history = [];
+    if (days > 0) {
+      const since = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+      const res = await sb.from("trading_checklists").select("date,sections").eq("user_id", uid).gte("date", since).order("date", { ascending: false });
+      if (res.error) return failure(res.error.message);
+      history = res.data ?? [];
+    }
+    return ok({
+      date: target,
+      checklist: today ?? null,
+      progress: today ? progress(today.sections ?? []) : null,
+      history: history.map((h) => ({ date: h.date, ...progress(h.sections ?? []) })),
+      streaks: streak(history)
+    });
+  }
+});
+
+// src/lib/mcp/tools/search-notebook.ts
+import { defineTool as defineTool14 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { z as z13 } from "npm:zod@^3.25.76";
+var search_notebook_default = defineTool14({
+  name: "search_notebook",
+  title: "Search and list notebook entries",
+  description: "List or free-text search the signed-in user's notebook/journal entries (pair, category, bias, journal text). Use for questions like 'notes about liquidity' or 'entries mentioning FOMO'.",
+  inputSchema: {
+    query: z13.string().optional().describe("Text to match in journal text, pair, category or bias. Omit to list all."),
+    pair: z13.string().optional().describe("Filter by pair, e.g. XAUUSD."),
+    category: z13.string().optional().describe("Filter by notebook category."),
+    from: z13.string().optional().describe("Start date (inclusive) in YYYY-MM-DD."),
+    to: z13.string().optional().describe("End date (inclusive) in YYYY-MM-DD."),
+    limit: z13.number().int().min(1).max(100).default(25).describe("Page size. Default 25."),
+    offset: z13.number().int().min(0).default(0).describe("Rows to skip for pagination.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ query, pair, category, from, to, limit, offset }, ctx) => {
+    if (!ctx.isAuthenticated()) return unauthenticated();
+    const take = limit ?? 25;
+    const skip = offset ?? 0;
+    const sb = supabaseForUser2(ctx);
+    let q = sb.from("notebook_entries").select("id,entry_id,date,pair,category,bias,journal,legacy_notes,legacy_key_levels,updated_at", { count: "exact" }).eq("user_id", ctx.getUserId());
+    if (pair) q = q.ilike("pair", pair);
+    if (category) q = q.ilike("category", category);
+    if (from) q = q.gte("date", from);
+    if (to) q = q.lte("date", to);
+    if (query) {
+      const term2 = String(query).replace(/[,()]/g, " ").trim();
+      if (term2) {
+        const p = `%${term2}%`;
+        q = q.or([`pair.ilike.${p}`, `category.ilike.${p}`, `bias.ilike.${p}`, `legacy_notes.ilike.${p}`].join(","));
+      }
+    }
+    const { data, error, count } = await q.order("date", { ascending: false }).range(skip, skip + take - 1);
+    if (error) return failure(error.message);
+    const term = (query ?? "").trim().toLowerCase();
+    const rows = term ? (data ?? []).filter((r) => JSON.stringify(r.journal ?? {}).toLowerCase().includes(term) || String(r.legacy_notes ?? "").toLowerCase().includes(term) || String(r.pair ?? "").toLowerCase().includes(term) || String(r.category ?? "").toLowerCase().includes(term)) : data ?? [];
+    return ok({
+      query: query ?? null,
+      entries: rows,
+      pagination: { limit: take, offset: skip, returned: rows.length, total: count ?? null }
+    });
+  }
+});
+
 // src/lib/mcp/index.ts
 var projectRef = "gdrzwezxaofpucbwkrcr";
 var mcp_default = defineMcp({
   name: "tg-master-journal-mcp",
   title: "TG Master Journal",
-  version: "0.1.0",
-  instructions: "Read-only tools for TG Master Journal, a professional trading operating system. Use `list_recent_trades` to browse recent trades, `get_trade_stats` for aggregate performance (win rate, total P/L, average R), and `get_daily_plan` to fetch a day's trading plan. All tools are scoped to the signed-in user.",
+  version: "0.2.0",
+  instructions: "Read-only tools for TG Master Journal, a professional trading operating system. Dashboard & analytics: `get_dashboard_summary`, `get_performance_metrics` (win rate, profit factor, expectancy, optional breakdown by session/asset/setup/grade), `get_equity_curve`, `get_period_stats` (monthly or weekly), `get_trade_stats`. Trades: `list_trades` (filter by pair, session, setup, grade, result, direction, date range, min RR; sorted and paginated), `search_trades` (free text), `get_trade` (full record by id), `list_recent_trades`. Planning: `get_daily_plan`, `list_daily_plans`, `get_weekly_plan`. Routine & journal: `get_checklist` (progress, history, streaks), `search_notebook`. All tools are scoped to the signed-in user and enforce row-level security; no tool can read another user's data or execute SQL. Prefer filtered, paginated calls over fetching everything.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
   }),
-  tools: [list_recent_trades_default, get_trade_stats_default, get_daily_plan_default]
+  tools: [
+    get_dashboard_summary_default,
+    get_performance_metrics_default,
+    get_equity_curve_default,
+    get_period_stats_default,
+    get_trade_stats_default,
+    list_trades_default,
+    search_trades_default,
+    get_trade_default,
+    list_recent_trades_default,
+    get_daily_plan_default,
+    list_daily_plans_default,
+    get_weekly_plan_default,
+    get_checklist_default,
+    search_notebook_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts
