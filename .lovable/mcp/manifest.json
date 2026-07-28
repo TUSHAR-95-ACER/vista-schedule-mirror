@@ -12,7 +12,7 @@
   "mcp": {
     "server": {
       "name": "tg-master-journal-mcp",
-      "version": "0.2.0",
+      "version": "0.4.0",
       "title": "TG Master Journal"
     },
     "tools": [
@@ -487,6 +487,851 @@
               "minimum": 0,
               "default": 0,
               "description": "Rows to skip for pagination."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_journal",
+        "title": "Search the whole journal",
+        "description": "Free-text search across everything the signed-in user has written: trade notes and analysis, notebook entries, daily plans and weekly plans. Returns ranked results with snippets showing where the term matched.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Text to search for, e.g. 'liquidity sweep' or 'revenge trade'."
+            },
+            "sources": {
+              "type": "string",
+              "description": "Comma-separated subset of: trades, notebook, daily_plans, weekly_plans. Defaults to all."
+            },
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive) in YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive) in YYYY-MM-DD."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "description": "Max results to return. Default 20."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "analyze_mistakes",
+        "title": "Analyze recurring mistakes",
+        "description": "Find the signed-in user's most frequent trading mistakes / rule violations and quantify their cost: occurrences, win rate and net P/L of trades where each mistake appeared, plus recent examples.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive) in YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive) in YYYY-MM-DD."
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "description": "Alternative to from/to: last N days."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 15,
+              "description": "How many distinct mistakes to return. Default 15."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "analyze_setups",
+        "title": "Rank strongest and weakest setups",
+        "description": "Rank the signed-in user's setups (and optionally assets, sessions, grades, direction, market condition or timeframe) by net P/L, win rate, profit factor and expectancy, highlighting the strongest and weakest performers.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "dimension": {
+              "type": "string",
+              "description": "What to rank: setup (default), asset, session, grade, direction, market_condition or timeframe."
+            },
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive) in YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive) in YYYY-MM-DD."
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "description": "Alternative to from/to: last N days."
+            },
+            "min_trades": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 3,
+              "description": "Ignore buckets with fewer trades than this. Default 3."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "analyze_psychology",
+        "title": "Analyze psychology and discipline",
+        "description": "Correlate the signed-in user's emotional state, discipline flags, trade grades and market sentiment with trading outcomes: which emotions precede wins or losses, and how discipline affects P/L.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive) in YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive) in YYYY-MM-DD."
+            },
+            "days": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650,
+              "description": "Alternative to from/to: last N days."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_consistency_report",
+        "title": "Get consistency and discipline report",
+        "description": "Measure the signed-in user's process consistency: planning coverage (days planned vs traded), checklist completion, plan review rate, risk/size consistency, overtrading days and mistake-free rate.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "minimum": 7,
+              "maximum": 365,
+              "default": 30,
+              "description": "Look-back window in days. Default 30."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_monthly_summary",
+        "title": "Get monthly trading summary",
+        "description": "Full synthesis of one calendar month for the signed-in user: metrics, equity curve, best/worst days, setup and session breakdowns, top mistakes, and plan/checklist adherence.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "month": {
+              "type": "string",
+              "description": "Month in YYYY-MM. Defaults to the current month."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_weekly_report",
+        "title": "Get weekly trading report",
+        "description": "Synthesis of one trading week for the signed-in user: metrics, day-by-day P/L, setup/session breakdown, mistakes, plus the weekly plan (bias, goals, pair analyses) and its review status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "week_start": {
+              "type": "string",
+              "description": "Monday of the week in YYYY-MM-DD. Defaults to the current week."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_trade",
+        "title": "Create a trade",
+        "description": "Log a new trade in the signed-in user's journal. Only `date` and `asset` are required; every other field is optional. Returns the created trade record including its generated id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "Trade date in YYYY-MM-DD."
+            },
+            "asset": {
+              "type": "string",
+              "description": "Pair/asset symbol, e.g. XAUUSD."
+            },
+            "direction": {
+              "type": "string",
+              "description": "Long or Short."
+            },
+            "market": {
+              "type": "string",
+              "description": "Market, e.g. Forex, Crypto, Indices."
+            },
+            "session": {
+              "type": "string",
+              "description": "Session, e.g. London, New York."
+            },
+            "setup": {
+              "type": "string",
+              "description": "Setup name."
+            },
+            "timeframe": {
+              "type": "string",
+              "description": "Execution timeframe, e.g. 5m, 15m, 1H."
+            },
+            "market_condition": {
+              "type": "string",
+              "description": "Market condition, e.g. Trending, Ranging."
+            },
+            "order_type": {
+              "type": "string",
+              "description": "Order type, e.g. Market, Limit, Stop."
+            },
+            "entry_time": {
+              "type": "string",
+              "description": "Entry time, e.g. 09:35."
+            },
+            "exit_time": {
+              "type": "string",
+              "description": "Exit time, e.g. 11:05."
+            },
+            "quantity": {
+              "type": "number",
+              "description": "Position size / lots."
+            },
+            "entry_price": {
+              "type": "number",
+              "description": "Entry price."
+            },
+            "stop_loss": {
+              "type": "number",
+              "description": "Stop-loss price."
+            },
+            "take_profit": {
+              "type": "number",
+              "description": "Take-profit price."
+            },
+            "exit_price": {
+              "type": "number",
+              "description": "Exit price."
+            },
+            "result": {
+              "type": "string",
+              "description": "Win, Loss, Breakeven, Untriggered Setup or Cancelled."
+            },
+            "status": {
+              "type": "string",
+              "description": "Complete or Draft. Defaults to Complete."
+            },
+            "planned_rr": {
+              "type": "number",
+              "description": "Planned risk/reward."
+            },
+            "actual_rr": {
+              "type": "number",
+              "description": "Achieved risk/reward."
+            },
+            "pips": {
+              "type": "number",
+              "description": "Pips gained or lost."
+            },
+            "profit_loss": {
+              "type": "number",
+              "description": "Net P/L in account currency."
+            },
+            "fees": {
+              "type": "number",
+              "description": "Fees/commission."
+            },
+            "grade": {
+              "type": "string",
+              "description": "Execution grade: A+, A, B, C."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Free-text notes about the trade."
+            },
+            "chart_link": {
+              "type": "string",
+              "description": "External chart link (e.g. TradingView)."
+            },
+            "mistakes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of mistakes / rule violations."
+            },
+            "confluences": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of confluences supporting the trade."
+            }
+          },
+          "required": [
+            "date",
+            "asset"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_trade",
+        "title": "Update a trade",
+        "description": "Update fields on an existing trade owned by the signed-in user. Only the fields you pass are changed; omitted fields keep their current values.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Id of the trade to update (from list_trades / search_trades)."
+            },
+            "date": {
+              "type": "string",
+              "description": "Trade date in YYYY-MM-DD."
+            },
+            "asset": {
+              "type": "string",
+              "description": "Pair/asset symbol, e.g. XAUUSD."
+            },
+            "direction": {
+              "type": "string",
+              "description": "Long or Short."
+            },
+            "market": {
+              "type": "string",
+              "description": "Market, e.g. Forex, Crypto, Indices."
+            },
+            "session": {
+              "type": "string",
+              "description": "Session, e.g. London, New York."
+            },
+            "setup": {
+              "type": "string",
+              "description": "Setup name."
+            },
+            "timeframe": {
+              "type": "string",
+              "description": "Execution timeframe, e.g. 5m, 15m, 1H."
+            },
+            "market_condition": {
+              "type": "string",
+              "description": "Market condition, e.g. Trending, Ranging."
+            },
+            "order_type": {
+              "type": "string",
+              "description": "Order type, e.g. Market, Limit, Stop."
+            },
+            "entry_time": {
+              "type": "string",
+              "description": "Entry time, e.g. 09:35."
+            },
+            "exit_time": {
+              "type": "string",
+              "description": "Exit time, e.g. 11:05."
+            },
+            "quantity": {
+              "type": "number",
+              "description": "Position size / lots."
+            },
+            "entry_price": {
+              "type": "number",
+              "description": "Entry price."
+            },
+            "stop_loss": {
+              "type": "number",
+              "description": "Stop-loss price."
+            },
+            "take_profit": {
+              "type": "number",
+              "description": "Take-profit price."
+            },
+            "exit_price": {
+              "type": "number",
+              "description": "Exit price."
+            },
+            "result": {
+              "type": "string",
+              "description": "Win, Loss, Breakeven, Untriggered Setup or Cancelled."
+            },
+            "status": {
+              "type": "string",
+              "description": "Complete or Draft. Defaults to Complete."
+            },
+            "planned_rr": {
+              "type": "number",
+              "description": "Planned risk/reward."
+            },
+            "actual_rr": {
+              "type": "number",
+              "description": "Achieved risk/reward."
+            },
+            "pips": {
+              "type": "number",
+              "description": "Pips gained or lost."
+            },
+            "profit_loss": {
+              "type": "number",
+              "description": "Net P/L in account currency."
+            },
+            "fees": {
+              "type": "number",
+              "description": "Fees/commission."
+            },
+            "grade": {
+              "type": "string",
+              "description": "Execution grade: A+, A, B, C."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Free-text notes about the trade."
+            },
+            "chart_link": {
+              "type": "string",
+              "description": "External chart link (e.g. TradingView)."
+            },
+            "mistakes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of mistakes / rule violations."
+            },
+            "confluences": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of confluences supporting the trade."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_trade",
+        "title": "Delete a trade",
+        "description": "Permanently delete one of the signed-in user's trades. Requires `confirm: true` so it can never happen by accident. Ask the user before calling this.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Id of the trade to delete."
+            },
+            "confirm": {
+              "type": "boolean",
+              "description": "Must be true. Explicit confirmation that the trade should be deleted."
+            }
+          },
+          "required": [
+            "id",
+            "confirm"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "upsert_daily_plan",
+        "title": "Create or update a daily plan",
+        "description": "Create or update the signed-in user's daily plan for a date. Only the fields you pass are written; existing pair analyses and journal content are preserved unless explicitly replaced.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "Plan date in YYYY-MM-DD."
+            },
+            "daily_bias": {
+              "type": "string",
+              "description": "Directional bias for the day, e.g. Bullish, Bearish, Neutral."
+            },
+            "session_focus": {
+              "type": "string",
+              "description": "Session the user intends to trade."
+            },
+            "max_trades": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50,
+              "description": "Maximum number of trades allowed for the day."
+            },
+            "risk_limit": {
+              "type": "string",
+              "description": "Risk limit for the day, e.g. '1%'."
+            },
+            "note": {
+              "type": "string",
+              "description": "Free-text plan note."
+            },
+            "result_narrative": {
+              "type": "string",
+              "description": "End-of-day narrative of what actually happened."
+            },
+            "took_trades": {
+              "type": "boolean",
+              "description": "Whether the user traded that day."
+            },
+            "reviewed": {
+              "type": "boolean",
+              "description": "Mark the plan as reviewed."
+            }
+          },
+          "required": [
+            "date"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "upsert_weekly_plan",
+        "title": "Create or update a weekly plan",
+        "description": "Create or update the signed-in user's weekly plan. Only the fields you pass are written; pair analyses and news items are preserved unless explicitly replaced.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "week_start": {
+              "type": "string",
+              "description": "Monday of the week in YYYY-MM-DD. Defaults to the current week."
+            },
+            "bias": {
+              "type": "string",
+              "description": "Weekly directional bias."
+            },
+            "levels": {
+              "type": "string",
+              "description": "Key levels to watch."
+            },
+            "risk": {
+              "type": "string",
+              "description": "Risk plan for the week."
+            },
+            "goals": {
+              "type": "string",
+              "description": "Goals for the week."
+            },
+            "news_result": {
+              "type": "string",
+              "description": "How the week's news events played out."
+            },
+            "reviewed": {
+              "type": "boolean",
+              "description": "Mark the weekly plan as reviewed."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_notebook_entry",
+        "title": "Create or update a notebook entry",
+        "description": "Write a journal / notebook entry for the signed-in user (analysis, reflection, lessons). Pass `entry_id` of an existing entry to update it instead of creating a new one.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The journal text to store."
+            },
+            "date": {
+              "type": "string",
+              "description": "Entry date in YYYY-MM-DD. Defaults to today."
+            },
+            "pair": {
+              "type": "string",
+              "description": "Related pair/asset, e.g. XAUUSD."
+            },
+            "category": {
+              "type": "string",
+              "description": "Notebook category, e.g. Analysis, Lesson, Review."
+            },
+            "bias": {
+              "type": "string",
+              "description": "Directional bias for the note."
+            },
+            "entry_id": {
+              "type": "string",
+              "description": "Existing entry_id to update instead of creating a new entry."
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_checklist",
+        "title": "Tick or untick checklist items",
+        "description": "Mark items on the signed-in user's daily trading checklist as done or not done. Match items by id or by (case-insensitive) label text. Use get_checklist first to see the available items.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "description": "Checklist date in YYYY-MM-DD. Defaults to today."
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "match": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Item id or label text to match."
+                  },
+                  "done": {
+                    "type": "boolean",
+                    "description": "New completion state for the item."
+                  },
+                  "section": {
+                    "type": "string",
+                    "description": "Optional section id or title to disambiguate."
+                  }
+                },
+                "required": [
+                  "match",
+                  "done"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "description": "Items to update."
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_media_url",
+        "title": "Get a fresh signed media URL",
+        "description": "Mint short-lived signed URLs for the signed-in user's journal media (chart screenshots, attachments). Accepts storage paths or stale/expired journal-media URLs and returns currently valid links a client can open or fetch.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "maxItems": 50,
+              "description": "Storage paths or existing journal-media URLs (e.g. from list_media or a trade's prediction_image)."
+            },
+            "expires_in": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400,
+              "default": 3600,
+              "description": "Signed URL lifetime in seconds (60-86400). Default 3600."
+            }
+          },
+          "required": [
+            "paths"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_media",
+        "title": "List journal media attachments",
+        "description": "List the media (chart screenshots and attachments) referenced by the signed-in user's trades, daily plans and notebook entries, optionally within a date range or for one trade. Set `sign: true` to also return short-lived signed URLs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "trade_id": {
+              "type": "string",
+              "description": "Only media attached to this trade."
+            },
+            "from": {
+              "type": "string",
+              "description": "Start date (inclusive) in YYYY-MM-DD."
+            },
+            "to": {
+              "type": "string",
+              "description": "End date (inclusive) in YYYY-MM-DD."
+            },
+            "sources": {
+              "type": "string",
+              "description": "Comma-separated subset of: trades, notebook, daily_plans. Defaults to all."
+            },
+            "sign": {
+              "type": "boolean",
+              "default": false,
+              "description": "Also mint signed URLs for each item. Default false."
+            },
+            "expires_in": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400,
+              "default": 3600,
+              "description": "Signed URL lifetime in seconds when sign is true."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Max media items to return. Default 50."
             }
           },
           "additionalProperties": false,
