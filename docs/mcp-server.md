@@ -1,6 +1,6 @@
 # TG Master Journal — MCP Server
 
-Version **0.2.0** · Phase 1 (authentication + read-only tools)
+Version **0.4.0** · Phases 1–4 complete (auth + read-only, analysis, writes, media)
 
 The server exposes TG Master Journal as standard MCP tools so ChatGPT, Claude
 Desktop, VS Code / Copilot and any other MCP-compatible client can read the
@@ -63,6 +63,40 @@ Transport: MCP Streamable HTTP. The exact URL is shown in the app under
 | `get_checklist` | `date?`, `history_days?` | Checklist for the day, per-section progress, history, current/longest streak |
 | `search_notebook` | `query?`, `pair?`, `category?`, `from?`, `to?`, `limit?`, `offset?` | Notebook/journal entries matching filters and text |
 
+### Search & analysis (Phase 2)
+
+| Tool | Input | Returns |
+| --- | --- | --- |
+| `search_journal` | `query`, `sources?`, `from?`, `to?`, `limit?` | Ranked matches across trades, notebook, daily plans and weekly plans with snippets |
+| `analyze_mistakes` | `from?`, `to?`, `days?`, `limit?` | Recurring mistakes with occurrences, win rate, net P/L and estimated cost |
+| `analyze_setups` | `dimension?`, `from?`, `to?`, `days?`, `min_trades?` | Ranking plus strongest/weakest buckets by P/L, win rate, profit factor |
+| `analyze_psychology` | `from?`, `to?`, `days?` | Emotions, day tags, grades, sentiment and discipline vs outcomes |
+| `get_consistency_report` | `days?` | Plan coverage, checklist completion, overtrading, risk consistency, score |
+| `get_monthly_summary` | `month?` | Full month synthesis: metrics, equity, best/worst days, breakdowns, routine |
+| `get_weekly_report` | `week_start?` | Week synthesis with day-by-day P/L, breakdowns, weekly plan and notable trades |
+
+### Writes (Phase 3)
+
+| Tool | Input | Effect |
+| --- | --- | --- |
+| `create_trade` | `date`, `asset`, + optional trade fields | Inserts a trade and returns it |
+| `update_trade` | `id` + fields to change | Partial update; omitted fields untouched |
+| `delete_trade` | `id`, `confirm: true` | Permanently deletes a trade (destructive) |
+| `upsert_daily_plan` | `date` + plan fields | Creates or patches the daily plan |
+| `upsert_weekly_plan` | `week_start?` + plan fields | Creates or patches the weekly plan |
+| `create_notebook_entry` | `text`, `date?`, `pair?`, `category?`, `bias?`, `entry_id?` | Creates or updates a notebook entry |
+| `update_checklist` | `date?`, `items[]` (`match`, `done`, `section?`) | Ticks/unticks checklist items, returns progress |
+
+All writes run under the caller's token, so RLS scopes them to that user. Write
+tools never accept a `user_id` from input.
+
+### Media (Phase 4)
+
+| Tool | Input | Returns |
+| --- | --- | --- |
+| `list_media` | `trade_id?`, `from?`, `to?`, `sources?`, `sign?`, `expires_in?`, `limit?` | Media referenced by trades, notebook and daily plans |
+| `get_media_url` | `paths[]`, `expires_in?` | Short-lived signed URLs (60s–24h) for journal-media paths or stale URLs |
+
 ## Conventions
 
 - **Dates** are `YYYY-MM-DD` strings.
@@ -92,7 +126,7 @@ message:
 - All queries are typed client calls scoped to `user_id = token.sub` and
   additionally protected by row-level security.
 - Tokens are never logged or returned; secrets are never exposed to the model.
-- All Phase 1 tools are read-only (`readOnlyHint: true`).
+- Read tools are marked `readOnlyHint: true`; write tools are explicitly annotated, and `delete_trade` is `destructiveHint: true` and requires `confirm: true`.
 
 ## Versioning
 
@@ -103,11 +137,9 @@ additive within a major version; removals or renames bump the major.
 
 - **Phase 1 (done)** — auth + read-only dashboard, trades, planning, checklist,
   notebook, analytics.
-- **Phase 2** — richer semantic search and AI analysis tools (recurring
-  mistakes, monthly summary, weekly report, strongest/weakest setup,
-  psychology / discipline / consistency reports).
-- **Phase 3** — write tools (create/update trades, journals, plans, checklist).
-- **Phase 4** — media access via short-lived signed URLs, plus streaming and
+- **Phase 2 (done)** — semantic journal search and analysis tools.
+- **Phase 3 (done)** — write tools for trades, plans, notebook and checklist.
+- **Phase 4 (done)** — media access via short-lived signed URLs.
   caching.
 
 ## Adding a tool
