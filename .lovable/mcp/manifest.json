@@ -279,7 +279,7 @@
       {
         "name": "get_trade",
         "title": "Get a trade by ID",
-        "description": "Fetch one full trade record (including notes, confluences, psychology, management and analysis) by its ID, scoped to the signed-in user.",
+        "description": "Fetch one full trade record (including notes, confluences, psychology, management and analysis) by its ID, scoped to the signed-in user. Any chart screenshots are returned as freshly signed, currently valid URLs in `media` (and the image fields are refreshed in place), because the URLs stored on the row expire.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
@@ -291,6 +291,13 @@
             "id": {
               "type": "string",
               "description": "The trade ID."
+            },
+            "expires_in": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400,
+              "default": 3600,
+              "description": "Lifetime in seconds for the freshly signed media URLs (60-86400). Default 3600."
             }
           },
           "required": [

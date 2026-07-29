@@ -148,21 +148,100 @@ var list_trades_default = defineTool2({
 // src/lib/mcp/tools/get-trade.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z3 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp/lib/media.ts
+var PREFIX = "urlmeta:";
+function b64decode(value) {
+  try {
+    const bytes = Uint8Array.from(
+      // eslint-disable-next-line no-restricted-globals
+      globalThis.atob ? globalThis.atob(value) : Buffer.from(value, "base64").toString("binary"),
+      (c) => c.charCodeAt(0)
+    );
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return "";
+  }
+}
+function rawUrl(value) {
+  const s = typeof value === "string" ? value : "";
+  if (!s.startsWith(PREFIX)) return s;
+  const json = b64decode(s.slice(PREFIX.length));
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.url === "string") return parsed.url;
+  } catch {
+  }
+  return s;
+}
+var BUCKET = "journal-media";
+function storagePath(value) {
+  const url = rawUrl(value);
+  if (!url) return null;
+  const m = url.match(/\/storage\/v1\/object\/(?:sign|public|authenticated)\/journal-media\/([^?#]+)/);
+  if (m) {
+    try {
+      return decodeURIComponent(m[1]);
+    } catch {
+      return m[1];
+    }
+  }
+  if (/^https?:|^data:|^blob:/i.test(url)) return null;
+  return url.replace(/^\/*/, "").replace(/^journal-media\//, "") || null;
+}
+function collectPaths(value, out = /* @__PURE__ */ new Set(), depth = 0) {
+  if (value == null || depth > 8) return out;
+  if (typeof value === "string") {
+    const p = storagePath(value);
+    if (p) out.add(p);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) collectPaths(v, out, depth + 1);
+    return out;
+  }
+  if (typeof value === "object") {
+    for (const v of Object.values(value)) collectPaths(v, out, depth + 1);
+  }
+  return out;
+}
+
+// src/lib/mcp/tools/get-trade.ts
 var get_trade_default = defineTool3({
   name: "get_trade",
   title: "Get a trade by ID",
-  description: "Fetch one full trade record (including notes, confluences, psychology, management and analysis) by its ID, scoped to the signed-in user.",
+  description: "Fetch one full trade record (including notes, confluences, psychology, management and analysis) by its ID, scoped to the signed-in user. Any chart screenshots are returned as freshly signed, currently valid URLs in `media` (and the image fields are refreshed in place), because the URLs stored on the row expire.",
   inputSchema: {
-    id: z3.string().describe("The trade ID.")
+    id: z3.string().describe("The trade ID."),
+    expires_in: z3.number().int().min(60).max(86400).default(3600).describe("Lifetime in seconds for the freshly signed media URLs (60-86400). Default 3600.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ id }, ctx) => {
+  handler: async ({ id, expires_in }, ctx) => {
     if (!ctx.isAuthenticated()) return unauthenticated();
     const sb = supabaseForUser2(ctx);
     const { data, error } = await sb.from("trades").select("*").eq("user_id", ctx.getUserId()).eq("id", id).maybeSingle();
     if (error) return failure(error.message);
     if (!data) return failure(`No trade found with id "${id}".`);
-    return ok({ trade: data });
+    const trade = data;
+    const ttl = expires_in ?? 3600;
+    const paths = Array.from(collectPaths(trade));
+    let signed = /* @__PURE__ */ new Map();
+    if (paths.length) {
+      const { data: urls } = await sb.storage.from(BUCKET).createSignedUrls(paths, ttl);
+      signed = new Map(
+        (urls ?? []).filter((u) => u?.signedUrl).map((u) => [String(u.path), u.signedUrl])
+      );
+    }
+    for (const field of ["prediction_image", "execution_image"]) {
+      const p = storagePath(trade[field]);
+      const fresh = p ? signed.get(p) : null;
+      if (fresh) trade[field] = fresh;
+    }
+    return ok({
+      trade,
+      media: paths.map((p) => ({ path: p, signed_url: signed.get(p) ?? null })),
+      media_expires_in: ttl
+    });
   }
 });
 
@@ -1643,65 +1722,6 @@ var update_checklist_default = defineTool28({
 // src/lib/mcp/tools/get-media-url.ts
 import { defineTool as defineTool29 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z28 } from "npm:zod@^3.25.76";
-
-// src/lib/mcp/lib/media.ts
-var PREFIX = "urlmeta:";
-function b64decode(value) {
-  try {
-    const bytes = Uint8Array.from(
-      // eslint-disable-next-line no-restricted-globals
-      globalThis.atob ? globalThis.atob(value) : Buffer.from(value, "base64").toString("binary"),
-      (c) => c.charCodeAt(0)
-    );
-    return new TextDecoder().decode(bytes);
-  } catch {
-    return "";
-  }
-}
-function rawUrl(value) {
-  const s = typeof value === "string" ? value : "";
-  if (!s.startsWith(PREFIX)) return s;
-  const json = b64decode(s.slice(PREFIX.length));
-  try {
-    const parsed = JSON.parse(json);
-    if (parsed && typeof parsed.url === "string") return parsed.url;
-  } catch {
-  }
-  return s;
-}
-var BUCKET = "journal-media";
-function storagePath(value) {
-  const url = rawUrl(value);
-  if (!url) return null;
-  const m = url.match(/\/storage\/v1\/object\/(?:sign|public|authenticated)\/journal-media\/([^?#]+)/);
-  if (m) {
-    try {
-      return decodeURIComponent(m[1]);
-    } catch {
-      return m[1];
-    }
-  }
-  if (/^https?:|^data:|^blob:/i.test(url)) return null;
-  return url.replace(/^\/*/, "").replace(/^journal-media\//, "") || null;
-}
-function collectPaths(value, out = /* @__PURE__ */ new Set(), depth = 0) {
-  if (value == null || depth > 8) return out;
-  if (typeof value === "string") {
-    const p = storagePath(value);
-    if (p) out.add(p);
-    return out;
-  }
-  if (Array.isArray(value)) {
-    for (const v of value) collectPaths(v, out, depth + 1);
-    return out;
-  }
-  if (typeof value === "object") {
-    for (const v of Object.values(value)) collectPaths(v, out, depth + 1);
-  }
-  return out;
-}
-
-// src/lib/mcp/tools/get-media-url.ts
 var get_media_url_default = defineTool29({
   name: "get_media_url",
   title: "Get a fresh signed media URL",
