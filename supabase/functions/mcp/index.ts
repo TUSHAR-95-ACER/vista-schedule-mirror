@@ -1622,7 +1622,7 @@ var create_notebook_entry_default = defineTool27({
     const sb = supabaseForUser2(ctx);
     const uid = ctx.getUserId();
     const day = date2 ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-    const journal = { blocks: [{ type: "paragraph", text: String(text) }] };
+    const journal = { text: String(text), media: [] };
     if (entry_id) {
       const { data: data2, error: error2 } = await sb.from("notebook_entries").update({
         journal,
@@ -1640,9 +1640,9 @@ var create_notebook_entry_default = defineTool27({
       user_id: uid,
       entry_id: newId,
       date: day,
-      pair: pair ?? null,
-      category: category ?? null,
-      bias: bias ?? null,
+      pair: pair ?? "",
+      category: category ?? "",
+      bias: bias ?? "",
       journal
     }).select().maybeSingle();
     if (error) return failure(error.message);

@@ -21,8 +21,8 @@ export default defineTool({
     const sb = supabaseForUser(ctx);
     const uid = ctx.getUserId();
     const day = date ?? new Date().toISOString().slice(0, 10);
-    // The app stores rich journal content as a JSONB block list.
-    const journal = { blocks: [{ type: "paragraph", text: String(text) }] };
+    // The app stores rich journal content as { text, media[] } (RichJournalValue).
+    const journal = { text: String(text), media: [] as unknown[] };
 
     if (entry_id) {
       const { data, error } = await sb
@@ -47,15 +47,16 @@ export default defineTool({
       typeof globalThis.crypto?.randomUUID === "function"
         ? globalThis.crypto.randomUUID()
         : `note-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    // pair / category / bias are NOT NULL with '' defaults — never send null.
     const { data, error } = await sb
       .from("notebook_entries")
       .insert({
         user_id: uid,
         entry_id: newId,
         date: day,
-        pair: pair ?? null,
-        category: category ?? null,
-        bias: bias ?? null,
+        pair: pair ?? "",
+        category: category ?? "",
+        bias: bias ?? "",
         journal,
       })
       .select()
@@ -63,4 +64,5 @@ export default defineTool({
     if (error) return failure(error.message);
     return ok({ created: true, updated: false, entry: data });
   },
+
 });
