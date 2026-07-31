@@ -671,7 +671,7 @@ export default function Mistakes() {
                   </SelectContent>
                 </Select>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                  <SelectTrigger className="h-7 w-[122px] text-[11px]"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-7 w-[140px] text-[11px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="impact">Sort: Impact</SelectItem>
                     <SelectItem value="frequency">Sort: Frequency</SelectItem>
