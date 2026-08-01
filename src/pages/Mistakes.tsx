@@ -804,9 +804,9 @@ export default function Mistakes() {
       </div>
 
       {/* ── Coach tip ──────────────────────────────────────────── */}
-      <Panel className="border-gold/25 bg-[linear-gradient(90deg,hsl(var(--gold)/0.07),transparent_40%)]">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-gold">
+      <Panel className="border-gold/25 bg-[linear-gradient(90deg,hsl(var(--gold)/0.08),transparent_45%)]">
+        <div className="flex items-center gap-3.5 px-5 py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-gold shadow-[0_0_20px_-6px_hsl(var(--gold)/0.7)]">
             <Lightbulb className="h-4 w-4" />
           </span>
           <p className="text-[11px] leading-snug">
