@@ -711,12 +711,12 @@ export default function Mistakes() {
               </div>
             }
           />
-          <div className="overflow-x-auto">
+          <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-border/60 text-left">
+                <tr className="border-y border-border/40 bg-foreground/[0.02] text-left">
                   {['Mistake Type', 'Frequency', 'Total Loss', 'Avg Loss', 'Impact', 'Severity', 'Recovery Rate', 'Action'].map(h => (
-                    <th key={h} className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -725,35 +725,40 @@ export default function Mistakes() {
                   const sev = SEVERITY[m.name];
                   const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
                   return (
-                    <tr key={m.name} className="border-b border-border/40 transition-colors hover:bg-accent/40">
-                      <td className="px-3 py-2.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>{m.name}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums">{m.frequency}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.totalLoss)}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.avgLoss)}</td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-                            <div className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${Math.min(100, Math.abs(m.impactPct))}%`, background: color }} />
+                    <tr key={m.name} className="border-b border-border/30 transition-colors last:border-0 hover:bg-foreground/[0.035]">
+                      <td className="px-4 py-3.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+                          {m.name}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs tabular-nums">{m.frequency}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs font-semibold tabular-nums text-destructive">{formatCurrency(m.totalLoss)}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs tabular-nums text-destructive/85">{formatCurrency(m.avgLoss)}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-2 w-20 overflow-hidden rounded-full bg-muted/70">
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${Math.min(100, Math.abs(m.impactPct))}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }} />
                           </div>
                           <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{Math.abs(m.impactPct)}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', sev?.cls)}>
+                      <td className="px-4 py-3.5">
+                        <span className={cn('inline-flex rounded-md border px-2 py-[3px] text-[9.5px] font-semibold uppercase tracking-[0.1em]', sev?.cls)}>
                           {sev?.level ?? '—'}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1.5">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
                           <MiniRing pct={m.recovery} />
                           <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{m.recovery}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-4 py-3.5">
                         <button
                           onClick={() => setTypeFilter(m.name)}
-                          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-foreground/90 transition-colors hover:border-primary/50 hover:bg-primary/10"
+                          className="flex items-center gap-1 rounded-lg border border-border/60 bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
                         >
                           Review <ArrowRight className="h-3 w-3" />
                         </button>
@@ -762,17 +767,18 @@ export default function Mistakes() {
                   );
                 })}
                 {tableRows.length === 0 && (
-                  <tr><td colSpan={8} className="px-3 py-8 text-center text-sm text-muted-foreground">No mistakes match these filters</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-muted-foreground">No mistakes match these filters</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </Panel>
 
-        <Panel className="border-gold/30 p-4">
-          <h3 className="font-heading text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">Overall Summary</h3>
-          <div className="my-4"><ScoreGauge score={impactScore} /></div>
-          <dl className="space-y-2 text-[11px]">
+        <Panel className="border-gold/25 p-5">
+          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.18em] text-gold">Overall Summary</h3>
+          <div className="my-6"><ScoreGauge score={impactScore} /></div>
+          <dl className="space-y-2.5 text-[11px]">
+
             {[
               ['Total Mistakes', String(totalMistakes), ''],
               ['Total Loss', formatCurrency(totalMistakeLoss), 'text-destructive'],
