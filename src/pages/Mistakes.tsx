@@ -382,7 +382,7 @@ export default function Mistakes() {
     .sort((a, b) => b.loss - a.loss);
 
   return (
-    <div className="p-4 sm:p-6 w-full space-y-4">
+    <div className="p-4 sm:p-6 w-full space-y-5">
       {/* ── Header ─────────────────────────────────────────────── */}
       <PageHeader title="Mistakes Analytics" subtitle="Advanced behavioral analytics & mistake intelligence">
         <Popover>
