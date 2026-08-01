@@ -90,13 +90,18 @@ function KpiCard({
                  shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_30px_60px_-42px_hsl(0_0%_0%/0.95)]
                  transition-[transform,box-shadow,border-color] duration-300
                  hover:-translate-y-[2px] hover:border-border/70 hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_36px_70px_-40px_hsl(0_0%_0%/1)]"
-      style={{ backgroundImage: `linear-gradient(160deg, ${tone.replace(')', ' / 0.09)').replace('hsl(', 'hsla(').replace('hsla(var(--primary) / 0.09)', 'hsl(var(--primary)/0.09)')} , transparent 52%)` }}
     >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.10] transition-opacity duration-300 group-hover:opacity-[0.16]"
+        style={{ background: `linear-gradient(155deg, ${tone}, transparent 55%)` }}
+      />
       <span
         aria-hidden
         className="absolute inset-x-0 top-0 h-[2px] opacity-80"
         style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
       />
+      <div className="relative flex h-full flex-col"></div>
       <p className="text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
       <p className={cn('font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
         {value}
