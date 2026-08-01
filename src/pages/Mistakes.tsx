@@ -679,7 +679,7 @@ export default function Mistakes() {
       </div>
 
       {/* ── Bottom: breakdown table + summary ──────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_330px] gap-5 items-stretch">
         <Panel className="overflow-hidden">
           <PanelTitle
             title="Mistakes Breakdown"
