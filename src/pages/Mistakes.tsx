@@ -138,11 +138,11 @@ function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; 
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const size = 108, stroke = 9, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 168, stroke = 15, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90 drop-shadow-[0_8px_24px_hsl(0_0%_0%/0.6)]">
         <defs>
           <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="hsl(0 84% 60%)" />
@@ -150,29 +150,30 @@ function ScoreGauge({ score }: { score: number }) {
             <stop offset="100%" stopColor="hsl(152 60% 45%)" />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.35} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.3} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke="url(#gaugeGrad)" strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
-          className="transition-[stroke-dashoffset] duration-700 ease-out"
+          className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center">
-        <span className="font-heading text-2xl font-bold leading-none">{score}</span>
-        <span className="absolute bottom-6 text-[9px] uppercase tracking-wider text-muted-foreground">Impact Score</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+        <span className="font-heading text-[44px] font-bold leading-none tracking-[-0.03em]">{score}</span>
+        <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/80">Impact Score</span>
       </div>
     </div>
   );
 }
 
 function MiniRing({ pct }: { pct: number }) {
-  const size = 22, stroke = 3, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 28, stroke = 3.5, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const color = pct >= 50 ? 'hsl(var(--success))' : pct >= 25 ? 'hsl(38 92% 50%)' : 'hsl(var(--muted-foreground))';
   return (
     <svg width={size} height={size} className="-rotate-90 shrink-0">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.5} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.45} />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-        strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct / 100))} />
+        strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct / 100))}
+        className="transition-[stroke-dashoffset] duration-700 ease-out" />
     </svg>
   );
 }
@@ -180,11 +181,17 @@ function MiniRing({ pct }: { pct: number }) {
 const Tip = ({ active, payload, label, money }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-      <p className="mb-1 text-muted-foreground">{label}</p>
+    <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+      {label !== undefined && (
+        <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">{label}</p>
+      )}
       {payload.map((p: any, i: number) => (
-        <p key={i} className="font-mono tabular-nums" style={{ color: p.color || p.payload?.fill }}>
-          {p.name}: {money ? formatCurrency(Number(p.value)) : p.value}
+        <p key={i} className="flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+          <span className="h-2 w-2 rounded-full" style={{ background: p.color || p.payload?.fill }} />
+          <span className="text-muted-foreground">{p.name}</span>
+          <span className="ml-auto font-semibold" style={{ color: p.color || p.payload?.fill }}>
+            {money ? formatCurrency(Number(p.value)) : p.value}
+          </span>
         </p>
       ))}
     </div>
