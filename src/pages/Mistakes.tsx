@@ -541,23 +541,23 @@ export default function Mistakes() {
         <Panel>
           <PanelTitle title="Loss by Mistake Type" tooltip="Total realised loss attributable to each mistake"
             right={<span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Loss</span>} />
-          <div className="h-[236px] px-3 pb-3">
+          <div className="flex-1 h-[256px] px-4 pb-4">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lossByType} layout="vertical" margin={{ top: 4, right: 60, left: 4, bottom: 4 }} barSize={9}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
+                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={14}>
+                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                     tickFormatter={(v) => `$${v}`} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={82} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip money />} />
-                  <Bar dataKey="loss" name="Loss" radius={[4, 4, 4, 4]} animationDuration={700}>
+                  <YAxis dataKey="name" type="category" width={86} axisLine={false} tickLine={false}
+                    tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip money />} />
+                  <Bar dataKey="loss" name="Loss" radius={[7, 7, 7, 7]} animationDuration={950} animationEasing="ease-out">
                     {lossByType.map((d, i) => (
-                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.9} />
+                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.92} />
                     ))}
-                    <LabelList dataKey="loss" position="right" offset={8}
+                    <LabelList dataKey="loss" position="right" offset={10}
                       formatter={(v: number) => (v ? `-${formatCurrency(v)}` : formatCurrency(0))}
-                      style={{ fill: 'hsl(var(--destructive))', fontSize: 10, fontFamily: 'monospace' }} />
+                      style={{ fill: 'hsl(var(--destructive))', fontSize: 10.5, fontFamily: 'monospace' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -569,16 +569,16 @@ export default function Mistakes() {
 
         <Panel>
           <PanelTitle title="Mistakes by Session" tooltip="Which trading session produces the most mistakes" />
-          <div className="h-[200px] px-3">
+          <div className="flex-1 h-[214px] px-4">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySession} margin={{ top: 18, right: 8, left: -14, bottom: 4 }} barSize={34}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
+                <BarChart data={mistakeBySession} margin={{ top: 20, right: 8, left: -14, bottom: 4 }} barSize={32}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.9} radius={[4, 4, 0, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="top" style={{ fill: 'hsl(38 92% 55%)', fontSize: 10 }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.92} radius={[8, 8, 4, 4]} animationDuration={950} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={8} style={{ fill: 'hsl(38 92% 60%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -586,7 +586,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <p className="text-[11px] text-muted-foreground">
               {worstSession
@@ -594,6 +594,7 @@ export default function Mistakes() {
                 : 'No session data available'}
             </p>
           </div>
+
         </Panel>
       </div>
 
