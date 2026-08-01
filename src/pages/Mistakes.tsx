@@ -786,19 +786,20 @@ export default function Mistakes() {
               ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? 'text-success' : repeatDelta < 0 ? 'text-destructive' : ''],
               ['Focus Area', topMistake ? `${topMistake.name} control` : '—', 'text-gold'],
             ].map(([k, v, c]) => (
-              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/40 pb-2 last:border-0">
-                <dt className="text-muted-foreground">{k}</dt>
-                <dd className={cn('font-mono tabular-nums text-right', c as string)}>{v}</dd>
+              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/30 pb-2.5 last:border-0">
+                <dt className="text-muted-foreground/85">{k}</dt>
+                <dd className={cn('font-mono font-semibold tabular-nums text-right', c as string)}>{v}</dd>
               </div>
             ))}
           </dl>
           <Button
-            className="mt-4 h-9 w-full gap-1.5 rounded-lg border border-gold/50 bg-gold/10 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/20"
+            className="mt-5 h-10 w-full gap-1.5 rounded-xl border border-gold/45 bg-gold/10 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold shadow-[0_16px_40px_-28px_hsl(var(--gold)/0.9)] transition-all duration-300 hover:bg-gold/20 hover:shadow-[0_20px_45px_-24px_hsl(var(--gold)/1)]"
             variant="ghost"
             onClick={() => document.querySelector<HTMLButtonElement>('button[title="Open AI Coach"]')?.click()}
           >
             View AI Action Plan <ArrowRight className="h-3.5 w-3.5" />
           </Button>
+
         </Panel>
       </div>
 
