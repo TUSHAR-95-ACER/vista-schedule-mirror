@@ -101,7 +101,7 @@ function KpiCard({
         className="absolute inset-x-0 top-0 h-[2px] opacity-80"
         style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
       />
-      <div className="relative flex h-full flex-col"></div>
+      
       <p className="text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
       <p className={cn('font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
         {value}
