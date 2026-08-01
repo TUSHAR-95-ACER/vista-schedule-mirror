@@ -106,7 +106,7 @@ function KpiCard({
       <p className={cn('relative font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
         {value}
       </p>
-      <div className="mt-auto pt-3 space-y-1">
+      <div className="relative mt-auto pt-3 space-y-1">
         {delta && (
           <p className={cn(
             'text-[10.5px] font-semibold tabular-nums truncate',
