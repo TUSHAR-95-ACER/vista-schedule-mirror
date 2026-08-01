@@ -55,8 +55,8 @@ const fmtDay = (d?: Date) =>
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={cn(
-      'rounded-xl border border-border/70 bg-card/80 backdrop-blur-[2px]',
-      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_18px_40px_-32px_hsl(0_0%_0%/0.9)]',
+      'flex h-full flex-col rounded-2xl border border-border/50 bg-[linear-gradient(180deg,hsl(var(--foreground)/0.025),transparent_38%)] bg-card/70 backdrop-blur-[3px]',
+      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_28px_60px_-40px_hsl(0_0%_0%/0.95)]',
       className,
     )}>{children}</div>
   );
@@ -64,9 +64,9 @@ function Panel({ className, children }: { className?: string; children: React.Re
 
 function PanelTitle({ title, tooltip, right }: { title: string; tooltip?: string; right?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-2 px-4 pt-3.5 pb-2.5">
+    <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-3">
       <div className="flex items-center gap-1.5 min-w-0">
-        <h3 className="font-heading text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-foreground/90 truncate">
+        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80 truncate">
           {title}
         </h3>
         {tooltip && <InfoTooltip text={tooltip} />}
@@ -83,29 +83,42 @@ function KpiCard({
   delta?: string; deltaTone?: 'up' | 'down' | 'flat';
   sub?: string; subClass?: string; accent?: string;
 }) {
+  const tone = accent ?? 'hsl(var(--primary))';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/70 bg-card/80 px-3.5 py-3 animate-fade-in
-                    shadow-[0_18px_40px_-34px_hsl(0_0%_0%/0.95)]">
+    <div
+      className="group relative flex h-full min-h-[124px] flex-col overflow-hidden rounded-2xl border border-border/45 bg-card/70 px-4 py-4 animate-fade-in
+                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_30px_60px_-42px_hsl(0_0%_0%/0.95)]
+                 transition-[transform,box-shadow,border-color] duration-300
+                 hover:-translate-y-[2px] hover:border-border/70 hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_36px_70px_-40px_hsl(0_0%_0%/1)]"
+    >
       <span
         aria-hidden
-        className="absolute inset-x-0 top-0 h-px opacity-70"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent ?? 'hsl(var(--primary))'}, transparent)` }}
+        className="pointer-events-none absolute inset-0 opacity-[0.10] transition-opacity duration-300 group-hover:opacity-[0.16]"
+        style={{ background: `linear-gradient(155deg, ${tone}, transparent 55%)` }}
       />
-      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground truncate">{label}</p>
-      <p className={cn('font-heading font-bold tracking-tight mt-1.5 text-[22px] leading-none truncate', valueClass)}>
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[2px] opacity-80"
+        style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
+      />
+
+      <p className="relative text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
+      <p className={cn('relative font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
         {value}
       </p>
-      {delta && (
-        <p className={cn(
-          'mt-2 text-[10px] font-medium tabular-nums truncate',
-          deltaTone === 'up' && 'text-success',
-          deltaTone === 'down' && 'text-destructive',
-          (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
-        )}>
-          {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
-        </p>
-      )}
-      {sub && <p className={cn('mt-2 text-[10px] text-muted-foreground truncate', subClass)}>{sub}</p>}
+      <div className="relative mt-auto pt-3 space-y-1">
+        {delta && (
+          <p className={cn(
+            'text-[10.5px] font-semibold tabular-nums truncate',
+            deltaTone === 'up' && 'text-success',
+            deltaTone === 'down' && 'text-destructive',
+            (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
+          )}>
+            {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
+          </p>
+        )}
+        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/75 truncate', subClass)}>{sub}</p>}
+      </div>
     </div>
   );
 }
@@ -125,11 +138,11 @@ function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; 
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const size = 108, stroke = 9, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 168, stroke = 15, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90 drop-shadow-[0_8px_24px_hsl(0_0%_0%/0.6)]">
         <defs>
           <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="hsl(0 84% 60%)" />
@@ -137,29 +150,30 @@ function ScoreGauge({ score }: { score: number }) {
             <stop offset="100%" stopColor="hsl(152 60% 45%)" />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.35} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.3} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke="url(#gaugeGrad)" strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
-          className="transition-[stroke-dashoffset] duration-700 ease-out"
+          className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center">
-        <span className="font-heading text-2xl font-bold leading-none">{score}</span>
-        <span className="absolute bottom-6 text-[9px] uppercase tracking-wider text-muted-foreground">Impact Score</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+        <span className="font-heading text-[44px] font-bold leading-none tracking-[-0.03em]">{score}</span>
+        <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/80">Impact Score</span>
       </div>
     </div>
   );
 }
 
 function MiniRing({ pct }: { pct: number }) {
-  const size = 22, stroke = 3, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 28, stroke = 3.5, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const color = pct >= 50 ? 'hsl(var(--success))' : pct >= 25 ? 'hsl(38 92% 50%)' : 'hsl(var(--muted-foreground))';
   return (
     <svg width={size} height={size} className="-rotate-90 shrink-0">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.5} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.45} />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-        strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct / 100))} />
+        strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct / 100))}
+        className="transition-[stroke-dashoffset] duration-700 ease-out" />
     </svg>
   );
 }
@@ -167,11 +181,17 @@ function MiniRing({ pct }: { pct: number }) {
 const Tip = ({ active, payload, label, money }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-      <p className="mb-1 text-muted-foreground">{label}</p>
+    <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+      {label !== undefined && (
+        <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">{label}</p>
+      )}
       {payload.map((p: any, i: number) => (
-        <p key={i} className="font-mono tabular-nums" style={{ color: p.color || p.payload?.fill }}>
-          {p.name}: {money ? formatCurrency(Number(p.value)) : p.value}
+        <p key={i} className="flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+          <span className="h-2 w-2 rounded-full" style={{ background: p.color || p.payload?.fill }} />
+          <span className="text-muted-foreground">{p.name}</span>
+          <span className="ml-auto font-semibold" style={{ color: p.color || p.payload?.fill }}>
+            {money ? formatCurrency(Number(p.value)) : p.value}
+          </span>
         </p>
       ))}
     </div>
@@ -362,7 +382,7 @@ export default function Mistakes() {
     .sort((a, b) => b.loss - a.loss);
 
   return (
-    <div className="p-4 sm:p-6 w-full space-y-4">
+    <div className="p-4 sm:p-6 w-full space-y-5">
       {/* ── Header ─────────────────────────────────────────────── */}
       <PageHeader title="Mistakes Analytics" subtitle="Advanced behavioral analytics & mistake intelligence">
         <Popover>
@@ -387,7 +407,7 @@ export default function Mistakes() {
       </PageHeader>
 
       {/* ── KPI cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 items-stretch">
         <KpiCard
           label="Total Mistakes" value={String(totalMistakes)} valueClass="text-destructive"
           accent="hsl(0 84% 60%)"
@@ -465,17 +485,19 @@ export default function Mistakes() {
       </Panel>
 
       {/* ── Row 1: donut / loss bar / session bar ──────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes by Type" tooltip="Share of each mistake type across the selected period" />
-          <div className="px-4 pb-3">
+          <div className="flex-1 px-5 pb-4">
             {distribution.length > 0 ? (
-              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
-                <div className="relative h-[190px]">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3">
+                <div className="relative h-[204px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={52} outerRadius={78} paddingAngle={2} strokeWidth={0} animationDuration={700}>
+                        innerRadius={48} outerRadius={86} paddingAngle={2.5} cornerRadius={4}
+                        stroke="hsl(var(--card))" strokeWidth={2}
+                        animationDuration={900} animationEasing="ease-out">
                         {distribution.map((d, i) => (
                           <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
                         ))}
@@ -483,18 +505,18 @@ export default function Mistakes() {
                       <Tooltip content={<Tip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                    <span className="font-heading text-2xl font-bold leading-none">{totalMistakes}</span>
-                    <span className="absolute mt-7 text-[9px] uppercase tracking-widest text-muted-foreground">Total</span>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <span className="font-heading text-[32px] font-bold leading-none tracking-[-0.03em]">{totalMistakes}</span>
+                    <span className="text-[8.5px] uppercase tracking-[0.24em] text-muted-foreground/80">Total</span>
                   </div>
                 </div>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-2 text-[11px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    <li key={m.name} className="flex items-center gap-2.5 text-[11.5px]">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-inset ring-background/40"
                         style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
-                      <span className="truncate text-foreground/90">{m.name}</span>
-                      <span className="ml-auto font-mono tabular-nums text-muted-foreground">
+                      <span className="truncate text-foreground/85">{m.name}</span>
+                      <span className="ml-auto font-mono text-[11px] tabular-nums text-muted-foreground/85">
                         {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
                       </span>
                     </li>
@@ -502,11 +524,11 @@ export default function Mistakes() {
                 </ul>
               </div>
             ) : (
-              <div className="grid h-[190px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
+              <div className="grid h-[204px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
             )}
           </div>
           {topMistake && (
-            <div className="flex items-center gap-2 border-t border-border/60 bg-destructive/[0.06] px-4 py-2.5">
+            <div className="mt-auto flex items-center gap-2 border-t border-border/40 bg-destructive/[0.06] px-5 py-3">
               <Target className="h-3.5 w-3.5 text-destructive" />
               <p className="text-[11px] text-destructive/90">
                 <span className="font-semibold">{topMistake.name}</span> is your most expensive mistake
@@ -515,26 +537,27 @@ export default function Mistakes() {
           )}
         </Panel>
 
+
         <Panel>
           <PanelTitle title="Loss by Mistake Type" tooltip="Total realised loss attributable to each mistake"
             right={<span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Loss</span>} />
-          <div className="h-[236px] px-3 pb-3">
+          <div className="flex-1 h-[256px] px-4 pb-4">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lossByType} layout="vertical" margin={{ top: 4, right: 60, left: 4, bottom: 4 }} barSize={9}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
+                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={14}>
+                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                     tickFormatter={(v) => `$${v}`} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={82} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip money />} />
-                  <Bar dataKey="loss" name="Loss" radius={[4, 4, 4, 4]} animationDuration={700}>
+                  <YAxis dataKey="name" type="category" width={86} axisLine={false} tickLine={false}
+                    tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip money />} />
+                  <Bar dataKey="loss" name="Loss" radius={[7, 7, 7, 7]} animationDuration={950} animationEasing="ease-out">
                     {lossByType.map((d, i) => (
-                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.9} />
+                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.92} />
                     ))}
-                    <LabelList dataKey="loss" position="right" offset={8}
+                    <LabelList dataKey="loss" position="right" offset={10}
                       formatter={(v: number) => (v ? `-${formatCurrency(v)}` : formatCurrency(0))}
-                      style={{ fill: 'hsl(var(--destructive))', fontSize: 10, fontFamily: 'monospace' }} />
+                      style={{ fill: 'hsl(var(--destructive))', fontSize: 10.5, fontFamily: 'monospace' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -546,16 +569,16 @@ export default function Mistakes() {
 
         <Panel>
           <PanelTitle title="Mistakes by Session" tooltip="Which trading session produces the most mistakes" />
-          <div className="h-[200px] px-3">
+          <div className="flex-1 h-[214px] px-4">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySession} margin={{ top: 18, right: 8, left: -14, bottom: 4 }} barSize={34}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
+                <BarChart data={mistakeBySession} margin={{ top: 20, right: 8, left: -14, bottom: 4 }} barSize={32}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.9} radius={[4, 4, 0, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="top" style={{ fill: 'hsl(38 92% 55%)', fontSize: 10 }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.92} radius={[8, 8, 4, 4]} animationDuration={950} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={8} style={{ fill: 'hsl(38 92% 60%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -563,7 +586,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <p className="text-[11px] text-muted-foreground">
               {worstSession
@@ -571,43 +594,49 @@ export default function Mistakes() {
                 : 'No session data available'}
             </p>
           </div>
+
         </Panel>
       </div>
 
       {/* ── Row 2: trend + setup ───────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks" />
-          <div className="h-[236px] px-3 pb-3">
+          <div className="flex-1 h-[256px] px-4 pb-4">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 18, right: 14, left: -14, bottom: 4 }}>
+                <LineChart data={trendData} margin={{ top: 22, right: 16, left: -12, bottom: 4 }}>
                   <defs>
                     <linearGradient id="trendGlow" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="hsl(38 92% 50%)" />
                       <stop offset="100%" stopColor="hsl(0 84% 60%)" />
                     </linearGradient>
+                    <filter id="trendShadow" x="-20%" y="-40%" width="140%" height="200%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="hsl(38 92% 50%)" floodOpacity="0.35" />
+                    </filter>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="week" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <XAxis dataKey="week" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.35 }}
+                  <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.28, strokeWidth: 1 }}
                     content={({ active, payload, label }: any) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-                          <p className="mb-1 text-muted-foreground">Week of {label}</p>
-                          <p className="font-mono text-warning">Mistakes: {d.count}</p>
-                          <p className="font-mono text-destructive">Loss: {formatCurrency(d.loss)}</p>
+                        <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">Week of {label}</p>
+                          <p className="font-mono text-[11.5px] text-warning">Mistakes: <span className="font-semibold">{d.count}</span></p>
+                          <p className="font-mono text-[11.5px] text-destructive">Loss: <span className="font-semibold">{formatCurrency(d.loss)}</span></p>
                         </div>
                       );
                     }} />
-                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={2.5}
-                    dot={{ r: 3, fill: 'hsl(38 92% 50%)', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: 'hsl(0 84% 60%)' }} animationDuration={800}>
-                    <LabelList dataKey="count" position="top" offset={10}
-                      style={{ fill: 'hsl(38 92% 58%)', fontSize: 10 }} />
+                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={3.25}
+                    strokeLinecap="round" filter="url(#trendShadow)"
+                    dot={{ r: 3.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 55%)', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2 }}
+                    animationDuration={1000} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={12}
+                      style={{ fill: 'hsl(38 92% 62%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Line>
                 </LineChart>
               </ResponsiveContainer>
@@ -619,17 +648,17 @@ export default function Mistakes() {
 
         <Panel>
           <PanelTitle title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around" />
-          <div className="h-[200px] px-3">
+          <div className="flex-1 h-[214px] px-4">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 34, left: 4, bottom: 4 }} barSize={16}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
+                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 36, left: 4, bottom: 6 }} barSize={18}>
+                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={92} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.85} radius={[0, 4, 4, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="right" offset={8} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <YAxis dataKey="name" type="category" width={94} axisLine={false} tickLine={false}
+                    tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.9} radius={[9, 9, 9, 9]} animationDuration={950} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="right" offset={10} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -637,7 +666,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
             <p className="text-[11px] text-muted-foreground">
               {topSetup
@@ -645,11 +674,12 @@ export default function Mistakes() {
                 : 'No setup concentration detected'}
             </p>
           </div>
+
         </Panel>
       </div>
 
       {/* ── Bottom: breakdown table + summary ──────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_330px] gap-5 items-stretch">
         <Panel className="overflow-hidden">
           <PanelTitle
             title="Mistakes Breakdown"
@@ -681,12 +711,12 @@ export default function Mistakes() {
               </div>
             }
           />
-          <div className="overflow-x-auto">
+          <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-border/60 text-left">
+                <tr className="border-y border-border/40 bg-foreground/[0.02] text-left">
                   {['Mistake Type', 'Frequency', 'Total Loss', 'Avg Loss', 'Impact', 'Severity', 'Recovery Rate', 'Action'].map(h => (
-                    <th key={h} className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -695,35 +725,40 @@ export default function Mistakes() {
                   const sev = SEVERITY[m.name];
                   const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
                   return (
-                    <tr key={m.name} className="border-b border-border/40 transition-colors hover:bg-accent/40">
-                      <td className="px-3 py-2.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>{m.name}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums">{m.frequency}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.totalLoss)}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.avgLoss)}</td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-                            <div className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${Math.min(100, Math.abs(m.impactPct))}%`, background: color }} />
+                    <tr key={m.name} className="border-b border-border/30 transition-colors last:border-0 hover:bg-foreground/[0.035]">
+                      <td className="px-4 py-3.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+                          {m.name}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs tabular-nums">{m.frequency}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs font-semibold tabular-nums text-destructive">{formatCurrency(m.totalLoss)}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs tabular-nums text-destructive/85">{formatCurrency(m.avgLoss)}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-2 w-20 overflow-hidden rounded-full bg-muted/70">
+                            <div className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${Math.min(100, Math.abs(m.impactPct))}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }} />
                           </div>
                           <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{Math.abs(m.impactPct)}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', sev?.cls)}>
+                      <td className="px-4 py-3.5">
+                        <span className={cn('inline-flex rounded-md border px-2 py-[3px] text-[9.5px] font-semibold uppercase tracking-[0.1em]', sev?.cls)}>
                           {sev?.level ?? '—'}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex items-center gap-1.5">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
                           <MiniRing pct={m.recovery} />
                           <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{m.recovery}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-4 py-3.5">
                         <button
                           onClick={() => setTypeFilter(m.name)}
-                          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-foreground/90 transition-colors hover:border-primary/50 hover:bg-primary/10"
+                          className="flex items-center gap-1 rounded-lg border border-border/60 bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
                         >
                           Review <ArrowRight className="h-3 w-3" />
                         </button>
@@ -732,17 +767,18 @@ export default function Mistakes() {
                   );
                 })}
                 {tableRows.length === 0 && (
-                  <tr><td colSpan={8} className="px-3 py-8 text-center text-sm text-muted-foreground">No mistakes match these filters</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-sm text-muted-foreground">No mistakes match these filters</td></tr>
                 )}
               </tbody>
             </table>
           </div>
         </Panel>
 
-        <Panel className="border-gold/30 p-4">
-          <h3 className="font-heading text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">Overall Summary</h3>
-          <div className="my-4"><ScoreGauge score={impactScore} /></div>
-          <dl className="space-y-2 text-[11px]">
+        <Panel className="border-gold/25 p-5">
+          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.18em] text-gold">Overall Summary</h3>
+          <div className="my-6"><ScoreGauge score={impactScore} /></div>
+          <dl className="space-y-2.5 text-[11px]">
+
             {[
               ['Total Mistakes', String(totalMistakes), ''],
               ['Total Loss', formatCurrency(totalMistakeLoss), 'text-destructive'],
@@ -750,26 +786,27 @@ export default function Mistakes() {
               ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? 'text-success' : repeatDelta < 0 ? 'text-destructive' : ''],
               ['Focus Area', topMistake ? `${topMistake.name} control` : '—', 'text-gold'],
             ].map(([k, v, c]) => (
-              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/40 pb-2 last:border-0">
-                <dt className="text-muted-foreground">{k}</dt>
-                <dd className={cn('font-mono tabular-nums text-right', c as string)}>{v}</dd>
+              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/30 pb-2.5 last:border-0">
+                <dt className="text-muted-foreground/85">{k}</dt>
+                <dd className={cn('font-mono font-semibold tabular-nums text-right', c as string)}>{v}</dd>
               </div>
             ))}
           </dl>
           <Button
-            className="mt-4 h-9 w-full gap-1.5 rounded-lg border border-gold/50 bg-gold/10 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/20"
+            className="mt-5 h-10 w-full gap-1.5 rounded-xl border border-gold/45 bg-gold/10 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold shadow-[0_16px_40px_-28px_hsl(var(--gold)/0.9)] transition-all duration-300 hover:bg-gold/20 hover:shadow-[0_20px_45px_-24px_hsl(var(--gold)/1)]"
             variant="ghost"
             onClick={() => document.querySelector<HTMLButtonElement>('button[title="Open AI Coach"]')?.click()}
           >
             View AI Action Plan <ArrowRight className="h-3.5 w-3.5" />
           </Button>
+
         </Panel>
       </div>
 
       {/* ── Coach tip ──────────────────────────────────────────── */}
-      <Panel className="border-gold/25 bg-[linear-gradient(90deg,hsl(var(--gold)/0.07),transparent_40%)]">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-gold">
+      <Panel className="border-gold/25 bg-[linear-gradient(90deg,hsl(var(--gold)/0.08),transparent_45%)]">
+        <div className="flex items-center gap-3.5 px-5 py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-gold shadow-[0_0_20px_-6px_hsl(var(--gold)/0.7)]">
             <Lightbulb className="h-4 w-4" />
           </span>
           <p className="text-[11px] leading-snug">
