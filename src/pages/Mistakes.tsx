@@ -485,17 +485,19 @@ export default function Mistakes() {
       </Panel>
 
       {/* ── Row 1: donut / loss bar / session bar ──────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes by Type" tooltip="Share of each mistake type across the selected period" />
-          <div className="px-4 pb-3">
+          <div className="flex-1 px-5 pb-4">
             {distribution.length > 0 ? (
-              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
-                <div className="relative h-[190px]">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3">
+                <div className="relative h-[204px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={52} outerRadius={78} paddingAngle={2} strokeWidth={0} animationDuration={700}>
+                        innerRadius={48} outerRadius={86} paddingAngle={2.5} cornerRadius={4}
+                        stroke="hsl(var(--card))" strokeWidth={2}
+                        animationDuration={900} animationEasing="ease-out">
                         {distribution.map((d, i) => (
                           <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
                         ))}
@@ -503,18 +505,18 @@ export default function Mistakes() {
                       <Tooltip content={<Tip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                    <span className="font-heading text-2xl font-bold leading-none">{totalMistakes}</span>
-                    <span className="absolute mt-7 text-[9px] uppercase tracking-widest text-muted-foreground">Total</span>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <span className="font-heading text-[32px] font-bold leading-none tracking-[-0.03em]">{totalMistakes}</span>
+                    <span className="text-[8.5px] uppercase tracking-[0.24em] text-muted-foreground/80">Total</span>
                   </div>
                 </div>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-2 text-[11px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    <li key={m.name} className="flex items-center gap-2.5 text-[11.5px]">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-inset ring-background/40"
                         style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
-                      <span className="truncate text-foreground/90">{m.name}</span>
-                      <span className="ml-auto font-mono tabular-nums text-muted-foreground">
+                      <span className="truncate text-foreground/85">{m.name}</span>
+                      <span className="ml-auto font-mono text-[11px] tabular-nums text-muted-foreground/85">
                         {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
                       </span>
                     </li>
@@ -522,11 +524,11 @@ export default function Mistakes() {
                 </ul>
               </div>
             ) : (
-              <div className="grid h-[190px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
+              <div className="grid h-[204px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
             )}
           </div>
           {topMistake && (
-            <div className="flex items-center gap-2 border-t border-border/60 bg-destructive/[0.06] px-4 py-2.5">
+            <div className="mt-auto flex items-center gap-2 border-t border-border/40 bg-destructive/[0.06] px-5 py-3">
               <Target className="h-3.5 w-3.5 text-destructive" />
               <p className="text-[11px] text-destructive/90">
                 <span className="font-semibold">{topMistake.name}</span> is your most expensive mistake
@@ -534,6 +536,7 @@ export default function Mistakes() {
             </div>
           )}
         </Panel>
+
 
         <Panel>
           <PanelTitle title="Loss by Mistake Type" tooltip="Total realised loss attributable to each mistake"
