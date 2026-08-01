@@ -407,7 +407,7 @@ export default function Mistakes() {
       </PageHeader>
 
       {/* ── KPI cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5 items-stretch">
         <KpiCard
           label="Total Mistakes" value={String(totalMistakes)} valueClass="text-destructive"
           accent="hsl(0 84% 60%)"
