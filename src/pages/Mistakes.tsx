@@ -599,39 +599,44 @@ export default function Mistakes() {
       </div>
 
       {/* ── Row 2: trend + setup ───────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks" />
-          <div className="h-[236px] px-3 pb-3">
+          <div className="flex-1 h-[256px] px-4 pb-4">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 18, right: 14, left: -14, bottom: 4 }}>
+                <LineChart data={trendData} margin={{ top: 22, right: 16, left: -12, bottom: 4 }}>
                   <defs>
                     <linearGradient id="trendGlow" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="hsl(38 92% 50%)" />
                       <stop offset="100%" stopColor="hsl(0 84% 60%)" />
                     </linearGradient>
+                    <filter id="trendShadow" x="-20%" y="-40%" width="140%" height="200%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="hsl(38 92% 50%)" floodOpacity="0.35" />
+                    </filter>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="week" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <XAxis dataKey="week" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.35 }}
+                  <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.28, strokeWidth: 1 }}
                     content={({ active, payload, label }: any) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-                          <p className="mb-1 text-muted-foreground">Week of {label}</p>
-                          <p className="font-mono text-warning">Mistakes: {d.count}</p>
-                          <p className="font-mono text-destructive">Loss: {formatCurrency(d.loss)}</p>
+                        <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">Week of {label}</p>
+                          <p className="font-mono text-[11.5px] text-warning">Mistakes: <span className="font-semibold">{d.count}</span></p>
+                          <p className="font-mono text-[11.5px] text-destructive">Loss: <span className="font-semibold">{formatCurrency(d.loss)}</span></p>
                         </div>
                       );
                     }} />
-                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={2.5}
-                    dot={{ r: 3, fill: 'hsl(38 92% 50%)', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: 'hsl(0 84% 60%)' }} animationDuration={800}>
-                    <LabelList dataKey="count" position="top" offset={10}
-                      style={{ fill: 'hsl(38 92% 58%)', fontSize: 10 }} />
+                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={3.25}
+                    strokeLinecap="round" filter="url(#trendShadow)"
+                    dot={{ r: 3.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 55%)', strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2 }}
+                    animationDuration={1000} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={12}
+                      style={{ fill: 'hsl(38 92% 62%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Line>
                 </LineChart>
               </ResponsiveContainer>
@@ -643,17 +648,17 @@ export default function Mistakes() {
 
         <Panel>
           <PanelTitle title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around" />
-          <div className="h-[200px] px-3">
+          <div className="flex-1 h-[214px] px-4">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 34, left: 4, bottom: 4 }} barSize={16}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
+                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 36, left: 4, bottom: 6 }} barSize={18}>
+                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={92} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.85} radius={[0, 4, 4, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="right" offset={8} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <YAxis dataKey="name" type="category" width={94} axisLine={false} tickLine={false}
+                    tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.9} radius={[9, 9, 9, 9]} animationDuration={950} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="right" offset={10} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -661,7 +666,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
             <p className="text-[11px] text-muted-foreground">
               {topSetup
@@ -669,6 +674,7 @@ export default function Mistakes() {
                 : 'No setup concentration detected'}
             </p>
           </div>
+
         </Panel>
       </div>
 
