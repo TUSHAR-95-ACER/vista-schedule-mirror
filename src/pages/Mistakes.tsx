@@ -55,8 +55,8 @@ const fmtDay = (d?: Date) =>
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={cn(
-      'rounded-xl border border-border/70 bg-card/80 backdrop-blur-[2px]',
-      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_18px_40px_-32px_hsl(0_0%_0%/0.9)]',
+      'flex h-full flex-col rounded-2xl border border-border/50 bg-[linear-gradient(180deg,hsl(var(--foreground)/0.025),transparent_38%)] bg-card/70 backdrop-blur-[3px]',
+      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_28px_60px_-40px_hsl(0_0%_0%/0.95)]',
       className,
     )}>{children}</div>
   );
@@ -64,9 +64,9 @@ function Panel({ className, children }: { className?: string; children: React.Re
 
 function PanelTitle({ title, tooltip, right }: { title: string; tooltip?: string; right?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-2 px-4 pt-3.5 pb-2.5">
+    <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-3">
       <div className="flex items-center gap-1.5 min-w-0">
-        <h3 className="font-heading text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-foreground/90 truncate">
+        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80 truncate">
           {title}
         </h3>
         {tooltip && <InfoTooltip text={tooltip} />}
@@ -83,29 +83,37 @@ function KpiCard({
   delta?: string; deltaTone?: 'up' | 'down' | 'flat';
   sub?: string; subClass?: string; accent?: string;
 }) {
+  const tone = accent ?? 'hsl(var(--primary))';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/70 bg-card/80 px-3.5 py-3 animate-fade-in
-                    shadow-[0_18px_40px_-34px_hsl(0_0%_0%/0.95)]">
+    <div
+      className="group relative flex h-full min-h-[124px] flex-col overflow-hidden rounded-2xl border border-border/45 bg-card/70 px-4 py-4 animate-fade-in
+                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_30px_60px_-42px_hsl(0_0%_0%/0.95)]
+                 transition-[transform,box-shadow,border-color] duration-300
+                 hover:-translate-y-[2px] hover:border-border/70 hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_36px_70px_-40px_hsl(0_0%_0%/1)]"
+      style={{ backgroundImage: `linear-gradient(160deg, ${tone.replace(')', ' / 0.09)').replace('hsl(', 'hsla(').replace('hsla(var(--primary) / 0.09)', 'hsl(var(--primary)/0.09)')} , transparent 52%)` }}
+    >
       <span
         aria-hidden
-        className="absolute inset-x-0 top-0 h-px opacity-70"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent ?? 'hsl(var(--primary))'}, transparent)` }}
+        className="absolute inset-x-0 top-0 h-[2px] opacity-80"
+        style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
       />
-      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground truncate">{label}</p>
-      <p className={cn('font-heading font-bold tracking-tight mt-1.5 text-[22px] leading-none truncate', valueClass)}>
+      <p className="text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
+      <p className={cn('font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
         {value}
       </p>
-      {delta && (
-        <p className={cn(
-          'mt-2 text-[10px] font-medium tabular-nums truncate',
-          deltaTone === 'up' && 'text-success',
-          deltaTone === 'down' && 'text-destructive',
-          (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
-        )}>
-          {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
-        </p>
-      )}
-      {sub && <p className={cn('mt-2 text-[10px] text-muted-foreground truncate', subClass)}>{sub}</p>}
+      <div className="mt-auto pt-3 space-y-1">
+        {delta && (
+          <p className={cn(
+            'text-[10.5px] font-semibold tabular-nums truncate',
+            deltaTone === 'up' && 'text-success',
+            deltaTone === 'down' && 'text-destructive',
+            (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
+          )}>
+            {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
+          </p>
+        )}
+        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/75 truncate', subClass)}>{sub}</p>}
+      </div>
     </div>
   );
 }
