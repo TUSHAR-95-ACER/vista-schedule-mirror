@@ -145,7 +145,7 @@ function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; 
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const size = 168, stroke = 15, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 190, stroke = 17, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
