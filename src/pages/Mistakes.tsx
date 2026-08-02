@@ -801,9 +801,9 @@ export default function Mistakes() {
           </div>
         </Panel>
 
-        <Panel className="border-gold/25 p-5">
-          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.18em] text-gold">Overall Summary</h3>
-          <div className="my-6"><ScoreGauge score={impactScore} /></div>
+        <Panel className="border-gold/20 px-5 py-[22px]">
+          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.2em] text-gold">Overall Summary</h3>
+          <div className="mb-7 mt-6"><ScoreGauge score={impactScore} /></div>
           <dl className="space-y-2.5 text-[11px]">
 
             {[
