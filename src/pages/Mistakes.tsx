@@ -55,8 +55,9 @@ const fmtDay = (d?: Date) =>
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={cn(
-      'flex h-full flex-col rounded-2xl border border-border/50 bg-[linear-gradient(180deg,hsl(var(--foreground)/0.025),transparent_38%)] bg-card/70 backdrop-blur-[3px]',
-      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_28px_60px_-40px_hsl(0_0%_0%/0.95)]',
+      'group/panel flex h-full flex-col rounded-2xl border border-foreground/[0.055] bg-[linear-gradient(180deg,hsl(var(--foreground)/0.022),transparent_40%)] bg-card/70 backdrop-blur-[3px]',
+      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_2px_6px_-2px_hsl(0_0%_0%/0.8),0_34px_70px_-44px_hsl(0_0%_0%/1)]',
+      'transition-[box-shadow,border-color] duration-300 hover:border-foreground/[0.09] hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.06)_inset,0_4px_10px_-3px_hsl(0_0%_0%/0.85),0_44px_84px_-42px_hsl(0_0%_0%/1)]',
       className,
     )}>{children}</div>
   );
@@ -64,9 +65,9 @@ function Panel({ className, children }: { className?: string; children: React.Re
 
 function PanelTitle({ title, tooltip, right }: { title: string; tooltip?: string; right?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-3">
+    <div className="flex items-center justify-between gap-2 px-5 pt-[18px] pb-3.5">
       <div className="flex items-center gap-1.5 min-w-0">
-        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80 truncate">
+        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/85 truncate">
           {title}
         </h3>
         {tooltip && <InfoTooltip text={tooltip} />}
@@ -86,27 +87,33 @@ function KpiCard({
   const tone = accent ?? 'hsl(var(--primary))';
   return (
     <div
-      className="group relative flex h-full min-h-[124px] flex-col overflow-hidden rounded-2xl border border-border/45 bg-card/70 px-4 py-4 animate-fade-in
-                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_30px_60px_-42px_hsl(0_0%_0%/0.95)]
-                 transition-[transform,box-shadow,border-color] duration-300
-                 hover:-translate-y-[2px] hover:border-border/70 hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_36px_70px_-40px_hsl(0_0%_0%/1)]"
+      className="group relative flex h-full min-h-[128px] flex-col overflow-hidden rounded-2xl border border-foreground/[0.05] bg-card/70 px-[18px] py-[17px] animate-fade-in
+                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_2px_6px_-2px_hsl(0_0%_0%/0.8),0_34px_66px_-44px_hsl(0_0%_0%/1)]
+                 transition-[transform,box-shadow,border-color] duration-300 ease-out
+                 hover:-translate-y-[3px] hover:border-foreground/[0.1] hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_6px_14px_-4px_hsl(0_0%_0%/0.9),0_46px_86px_-40px_hsl(0_0%_0%/1)]"
     >
+      {/* ambient corner glow */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.10] transition-opacity duration-300 group-hover:opacity-[0.16]"
-        style={{ background: `linear-gradient(155deg, ${tone}, transparent 55%)` }}
+        className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full blur-2xl opacity-[0.16] transition-opacity duration-300 group-hover:opacity-[0.26]"
+        style={{ background: `radial-gradient(circle, ${tone}, transparent 70%)` }}
       />
       <span
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[2px] opacity-80"
+        className="pointer-events-none absolute inset-0 opacity-[0.085] transition-opacity duration-300 group-hover:opacity-[0.14]"
+        style={{ background: `linear-gradient(155deg, ${tone}, transparent 58%)` }}
+      />
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[2px] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
         style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
       />
 
-      <p className="relative text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
-      <p className={cn('relative font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
+      <p className="relative text-[9px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/70 truncate">{label}</p>
+      <p className={cn('relative font-heading font-bold tracking-[-0.03em] mt-3 text-[28px] leading-none truncate drop-shadow-[0_2px_10px_hsl(0_0%_0%/0.65)]', valueClass)}>
         {value}
       </p>
-      <div className="relative mt-auto pt-3 space-y-1">
+      <div className="relative mt-auto pt-3.5 space-y-1">
         {delta && (
           <p className={cn(
             'text-[10.5px] font-semibold tabular-nums truncate',
@@ -117,7 +124,7 @@ function KpiCard({
             {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
           </p>
         )}
-        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/75 truncate', subClass)}>{sub}</p>}
+        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/70 truncate', subClass)}>{sub}</p>}
       </div>
     </div>
   );
