@@ -188,7 +188,7 @@ function MiniRing({ pct }: { pct: number }) {
 const Tip = ({ active, payload, label, money }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+    <div className="rounded-xl border border-foreground/[0.07] bg-popover/95 px-4 py-3 text-xs shadow-[0_30px_60px_-26px_hsl(0_0%_0%/1)] backdrop-blur-md">
       {label !== undefined && (
         <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">{label}</p>
       )}
@@ -540,7 +540,7 @@ export default function Mistakes() {
             )}
           </div>
           {topMistake && (
-            <div className="mt-auto flex items-center gap-2 border-t border-border/40 bg-destructive/[0.06] px-5 py-3">
+            <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] bg-destructive/[0.06] px-5 py-3">
               <Target className="h-3.5 w-3.5 text-destructive" />
               <p className="text-[11px] text-destructive/90">
                 <span className="font-semibold">{topMistake.name}</span> is your most expensive mistake
@@ -598,7 +598,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
+          <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] px-5 py-3">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <p className="text-[11px] text-muted-foreground">
               {worstSession
@@ -693,7 +693,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
+          <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] px-5 py-3">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
             <p className="text-[11px] text-muted-foreground">
               {topSetup
@@ -741,7 +741,7 @@ export default function Mistakes() {
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-border/40 bg-foreground/[0.02] text-left">
+                <tr className="border-y border-foreground/[0.05] bg-foreground/[0.02] text-left">
                   {['Mistake Type', 'Frequency', 'Total Loss', 'Avg Loss', 'Impact', 'Severity', 'Recovery Rate', 'Action'].map(h => (
                     <th key={h} className="px-4 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 whitespace-nowrap">{h}</th>
                   ))}
@@ -752,7 +752,7 @@ export default function Mistakes() {
                   const sev = SEVERITY[m.name];
                   const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
                   return (
-                    <tr key={m.name} className="border-b border-border/30 transition-colors last:border-0 hover:bg-foreground/[0.035]">
+                    <tr key={m.name} className="border-b border-foreground/[0.04] transition-colors last:border-0 hover:bg-foreground/[0.035]">
                       <td className="px-4 py-3.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>
                         <span className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full" style={{ background: color }} />
@@ -813,7 +813,7 @@ export default function Mistakes() {
               ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? 'text-success' : repeatDelta < 0 ? 'text-destructive' : ''],
               ['Focus Area', topMistake ? `${topMistake.name} control` : '—', 'text-gold'],
             ].map(([k, v, c]) => (
-              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/30 pb-2.5 last:border-0">
+              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-foreground/[0.04] pb-2.5 last:border-0">
                 <dt className="text-muted-foreground/85">{k}</dt>
                 <dd className={cn('font-mono font-semibold tabular-nums text-right', c as string)}>{v}</dd>
               </div>
