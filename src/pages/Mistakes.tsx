@@ -563,7 +563,7 @@ export default function Mistakes() {
                   <YAxis dataKey="name" type="category" width={86} axisLine={false} tickLine={false}
                     tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
                   <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip money />} />
-                  <Bar dataKey="loss" name="Loss" radius={[7, 7, 7, 7]} animationDuration={950} animationEasing="ease-out">
+                  <Bar dataKey="loss" name="Loss" radius={[9, 9, 9, 9]} animationDuration={1150} animationEasing="ease-out" activeBar={{ fillOpacity: 1 }}>
                     {lossByType.map((d, i) => (
                       <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.92} />
                     ))}
