@@ -584,12 +584,12 @@ export default function Mistakes() {
           <div className="flex-1 h-[214px] px-4">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySession} margin={{ top: 20, right: 8, left: -14, bottom: 4 }} barSize={32}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                <BarChart data={mistakeBySession} margin={{ top: 22, right: 8, left: -14, bottom: 4 }} barSize={38}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.12} />
                   <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.92} radius={[8, 8, 4, 4]} animationDuration={950} animationEasing="ease-out">
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.18)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 52%)" fillOpacity={0.9} radius={[10, 10, 4, 4]} animationDuration={1150} animationEasing="ease-out" activeBar={{ fillOpacity: 1 }}>
                     <LabelList dataKey="count" position="top" offset={8} style={{ fill: 'hsl(38 92% 60%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
