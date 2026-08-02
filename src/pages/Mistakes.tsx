@@ -495,16 +495,17 @@ export default function Mistakes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes by Type" tooltip="Share of each mistake type across the selected period" />
-          <div className="flex-1 px-5 pb-4">
+          <div className="flex-1 px-5 pb-5">
             {distribution.length > 0 ? (
-              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3">
-                <div className="relative h-[204px]">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-4">
+                <div className="relative h-[216px]">
+                  <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-destructive/10 blur-2xl" />
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={48} outerRadius={86} paddingAngle={2.5} cornerRadius={4}
-                        stroke="hsl(var(--card))" strokeWidth={2}
-                        animationDuration={900} animationEasing="ease-out">
+                        innerRadius={54} outerRadius={98} paddingAngle={2} cornerRadius={6}
+                        stroke="hsl(var(--card))" strokeWidth={2.5}
+                        animationDuration={1100} animationEasing="ease-out">
                         {distribution.map((d, i) => (
                           <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
                         ))}
@@ -512,26 +513,30 @@ export default function Mistakes() {
                       <Tooltip content={<Tip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
-                    <span className="font-heading text-[32px] font-bold leading-none tracking-[-0.03em]">{totalMistakes}</span>
-                    <span className="text-[8.5px] uppercase tracking-[0.24em] text-muted-foreground/80">Total</span>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                    <span className="font-heading text-[38px] font-bold leading-none tracking-[-0.035em] drop-shadow-[0_3px_12px_hsl(0_0%_0%/0.7)]">{totalMistakes}</span>
+                    <span className="text-[8.5px] uppercase tracking-[0.28em] text-muted-foreground/75">Total</span>
                   </div>
                 </div>
-                <ul className="space-y-3">
-                  {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-2.5 text-[11.5px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-inset ring-background/40"
-                        style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
-                      <span className="truncate text-foreground/85">{m.name}</span>
-                      <span className="ml-auto font-mono text-[11px] tabular-nums text-muted-foreground/85">
-                        {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
-                      </span>
-                    </li>
-                  ))}
+                <ul className="space-y-1.5">
+                  {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => {
+                    const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
+                    return (
+                      <li key={m.name}
+                        className="flex items-center gap-2.5 rounded-lg px-2 py-[7px] text-[11.5px] transition-colors duration-200 hover:bg-foreground/[0.035]">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: color, boxShadow: `0 0 10px -1px ${color}` }} />
+                        <span className="truncate text-foreground/85">{m.name}</span>
+                        <span className="ml-auto font-mono text-[11px] font-medium tabular-nums text-muted-foreground/85">
+                          {m.frequency} <span className="text-muted-foreground/55">({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)</span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : (
-              <div className="grid h-[204px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
+              <div className="grid h-[216px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
             )}
           </div>
           {topMistake && (
