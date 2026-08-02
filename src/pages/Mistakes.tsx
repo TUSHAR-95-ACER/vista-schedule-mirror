@@ -556,7 +556,7 @@ export default function Mistakes() {
           <div className="flex-1 h-[256px] px-4 pb-4">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={14}>
+                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={18}>
                   <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                     tickFormatter={(v) => `$${v}`} axisLine={false} tickLine={false} />
