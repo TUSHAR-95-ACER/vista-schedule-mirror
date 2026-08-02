@@ -785,7 +785,7 @@ export default function Mistakes() {
                       <td className="px-4 py-3.5">
                         <button
                           onClick={() => setTypeFilter(m.name)}
-                          className="flex items-center gap-1 rounded-lg border border-border/60 bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                          className="flex items-center gap-1 rounded-lg border border-foreground/[0.07] bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 shadow-[0_2px_6px_-3px_hsl(0_0%_0%/0.8)] transition-all duration-200 hover:-translate-y-[1px] hover:border-primary/45 hover:bg-primary/10 hover:text-primary hover:shadow-[0_8px_18px_-8px_hsl(var(--primary)/0.6)]"
                         >
                           Review <ArrowRight className="h-3 w-3" />
                         </button>
