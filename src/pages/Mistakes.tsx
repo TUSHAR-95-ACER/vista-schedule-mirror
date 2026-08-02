@@ -164,9 +164,9 @@ function ScoreGauge({ score }: { score: number }) {
           className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-        <span className="font-heading text-[44px] font-bold leading-none tracking-[-0.03em]">{score}</span>
-        <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/80">Impact Score</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <span className="font-heading text-[50px] font-bold leading-none tracking-[-0.035em] drop-shadow-[0_3px_14px_hsl(0_0%_0%/0.7)]">{score}</span>
+        <span className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground/75">Impact Score</span>
       </div>
     </div>
   );
