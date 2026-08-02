@@ -458,7 +458,7 @@ export default function Mistakes() {
       {/* ── Smart insights ─────────────────────────────────────── */}
       <Panel className="border-success/25 bg-[linear-gradient(90deg,hsl(var(--success)/0.07),transparent_45%)]">
         <div className="grid grid-cols-1 lg:grid-cols-[190px_1fr] items-center gap-3 p-3.5">
-          <div className="flex items-center gap-2.5 lg:border-r lg:border-border/60 lg:pr-3">
+          <div className="flex items-center gap-2.5 lg:border-r lg:border-foreground/[0.06] lg:pr-3">
             <span className="grid h-9 w-9 place-items-center rounded-full border border-success/40 bg-success/10 text-success">
               <Brain className="h-4.5 w-4.5" />
             </span>
