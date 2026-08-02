@@ -605,17 +605,22 @@ export default function Mistakes() {
           <div className="flex-1 h-[256px] px-4 pb-4">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 22, right: 16, left: -12, bottom: 4 }}>
+                <ComposedChart data={trendData} margin={{ top: 24, right: 16, left: -12, bottom: 4 }}>
                   <defs>
                     <linearGradient id="trendGlow" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="hsl(38 92% 50%)" />
-                      <stop offset="100%" stopColor="hsl(0 84% 60%)" />
+                      <stop offset="0%" stopColor="hsl(38 92% 55%)" />
+                      <stop offset="100%" stopColor="hsl(0 84% 62%)" />
                     </linearGradient>
-                    <filter id="trendShadow" x="-20%" y="-40%" width="140%" height="200%">
-                      <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="hsl(38 92% 50%)" floodOpacity="0.35" />
+                    <linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(38 92% 55%)" stopOpacity={0.34} />
+                      <stop offset="55%" stopColor="hsl(20 90% 55%)" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} />
+                    </linearGradient>
+                    <filter id="trendShadow" x="-25%" y="-50%" width="150%" height="220%">
+                      <feDropShadow dx="0" dy="5" stdDeviation="7" floodColor="hsl(38 92% 55%)" floodOpacity="0.42" />
                     </filter>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.12} />
                   <XAxis dataKey="week" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.28, strokeWidth: 1 }}
@@ -623,22 +628,32 @@ export default function Mistakes() {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
-                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">Week of {label}</p>
-                          <p className="font-mono text-[11.5px] text-warning">Mistakes: <span className="font-semibold">{d.count}</span></p>
-                          <p className="font-mono text-[11.5px] text-destructive">Loss: <span className="font-semibold">{formatCurrency(d.loss)}</span></p>
+                        <div className="min-w-[152px] rounded-xl border border-foreground/[0.07] bg-popover/95 px-4 py-3 text-xs shadow-[0_30px_60px_-26px_hsl(0_0%_0%/1)] backdrop-blur-md">
+                          <p className="mb-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">Week of {label}</p>
+                          <p className="flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+                            <span className="h-2 w-2 rounded-full bg-warning" />
+                            <span className="text-muted-foreground">Mistakes</span>
+                            <span className="ml-auto font-semibold text-warning">{d.count}</span>
+                          </p>
+                          <p className="mt-1 flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+                            <span className="h-2 w-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Loss</span>
+                            <span className="ml-auto font-semibold text-destructive">{formatCurrency(d.loss)}</span>
+                          </p>
                         </div>
                       );
                     }} />
-                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={3.25}
+                  <Area type="monotone" dataKey="count" stroke="none" fill="url(#trendArea)"
+                    animationDuration={1200} animationEasing="ease-out" isAnimationActive />
+                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={4}
                     strokeLinecap="round" filter="url(#trendShadow)"
-                    dot={{ r: 3.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 55%)', strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2 }}
-                    animationDuration={1000} animationEasing="ease-out">
-                    <LabelList dataKey="count" position="top" offset={12}
-                      style={{ fill: 'hsl(38 92% 62%)', fontSize: 10.5, fontWeight: 600 }} />
+                    dot={{ r: 4.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 58%)', strokeWidth: 2.5 }}
+                    activeDot={{ r: 7.5, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2.5 }}
+                    animationDuration={1300} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={13}
+                      style={{ fill: 'hsl(38 92% 64%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Line>
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No trend data</div>
