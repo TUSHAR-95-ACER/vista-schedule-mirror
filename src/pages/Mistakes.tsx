@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/shared/MetricCard';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, LineChart, Line, LabelList,
+  PieChart, Pie, Cell, ComposedChart, Line, Area, LabelList,
 } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
@@ -55,8 +55,9 @@ const fmtDay = (d?: Date) =>
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={cn(
-      'flex h-full flex-col rounded-2xl border border-border/50 bg-[linear-gradient(180deg,hsl(var(--foreground)/0.025),transparent_38%)] bg-card/70 backdrop-blur-[3px]',
-      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_28px_60px_-40px_hsl(0_0%_0%/0.95)]',
+      'group/panel flex h-full flex-col rounded-2xl border border-foreground/[0.055] bg-[linear-gradient(180deg,hsl(var(--foreground)/0.022),transparent_40%)] bg-card/70 backdrop-blur-[3px]',
+      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_2px_6px_-2px_hsl(0_0%_0%/0.8),0_34px_70px_-44px_hsl(0_0%_0%/1)]',
+      'transition-[box-shadow,border-color] duration-300 hover:border-foreground/[0.09] hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.06)_inset,0_4px_10px_-3px_hsl(0_0%_0%/0.85),0_44px_84px_-42px_hsl(0_0%_0%/1)]',
       className,
     )}>{children}</div>
   );
@@ -64,9 +65,9 @@ function Panel({ className, children }: { className?: string; children: React.Re
 
 function PanelTitle({ title, tooltip, right }: { title: string; tooltip?: string; right?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-3">
+    <div className="flex items-center justify-between gap-2 px-5 pt-[18px] pb-3.5">
       <div className="flex items-center gap-1.5 min-w-0">
-        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/80 truncate">
+        <h3 className="font-heading text-[10.5px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/85 truncate">
           {title}
         </h3>
         {tooltip && <InfoTooltip text={tooltip} />}
@@ -86,27 +87,33 @@ function KpiCard({
   const tone = accent ?? 'hsl(var(--primary))';
   return (
     <div
-      className="group relative flex h-full min-h-[124px] flex-col overflow-hidden rounded-2xl border border-border/45 bg-card/70 px-4 py-4 animate-fade-in
-                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.05)_inset,0_30px_60px_-42px_hsl(0_0%_0%/0.95)]
-                 transition-[transform,box-shadow,border-color] duration-300
-                 hover:-translate-y-[2px] hover:border-border/70 hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_36px_70px_-40px_hsl(0_0%_0%/1)]"
+      className="group relative flex h-full min-h-[128px] flex-col overflow-hidden rounded-2xl border border-foreground/[0.05] bg-card/70 px-[18px] py-[17px] animate-fade-in
+                 shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_2px_6px_-2px_hsl(0_0%_0%/0.8),0_34px_66px_-44px_hsl(0_0%_0%/1)]
+                 transition-[transform,box-shadow,border-color] duration-300 ease-out
+                 hover:-translate-y-[3px] hover:border-foreground/[0.1] hover:shadow-[0_1px_0_0_hsl(var(--foreground)/0.07)_inset,0_6px_14px_-4px_hsl(0_0%_0%/0.9),0_46px_86px_-40px_hsl(0_0%_0%/1)]"
     >
+      {/* ambient corner glow */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.10] transition-opacity duration-300 group-hover:opacity-[0.16]"
-        style={{ background: `linear-gradient(155deg, ${tone}, transparent 55%)` }}
+        className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full blur-2xl opacity-[0.16] transition-opacity duration-300 group-hover:opacity-[0.26]"
+        style={{ background: `radial-gradient(circle, ${tone}, transparent 70%)` }}
       />
       <span
         aria-hidden
-        className="absolute inset-x-0 top-0 h-[2px] opacity-80"
+        className="pointer-events-none absolute inset-0 opacity-[0.085] transition-opacity duration-300 group-hover:opacity-[0.14]"
+        style={{ background: `linear-gradient(155deg, ${tone}, transparent 58%)` }}
+      />
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[2px] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
         style={{ background: `linear-gradient(90deg, transparent, ${tone}, transparent)` }}
       />
 
-      <p className="relative text-[9.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground/80 truncate">{label}</p>
-      <p className={cn('relative font-heading font-bold tracking-[-0.02em] mt-2.5 text-[26px] leading-none truncate', valueClass)}>
+      <p className="relative text-[9px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/70 truncate">{label}</p>
+      <p className={cn('relative font-heading font-bold tracking-[-0.03em] mt-3 text-[28px] leading-none truncate drop-shadow-[0_2px_10px_hsl(0_0%_0%/0.65)]', valueClass)}>
         {value}
       </p>
-      <div className="relative mt-auto pt-3 space-y-1">
+      <div className="relative mt-auto pt-3.5 space-y-1">
         {delta && (
           <p className={cn(
             'text-[10.5px] font-semibold tabular-nums truncate',
@@ -117,7 +124,7 @@ function KpiCard({
             {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
           </p>
         )}
-        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/75 truncate', subClass)}>{sub}</p>}
+        {sub && <p className={cn('text-[10px] leading-snug text-muted-foreground/70 truncate', subClass)}>{sub}</p>}
       </div>
     </div>
   );
@@ -138,7 +145,7 @@ function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; 
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const size = 168, stroke = 15, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 190, stroke = 17, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
@@ -157,9 +164,9 @@ function ScoreGauge({ score }: { score: number }) {
           className="transition-[stroke-dashoffset] duration-1000 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-        <span className="font-heading text-[44px] font-bold leading-none tracking-[-0.03em]">{score}</span>
-        <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/80">Impact Score</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <span className="font-heading text-[50px] font-bold leading-none tracking-[-0.035em] drop-shadow-[0_3px_14px_hsl(0_0%_0%/0.7)]">{score}</span>
+        <span className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground/75">Impact Score</span>
       </div>
     </div>
   );
@@ -181,7 +188,7 @@ function MiniRing({ pct }: { pct: number }) {
 const Tip = ({ active, payload, label, money }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
+    <div className="rounded-xl border border-foreground/[0.07] bg-popover/95 px-4 py-3 text-xs shadow-[0_30px_60px_-26px_hsl(0_0%_0%/1)] backdrop-blur-md">
       {label !== undefined && (
         <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">{label}</p>
       )}
@@ -451,7 +458,7 @@ export default function Mistakes() {
       {/* ── Smart insights ─────────────────────────────────────── */}
       <Panel className="border-success/25 bg-[linear-gradient(90deg,hsl(var(--success)/0.07),transparent_45%)]">
         <div className="grid grid-cols-1 lg:grid-cols-[190px_1fr] items-center gap-3 p-3.5">
-          <div className="flex items-center gap-2.5 lg:border-r lg:border-border/60 lg:pr-3">
+          <div className="flex items-center gap-2.5 lg:border-r lg:border-foreground/[0.06] lg:pr-3">
             <span className="grid h-9 w-9 place-items-center rounded-full border border-success/40 bg-success/10 text-success">
               <Brain className="h-4.5 w-4.5" />
             </span>
@@ -488,16 +495,17 @@ export default function Mistakes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
         <Panel>
           <PanelTitle title="Mistakes by Type" tooltip="Share of each mistake type across the selected period" />
-          <div className="flex-1 px-5 pb-4">
+          <div className="flex-1 px-5 pb-5">
             {distribution.length > 0 ? (
-              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3">
-                <div className="relative h-[204px]">
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-4">
+                <div className="relative h-[216px]">
+                  <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-destructive/10 blur-2xl" />
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={48} outerRadius={86} paddingAngle={2.5} cornerRadius={4}
-                        stroke="hsl(var(--card))" strokeWidth={2}
-                        animationDuration={900} animationEasing="ease-out">
+                        innerRadius={54} outerRadius={98} paddingAngle={2} cornerRadius={6}
+                        stroke="hsl(var(--card))" strokeWidth={2.5}
+                        animationDuration={1100} animationEasing="ease-out">
                         {distribution.map((d, i) => (
                           <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
                         ))}
@@ -505,30 +513,34 @@ export default function Mistakes() {
                       <Tooltip content={<Tip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
-                    <span className="font-heading text-[32px] font-bold leading-none tracking-[-0.03em]">{totalMistakes}</span>
-                    <span className="text-[8.5px] uppercase tracking-[0.24em] text-muted-foreground/80">Total</span>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                    <span className="font-heading text-[38px] font-bold leading-none tracking-[-0.035em] drop-shadow-[0_3px_12px_hsl(0_0%_0%/0.7)]">{totalMistakes}</span>
+                    <span className="text-[8.5px] uppercase tracking-[0.28em] text-muted-foreground/75">Total</span>
                   </div>
                 </div>
-                <ul className="space-y-3">
-                  {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-2.5 text-[11.5px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-inset ring-background/40"
-                        style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
-                      <span className="truncate text-foreground/85">{m.name}</span>
-                      <span className="ml-auto font-mono text-[11px] tabular-nums text-muted-foreground/85">
-                        {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
-                      </span>
-                    </li>
-                  ))}
+                <ul className="space-y-1.5">
+                  {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => {
+                    const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
+                    return (
+                      <li key={m.name}
+                        className="flex items-center gap-2.5 rounded-lg px-2 py-[7px] text-[11.5px] transition-colors duration-200 hover:bg-foreground/[0.035]">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: color, boxShadow: `0 0 10px -1px ${color}` }} />
+                        <span className="truncate text-foreground/85">{m.name}</span>
+                        <span className="ml-auto font-mono text-[11px] font-medium tabular-nums text-muted-foreground/85">
+                          {m.frequency} <span className="text-muted-foreground/55">({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)</span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : (
-              <div className="grid h-[204px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
+              <div className="grid h-[216px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
             )}
           </div>
           {topMistake && (
-            <div className="mt-auto flex items-center gap-2 border-t border-border/40 bg-destructive/[0.06] px-5 py-3">
+            <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] bg-destructive/[0.06] px-5 py-3">
               <Target className="h-3.5 w-3.5 text-destructive" />
               <p className="text-[11px] text-destructive/90">
                 <span className="font-semibold">{topMistake.name}</span> is your most expensive mistake
@@ -544,14 +556,14 @@ export default function Mistakes() {
           <div className="flex-1 h-[256px] px-4 pb-4">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={14}>
+                <BarChart data={lossByType} layout="vertical" margin={{ top: 6, right: 64, left: 4, bottom: 6 }} barSize={18}>
                   <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                     tickFormatter={(v) => `$${v}`} axisLine={false} tickLine={false} />
                   <YAxis dataKey="name" type="category" width={86} axisLine={false} tickLine={false}
                     tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
                   <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip money />} />
-                  <Bar dataKey="loss" name="Loss" radius={[7, 7, 7, 7]} animationDuration={950} animationEasing="ease-out">
+                  <Bar dataKey="loss" name="Loss" radius={[9, 9, 9, 9]} animationDuration={1150} animationEasing="ease-out" activeBar={{ fillOpacity: 1 }}>
                     {lossByType.map((d, i) => (
                       <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.92} />
                     ))}
@@ -572,12 +584,12 @@ export default function Mistakes() {
           <div className="flex-1 h-[214px] px-4">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySession} margin={{ top: 20, right: 8, left: -14, bottom: 4 }} barSize={32}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                <BarChart data={mistakeBySession} margin={{ top: 22, right: 8, left: -14, bottom: 4 }} barSize={38}>
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.12} />
                   <XAxis dataKey="name" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.92} radius={[8, 8, 4, 4]} animationDuration={950} animationEasing="ease-out">
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.18)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 52%)" fillOpacity={0.9} radius={[10, 10, 4, 4]} animationDuration={1150} animationEasing="ease-out" activeBar={{ fillOpacity: 1 }}>
                     <LabelList dataKey="count" position="top" offset={8} style={{ fill: 'hsl(38 92% 60%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
@@ -586,7 +598,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
+          <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] px-5 py-3">
             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <p className="text-[11px] text-muted-foreground">
               {worstSession
@@ -605,17 +617,22 @@ export default function Mistakes() {
           <div className="flex-1 h-[256px] px-4 pb-4">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 22, right: 16, left: -12, bottom: 4 }}>
+                <ComposedChart data={trendData} margin={{ top: 24, right: 16, left: -12, bottom: 4 }}>
                   <defs>
                     <linearGradient id="trendGlow" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="hsl(38 92% 50%)" />
-                      <stop offset="100%" stopColor="hsl(0 84% 60%)" />
+                      <stop offset="0%" stopColor="hsl(38 92% 55%)" />
+                      <stop offset="100%" stopColor="hsl(0 84% 62%)" />
                     </linearGradient>
-                    <filter id="trendShadow" x="-20%" y="-40%" width="140%" height="200%">
-                      <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="hsl(38 92% 50%)" floodOpacity="0.35" />
+                    <linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(38 92% 55%)" stopOpacity={0.34} />
+                      <stop offset="55%" stopColor="hsl(20 90% 55%)" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} />
+                    </linearGradient>
+                    <filter id="trendShadow" x="-25%" y="-50%" width="150%" height="220%">
+                      <feDropShadow dx="0" dy="5" stdDeviation="7" floodColor="hsl(38 92% 55%)" floodOpacity="0.42" />
                     </filter>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.16} />
+                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.12} />
                   <XAxis dataKey="week" tick={{ fontSize: 9.5, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.28, strokeWidth: 1 }}
@@ -623,22 +640,32 @@ export default function Mistakes() {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-xl border border-border/60 bg-popover/95 px-3.5 py-2.5 text-xs shadow-[0_24px_50px_-24px_hsl(0_0%_0%/0.95)] backdrop-blur-md">
-                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">Week of {label}</p>
-                          <p className="font-mono text-[11.5px] text-warning">Mistakes: <span className="font-semibold">{d.count}</span></p>
-                          <p className="font-mono text-[11.5px] text-destructive">Loss: <span className="font-semibold">{formatCurrency(d.loss)}</span></p>
+                        <div className="min-w-[152px] rounded-xl border border-foreground/[0.07] bg-popover/95 px-4 py-3 text-xs shadow-[0_30px_60px_-26px_hsl(0_0%_0%/1)] backdrop-blur-md">
+                          <p className="mb-2 text-[9.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">Week of {label}</p>
+                          <p className="flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+                            <span className="h-2 w-2 rounded-full bg-warning" />
+                            <span className="text-muted-foreground">Mistakes</span>
+                            <span className="ml-auto font-semibold text-warning">{d.count}</span>
+                          </p>
+                          <p className="mt-1 flex items-center gap-2 font-mono text-[11.5px] tabular-nums">
+                            <span className="h-2 w-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Loss</span>
+                            <span className="ml-auto font-semibold text-destructive">{formatCurrency(d.loss)}</span>
+                          </p>
                         </div>
                       );
                     }} />
-                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={3.25}
+                  <Area type="monotone" dataKey="count" stroke="none" fill="url(#trendArea)"
+                    animationDuration={1200} animationEasing="ease-out" isAnimationActive />
+                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={4}
                     strokeLinecap="round" filter="url(#trendShadow)"
-                    dot={{ r: 3.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 55%)', strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2 }}
-                    animationDuration={1000} animationEasing="ease-out">
-                    <LabelList dataKey="count" position="top" offset={12}
-                      style={{ fill: 'hsl(38 92% 62%)', fontSize: 10.5, fontWeight: 600 }} />
+                    dot={{ r: 4.5, fill: 'hsl(var(--card))', stroke: 'hsl(38 92% 58%)', strokeWidth: 2.5 }}
+                    activeDot={{ r: 7.5, fill: 'hsl(0 84% 60%)', stroke: 'hsl(var(--card))', strokeWidth: 2.5 }}
+                    animationDuration={1300} animationEasing="ease-out">
+                    <LabelList dataKey="count" position="top" offset={13}
+                      style={{ fill: 'hsl(38 92% 64%)', fontSize: 10.5, fontWeight: 600 }} />
                   </Line>
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No trend data</div>
@@ -651,13 +678,13 @@ export default function Mistakes() {
           <div className="flex-1 h-[214px] px-4">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 36, left: 4, bottom: 6 }} barSize={18}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.16} />
+                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 36, left: 4, bottom: 6 }} barSize={22}>
+                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.12} />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis dataKey="name" type="category" width={94} axisLine={false} tickLine={false}
                     tick={{ fontSize: 10.5, fill: 'hsl(var(--foreground)/0.85)' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.2)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.9} radius={[9, 9, 9, 9]} animationDuration={950} animationEasing="ease-out">
+                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.18)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 46%)" fillOpacity={0.9} radius={[11, 11, 11, 11]} animationDuration={1150} animationEasing="ease-out" activeBar={{ fillOpacity: 1 }}>
                     <LabelList dataKey="count" position="right" offset={10} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10.5, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
@@ -666,7 +693,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
             )}
           </div>
-          <div className="mt-auto flex items-center gap-2 border-t border-border/40 px-5 py-3">
+          <div className="mt-auto flex items-center gap-2 border-t border-foreground/[0.05] px-5 py-3">
             <ShieldCheck className="h-3.5 w-3.5 text-success" />
             <p className="text-[11px] text-muted-foreground">
               {topSetup
@@ -714,7 +741,7 @@ export default function Mistakes() {
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-border/40 bg-foreground/[0.02] text-left">
+                <tr className="border-y border-foreground/[0.05] bg-foreground/[0.02] text-left">
                   {['Mistake Type', 'Frequency', 'Total Loss', 'Avg Loss', 'Impact', 'Severity', 'Recovery Rate', 'Action'].map(h => (
                     <th key={h} className="px-4 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80 whitespace-nowrap">{h}</th>
                   ))}
@@ -725,7 +752,7 @@ export default function Mistakes() {
                   const sev = SEVERITY[m.name];
                   const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
                   return (
-                    <tr key={m.name} className="border-b border-border/30 transition-colors last:border-0 hover:bg-foreground/[0.035]">
+                    <tr key={m.name} className="border-b border-foreground/[0.04] transition-colors last:border-0 hover:bg-foreground/[0.035]">
                       <td className="px-4 py-3.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>
                         <span className="flex items-center gap-2">
                           <span className="h-2 w-2 rounded-full" style={{ background: color }} />
@@ -758,7 +785,7 @@ export default function Mistakes() {
                       <td className="px-4 py-3.5">
                         <button
                           onClick={() => setTypeFilter(m.name)}
-                          className="flex items-center gap-1 rounded-lg border border-border/60 bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                          className="flex items-center gap-1 rounded-lg border border-foreground/[0.07] bg-foreground/[0.02] px-2.5 py-1.5 text-[10px] font-medium text-foreground/90 shadow-[0_2px_6px_-3px_hsl(0_0%_0%/0.8)] transition-all duration-200 hover:-translate-y-[1px] hover:border-primary/45 hover:bg-primary/10 hover:text-primary hover:shadow-[0_8px_18px_-8px_hsl(var(--primary)/0.6)]"
                         >
                           Review <ArrowRight className="h-3 w-3" />
                         </button>
@@ -774,9 +801,9 @@ export default function Mistakes() {
           </div>
         </Panel>
 
-        <Panel className="border-gold/25 p-5">
-          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.18em] text-gold">Overall Summary</h3>
-          <div className="my-6"><ScoreGauge score={impactScore} /></div>
+        <Panel className="border-gold/20 px-5 py-[22px]">
+          <h3 className="font-heading text-[10.5px] font-semibold uppercase tracking-[0.2em] text-gold">Overall Summary</h3>
+          <div className="mb-7 mt-6"><ScoreGauge score={impactScore} /></div>
           <dl className="space-y-2.5 text-[11px]">
 
             {[
@@ -786,7 +813,7 @@ export default function Mistakes() {
               ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? 'text-success' : repeatDelta < 0 ? 'text-destructive' : ''],
               ['Focus Area', topMistake ? `${topMistake.name} control` : '—', 'text-gold'],
             ].map(([k, v, c]) => (
-              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/30 pb-2.5 last:border-0">
+              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-foreground/[0.04] pb-2.5 last:border-0">
                 <dt className="text-muted-foreground/85">{k}</dt>
                 <dd className={cn('font-mono font-semibold tabular-nums text-right', c as string)}>{v}</dd>
               </div>
