@@ -351,11 +351,12 @@ export default function Psychology() {
   const gaugeAngle = 180 - (gaugeValue / 100) * 180;
 
   return (
-    <div className="w-full space-y-6 p-6">
+    <div className="w-full space-y-7 p-7">
       {Header}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+
         <KpiCard
           label="Psychology Score" value={`${stats.psychScore}`} icon={Brain} color={C.green}
           status={stats.psychScore >= 70 ? 'Strong mindset' : stats.psychScore >= 50 ? 'Developing' : 'Needs work'}
