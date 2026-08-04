@@ -479,34 +479,43 @@ export default function Psychology() {
         {/* Mistake frequency */}
         <SectionCard title="Mistake Frequency" subtitle="Occurrence rate per mistake type" tooltip="How often each type of mistake occurs in your trades">
           {mistakeData.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {mistakeData.slice(0, 6).map((m, i) => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 const color = [C.red, C.orange, C.yellow, C.purple, C.blue, C.emerald][i % 6];
                 return (
-                  <div key={m.name} className="space-y-1.5">
+                  <div key={m.name} className="space-y-2.5">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="flex min-w-0 items-center gap-2 text-[13px] text-white">
-                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                      <span className="flex min-w-0 items-center gap-2.5 text-[14px] font-medium text-white">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}88` }} />
                         <span className="truncate">{m.name}</span>
                       </span>
-                      <span className="flex shrink-0 items-center gap-2">
-                        <span className="rounded-md border border-white/[0.08] px-1.5 py-0.5 font-mono text-[11px] text-white">{m.count}</span>
-                        <span className="font-mono text-[11px]" style={{ color: C.muted }}>{pct}%</span>
+                      <span className="flex shrink-0 items-center gap-2.5">
+                        <span
+                          className="rounded-lg border px-2.5 py-1 font-mono text-[12.5px] font-bold"
+                          style={{ borderColor: `${color}33`, background: `${color}14`, color }}
+                        >
+                          {m.count}
+                        </span>
+                        <span className="font-mono text-[12.5px] font-semibold" style={{ color: C.muted }}>{pct}%</span>
                       </span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+                    <div className="h-3 overflow-hidden rounded-full bg-white/[0.045]">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}AA, ${color})`, boxShadow: `0 0 12px ${color}55` }}
+                      />
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex h-[240px] items-center justify-center text-[13px]" style={{ color: C.muted }}>
+            <div className="flex h-[268px] items-center justify-center text-[13px]" style={{ color: C.muted }}>
               No mistakes recorded 🎉
             </div>
           )}
+
         </SectionCard>
 
         {/* Checklist radar */}
