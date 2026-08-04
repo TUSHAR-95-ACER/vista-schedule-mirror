@@ -601,7 +601,7 @@ export default function Psychology() {
             <select
               value={emotionFilter}
               onChange={e => setEmotionFilter(e.target.value)}
-              className="rounded-lg border border-white/[0.08] bg-[#0A0A0A] px-2.5 py-1.5 text-[11px] text-white outline-none"
+              className="rounded-xl border border-white/[0.09] bg-[#0A0A0A] px-3 py-2 text-[11.5px] font-medium text-white outline-none transition-colors hover:border-white/20"
             >
               <option value="all">All emotions</option>
               {emotionData.map(e => <option key={e.name} value={e.name}>{e.name}</option>)}
@@ -611,11 +611,11 @@ export default function Psychology() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/[0.06] text-left">
+                <tr className="border-b border-white/[0.07] text-left">
                   {['Emotion', 'Trades', 'Win Rate', 'Total P/L'].map((h, i) => (
                     <th
                       key={h}
-                      className={cn('px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em]', i === 1 && 'text-center', i === 2 && 'text-center', i === 3 && 'text-right')}
+                      className={cn('px-4 py-4 text-[10.5px] font-semibold uppercase tracking-[0.16em]', i === 1 && 'text-center', i === 2 && 'text-center', i === 3 && 'text-right')}
                       style={{ color: C.muted }}
                     >
                       {h}
@@ -625,11 +625,11 @@ export default function Psychology() {
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} className="border-b border-white/[0.04] transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-3 text-[13px] font-medium text-white">{row.name}</td>
-                    <td className="px-3 py-3 text-center font-mono text-[13px]" style={{ color: C.muted }}>{row.count}</td>
-                    <td className="px-3 py-3 text-center font-mono text-[13px]" style={{ color: row.winRate >= 50 ? C.green : C.red }}>{row.winRate}%</td>
-                    <td className="px-3 py-3 text-right font-mono text-[13px]" style={{ color: row.pl >= 0 ? C.green : C.red }}>
+                  <tr key={row.name} className="border-b border-white/[0.04] transition-colors hover:bg-white/[0.04]">
+                    <td className="px-4 py-[18px] text-[14px] font-semibold text-white">{row.name}</td>
+                    <td className="px-4 py-[18px] text-center font-mono text-[14px]" style={{ color: C.muted }}>{row.count}</td>
+                    <td className="px-4 py-[18px] text-center font-mono text-[14px] font-semibold" style={{ color: row.winRate >= 50 ? C.green : C.red }}>{row.winRate}%</td>
+                    <td className="px-4 py-[18px] text-right font-mono text-[14px] font-bold" style={{ color: row.pl >= 0 ? C.green : C.red }}>
                       {row.pl >= 0 ? '+' : ''}{row.pl.toFixed(2)}
                     </td>
                   </tr>
@@ -637,6 +637,7 @@ export default function Psychology() {
               </tbody>
             </table>
           </div>
+
         </SectionCard>
       </div>
 
