@@ -450,19 +450,30 @@ export default function Psychology() {
 
         {/* Emotion vs P/L */}
         <SectionCard title="Emotion vs P/L" subtitle="Profit impact by emotional state" tooltip="How your emotional state during trading impacts your profit/loss">
-          <div className="h-[240px]">
+          <div className="h-[268px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 6, right: 6, left: -14, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<ChartTip />} />
-                <Bar dataKey="pl" name="P/L" radius={[8, 8, 0, 0]} animationDuration={700}>
-                  {emotionData.map((e, i) => <Cell key={i} fill={e.pl >= 0 ? C.green : C.red} />)}
+              <BarChart data={emotionData} margin={{ top: 8, right: 6, left: -12, bottom: 0 }} barCategoryGap="28%">
+                <defs>
+                  <linearGradient id="barPos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3BE87A" />
+                    <stop offset="100%" stopColor="#16A34A" />
+                  </linearGradient>
+                  <linearGradient id="barNeg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FF5A5A" />
+                    <stop offset="100%" stopColor="#B91C1C" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.09)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} dy={6} />
+                <YAxis tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} width={52} />
+                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.045)', radius: 10 }} content={<ChartTip />} />
+                <Bar dataKey="pl" name="P/L" radius={[10, 10, 4, 4]} maxBarSize={46} animationDuration={1000} animationEasing="ease-out">
+                  {emotionData.map((e, i) => <Cell key={i} fill={e.pl >= 0 ? 'url(#barPos)' : 'url(#barNeg)'} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+
         </SectionCard>
 
         {/* Mistake frequency */}
