@@ -97,13 +97,13 @@ function SectionCard({
 }: { title: string; subtitle?: string; tooltip?: string; children: React.ReactNode; className?: string; action?: React.ReactNode }) {
   return (
     <section className={cn(cardBase, 'flex flex-col', className)}>
-      <header className="mb-5 flex items-start justify-between gap-3">
+      <header className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5">
-            <h2 className="font-heading text-[22px] font-semibold leading-tight text-white">{title}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-heading text-[21px] font-semibold leading-tight tracking-[-0.01em] text-white">{title}</h2>
             {tooltip && <InfoTooltip text={tooltip} />}
           </div>
-          {subtitle && <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{subtitle}</p>}
+          {subtitle && <p className="mt-1.5 text-[11.5px] tracking-wide" style={{ color: C.muted }}>{subtitle}</p>}
         </div>
         {action}
       </header>
@@ -115,16 +115,19 @@ function SectionCard({
 const ChartTip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0A0A0A]/95 px-4 py-3 shadow-2xl backdrop-blur">
-      <p className="mb-1 text-[11px] uppercase tracking-[0.16em]" style={{ color: C.muted }}>{label}</p>
+    <div className="rounded-[14px] border border-white/[0.09] bg-[#08080A]/95 px-4 py-3.5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md">
+      <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.18em]" style={{ color: C.muted }}>{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="font-mono text-[13px] font-semibold" style={{ color: p.color || p.fill }}>
-          {p.name}: {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
+        <p key={i} className="flex items-center gap-2 font-mono text-[14px] font-semibold" style={{ color: p.color || p.fill }}>
+          <span className="h-2 w-2 rounded-full" style={{ background: p.color || p.fill }} />
+          <span className="text-white/70">{p.name}</span>
+          {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
         </p>
       ))}
     </div>
   );
 };
+
 
 /* ── page ───────────────────────────────────────────────────────────── */
 export default function Psychology() {
