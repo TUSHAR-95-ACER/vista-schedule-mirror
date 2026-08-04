@@ -582,12 +582,12 @@ export default function Psychology() {
                 <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.22)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<ChartTip />} />
                 <Area
                   type="monotone" dataKey="discipline" name="Discipline" stroke="#3BE87A" fill="url(#discGrad)"
-                  strokeWidth={3} animationDuration={1100} filter="url(#lineGlow)"
+                  strokeWidth={3} animationDuration={1100}
                   dot={false} activeDot={{ r: 6, fill: '#3BE87A', stroke: '#000', strokeWidth: 2 }}
                 />
                 <Area
                   type="monotone" dataKey="focus" name="Focus" stroke="#60A5FA" fill="url(#focusGrad)"
-                  strokeWidth={3} animationDuration={1100} filter="url(#lineGlow)"
+                  strokeWidth={3} animationDuration={1100}
                   dot={false} activeDot={{ r: 6, fill: '#60A5FA', stroke: '#000', strokeWidth: 2 }}
                 />
               </AreaChart>
