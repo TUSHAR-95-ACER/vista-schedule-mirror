@@ -29,25 +29,25 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[18px] border border-white/[0.055] bg-[#050505] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.09] shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_20px_50px_-40px_rgba(0,0,0,0.9)] hover:shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_26px_60px_-34px_rgba(0,0,0,0.95)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
-function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
-  const r = size / 2 - 5;
+function Ring({ value, color, size = 62, stroke = 7 }: { value: number; color: string; size?: number; stroke?: number }) {
+  const r = size / 2 - stroke / 2 - 1;
   const circ = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   return (
     <svg width={size} height={size} className="shrink-0 -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.07)" strokeWidth={5} fill="none" />
+      <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} fill="none" />
       <circle
-        cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={5} fill="none" strokeLinecap="round"
+        cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round"
         strokeDasharray={circ} strokeDashoffset={circ - (pct / 100) * circ}
-        style={{ transition: 'stroke-dashoffset 600ms ease' }}
+        style={{ transition: 'stroke-dashoffset 700ms cubic-bezier(0.22,1,0.36,1)', filter: `drop-shadow(0 0 6px ${color}55)` }}
       />
       <text
         x="50%" y="50%" dominantBaseline="central" textAnchor="middle"
         transform={`rotate(90 ${size / 2} ${size / 2})`}
-        className="font-mono" fill={color} fontSize={size * 0.24} fontWeight={700}
+        className="font-mono" fill={color} fontSize={size * 0.26} fontWeight={700}
       >
         {Math.round(pct)}
       </text>
@@ -62,32 +62,35 @@ function KpiCard({
   color: string; icon: any; tooltip: string;
 }) {
   return (
-    <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="flex h-6 w-6 items-center justify-center rounded-md"
-              style={{ background: `${color}14`, color }}
-            >
-              <Icon className="h-3.5 w-3.5" />
+    <div className={cn(cardBase, 'min-h-[178px]')}>
+      <div className="flex h-full items-start justify-between gap-5">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px]" style={{ background: `${color}1A`, color }}>
+              <span
+                className="pointer-events-none absolute -inset-2 rounded-full blur-[10px]"
+                style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 70%)` }}
+                aria-hidden
+              />
+              <Icon className="relative h-4 w-4" />
             </span>
-            <span className="truncate text-[12px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
+            <span className="truncate text-[11.5px] font-semibold uppercase tracking-[0.16em]" style={{ color: C.muted }}>
               {label}
             </span>
             <InfoTooltip text={tooltip} />
           </div>
-          <p className="mt-3 font-mono text-[40px] leading-none font-bold tracking-tight text-white break-words">
+          <p className="mt-5 font-mono text-[46px] leading-none font-extrabold tracking-tight text-white break-words">
             {value}
           </p>
-          <p className="mt-2 text-[13px] font-medium" style={{ color }}>{status}</p>
-          <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{change}</p>
+          <p className="mt-3.5 text-[13.5px] font-semibold" style={{ color }}>{status}</p>
+          <p className="mt-2 text-[11.5px]" style={{ color: C.muted }}>{change}</p>
         </div>
         <Ring value={ringValue} color={color} />
       </div>
     </div>
   );
 }
+
 
 function SectionCard({
   title, subtitle, tooltip, children, className, action,
