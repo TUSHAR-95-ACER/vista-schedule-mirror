@@ -546,36 +546,51 @@ export default function Psychology() {
       </div>
 
       {/* ── TREND SECTION ── */}
-      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-7 2xl:grid-cols-3">
         <SectionCard
           className="2xl:col-span-2"
           title="Discipline & Focus Trend"
           subtitle="Score progression across logged trades"
           tooltip="How your discipline and focus scores are trending over time"
         >
-          <div className="h-[300px]">
+          <div className="h-[340px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="discGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.green} stopOpacity={0.35} />
-                    <stop offset="100%" stopColor={C.green} stopOpacity={0} />
+                    <stop offset="0%" stopColor="#3BE87A" stopOpacity={0.5} />
+                    <stop offset="55%" stopColor="#22C55E" stopOpacity={0.16} />
+                    <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="focusGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={C.blue} stopOpacity={0} />
+                    <stop offset="0%" stopColor="#60A5FA" stopOpacity={0.45} />
+                    <stop offset="55%" stopColor="#3B82F6" stopOpacity={0.14} />
+                    <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
+                  <filter id="lineGlow" x="-20%" y="-40%" width="140%" height="200%">
+                    <feGaussianBlur stdDeviation="3.5" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} minTickGap={24} />
-                <YAxis domain={[0, 5]} tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeWidth: 1 }} content={<ChartTip />} />
-                <Area type="monotone" dataKey="discipline" name="Discipline" stroke={C.green} fill="url(#discGrad)" strokeWidth={2.5} animationDuration={900} />
-                <Area type="monotone" dataKey="focus" name="Focus" stroke={C.blue} fill="url(#focusGrad)" strokeWidth={2.5} animationDuration={900} />
+                <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} minTickGap={28} dy={6} />
+                <YAxis domain={[0, 5]} tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} width={44} />
+                <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.22)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<ChartTip />} />
+                <Area
+                  type="monotone" dataKey="discipline" name="Discipline" stroke="#3BE87A" fill="url(#discGrad)"
+                  strokeWidth={3} animationDuration={1100} filter="url(#lineGlow)"
+                  dot={false} activeDot={{ r: 6, fill: '#3BE87A', stroke: '#000', strokeWidth: 2 }}
+                />
+                <Area
+                  type="monotone" dataKey="focus" name="Focus" stroke="#60A5FA" fill="url(#focusGrad)"
+                  strokeWidth={3} animationDuration={1100} filter="url(#lineGlow)"
+                  dot={false} activeDot={{ r: 6, fill: '#60A5FA', stroke: '#000', strokeWidth: 2 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </SectionCard>
+
 
         {/* Emotion performance table */}
         <SectionCard
