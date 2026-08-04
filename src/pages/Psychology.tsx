@@ -520,17 +520,28 @@ export default function Psychology() {
 
         {/* Checklist radar */}
         <SectionCard title="Checklist Adherence" subtitle="Pre-trade rule compliance" tooltip="How well you follow your pre-trade checklist items (radar shows % compliance)">
-          <div className="h-[240px]">
+          <div className="flex h-[268px] items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="72%">
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: C.muted }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: 'rgba(138,143,152,0.6)' }} axisLine={false} />
-                <Radar name="Adherence %" dataKey="value" stroke={C.blue} fill={C.blue} fillOpacity={0.22} strokeWidth={2} animationDuration={700} />
+              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="76%" margin={{ top: 6, right: 18, bottom: 6, left: 18 }}>
+                <defs>
+                  <radialGradient id="radarFill" cx="50%" cy="50%" r="70%">
+                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.55} />
+                    <stop offset="100%" stopColor={C.blue} stopOpacity={0.18} />
+                  </radialGradient>
+                </defs>
+                <PolarGrid stroke="rgba(255,255,255,0.14)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: 'rgba(230,232,236,0.85)' }} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'rgba(138,143,152,0.7)' }} axisLine={false} />
+                <Radar
+                  name="Adherence %" dataKey="value" stroke={C.blue} fill="url(#radarFill)" fillOpacity={1}
+                  strokeWidth={2.5} animationDuration={900}
+                  dot={{ r: 3, fill: C.blue, stroke: '#000', strokeWidth: 1 }}
+                />
                 <Tooltip content={<ChartTip />} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
+
         </SectionCard>
       </div>
 
