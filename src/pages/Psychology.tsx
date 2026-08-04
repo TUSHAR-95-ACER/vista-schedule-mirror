@@ -700,46 +700,51 @@ export default function Psychology() {
       </section>
 
       {/* ── BOTTOM GRID ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
         {/* Heatmap */}
         <SectionCard title="Psychology Heatmap" subtitle="Discipline & P/L by weekday" tooltip="Weekday view of trading psychology and profitability.">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-3">
             {heat.rows.map(r => {
               const intensity = r.count === 0 ? 0 : Math.min(1, Math.abs(r.pl) / (Math.max(...heat.rows.map(x => Math.abs(x.pl))) || 1));
+              const accent = r.pl >= 0 ? C.green : C.red;
               const bg = r.count === 0
-                ? 'rgba(255,255,255,0.04)'
-                : `${r.pl >= 0 ? C.green : C.red}${Math.round(20 + intensity * 200).toString(16).padStart(2, '0')}`;
+                ? 'rgba(255,255,255,0.035)'
+                : `${accent}${Math.round(28 + intensity * 200).toString(16).padStart(2, '0')}`;
               return (
                 <div key={r.day} className="text-center">
-                  <div className="flex h-16 items-center justify-center rounded-xl border border-white/[0.06]" style={{ background: bg }}>
-                    <span className="font-mono text-[12px] font-semibold text-white">{r.count}</span>
+                  <div
+                    className="flex h-[76px] items-center justify-center rounded-[14px] border border-white/[0.07] transition-transform duration-200 hover:scale-[1.04]"
+                    style={{ background: bg, boxShadow: r.count ? `0 0 18px -8px ${accent}99` : 'none' }}
+                  >
+                    <span className="font-mono text-[18px] font-bold text-white">{r.count}</span>
                   </div>
-                  <p className="mt-1.5 text-[11px]" style={{ color: C.muted }}>{r.day}</p>
+                  <p className="mt-2.5 text-[12px] font-medium" style={{ color: C.muted }}>{r.day}</p>
                 </div>
               );
             })}
           </div>
-          <div className="mt-5 space-y-2.5">
+          <div className="mt-7 space-y-3">
             {[
               { label: 'Best Day', v: heat.best, color: C.green },
               { label: 'Worst Day', v: heat.worst, color: C.red },
               { label: 'Most Consistent', v: heat.consistent, color: C.blue },
             ].map(row => (
-              <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
-                <span className="text-[12px]" style={{ color: C.muted }}>{row.label}</span>
-                <span className="font-mono text-[12px] font-semibold" style={{ color: row.color }}>
+              <div key={row.label} className="flex items-center justify-between rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 transition-colors hover:bg-white/[0.04]">
+                <span className="text-[12.5px] font-medium" style={{ color: C.muted }}>{row.label}</span>
+                <span className="font-mono text-[13.5px] font-bold" style={{ color: row.color }}>
                   {row.v ? `${row.v.day} · ${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
                 </span>
               </div>
             ))}
           </div>
-          <div className="mt-4 flex items-center gap-2 text-[11px]" style={{ color: C.muted }}>
+          <div className="mt-5 flex items-center gap-2.5 text-[11.5px] font-medium" style={{ color: C.muted }}>
             Legend
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.red}CC` }} />
-            <span className="h-2.5 w-6 rounded-full bg-white/10" />
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.green}CC` }} />
+            <span className="h-3 w-9 rounded-full" style={{ background: `${C.red}CC` }} />
+            <span className="h-3 w-9 rounded-full bg-white/10" />
+            <span className="h-3 w-9 rounded-full" style={{ background: `${C.green}CC` }} />
           </div>
         </SectionCard>
+
 
         {/* Donut */}
         <SectionCard title="Performance by Emotion" subtitle="P/L distribution across states" tooltip="Share of absolute P/L generated under each emotional state.">
