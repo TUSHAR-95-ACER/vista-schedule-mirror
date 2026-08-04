@@ -748,27 +748,49 @@ export default function Psychology() {
 
         {/* Donut */}
         <SectionCard title="Performance by Emotion" subtitle="P/L distribution across states" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[230px]">
+          <div className="relative h-[262px]">
             {donutData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={3} stroke="none" animationDuration={800}>
-                    {donutData.map((d, i) => <Cell key={i} fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red} />)}
-                  </Pie>
-                  <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                  <Tooltip content={<ChartTip />} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={donutData} dataKey="value" nameKey="name" cx="38%" cy="50%"
+                      innerRadius={62} outerRadius={104} paddingAngle={2} stroke="none"
+                      cornerRadius={6} animationDuration={1000}
+                    >
+                      {donutData.map((d, i) => (
+                        <Cell
+                          key={i}
+                          fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red}
+                          style={{ filter: `drop-shadow(0 0 10px ${(d.pl >= 0 ? donutColors[i % donutColors.length] : C.red)}55)` }}
+                        />
+                      ))}
+                    </Pie>
+                    <Legend
+                      verticalAlign="middle" align="right" layout="vertical" iconType="circle" iconSize={10}
+                      wrapperStyle={{ fontSize: 12.5, color: C.muted, lineHeight: '26px' }}
+                    />
+                    <Tooltip content={<ChartTip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute left-[38%] top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                  <p className="font-mono text-[30px] font-extrabold leading-none text-white">
+                    {donutData.reduce((s, d) => s + d.value, 0).toFixed(0)}
+                  </p>
+                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: C.muted }}>Abs P/L</p>
+                </div>
+              </>
             ) : (
               <div className="flex h-full items-center justify-center text-[13px]" style={{ color: C.muted }}>No P/L data</div>
             )}
           </div>
           <div
-            className="mt-4 rounded-xl border px-3 py-2.5 text-[12px]"
-            style={{ borderColor: `${C.green}2E`, background: `${C.green}0D`, color: C.green }}
+            className="mt-6 rounded-[14px] border px-4 py-3.5 text-[12.5px] leading-relaxed"
+            style={{ borderColor: `${C.green}33`, background: `${C.green}0F`, color: C.green }}
           >
-            Best emotional state: <span className="font-semibold">{stats.topEmotion}</span> at {stats.topEmotionWinRate}% win rate.
+            Best emotional state: <span className="font-bold">{stats.topEmotion}</span> at {stats.topEmotionWinRate}% win rate.
           </div>
+
         </SectionCard>
 
         {/* Top mistakes */}
