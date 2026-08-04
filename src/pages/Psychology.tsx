@@ -29,25 +29,25 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[18px] border border-white/[0.055] bg-[#050505] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.09] shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_20px_50px_-40px_rgba(0,0,0,0.9)] hover:shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_26px_60px_-34px_rgba(0,0,0,0.95)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
-function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
-  const r = size / 2 - 5;
+function Ring({ value, color, size = 62, stroke = 7 }: { value: number; color: string; size?: number; stroke?: number }) {
+  const r = size / 2 - stroke / 2 - 1;
   const circ = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, value));
   return (
     <svg width={size} height={size} className="shrink-0 -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.07)" strokeWidth={5} fill="none" />
+      <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} fill="none" />
       <circle
-        cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={5} fill="none" strokeLinecap="round"
+        cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round"
         strokeDasharray={circ} strokeDashoffset={circ - (pct / 100) * circ}
-        style={{ transition: 'stroke-dashoffset 600ms ease' }}
+        style={{ transition: 'stroke-dashoffset 700ms cubic-bezier(0.22,1,0.36,1)', filter: `drop-shadow(0 0 6px ${color}55)` }}
       />
       <text
         x="50%" y="50%" dominantBaseline="central" textAnchor="middle"
         transform={`rotate(90 ${size / 2} ${size / 2})`}
-        className="font-mono" fill={color} fontSize={size * 0.24} fontWeight={700}
+        className="font-mono" fill={color} fontSize={size * 0.26} fontWeight={700}
       >
         {Math.round(pct)}
       </text>
@@ -62,26 +62,32 @@ function KpiCard({
   color: string; icon: any; tooltip: string;
 }) {
   return (
-    <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="flex h-6 w-6 items-center justify-center rounded-md"
-              style={{ background: `${color}14`, color }}
-            >
-              <Icon className="h-3.5 w-3.5" />
+    <div className={cn(cardBase, 'min-h-[178px]')}>
+      <div className="flex h-full items-start justify-between gap-5">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px]" style={{ background: `${color}1A`, color }}>
+              <span
+                className="pointer-events-none absolute -inset-2 rounded-full blur-[10px]"
+                style={{ background: `radial-gradient(circle, ${color}55 0%, transparent 70%)` }}
+                aria-hidden
+              />
+              <Icon className="relative h-4 w-4" />
             </span>
-            <span className="truncate text-[12px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
+            <span className="truncate text-[11.5px] font-semibold uppercase tracking-[0.16em]" style={{ color: C.muted }}>
               {label}
             </span>
             <InfoTooltip text={tooltip} />
           </div>
-          <p className="mt-3 font-mono text-[40px] leading-none font-bold tracking-tight text-white break-words">
+          <p
+            className="mt-5 font-mono leading-none font-extrabold tracking-tight text-white"
+            style={{ fontSize: value.length > 9 ? 26 : value.length > 6 ? 34 : 46 }}
+          >
             {value}
           </p>
-          <p className="mt-2 text-[13px] font-medium" style={{ color }}>{status}</p>
-          <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{change}</p>
+
+          <p className="mt-3.5 text-[13.5px] font-semibold" style={{ color }}>{status}</p>
+          <p className="mt-2 text-[11.5px]" style={{ color: C.muted }}>{change}</p>
         </div>
         <Ring value={ringValue} color={color} />
       </div>
@@ -89,18 +95,19 @@ function KpiCard({
   );
 }
 
+
 function SectionCard({
   title, subtitle, tooltip, children, className, action,
 }: { title: string; subtitle?: string; tooltip?: string; children: React.ReactNode; className?: string; action?: React.ReactNode }) {
   return (
     <section className={cn(cardBase, 'flex flex-col', className)}>
-      <header className="mb-5 flex items-start justify-between gap-3">
+      <header className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5">
-            <h2 className="font-heading text-[22px] font-semibold leading-tight text-white">{title}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-heading text-[21px] font-semibold leading-tight tracking-[-0.01em] text-white">{title}</h2>
             {tooltip && <InfoTooltip text={tooltip} />}
           </div>
-          {subtitle && <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{subtitle}</p>}
+          {subtitle && <p className="mt-1.5 text-[11.5px] tracking-wide" style={{ color: C.muted }}>{subtitle}</p>}
         </div>
         {action}
       </header>
@@ -112,16 +119,19 @@ function SectionCard({
 const ChartTip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-white/10 bg-[#0A0A0A]/95 px-4 py-3 shadow-2xl backdrop-blur">
-      <p className="mb-1 text-[11px] uppercase tracking-[0.16em]" style={{ color: C.muted }}>{label}</p>
+    <div className="rounded-[14px] border border-white/[0.09] bg-[#08080A]/95 px-4 py-3.5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] backdrop-blur-md">
+      <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.18em]" style={{ color: C.muted }}>{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="font-mono text-[13px] font-semibold" style={{ color: p.color || p.fill }}>
-          {p.name}: {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
+        <p key={i} className="flex items-center gap-2 font-mono text-[14px] font-semibold" style={{ color: p.color || p.fill }}>
+          <span className="h-2 w-2 rounded-full" style={{ background: p.color || p.fill }} />
+          <span className="text-white/70">{p.name}</span>
+          {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
         </p>
       ))}
     </div>
   );
 };
+
 
 /* ── page ───────────────────────────────────────────────────────────── */
 export default function Psychology() {
@@ -345,11 +355,12 @@ export default function Psychology() {
   const gaugeAngle = 180 - (gaugeValue / 100) * 180;
 
   return (
-    <div className="w-full space-y-6 p-6">
+    <div className="w-full space-y-7 p-7">
       {Header}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+
         <KpiCard
           label="Psychology Score" value={`${stats.psychScore}`} icon={Brain} color={C.green}
           status={stats.psychScore >= 70 ? 'Strong mindset' : stats.psychScore >= 50 ? 'Developing' : 'Needs work'}
@@ -390,145 +401,198 @@ export default function Psychology() {
       </div>
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-2 2xl:grid-cols-4">
         {/* Emotional Health Gauge */}
         <SectionCard title="Emotional Health" subtitle="Composite psychology gauge" tooltip="Overall psychological health derived from discipline, focus and stability.">
           <div className="flex flex-col items-center">
-            <div className="relative h-[130px] w-[240px]">
-              <svg viewBox="0 0 240 130" className="h-full w-full">
+            <div className="relative h-[152px] w-[264px]">
+              <svg viewBox="0 0 264 152" className="h-full w-full">
                 <defs>
                   <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor={C.red} />
-                    <stop offset="50%" stopColor={C.orange} />
+                    <stop offset="35%" stopColor={C.orange} />
+                    <stop offset="68%" stopColor={C.yellow} />
                     <stop offset="100%" stopColor={C.green} />
                   </linearGradient>
+                  <filter id="gaugeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="5" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
                 </defs>
-                <path d="M20 120 A100 100 0 0 1 220 120" stroke="rgba(255,255,255,0.07)" strokeWidth="14" fill="none" strokeLinecap="round" />
+                <path d="M24 134 A108 108 0 0 1 240 134" stroke="rgba(255,255,255,0.055)" strokeWidth="20" fill="none" strokeLinecap="round" />
                 <path
-                  d="M20 120 A100 100 0 0 1 220 120" stroke="url(#gaugeGrad)" strokeWidth="14" fill="none" strokeLinecap="round"
-                  strokeDasharray={Math.PI * 100} strokeDashoffset={Math.PI * 100 * (1 - gaugeValue / 100)}
-                  style={{ transition: 'stroke-dashoffset 700ms ease' }}
+                  d="M24 134 A108 108 0 0 1 240 134" stroke="url(#gaugeGrad)" strokeWidth="20" fill="none" strokeLinecap="round"
+                  filter="url(#gaugeGlow)"
+                  strokeDasharray={Math.PI * 108} strokeDashoffset={Math.PI * 108 * (1 - gaugeValue / 100)}
+                  style={{ transition: 'stroke-dashoffset 900ms cubic-bezier(0.22,1,0.36,1)' }}
                 />
                 <line
-                  x1="120" y1="120"
-                  x2={120 + 78 * Math.cos((gaugeAngle * Math.PI) / 180)}
-                  y2={120 - 78 * Math.sin((gaugeAngle * Math.PI) / 180)}
-                  stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round"
+                  x1="132" y1="134"
+                  x2={132 + 82 * Math.cos((gaugeAngle * Math.PI) / 180)}
+                  y2={134 - 82 * Math.sin((gaugeAngle * Math.PI) / 180)}
+                  stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round"
+                  style={{ transition: 'all 900ms cubic-bezier(0.22,1,0.36,1)' }}
                 />
-                <circle cx="120" cy="120" r="5" fill="#FFFFFF" />
+                <circle cx="132" cy="134" r="6.5" fill="#FFFFFF" />
+                <circle cx="132" cy="134" r="11" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
               </svg>
-              <div className="pointer-events-none absolute inset-x-0 bottom-6 text-center">
-                <p className="font-mono text-[40px] font-bold leading-none text-white">{gaugeValue}</p>
+              <div className="pointer-events-none absolute inset-x-0 bottom-5 text-center">
+                <p className="font-mono text-[54px] font-extrabold leading-none tracking-tight text-white">{gaugeValue}</p>
               </div>
             </div>
-            <p className="mt-1 text-[13px] font-semibold" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.orange : C.red }}>
+            <p className="mt-3 text-[17px] font-bold uppercase tracking-[0.14em]" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.orange : C.red }}>
               {gaugeValue >= 70 ? 'Healthy' : gaugeValue >= 50 ? 'Moderate' : 'At Risk'}
             </p>
-            <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{fmtDelta(deltas.score)}</p>
-            <div className="mt-4 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-[12px] leading-relaxed" style={{ color: C.muted }}>
-              <span className="text-white">Insight: </span>
+            <p className="mt-2 text-[12px]" style={{ color: C.muted }}>{fmtDelta(deltas.score)}</p>
+            <div className="mt-6 w-full rounded-[14px] border border-white/[0.06] bg-white/[0.02] p-4 text-[12.5px] leading-relaxed" style={{ color: C.muted }}>
+              <span className="font-semibold text-white">Insight: </span>
               High-discipline trades win {stats.highDiscWinRate}% vs {stats.lowDiscWinRate}% on low-discipline trades.
             </div>
           </div>
+
         </SectionCard>
 
         {/* Emotion vs P/L */}
         <SectionCard title="Emotion vs P/L" subtitle="Profit impact by emotional state" tooltip="How your emotional state during trading impacts your profit/loss">
-          <div className="h-[240px]">
+          <div className="h-[268px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 6, right: 6, left: -14, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<ChartTip />} />
-                <Bar dataKey="pl" name="P/L" radius={[8, 8, 0, 0]} animationDuration={700}>
-                  {emotionData.map((e, i) => <Cell key={i} fill={e.pl >= 0 ? C.green : C.red} />)}
+              <BarChart data={emotionData} margin={{ top: 8, right: 6, left: -12, bottom: 0 }} barCategoryGap="28%">
+                <defs>
+                  <linearGradient id="barPos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3BE87A" />
+                    <stop offset="100%" stopColor="#16A34A" />
+                  </linearGradient>
+                  <linearGradient id="barNeg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FF5A5A" />
+                    <stop offset="100%" stopColor="#B91C1C" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.09)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} dy={6} />
+                <YAxis tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} width={52} />
+                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.045)', radius: 10 }} content={<ChartTip />} />
+                <Bar dataKey="pl" name="P/L" radius={[10, 10, 4, 4]} maxBarSize={46} animationDuration={1000} animationEasing="ease-out">
+                  {emotionData.map((e, i) => <Cell key={i} fill={e.pl >= 0 ? 'url(#barPos)' : 'url(#barNeg)'} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+
         </SectionCard>
 
         {/* Mistake frequency */}
         <SectionCard title="Mistake Frequency" subtitle="Occurrence rate per mistake type" tooltip="How often each type of mistake occurs in your trades">
           {mistakeData.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {mistakeData.slice(0, 6).map((m, i) => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 const color = [C.red, C.orange, C.yellow, C.purple, C.blue, C.emerald][i % 6];
                 return (
-                  <div key={m.name} className="space-y-1.5">
+                  <div key={m.name} className="space-y-2.5">
                     <div className="flex items-center justify-between gap-3">
-                      <span className="flex min-w-0 items-center gap-2 text-[13px] text-white">
-                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                      <span className="flex min-w-0 items-center gap-2.5 text-[14px] font-medium text-white">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color, boxShadow: `0 0 8px ${color}88` }} />
                         <span className="truncate">{m.name}</span>
                       </span>
-                      <span className="flex shrink-0 items-center gap-2">
-                        <span className="rounded-md border border-white/[0.08] px-1.5 py-0.5 font-mono text-[11px] text-white">{m.count}</span>
-                        <span className="font-mono text-[11px]" style={{ color: C.muted }}>{pct}%</span>
+                      <span className="flex shrink-0 items-center gap-2.5">
+                        <span
+                          className="rounded-lg border px-2.5 py-1 font-mono text-[12.5px] font-bold"
+                          style={{ borderColor: `${color}33`, background: `${color}14`, color }}
+                        >
+                          {m.count}
+                        </span>
+                        <span className="font-mono text-[12.5px] font-semibold" style={{ color: C.muted }}>{pct}%</span>
                       </span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+                    <div className="h-3 overflow-hidden rounded-full bg-white/[0.045]">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}AA, ${color})`, boxShadow: `0 0 12px ${color}55` }}
+                      />
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex h-[240px] items-center justify-center text-[13px]" style={{ color: C.muted }}>
+            <div className="flex h-[268px] items-center justify-center text-[13px]" style={{ color: C.muted }}>
               No mistakes recorded 🎉
             </div>
           )}
+
         </SectionCard>
 
         {/* Checklist radar */}
         <SectionCard title="Checklist Adherence" subtitle="Pre-trade rule compliance" tooltip="How well you follow your pre-trade checklist items (radar shows % compliance)">
-          <div className="h-[240px]">
+          <div className="flex h-[268px] items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="72%">
-                <PolarGrid stroke="rgba(255,255,255,0.08)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: C.muted }} />
-                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9, fill: 'rgba(138,143,152,0.6)' }} axisLine={false} />
-                <Radar name="Adherence %" dataKey="value" stroke={C.blue} fill={C.blue} fillOpacity={0.22} strokeWidth={2} animationDuration={700} />
+              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="76%" margin={{ top: 6, right: 18, bottom: 6, left: 18 }}>
+                <defs>
+                  <radialGradient id="radarFill" cx="50%" cy="50%" r="70%">
+                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.55} />
+                    <stop offset="100%" stopColor={C.blue} stopOpacity={0.18} />
+                  </radialGradient>
+                </defs>
+                <PolarGrid stroke="rgba(255,255,255,0.14)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fill: 'rgba(230,232,236,0.85)' }} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'rgba(138,143,152,0.7)' }} axisLine={false} />
+                <Radar
+                  name="Adherence %" dataKey="value" stroke={C.blue} fill="url(#radarFill)" fillOpacity={1}
+                  strokeWidth={2.5} animationDuration={900}
+                  dot={{ r: 3, fill: C.blue, stroke: '#000', strokeWidth: 1 }}
+                />
                 <Tooltip content={<ChartTip />} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
+
         </SectionCard>
       </div>
 
       {/* ── TREND SECTION ── */}
-      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-7 2xl:grid-cols-3">
         <SectionCard
           className="2xl:col-span-2"
           title="Discipline & Focus Trend"
           subtitle="Score progression across logged trades"
           tooltip="How your discipline and focus scores are trending over time"
         >
-          <div className="h-[300px]">
+          <div className="h-[340px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="discGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.green} stopOpacity={0.35} />
-                    <stop offset="100%" stopColor={C.green} stopOpacity={0} />
+                    <stop offset="0%" stopColor="#3BE87A" stopOpacity={0.5} />
+                    <stop offset="55%" stopColor="#22C55E" stopOpacity={0.16} />
+                    <stop offset="100%" stopColor="#22C55E" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="focusGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={C.blue} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={C.blue} stopOpacity={0} />
+                    <stop offset="0%" stopColor="#60A5FA" stopOpacity={0.45} />
+                    <stop offset="55%" stopColor="#3B82F6" stopOpacity={0.14} />
+                    <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
+
+
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} minTickGap={24} />
-                <YAxis domain={[0, 5]} tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.18)', strokeWidth: 1 }} content={<ChartTip />} />
-                <Area type="monotone" dataKey="discipline" name="Discipline" stroke={C.green} fill="url(#discGrad)" strokeWidth={2.5} animationDuration={900} />
-                <Area type="monotone" dataKey="focus" name="Focus" stroke={C.blue} fill="url(#focusGrad)" strokeWidth={2.5} animationDuration={900} />
+                <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} minTickGap={28} dy={6} />
+                <YAxis domain={[0, 5]} tick={{ fontSize: 12, fill: C.muted }} axisLine={false} tickLine={false} width={44} />
+                <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.22)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<ChartTip />} />
+                <Area
+                  type="monotone" dataKey="discipline" name="Discipline" stroke="#3BE87A" fill="url(#discGrad)"
+                  strokeWidth={3} animationDuration={1100}
+                  dot={false} activeDot={{ r: 6, fill: '#3BE87A', stroke: '#000', strokeWidth: 2 }}
+                />
+                <Area
+                  type="monotone" dataKey="focus" name="Focus" stroke="#60A5FA" fill="url(#focusGrad)"
+                  strokeWidth={3} animationDuration={1100}
+                  dot={false} activeDot={{ r: 6, fill: '#60A5FA', stroke: '#000', strokeWidth: 2 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </SectionCard>
+
 
         {/* Emotion performance table */}
         <SectionCard
@@ -539,7 +603,7 @@ export default function Psychology() {
             <select
               value={emotionFilter}
               onChange={e => setEmotionFilter(e.target.value)}
-              className="rounded-lg border border-white/[0.08] bg-[#0A0A0A] px-2.5 py-1.5 text-[11px] text-white outline-none"
+              className="rounded-xl border border-white/[0.09] bg-[#0A0A0A] px-3 py-2 text-[11.5px] font-medium text-white outline-none transition-colors hover:border-white/20"
             >
               <option value="all">All emotions</option>
               {emotionData.map(e => <option key={e.name} value={e.name}>{e.name}</option>)}
@@ -549,11 +613,11 @@ export default function Psychology() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/[0.06] text-left">
+                <tr className="border-b border-white/[0.07] text-left">
                   {['Emotion', 'Trades', 'Win Rate', 'Total P/L'].map((h, i) => (
                     <th
                       key={h}
-                      className={cn('px-3 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em]', i === 1 && 'text-center', i === 2 && 'text-center', i === 3 && 'text-right')}
+                      className={cn('px-4 py-4 text-[10.5px] font-semibold uppercase tracking-[0.16em]', i === 1 && 'text-center', i === 2 && 'text-center', i === 3 && 'text-right')}
                       style={{ color: C.muted }}
                     >
                       {h}
@@ -563,11 +627,11 @@ export default function Psychology() {
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} className="border-b border-white/[0.04] transition-colors hover:bg-white/[0.03]">
-                    <td className="px-3 py-3 text-[13px] font-medium text-white">{row.name}</td>
-                    <td className="px-3 py-3 text-center font-mono text-[13px]" style={{ color: C.muted }}>{row.count}</td>
-                    <td className="px-3 py-3 text-center font-mono text-[13px]" style={{ color: row.winRate >= 50 ? C.green : C.red }}>{row.winRate}%</td>
-                    <td className="px-3 py-3 text-right font-mono text-[13px]" style={{ color: row.pl >= 0 ? C.green : C.red }}>
+                  <tr key={row.name} className="border-b border-white/[0.04] transition-colors hover:bg-white/[0.04]">
+                    <td className="px-4 py-[18px] text-[14px] font-semibold text-white">{row.name}</td>
+                    <td className="px-4 py-[18px] text-center font-mono text-[14px]" style={{ color: C.muted }}>{row.count}</td>
+                    <td className="px-4 py-[18px] text-center font-mono text-[14px] font-semibold" style={{ color: row.winRate >= 50 ? C.green : C.red }}>{row.winRate}%</td>
+                    <td className="px-4 py-[18px] text-right font-mono text-[14px] font-bold" style={{ color: row.pl >= 0 ? C.green : C.red }}>
                       {row.pl >= 0 ? '+' : ''}{row.pl.toFixed(2)}
                     </td>
                   </tr>
@@ -575,33 +639,39 @@ export default function Psychology() {
               </tbody>
             </table>
           </div>
+
         </SectionCard>
       </div>
 
       {/* ── AI INSIGHTS ROW ── */}
       <section className={cn(cardBase)}>
-        <div className="mb-5 flex items-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
-            <Sparkles className="h-4 w-4" />
+        <div className="mb-6 flex items-center gap-3">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${C.yellow}1A`, color: C.yellow }}>
+            <span className="pointer-events-none absolute -inset-2 rounded-full blur-[12px]" style={{ background: `radial-gradient(circle, ${C.yellow}55 0%, transparent 70%)` }} aria-hidden />
+            <Sparkles className="relative h-5 w-5" />
           </span>
           <h2 className="font-heading text-[22px] font-semibold text-white">AI Insights</h2>
           <span className="text-[12px]" style={{ color: C.muted }}>Derived from logged journal data · no AI required</span>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
             const icons = [TrendingUp, ShieldCheck, Activity, TrendingDown];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
-                  <Icon className="h-4 w-4" />
+              <div
+                key={i}
+                className="rounded-[18px] border border-white/[0.06] bg-white/[0.018] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.1] hover:bg-white/[0.035]"
+              >
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: `${colors[i]}1A`, color: colors[i] }}>
+                  <span className="pointer-events-none absolute -inset-2.5 rounded-full blur-[14px]" style={{ background: `radial-gradient(circle, ${colors[i]}66 0%, transparent 70%)` }} aria-hidden />
+                  <Icon className="relative h-5 w-5" />
                 </span>
-                <p className="mt-3 text-[13px] font-semibold text-white">
+                <p className="mt-5 text-[16px] font-bold tracking-tight text-white">
                   {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
                 </p>
-                <p className="mt-1.5 text-[12px] leading-relaxed" style={{ color: C.muted }}>
+                <p className="mt-2.5 text-[12.5px] leading-[1.65]" style={{ color: C.muted }}>
                   {text ?? 'Not enough data yet to generate this observation.'}
                 </p>
               </div>
@@ -609,103 +679,142 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex flex-col justify-between rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
-            style={{ borderColor: `${C.emerald}33`, background: `${C.emerald}0D` }}
+            className="group relative flex flex-col justify-between overflow-hidden rounded-[18px] border p-6 transition-all duration-200 hover:-translate-y-1"
+            style={{
+              borderColor: `${C.emerald}4D`,
+              background: `linear-gradient(160deg, ${C.emerald}22 0%, ${C.emerald}0A 60%, transparent 100%)`,
+              boxShadow: `0 0 0 1px ${C.emerald}14, 0 24px 60px -34px ${C.emerald}66`,
+            }}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.emerald}1F`, color: C.emerald }}>
-              <Brain className="h-4 w-4" />
+            <span className="relative flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: `${C.emerald}2E`, color: C.emerald }}>
+              <span className="pointer-events-none absolute -inset-3 rounded-full blur-[16px]" style={{ background: `radial-gradient(circle, ${C.emerald}88 0%, transparent 70%)` }} aria-hidden />
+              <Brain className="relative h-5 w-5" />
             </span>
-            <span>
-              <span className="mt-3 block text-[14px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1.5 flex items-center gap-1.5 text-[12px]" style={{ color: C.emerald }}>
-                Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            <span className="relative mt-6">
+              <span className="block text-[17px] font-bold leading-tight tracking-tight text-white">View Full AI Report</span>
+              <span className="mt-3 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11.5px] font-bold uppercase tracking-[0.14em] text-black" style={{ background: C.emerald }}>
+                Open Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </span>
             </span>
           </Link>
         </div>
+
       </section>
 
       {/* ── BOTTOM GRID ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
         {/* Heatmap */}
         <SectionCard title="Psychology Heatmap" subtitle="Discipline & P/L by weekday" tooltip="Weekday view of trading psychology and profitability.">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-3">
             {heat.rows.map(r => {
               const intensity = r.count === 0 ? 0 : Math.min(1, Math.abs(r.pl) / (Math.max(...heat.rows.map(x => Math.abs(x.pl))) || 1));
+              const accent = r.pl >= 0 ? C.green : C.red;
               const bg = r.count === 0
-                ? 'rgba(255,255,255,0.04)'
-                : `${r.pl >= 0 ? C.green : C.red}${Math.round(20 + intensity * 200).toString(16).padStart(2, '0')}`;
+                ? 'rgba(255,255,255,0.035)'
+                : `${accent}${Math.round(28 + intensity * 200).toString(16).padStart(2, '0')}`;
               return (
                 <div key={r.day} className="text-center">
-                  <div className="flex h-16 items-center justify-center rounded-xl border border-white/[0.06]" style={{ background: bg }}>
-                    <span className="font-mono text-[12px] font-semibold text-white">{r.count}</span>
+                  <div
+                    className="flex h-[76px] items-center justify-center rounded-[14px] border border-white/[0.07] transition-transform duration-200 hover:scale-[1.04]"
+                    style={{ background: bg, boxShadow: r.count ? `0 0 18px -8px ${accent}99` : 'none' }}
+                  >
+                    <span className="font-mono text-[18px] font-bold text-white">{r.count}</span>
                   </div>
-                  <p className="mt-1.5 text-[11px]" style={{ color: C.muted }}>{r.day}</p>
+                  <p className="mt-2.5 text-[12px] font-medium" style={{ color: C.muted }}>{r.day}</p>
                 </div>
               );
             })}
           </div>
-          <div className="mt-5 space-y-2.5">
+          <div className="mt-7 space-y-3">
             {[
               { label: 'Best Day', v: heat.best, color: C.green },
               { label: 'Worst Day', v: heat.worst, color: C.red },
               { label: 'Most Consistent', v: heat.consistent, color: C.blue },
             ].map(row => (
-              <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
-                <span className="text-[12px]" style={{ color: C.muted }}>{row.label}</span>
-                <span className="font-mono text-[12px] font-semibold" style={{ color: row.color }}>
+              <div key={row.label} className="flex items-center justify-between rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 transition-colors hover:bg-white/[0.04]">
+                <span className="text-[12.5px] font-medium" style={{ color: C.muted }}>{row.label}</span>
+                <span className="font-mono text-[13.5px] font-bold" style={{ color: row.color }}>
                   {row.v ? `${row.v.day} · ${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
                 </span>
               </div>
             ))}
           </div>
-          <div className="mt-4 flex items-center gap-2 text-[11px]" style={{ color: C.muted }}>
+          <div className="mt-5 flex items-center gap-2.5 text-[11.5px] font-medium" style={{ color: C.muted }}>
             Legend
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.red}CC` }} />
-            <span className="h-2.5 w-6 rounded-full bg-white/10" />
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.green}CC` }} />
+            <span className="h-3 w-9 rounded-full" style={{ background: `${C.red}CC` }} />
+            <span className="h-3 w-9 rounded-full bg-white/10" />
+            <span className="h-3 w-9 rounded-full" style={{ background: `${C.green}CC` }} />
           </div>
         </SectionCard>
 
+
         {/* Donut */}
         <SectionCard title="Performance by Emotion" subtitle="P/L distribution across states" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[230px]">
+          <div className="relative h-[262px]">
             {donutData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={3} stroke="none" animationDuration={800}>
-                    {donutData.map((d, i) => <Cell key={i} fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red} />)}
-                  </Pie>
-                  <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: 11, color: C.muted }} />
-                  <Tooltip content={<ChartTip />} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={donutData} dataKey="value" nameKey="name" cx="38%" cy="50%"
+                      innerRadius={62} outerRadius={104} paddingAngle={2} stroke="none"
+                      cornerRadius={6} animationDuration={1000}
+                    >
+                      {donutData.map((d, i) => (
+                        <Cell
+                          key={i}
+                          fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red}
+                          style={{ filter: `drop-shadow(0 0 10px ${(d.pl >= 0 ? donutColors[i % donutColors.length] : C.red)}55)` }}
+                        />
+                      ))}
+                    </Pie>
+                    <Legend
+                      verticalAlign="middle" align="right" layout="vertical" iconType="circle" iconSize={10}
+                      wrapperStyle={{ fontSize: 12.5, color: C.muted, lineHeight: '26px' }}
+                    />
+                    <Tooltip content={<ChartTip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute left-[38%] top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                  <p className="font-mono text-[30px] font-extrabold leading-none text-white">
+                    {donutData.reduce((s, d) => s + d.value, 0).toFixed(0)}
+                  </p>
+                  <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: C.muted }}>Abs P/L</p>
+                </div>
+              </>
             ) : (
               <div className="flex h-full items-center justify-center text-[13px]" style={{ color: C.muted }}>No P/L data</div>
             )}
           </div>
           <div
-            className="mt-4 rounded-xl border px-3 py-2.5 text-[12px]"
-            style={{ borderColor: `${C.green}2E`, background: `${C.green}0D`, color: C.green }}
+            className="mt-6 rounded-[14px] border px-4 py-3.5 text-[12.5px] leading-relaxed"
+            style={{ borderColor: `${C.green}33`, background: `${C.green}0F`, color: C.green }}
           >
-            Best emotional state: <span className="font-semibold">{stats.topEmotion}</span> at {stats.topEmotionWinRate}% win rate.
+            Best emotional state: <span className="font-bold">{stats.topEmotion}</span> at {stats.topEmotionWinRate}% win rate.
           </div>
+
         </SectionCard>
 
         {/* Top mistakes */}
         <SectionCard title="Top 5 Mistakes" subtitle="Most frequent execution errors" tooltip="Ranked list of your most common logged mistakes.">
           {mistakeData.length > 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-3.5">
               {mistakeData.slice(0, 5).map((m, i) => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
-                  <div key={m.name} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3 transition-colors hover:bg-white/[0.04]">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
+                  <div
+                    key={m.name}
+                    className="flex items-center gap-3.5 rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-4 py-[17px] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.1] hover:bg-white/[0.045]"
+                  >
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] font-mono text-[14px] font-bold"
+                      style={{ background: `${C.red}1A`, color: C.red, boxShadow: `0 0 14px -6px ${C.red}AA` }}
+                    >
                       {i + 1}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-white">{m.name}</span>
-                    <span className="font-mono text-[12px] text-white">{m.count}</span>
-                    <span className="font-mono text-[11px]" style={{ color: C.muted }}>{pct}%</span>
+                    <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-white">{m.name}</span>
+                    <span className="rounded-lg border px-2.5 py-1 font-mono text-[12.5px] font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>{m.count}</span>
+                    <span className="font-mono text-[12.5px] font-semibold" style={{ color: C.muted }}>{pct}%</span>
                   </div>
                 );
               })}
@@ -715,33 +824,35 @@ export default function Psychology() {
           )}
           <Link
             to="/mistakes"
-            className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/[0.05]"
+            className="group mt-6 flex items-center justify-center gap-2.5 rounded-[14px] border border-white/[0.1] bg-white/[0.03] px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-all duration-200 hover:border-white/25 hover:bg-white/[0.07]"
           >
-            View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
+            View Mistake Analysis <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </SectionCard>
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-4 rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 lg:flex-row lg:items-center">
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${C.yellow}14`, color: C.yellow }}>
-            <Lightbulb className="h-5 w-5" />
+      <section className="flex flex-col items-start gap-6 rounded-[18px] border border-white/[0.06] bg-[#050505] p-8 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset] lg:flex-row lg:items-center lg:gap-8">
+        <div className="flex shrink-0 items-center gap-4">
+          <span className="relative flex h-14 w-14 items-center justify-center rounded-[18px]" style={{ background: `${C.yellow}1A`, color: C.yellow }}>
+            <span className="pointer-events-none absolute -inset-3 rounded-full blur-[18px]" style={{ background: `radial-gradient(circle, ${C.yellow}66 0%, transparent 70%)` }} aria-hidden />
+            <Lightbulb className="relative h-7 w-7" />
           </span>
-          <span className="font-heading text-[15px] font-semibold uppercase tracking-[0.14em] text-white">Coach Tip</span>
+          <span className="font-heading text-[17px] font-bold uppercase tracking-[0.16em] text-white">Coach Tip</span>
         </div>
-        <p className="flex-1 text-[14px] leading-relaxed" style={{ color: C.muted }}>
+        <p className="flex-1 text-[15px] leading-[1.7]" style={{ color: 'rgba(214,218,224,0.82)' }}>
           {insights[0] ??
             `Your discipline averages ${stats.avgDiscipline}/5. Trades rated 4+ win ${stats.highDiscWinRate}% of the time — protect that edge by skipping setups when focus drops below 4.`}
         </p>
         <Link
           to="/ai-insights"
-          className="flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
-          style={{ background: C.green }}
+          className="group flex shrink-0 items-center gap-2.5 rounded-[14px] px-7 py-4 text-[12.5px] font-bold uppercase tracking-[0.14em] text-black transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: `linear-gradient(135deg, #3BE87A 0%, ${C.green} 100%)`, boxShadow: `0 18px 44px -22px ${C.green}AA` }}
         >
-          View Action Plan <ArrowRight className="h-3.5 w-3.5" />
+          View Action Plan <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
       </section>
+
     </div>
   );
 }
