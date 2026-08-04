@@ -79,9 +79,13 @@ function KpiCard({
             </span>
             <InfoTooltip text={tooltip} />
           </div>
-          <p className="mt-5 font-mono text-[46px] leading-none font-extrabold tracking-tight text-white break-words">
+          <p
+            className="mt-5 font-mono leading-none font-extrabold tracking-tight text-white"
+            style={{ fontSize: value.length > 9 ? 26 : value.length > 6 ? 34 : 46 }}
+          >
             {value}
           </p>
+
           <p className="mt-3.5 text-[13.5px] font-semibold" style={{ color }}>{status}</p>
           <p className="mt-2 text-[11.5px]" style={{ color: C.muted }}>{change}</p>
         </div>
