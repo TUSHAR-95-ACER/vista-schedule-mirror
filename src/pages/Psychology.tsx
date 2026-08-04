@@ -796,17 +796,23 @@ export default function Psychology() {
         {/* Top mistakes */}
         <SectionCard title="Top 5 Mistakes" subtitle="Most frequent execution errors" tooltip="Ranked list of your most common logged mistakes.">
           {mistakeData.length > 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-3.5">
               {mistakeData.slice(0, 5).map((m, i) => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
-                  <div key={m.name} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3 transition-colors hover:bg-white/[0.04]">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
+                  <div
+                    key={m.name}
+                    className="flex items-center gap-3.5 rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-4 py-[17px] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/[0.1] hover:bg-white/[0.045]"
+                  >
+                    <span
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] font-mono text-[14px] font-bold"
+                      style={{ background: `${C.red}1A`, color: C.red, boxShadow: `0 0 14px -6px ${C.red}AA` }}
+                    >
                       {i + 1}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-white">{m.name}</span>
-                    <span className="font-mono text-[12px] text-white">{m.count}</span>
-                    <span className="font-mono text-[11px]" style={{ color: C.muted }}>{pct}%</span>
+                    <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-white">{m.name}</span>
+                    <span className="rounded-lg border px-2.5 py-1 font-mono text-[12.5px] font-bold text-white" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>{m.count}</span>
+                    <span className="font-mono text-[12.5px] font-semibold" style={{ color: C.muted }}>{pct}%</span>
                   </div>
                 );
               })}
@@ -816,33 +822,35 @@ export default function Psychology() {
           )}
           <Link
             to="/mistakes"
-            className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/[0.05]"
+            className="group mt-6 flex items-center justify-center gap-2.5 rounded-[14px] border border-white/[0.1] bg-white/[0.03] px-5 py-3.5 text-[12px] font-bold uppercase tracking-[0.14em] text-white transition-all duration-200 hover:border-white/25 hover:bg-white/[0.07]"
           >
-            View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
+            View Mistake Analysis <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </SectionCard>
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-4 rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 lg:flex-row lg:items-center">
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${C.yellow}14`, color: C.yellow }}>
-            <Lightbulb className="h-5 w-5" />
+      <section className="flex flex-col items-start gap-6 rounded-[18px] border border-white/[0.06] bg-[#050505] p-8 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset] lg:flex-row lg:items-center lg:gap-8">
+        <div className="flex shrink-0 items-center gap-4">
+          <span className="relative flex h-14 w-14 items-center justify-center rounded-[18px]" style={{ background: `${C.yellow}1A`, color: C.yellow }}>
+            <span className="pointer-events-none absolute -inset-3 rounded-full blur-[18px]" style={{ background: `radial-gradient(circle, ${C.yellow}66 0%, transparent 70%)` }} aria-hidden />
+            <Lightbulb className="relative h-7 w-7" />
           </span>
-          <span className="font-heading text-[15px] font-semibold uppercase tracking-[0.14em] text-white">Coach Tip</span>
+          <span className="font-heading text-[17px] font-bold uppercase tracking-[0.16em] text-white">Coach Tip</span>
         </div>
-        <p className="flex-1 text-[14px] leading-relaxed" style={{ color: C.muted }}>
+        <p className="flex-1 text-[15px] leading-[1.7]" style={{ color: 'rgba(214,218,224,0.82)' }}>
           {insights[0] ??
             `Your discipline averages ${stats.avgDiscipline}/5. Trades rated 4+ win ${stats.highDiscWinRate}% of the time — protect that edge by skipping setups when focus drops below 4.`}
         </p>
         <Link
           to="/ai-insights"
-          className="flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
-          style={{ background: C.green }}
+          className="group flex shrink-0 items-center gap-2.5 rounded-[14px] px-7 py-4 text-[12.5px] font-bold uppercase tracking-[0.14em] text-black transition-all duration-200 hover:-translate-y-0.5"
+          style={{ background: `linear-gradient(135deg, #3BE87A 0%, ${C.green} 100%)`, boxShadow: `0 18px 44px -22px ${C.green}AA` }}
         >
-          View Action Plan <ArrowRight className="h-3.5 w-3.5" />
+          View Action Plan <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Link>
       </section>
+
     </div>
   );
 }
