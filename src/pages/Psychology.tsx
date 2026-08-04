@@ -643,28 +643,33 @@ export default function Psychology() {
 
       {/* ── AI INSIGHTS ROW ── */}
       <section className={cn(cardBase)}>
-        <div className="mb-5 flex items-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
-            <Sparkles className="h-4 w-4" />
+        <div className="mb-6 flex items-center gap-3">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: `${C.yellow}1A`, color: C.yellow }}>
+            <span className="pointer-events-none absolute -inset-2 rounded-full blur-[12px]" style={{ background: `radial-gradient(circle, ${C.yellow}55 0%, transparent 70%)` }} aria-hidden />
+            <Sparkles className="relative h-5 w-5" />
           </span>
           <h2 className="font-heading text-[22px] font-semibold text-white">AI Insights</h2>
           <span className="text-[12px]" style={{ color: C.muted }}>Derived from logged journal data · no AI required</span>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
             const icons = [TrendingUp, ShieldCheck, Activity, TrendingDown];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
-                  <Icon className="h-4 w-4" />
+              <div
+                key={i}
+                className="rounded-[18px] border border-white/[0.06] bg-white/[0.018] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-white/[0.1] hover:bg-white/[0.035]"
+              >
+                <span className="relative flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: `${colors[i]}1A`, color: colors[i] }}>
+                  <span className="pointer-events-none absolute -inset-2.5 rounded-full blur-[14px]" style={{ background: `radial-gradient(circle, ${colors[i]}66 0%, transparent 70%)` }} aria-hidden />
+                  <Icon className="relative h-5 w-5" />
                 </span>
-                <p className="mt-3 text-[13px] font-semibold text-white">
+                <p className="mt-5 text-[16px] font-bold tracking-tight text-white">
                   {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
                 </p>
-                <p className="mt-1.5 text-[12px] leading-relaxed" style={{ color: C.muted }}>
+                <p className="mt-2.5 text-[12.5px] leading-[1.65]" style={{ color: C.muted }}>
                   {text ?? 'Not enough data yet to generate this observation.'}
                 </p>
               </div>
@@ -672,20 +677,26 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex flex-col justify-between rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
-            style={{ borderColor: `${C.emerald}33`, background: `${C.emerald}0D` }}
+            className="group relative flex flex-col justify-between overflow-hidden rounded-[18px] border p-6 transition-all duration-200 hover:-translate-y-1"
+            style={{
+              borderColor: `${C.emerald}4D`,
+              background: `linear-gradient(160deg, ${C.emerald}22 0%, ${C.emerald}0A 60%, transparent 100%)`,
+              boxShadow: `0 0 0 1px ${C.emerald}14, 0 24px 60px -34px ${C.emerald}66`,
+            }}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.emerald}1F`, color: C.emerald }}>
-              <Brain className="h-4 w-4" />
+            <span className="relative flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ background: `${C.emerald}2E`, color: C.emerald }}>
+              <span className="pointer-events-none absolute -inset-3 rounded-full blur-[16px]" style={{ background: `radial-gradient(circle, ${C.emerald}88 0%, transparent 70%)` }} aria-hidden />
+              <Brain className="relative h-5 w-5" />
             </span>
-            <span>
-              <span className="mt-3 block text-[14px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1.5 flex items-center gap-1.5 text-[12px]" style={{ color: C.emerald }}>
-                Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            <span className="relative mt-6">
+              <span className="block text-[17px] font-bold leading-tight tracking-tight text-white">View Full AI Report</span>
+              <span className="mt-3 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11.5px] font-bold uppercase tracking-[0.14em] text-black" style={{ background: C.emerald }}>
+                Open Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </span>
             </span>
           </Link>
         </div>
+
       </section>
 
       {/* ── BOTTOM GRID ── */}
