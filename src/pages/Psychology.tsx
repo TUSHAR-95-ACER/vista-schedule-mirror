@@ -397,7 +397,7 @@ export default function Psychology() {
       </div>
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-7 xl:grid-cols-2 2xl:grid-cols-4">
         {/* Emotional Health Gauge */}
         <SectionCard title="Emotional Health" subtitle="Composite psychology gauge" tooltip="Overall psychological health derived from discipline, focus and stability.">
           <div className="flex flex-col items-center">
