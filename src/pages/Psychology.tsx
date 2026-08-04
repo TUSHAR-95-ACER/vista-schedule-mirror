@@ -401,42 +401,51 @@ export default function Psychology() {
         {/* Emotional Health Gauge */}
         <SectionCard title="Emotional Health" subtitle="Composite psychology gauge" tooltip="Overall psychological health derived from discipline, focus and stability.">
           <div className="flex flex-col items-center">
-            <div className="relative h-[130px] w-[240px]">
-              <svg viewBox="0 0 240 130" className="h-full w-full">
+            <div className="relative h-[152px] w-[264px]">
+              <svg viewBox="0 0 264 152" className="h-full w-full">
                 <defs>
                   <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor={C.red} />
-                    <stop offset="50%" stopColor={C.orange} />
+                    <stop offset="35%" stopColor={C.orange} />
+                    <stop offset="68%" stopColor={C.yellow} />
                     <stop offset="100%" stopColor={C.green} />
                   </linearGradient>
+                  <filter id="gaugeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="5" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
                 </defs>
-                <path d="M20 120 A100 100 0 0 1 220 120" stroke="rgba(255,255,255,0.07)" strokeWidth="14" fill="none" strokeLinecap="round" />
+                <path d="M24 134 A108 108 0 0 1 240 134" stroke="rgba(255,255,255,0.055)" strokeWidth="20" fill="none" strokeLinecap="round" />
                 <path
-                  d="M20 120 A100 100 0 0 1 220 120" stroke="url(#gaugeGrad)" strokeWidth="14" fill="none" strokeLinecap="round"
-                  strokeDasharray={Math.PI * 100} strokeDashoffset={Math.PI * 100 * (1 - gaugeValue / 100)}
-                  style={{ transition: 'stroke-dashoffset 700ms ease' }}
+                  d="M24 134 A108 108 0 0 1 240 134" stroke="url(#gaugeGrad)" strokeWidth="20" fill="none" strokeLinecap="round"
+                  filter="url(#gaugeGlow)"
+                  strokeDasharray={Math.PI * 108} strokeDashoffset={Math.PI * 108 * (1 - gaugeValue / 100)}
+                  style={{ transition: 'stroke-dashoffset 900ms cubic-bezier(0.22,1,0.36,1)' }}
                 />
                 <line
-                  x1="120" y1="120"
-                  x2={120 + 78 * Math.cos((gaugeAngle * Math.PI) / 180)}
-                  y2={120 - 78 * Math.sin((gaugeAngle * Math.PI) / 180)}
-                  stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round"
+                  x1="132" y1="134"
+                  x2={132 + 82 * Math.cos((gaugeAngle * Math.PI) / 180)}
+                  y2={134 - 82 * Math.sin((gaugeAngle * Math.PI) / 180)}
+                  stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round"
+                  style={{ transition: 'all 900ms cubic-bezier(0.22,1,0.36,1)' }}
                 />
-                <circle cx="120" cy="120" r="5" fill="#FFFFFF" />
+                <circle cx="132" cy="134" r="6.5" fill="#FFFFFF" />
+                <circle cx="132" cy="134" r="11" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
               </svg>
-              <div className="pointer-events-none absolute inset-x-0 bottom-6 text-center">
-                <p className="font-mono text-[40px] font-bold leading-none text-white">{gaugeValue}</p>
+              <div className="pointer-events-none absolute inset-x-0 bottom-5 text-center">
+                <p className="font-mono text-[54px] font-extrabold leading-none tracking-tight text-white">{gaugeValue}</p>
               </div>
             </div>
-            <p className="mt-1 text-[13px] font-semibold" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.orange : C.red }}>
+            <p className="mt-3 text-[17px] font-bold uppercase tracking-[0.14em]" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.orange : C.red }}>
               {gaugeValue >= 70 ? 'Healthy' : gaugeValue >= 50 ? 'Moderate' : 'At Risk'}
             </p>
-            <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{fmtDelta(deltas.score)}</p>
-            <div className="mt-4 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-[12px] leading-relaxed" style={{ color: C.muted }}>
-              <span className="text-white">Insight: </span>
+            <p className="mt-2 text-[12px]" style={{ color: C.muted }}>{fmtDelta(deltas.score)}</p>
+            <div className="mt-6 w-full rounded-[14px] border border-white/[0.06] bg-white/[0.02] p-4 text-[12.5px] leading-relaxed" style={{ color: C.muted }}>
+              <span className="font-semibold text-white">Insight: </span>
               High-discipline trades win {stats.highDiscWinRate}% vs {stats.lowDiscWinRate}% on low-discipline trades.
             </div>
           </div>
+
         </SectionCard>
 
         {/* Emotion vs P/L */}
