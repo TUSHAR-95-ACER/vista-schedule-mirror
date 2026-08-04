@@ -571,10 +571,8 @@ export default function Psychology() {
                     <stop offset="55%" stopColor="#3B82F6" stopOpacity={0.14} />
                     <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
                   </linearGradient>
-                  <filter id="lineGlow" x="-20%" y="-40%" width="140%" height="200%">
-                    <feGaussianBlur stdDeviation="2" result="b" />
-                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-                  </filter>
+
+
                 </defs>
                 <CartesianGrid strokeDasharray="4 6" stroke="rgba(255,255,255,0.1)" vertical={false} />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} minTickGap={28} dy={6} />
