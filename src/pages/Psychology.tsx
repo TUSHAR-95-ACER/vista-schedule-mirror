@@ -693,24 +693,17 @@ export default function Psychology() {
               </div>
             ))}
           </div>
-          <div className="mt-4 flex items-center gap-2 text-[11px]" style={{ color: C.muted }}>
-            Legend
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.red}CC` }} />
-            <span className="h-2.5 w-6 rounded-full bg-white/10" />
-            <span className="h-2.5 w-6 rounded-full" style={{ background: `${C.green}CC` }} />
-          </div>
         </SectionCard>
 
         {/* Donut */}
         <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[230px]">
+          <div className="h-[200px]">
             {donutData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={3} stroke="none" animationDuration={800}>
+                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={56} outerRadius={84} paddingAngle={3} stroke="none" animationDuration={800}>
                     {donutData.map((d, i) => <Cell key={i} fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red} />)}
                   </Pie>
-                  <Legend verticalAlign="middle" align="right" layout="vertical" iconType="circle" wrapperStyle={{ fontSize: 11, color: C.muted }} />
                   <Tooltip content={<ChartTip />} />
                 </PieChart>
               </ResponsiveContainer>
@@ -718,13 +711,36 @@ export default function Psychology() {
               <div className="flex h-full items-center justify-center text-[13px]" style={{ color: C.muted }}>No P/L data</div>
             )}
           </div>
-          <div
-            className="mt-4 rounded-xl border px-3 py-2.5 text-[12px]"
-            style={{ borderColor: `${C.green}2E`, background: `${C.green}0D`, color: C.green }}
-          >
-            Best emotional state: <span className="font-semibold">{stats.topEmotion}</span> at {stats.topEmotionWinRate}% win rate.
+          <div className="mt-4 space-y-2.5">
+            {(() => {
+              const total = donutData.reduce((s, d) => s + d.value, 0) || 1;
+              return donutData.map((d, i) => {
+                const pct = Math.round((d.value / total) * 100);
+                const color = d.pl >= 0 ? donutColors[i % donutColors.length] : C.red;
+                return (
+                  <div key={d.name} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex min-w-0 items-center gap-2 text-[12px] text-white">
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                        <span className="truncate">{d.name}</span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-2 font-mono text-[11px]">
+                        <span style={{ color: d.pl >= 0 ? C.green : C.red }}>
+                          {d.pl >= 0 ? '+' : ''}{d.pl.toFixed(2)}
+                        </span>
+                        <span style={{ color: C.muted }}>{pct}%</span>
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         </SectionCard>
+
 
         {/* Top mistakes */}
         <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes.">
