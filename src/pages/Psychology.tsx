@@ -56,38 +56,42 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
 }
 
 function KpiCard({
-  label, value, status, change, ringValue, color, icon: Icon, tooltip,
+  label, value, status, change, ringValue, color, icon: Icon, tooltip, valueColor,
 }: {
   label: string; value: string; status: string; change: string; ringValue: number;
-  color: string; icon: any; tooltip: string;
+  color: string; icon: any; tooltip: string; valueColor?: string;
 }) {
   return (
     <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span
-              className="flex h-6 w-6 items-center justify-center rounded-md"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
               style={{ background: `${color}14`, color }}
             >
               <Icon className="h-3.5 w-3.5" />
             </span>
-            <span className="truncate text-[12px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
+            <span className="truncate text-[11px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
               {label}
             </span>
             <InfoTooltip text={tooltip} />
           </div>
-          <p className="mt-3 font-mono text-[40px] leading-none font-bold tracking-tight text-white break-words">
+          <p
+            className="mt-3 font-mono text-[34px] leading-none font-bold tracking-tight break-words"
+            style={{ color: valueColor ?? color }}
+          >
             {value}
           </p>
-          <p className="mt-2 text-[13px] font-medium" style={{ color }}>{status}</p>
-          <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{change}</p>
+          <p className="mt-2 text-[12px] font-semibold" style={{ color }}>{status}</p>
+          <p className="mt-1 text-[11px]" style={{ color: C.muted }}>{change}</p>
         </div>
-        <Ring value={ringValue} color={color} />
+        <Ring value={ringValue} color={color} size={52} />
       </div>
     </div>
   );
 }
+
 
 function SectionCard({
   title, subtitle, tooltip, children, className, action,
