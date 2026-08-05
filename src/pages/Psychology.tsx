@@ -459,10 +459,11 @@ export default function Psychology() {
                       const { x, y, width, height, value } = props;
                       const v = Number(value);
                       const up = v >= 0;
+                      const top = Math.min(y, y + (height ?? 0));
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? y - 7 : y + 15}
+                          y={up ? top - 7 : top + 15}
                           textAnchor="middle"
                           className="font-mono"
                           fontSize={11}
