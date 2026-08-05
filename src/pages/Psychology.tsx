@@ -104,7 +104,7 @@ function SectionCard({
             <h2 className="font-heading text-[22px] font-semibold leading-tight text-white">{title}</h2>
             {tooltip && <InfoTooltip text={tooltip} />}
           </div>
-          {subtitle && <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{subtitle}</p>}
+          
         </div>
         {action}
       </header>
