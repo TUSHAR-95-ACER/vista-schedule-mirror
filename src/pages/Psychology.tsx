@@ -616,8 +616,7 @@ export default function Psychology() {
           <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Sparkles className="h-4 w-4" />
           </span>
-          <h2 className="font-heading text-[22px] font-semibold text-white">AI Insights</h2>
-          <span className="text-[12px]" style={{ color: C.muted }}>Derived from logged journal data · no AI required</span>
+          <h2 className="font-heading text-[16px] font-semibold uppercase tracking-[0.08em] text-white">AI Insights</h2>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
@@ -626,35 +625,38 @@ export default function Psychology() {
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
+              <div key={i} className="flex items-start gap-3 rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
                   <Icon className="h-4 w-4" />
                 </span>
-                <p className="mt-3 text-[13px] font-semibold text-white">
-                  {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
-                </p>
-                <p className="mt-1.5 text-[12px] leading-relaxed" style={{ color: C.muted }}>
-                  {text ?? 'Not enough data yet to generate this observation.'}
-                </p>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-white">
+                    {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
+                  </p>
+                  <p className="mt-1 text-[12px] leading-relaxed" style={{ color: C.muted }}>
+                    {text ?? 'Not enough data yet to generate this observation.'}
+                  </p>
+                </div>
               </div>
             );
           })}
           <Link
             to="/ai-insights"
-            className="group flex flex-col justify-between rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
-            style={{ borderColor: `${C.emerald}33`, background: `${C.emerald}0D` }}
+            className="group flex items-start gap-3 rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
+            style={{ borderColor: `${C.green}33`, background: `${C.green}0D` }}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.emerald}1F`, color: C.emerald }}>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${C.green}1F`, color: C.green }}>
               <Brain className="h-4 w-4" />
             </span>
-            <span>
-              <span className="mt-3 block text-[14px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1.5 flex items-center gap-1.5 text-[12px]" style={{ color: C.emerald }}>
+            <span className="min-w-0">
+              <span className="block text-[13px] font-semibold text-white">View Full AI Report</span>
+              <span className="mt-1 flex items-center gap-1.5 text-[12px]" style={{ color: C.green }}>
                 Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </span>
             </span>
           </Link>
         </div>
+
       </section>
 
       {/* ── BOTTOM GRID ── */}
