@@ -456,13 +456,13 @@ export default function Psychology() {
                     dataKey="pl"
                     position="top"
                     content={(props: any) => {
-                      const { x, y, width, value } = props;
+                      const { x, y, width, height, value } = props;
                       const v = Number(value);
                       const up = v >= 0;
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? y - 7 : y + 14}
+                          y={up ? y - 7 : y + Math.abs(height) + 14}
                           textAnchor="middle"
                           className="font-mono"
                           fontSize={11}
