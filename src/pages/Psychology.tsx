@@ -6,7 +6,7 @@ import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  AreaChart, Area, PieChart, Pie, Legend,
+  AreaChart, Area, PieChart, Pie, Legend, LabelList,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { generateInsights } from '@/lib/insightEngine';
@@ -482,7 +482,7 @@ export default function Psychology() {
 
 
         {/* Mistake frequency */}
-        <SectionCard title="Mistake Frequency" subtitle="Occurrence rate per mistake type" tooltip="How often each type of mistake occurs in your trades">
+        <SectionCard title="Mistake Frequency" tooltip="How often each type of mistake occurs in your trades">
           {mistakeData.length > 0 ? (
             <div className="space-y-4">
               {mistakeData.slice(0, 6).map((m, i) => {
@@ -515,7 +515,7 @@ export default function Psychology() {
         </SectionCard>
 
         {/* Checklist radar */}
-        <SectionCard title="Checklist Adherence" subtitle="Pre-trade rule compliance" tooltip="How well you follow your pre-trade checklist items (radar shows % compliance)">
+        <SectionCard title="Checklist Adherence" tooltip="How well you follow your pre-trade checklist items (radar shows % compliance)">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="72%">
@@ -535,7 +535,7 @@ export default function Psychology() {
         <SectionCard
           className="2xl:col-span-2"
           title="Discipline & Focus Trend"
-          subtitle="Score progression across logged trades"
+         
           tooltip="How your discipline and focus scores are trending over time"
         >
           <div className="h-[300px]">
@@ -565,7 +565,7 @@ export default function Psychology() {
         {/* Emotion performance table */}
         <SectionCard
           title="Emotion Performance"
-          subtitle="Breakdown by emotional state"
+         
           tooltip="Detailed table showing win rate and P/L for each emotional state"
           action={
             <select
@@ -660,7 +660,7 @@ export default function Psychology() {
       {/* ── BOTTOM GRID ── */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Heatmap */}
-        <SectionCard title="Psychology Heatmap" subtitle="Discipline & P/L by weekday" tooltip="Weekday view of trading psychology and profitability.">
+        <SectionCard title="Psychology Heatmap" tooltip="Weekday view of trading psychology and profitability.">
           <div className="grid grid-cols-5 gap-2">
             {heat.rows.map(r => {
               const intensity = r.count === 0 ? 0 : Math.min(1, Math.abs(r.pl) / (Math.max(...heat.rows.map(x => Math.abs(x.pl))) || 1));
@@ -700,7 +700,7 @@ export default function Psychology() {
         </SectionCard>
 
         {/* Donut */}
-        <SectionCard title="Performance by Emotion" subtitle="P/L distribution across states" tooltip="Share of absolute P/L generated under each emotional state.">
+        <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state.">
           <div className="h-[230px]">
             {donutData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -725,7 +725,7 @@ export default function Psychology() {
         </SectionCard>
 
         {/* Top mistakes */}
-        <SectionCard title="Top 5 Mistakes" subtitle="Most frequent execution errors" tooltip="Ranked list of your most common logged mistakes.">
+        <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes.">
           {mistakeData.length > 0 ? (
             <div className="space-y-2.5">
               {mistakeData.slice(0, 5).map((m, i) => {
