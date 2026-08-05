@@ -242,7 +242,7 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
         t.glow,
       )}
-      style={{ minHeight: 128, background: '#050505' }}
+      style={{ minHeight: 128, background: '#121212' }}
     >
       <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
       <div className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
@@ -687,7 +687,7 @@ export default function TradingChecklist() {
                     'shadow-[0_16px_44px_-18px_rgba(0,0,0,0.75)] transition-all duration-200 ease-out',
                     'hover:-translate-y-[1px] hover:border-white/[0.07]'
                   )}
-                  style={{ background: '#050505' }}
+                  style={{ background: '#121212' }}
 
                 >
                   {/* Ambient tint wash */}
@@ -760,7 +760,7 @@ export default function TradingChecklist() {
                               'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
                               i.done
                                 ? 'border-white/[0.03] bg-white/[0.015]'
-                                : 'border-white/[0.04] bg-[#0A0A0A] hover:bg-[#101010] hover:border-white/[0.08]'
+                                : 'border-white/[0.04] bg-[#121212] hover:bg-[#171717] hover:border-white/[0.08]'
                             )}
                             style={{ height: 38 }}
                           >
@@ -870,7 +870,7 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Quote Card */}
-          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#050505' }}>
+          <div className="relative overflow-hidden rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#121212' }}>
             <div
               className="absolute inset-0 pointer-events-none opacity-[0.10]"
               style={{ background: 'radial-gradient(120% 100% at 100% 0%, #8B5CF6 0%, transparent 45%), radial-gradient(120% 100% at 0% 100%, #EC4899 0%, transparent 45%)' }}
@@ -899,7 +899,7 @@ export default function TradingChecklist() {
                 <button
                   key={t.id}
                   onClick={() => applyTemplate(t)}
-                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#0A0A0A] hover:bg-[#101010] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
+                  className="w-full flex items-center gap-2.5 px-3 rounded-[9px] bg-[#121212] hover:bg-[#171717] border border-white/[0.03] hover:border-white/[0.07] transition text-left"
                   style={{ height: 34 }}
                 >
                   <BookOpen className="h-3.5 w-3.5 text-[#A78BFA] shrink-0" />
@@ -1029,7 +1029,7 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#050505' }}>
+    <div className="relative rounded-[16px] border border-white/[0.04] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#121212' }}>
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.11em] text-white/75">{title}</h3>
@@ -1074,7 +1074,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
   return (
     <div
       className="relative overflow-hidden rounded-[11px] border border-white/[0.04] px-3 py-2 flex flex-col justify-center"
-      style={{ height: 74, background: '#0A0A0A' }}
+      style={{ height: 74, background: '#121212' }}
     >
       <div className="flex items-center gap-1.5 mb-1">
         <Icon className="h-[13px] w-[13px]" style={{ color: tint }} />
@@ -1088,7 +1088,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#0A0A0A' }}>
+    <div className="flex items-center gap-2 rounded-[11px] border border-white/[0.04] px-3" style={{ height: 50, background: '#121212' }}>
       <Icon className="h-[15px] w-[15px]" style={{ color }} />
       <span className="text-[12px] text-white/85 truncate">{label}</span>
     </div>
@@ -1100,7 +1100,7 @@ function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; o
     <button
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 rounded-[11px] border border-white/[0.04] hover:border-white/[0.08] hover:bg-white/[0.02] transition-all text-left group"
-      style={{ height: 40, background: '#0A0A0A' }}
+      style={{ height: 40, background: '#121212' }}
     >
       <Icon className="h-[14px] w-[14px] text-[#A78BFA] transition-transform group-hover:scale-110" />
       <span className="text-[12.5px] text-white/85 flex-1 group-hover:text-white">{label}</span>
