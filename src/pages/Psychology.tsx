@@ -349,7 +349,7 @@ export default function Psychology() {
   const gaugeAngle = 180 - (gaugeValue / 100) * 180;
 
   return (
-    <div className="w-full space-y-6 p-6">
+    <div className="w-full space-y-4 p-6">
       {Header}
 
       {/* ── KPI CARDS ── */}
@@ -395,7 +395,7 @@ export default function Psychology() {
 
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
         {/* Emotional Health Gauge */}
         <SectionCard title="Emotional Health" tooltip="Overall psychological health derived from discipline, focus and stability.">
           <div className="flex flex-col items-center">
@@ -531,9 +531,9 @@ export default function Psychology() {
       </div>
 
       {/* ── TREND SECTION ── */}
-      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <SectionCard
-          className="2xl:col-span-2"
+          className="xl:col-span-2"
           title="Discipline & Focus Trend"
          
           tooltip="How your discipline and focus scores are trending over time"
@@ -660,7 +660,7 @@ export default function Psychology() {
       </section>
 
       {/* ── BOTTOM GRID ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {/* Heatmap */}
         <SectionCard title="Psychology Heatmap" tooltip="Weekday view of trading psychology and profitability.">
           <div className="grid grid-cols-5 gap-2">
