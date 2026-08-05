@@ -397,20 +397,26 @@ export default function Psychology() {
       {/* ── ANALYTICS ROW (4 cards) ── */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-4">
         {/* Emotional Health Gauge */}
-        <SectionCard title="Emotional Health" subtitle="Composite psychology gauge" tooltip="Overall psychological health derived from discipline, focus and stability.">
+        <SectionCard title="Emotional Health" tooltip="Overall psychological health derived from discipline, focus and stability.">
           <div className="flex flex-col items-center">
             <div className="relative h-[130px] w-[240px]">
               <svg viewBox="0 0 240 130" className="h-full w-full">
                 <defs>
                   <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor={C.red} />
-                    <stop offset="50%" stopColor={C.orange} />
-                    <stop offset="100%" stopColor={C.green} />
+                    <stop offset="0%" stopColor={C.green} />
+                    <stop offset="38%" stopColor={C.yellow} />
+                    <stop offset="70%" stopColor={C.orange} />
+                    <stop offset="100%" stopColor={C.red} />
                   </linearGradient>
+                  <filter id="gaugeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
                 </defs>
                 <path d="M20 120 A100 100 0 0 1 220 120" stroke="rgba(255,255,255,0.07)" strokeWidth="14" fill="none" strokeLinecap="round" />
                 <path
                   d="M20 120 A100 100 0 0 1 220 120" stroke="url(#gaugeGrad)" strokeWidth="14" fill="none" strokeLinecap="round"
+                  filter="url(#gaugeGlow)"
                   strokeDasharray={Math.PI * 100} strokeDashoffset={Math.PI * 100 * (1 - gaugeValue / 100)}
                   style={{ transition: 'stroke-dashoffset 700ms ease' }}
                 />
@@ -426,33 +432,54 @@ export default function Psychology() {
                 <p className="font-mono text-[40px] font-bold leading-none text-white">{gaugeValue}</p>
               </div>
             </div>
-            <p className="mt-1 text-[13px] font-semibold" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.orange : C.red }}>
+            <p className="mt-1 text-[13px] font-semibold" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.yellow : gaugeValue >= 35 ? C.orange : C.red }}>
               {gaugeValue >= 70 ? 'Healthy' : gaugeValue >= 50 ? 'Moderate' : 'At Risk'}
             </p>
             <p className="mt-1 text-[12px]" style={{ color: C.muted }}>{fmtDelta(deltas.score)}</p>
-            <div className="mt-4 w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-[12px] leading-relaxed" style={{ color: C.muted }}>
-              <span className="text-white">Insight: </span>
-              High-discipline trades win {stats.highDiscWinRate}% vs {stats.lowDiscWinRate}% on low-discipline trades.
-            </div>
           </div>
         </SectionCard>
 
         {/* Emotion vs P/L */}
-        <SectionCard title="Emotion vs P/L" subtitle="Profit impact by emotional state" tooltip="How your emotional state during trading impacts your profit/loss">
+        <SectionCard title="Emotion vs P/L" tooltip="How your emotional state during trading impacts your profit/loss">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 6, right: 6, left: -14, bottom: 0 }}>
+              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<ChartTip />} />
                 <Bar dataKey="pl" name="P/L" radius={[8, 8, 0, 0]} animationDuration={700}>
-                  {emotionData.map((e, i) => <Cell key={i} fill={e.pl >= 0 ? C.green : C.red} />)}
+                  {emotionData.map((e, i) => (
+                    <Cell key={i} fill={e.pl > 0 ? C.green : e.pl < 0 ? C.red : C.yellow} />
+                  ))}
+                  <LabelList
+                    dataKey="pl"
+                    position="top"
+                    content={(props: any) => {
+                      const { x, y, width, value } = props;
+                      const v = Number(value);
+                      const up = v >= 0;
+                      return (
+                        <text
+                          x={x + width / 2}
+                          y={up ? y - 7 : y + 14}
+                          textAnchor="middle"
+                          className="font-mono"
+                          fontSize={11}
+                          fontWeight={600}
+                          fill={v > 0 ? C.green : v < 0 ? C.red : C.yellow}
+                        >
+                          {`${v > 0 ? '+' : ''}${v.toFixed(2)}`}
+                        </text>
+                      );
+                    }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </SectionCard>
+
 
         {/* Mistake frequency */}
         <SectionCard title="Mistake Frequency" subtitle="Occurrence rate per mistake type" tooltip="How often each type of mistake occurs in your trades">
