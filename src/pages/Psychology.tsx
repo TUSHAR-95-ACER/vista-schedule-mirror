@@ -353,7 +353,7 @@ export default function Psychology() {
       {Header}
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard
           label="Psychology Score" value={`${stats.psychScore}`} icon={Brain} color={C.green}
           status={stats.psychScore >= 70 ? 'Strong mindset' : stats.psychScore >= 50 ? 'Developing' : 'Needs work'}
@@ -386,12 +386,13 @@ export default function Psychology() {
           tooltip="Total number of trading mistakes logged in this range."
         />
         <KpiCard
-          label="Best Emotion" value={stats.topEmotion} icon={Smile} color={C.emerald}
+          label="Best Emotion" value={stats.topEmotion} icon={Smile} color={C.green}
           status={`${stats.topEmotionWinRate}% win rate`}
           change={`Across ${emotionData.length} emotional states`} ringValue={stats.topEmotionWinRate}
           tooltip="The emotional state that correlates with your best trading results."
         />
       </div>
+
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-4">
