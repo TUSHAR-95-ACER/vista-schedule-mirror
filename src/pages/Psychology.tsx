@@ -422,15 +422,16 @@ export default function Psychology() {
                 />
                 <line
                   x1="120" y1="120"
-                  x2={120 + 78 * Math.cos((gaugeAngle * Math.PI) / 180)}
-                  y2={120 - 78 * Math.sin((gaugeAngle * Math.PI) / 180)}
-                  stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round"
+                  x2={120 + 44 * Math.cos((gaugeAngle * Math.PI) / 180)}
+                  y2={120 - 44 * Math.sin((gaugeAngle * Math.PI) / 180)}
+                  stroke="rgba(255,255,255,0.55)" strokeWidth="2" strokeLinecap="round"
                 />
-                <circle cx="120" cy="120" r="5" fill="#FFFFFF" />
+                <circle cx="120" cy="120" r="4" fill="rgba(255,255,255,0.7)" />
               </svg>
-              <div className="pointer-events-none absolute inset-x-0 bottom-6 text-center">
-                <p className="font-mono text-[40px] font-bold leading-none text-white">{gaugeValue}</p>
+              <div className="pointer-events-none absolute inset-x-0 bottom-1 text-center">
+                <p className="font-mono text-[34px] font-bold leading-none text-white">{gaugeValue}</p>
               </div>
+
             </div>
             <p className="mt-1 text-[13px] font-semibold" style={{ color: gaugeValue >= 70 ? C.green : gaugeValue >= 50 ? C.yellow : gaugeValue >= 35 ? C.orange : C.red }}>
               {gaugeValue >= 70 ? 'Healthy' : gaugeValue >= 50 ? 'Moderate' : 'At Risk'}
