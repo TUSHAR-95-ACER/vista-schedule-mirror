@@ -443,7 +443,7 @@ export default function Psychology() {
         <SectionCard title="Emotion vs P/L" tooltip="How your emotional state during trading impacts your profit/loss">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -14, bottom: 16 }}>
+              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
@@ -462,12 +462,12 @@ export default function Psychology() {
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? y - 7 : y + Math.abs(height) + 14}
+                          y={up ? y - 7 : y + 15}
                           textAnchor="middle"
                           className="font-mono"
                           fontSize={11}
                           fontWeight={600}
-                          fill={v > 0 ? C.green : v < 0 ? C.red : C.yellow}
+                          fill={v > 0 ? C.green : v < 0 ? '#FFFFFF' : C.yellow}
                         >
                           {`${v > 0 ? '+' : ''}${v.toFixed(2)}`}
                         </text>
