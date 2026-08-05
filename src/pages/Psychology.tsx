@@ -29,7 +29,7 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[18px] border border-white/[0.06] bg-[#121212] p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
 function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
@@ -305,7 +305,7 @@ export default function Psychology() {
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <HeaderActions />
-        <div className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-[#050505] px-1.5 py-1">
+        <div className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-[#121212] px-1.5 py-1">
           <CalendarRange className="mx-1.5 h-3.5 w-3.5" style={{ color: C.muted }} />
           {(['30', '90', 'all'] as const).map(r => (
             <button
@@ -322,7 +322,7 @@ export default function Psychology() {
         </div>
         <button
           onClick={exportCsv}
-          className="flex h-8 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#050505] px-3.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:border-white/20 hover:bg-white/5"
+          className="flex h-8 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#121212] px-3.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:border-white/20 hover:bg-white/5"
         >
           <Download className="h-3.5 w-3.5" /> Export
         </button>
@@ -723,7 +723,7 @@ export default function Psychology() {
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-4 rounded-[18px] border border-white/[0.06] bg-[#050505] p-6 lg:flex-row lg:items-center">
+      <section className="flex flex-col items-start gap-4 rounded-[18px] border border-white/[0.06] bg-[#121212] p-6 lg:flex-row lg:items-center">
         <div className="flex shrink-0 items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Lightbulb className="h-5 w-5" />
