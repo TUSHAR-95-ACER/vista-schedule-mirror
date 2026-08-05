@@ -78,8 +78,8 @@ function KpiCard({
             <InfoTooltip text={tooltip} />
           </div>
           <p
-            className="mt-3 font-mono text-[34px] leading-none font-bold tracking-tight break-words"
-            style={{ color: valueColor ?? color }}
+            className="mt-3 font-mono leading-none font-bold tracking-tight break-words"
+            style={{ color: valueColor ?? color, fontSize: value.length > 8 ? 22 : value.length > 6 ? 27 : 34 }}
           >
             {value}
           </p>
@@ -443,7 +443,7 @@ export default function Psychology() {
         <SectionCard title="Emotion vs P/L" tooltip="How your emotional state during trading impacts your profit/loss">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -14, bottom: 0 }}>
+              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -14, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: C.muted }} axisLine={false} tickLine={false} />
