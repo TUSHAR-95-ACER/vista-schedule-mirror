@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTrading } from '@/contexts/TradingContext';
 import { HeaderActions } from '@/components/layout/HeaderActions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
