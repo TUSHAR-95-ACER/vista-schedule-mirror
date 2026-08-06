@@ -201,6 +201,7 @@ const ChartTip = ({ active, payload, label }: any) => {
 /* ── page ───────────────────────────────────────────────────────────── */
 export default function Psychology() {
   const { trades } = useTrading();
+  const { openDrawer } = useAICoach();
   const [range, setRange] = useState<'30' | '90' | 'all'>('all');
   const [emotionFilter, setEmotionFilter] = useState<string>('all');
 
