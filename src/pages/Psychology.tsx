@@ -63,7 +63,7 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
  * ~180° arc on the right-hand side, starting at 2 o'clock and ending at 7 o'clock,
  * thick stroke with rounded ends. Remaining track is dark gray.
  */
-function HalfRing({ value, color, size = 62 }: { value: number; color: string; size?: number }) {
+function HalfRing({ value, color, size = 54 }: { value: number; color: string; size?: number }) {
   const stroke = 7;
   const r = size / 2 - stroke / 2 - 1;
   const cx = size / 2;
@@ -120,7 +120,7 @@ function KpiCard({
 }) {
   return (
     <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3">
         <span className="shrink-0" style={{ color }}>
           <InfoTooltip text={tooltip}>
             <Icon className="h-8 w-8" strokeWidth={1.9} />
@@ -129,7 +129,7 @@ function KpiCard({
 
         <div className="min-w-0 flex-1">
           {/* LEVEL 2 — Card title */}
-          <p className="truncate text-[12px] font-bold uppercase tracking-[0.08em] text-white">{label}</p>
+          <p className="text-[11.5px] font-bold uppercase leading-tight tracking-[0.06em] text-white">{label}</p>
 
           {/* LEVEL 3 — Main value */}
           <p className="mt-1.5 flex items-baseline gap-0.5 leading-none">
@@ -149,7 +149,7 @@ function KpiCard({
 
           {/* LEVEL 5 — Monthly change */}
           <p
-            className="mt-1 text-[11px] font-normal"
+            className="mt-1 text-[11px] font-normal leading-snug"
             style={{ color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted }}
           >
             {change}
@@ -327,7 +327,7 @@ export default function Psychology() {
     score >= 80 ? 'Strong' : score >= 65 ? 'Good' : score >= 50 ? 'Moderate' : 'At Risk';
 
   /* spec: CHANGE = "+12 vs last month" (green positive / red negative) */
-  const periodLabel = range === '30' ? 'vs last month' : 'vs previous period';
+  const periodLabel = range === '30' ? 'vs last month' : range === '90' ? 'vs last quarter' : 'vs prior period';
   const changeText = (v: number | null, digits = 0) =>
     v === null ? 'Not enough data' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)} ${periodLabel}`;
   const changeTone = (v: number | null, invert = false): 'up' | 'down' | undefined =>
