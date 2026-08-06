@@ -319,6 +319,30 @@ export default function Psychology() {
   const fmtDelta = (v: number | null, suffix = '') =>
     v === null ? 'Not enough data' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}${suffix} vs previous period`;
 
+  /* spec: STATUS = secondary information derived from the score band */
+  const statusFor = (score: number) =>
+    score >= 80 ? 'Strong' : score >= 65 ? 'Good' : score >= 50 ? 'Moderate' : 'At Risk';
+
+  /* spec: CHANGE = "+12 vs last month" (green positive / red negative) */
+  const periodLabel = range === '30' ? 'vs last month' : 'vs previous period';
+  const changeText = (v: number | null, digits = 0) =>
+    v === null ? 'Not enough data' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)} ${periodLabel}`;
+  const changeTone = (v: number | null, invert = false): 'up' | 'down' | undefined =>
+    v === null ? undefined : (v >= 0) !== invert ? 'up' : 'down';
+
+  /* spec: header date-range label, e.g. "Jun 1 – Jul 1, 2026" */
+  const rangeLabel = useMemo(() => {
+    const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dates = scoped.map(t => new Date(t.date).getTime()).filter(n => Number.isFinite(n));
+    const end = new Date();
+    const start = range === 'all'
+      ? new Date(dates.length ? Math.min(...dates) : end.getTime())
+      : new Date(end.getTime() - Number(range) * 86400_000);
+    return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`;
+  }, [scoped, range]);
+
+
+
   /* weekday heatmap */
   const heat = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
