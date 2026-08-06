@@ -149,7 +149,7 @@ function KpiCard({
 
           {/* LEVEL 5 — Monthly change */}
           <p
-            className="mt-1 text-[11px] font-normal leading-snug"
+            className="mt-1 text-[10.5px] font-normal leading-snug"
             style={{ color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted }}
           >
             {change}
@@ -327,7 +327,7 @@ export default function Psychology() {
     score >= 80 ? 'Strong' : score >= 65 ? 'Good' : score >= 50 ? 'Moderate' : 'At Risk';
 
   /* spec: CHANGE = "+12 vs last month" (green positive / red negative) */
-  const periodLabel = range === '30' ? 'vs last month' : range === '90' ? 'vs last quarter' : 'vs prior period';
+  const periodLabel = range === '30' ? 'vs last month' : range === '90' ? 'vs last 90d' : 'vs prior';
   const changeText = (v: number | null, digits = 0) =>
     v === null ? 'Not enough data' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)} ${periodLabel}`;
   const changeTone = (v: number | null, invert = false): 'up' | 'down' | undefined =>
