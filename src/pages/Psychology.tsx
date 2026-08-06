@@ -389,43 +389,58 @@ export default function Psychology() {
     URL.revokeObjectURL(url);
   };
 
-  /* ---- header (shared) ---- */
+  /* ---- header (shared) — spec: title + subtitle left, AI COACH + date range right ---- */
   const Header = (
     <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
       <div>
-        <h1 className="font-heading text-[32px] font-bold uppercase tracking-[0.1em] text-white sm:text-[40px] xl:text-[48px] leading-[1.05]">
+        <h1 className="font-heading text-[32px] font-bold uppercase tracking-[0.02em] text-white sm:text-[40px] xl:text-[44px] leading-[1.05]">
           Psychology Dashboard
         </h1>
-        <p className="mt-2 text-[13px] sm:text-[15px]" style={{ color: C.muted }}>
+        <p className="mt-2 text-[13px] sm:text-[14px]" style={{ color: C.muted }}>
           Behavioral analysis • Emotional performance • Trading psychology insights
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <HeaderActions />
-        <div className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-[#121212] px-1.5 py-1">
-          <CalendarRange className="mx-1.5 h-3.5 w-3.5" style={{ color: C.muted }} />
-          {(['30', '90', 'all'] as const).map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={cn(
-                'rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
-                range === r ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white',
-              )}
-            >
-              {r === 'all' ? 'All' : `${r}D`}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center gap-3">
         <button
-          onClick={exportCsv}
-          className="flex h-8 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#121212] px-3.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:border-white/20 hover:bg-white/5"
+          onClick={openDrawer}
+          className="flex h-11 items-center gap-2 rounded-[12px] border border-white/[0.12] bg-[#121212] px-5 text-[13px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:border-white/25 hover:bg-white/5"
         >
-          <Download className="h-3.5 w-3.5" /> Export
+          <Sparkles className="h-4 w-4" style={{ color: C.blue }} />
+          AI Coach
         </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex h-11 items-center gap-3 rounded-[12px] border border-white/[0.12] bg-[#121212] px-5 text-[13px] font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/5">
+              <span className="tabular-nums">{rangeLabel}</span>
+              <CalendarRange className="h-4 w-4" style={{ color: C.muted }} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-52 border-white/10 bg-[#121212] p-2">
+            {(['30', '90', 'all'] as const).map(r => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={cn(
+                  'flex w-full items-center rounded-md px-3 py-2 text-left text-[12px] font-semibold transition-colors',
+                  range === r ? 'bg-white/10 text-white' : 'text-muted-foreground hover:bg-white/5 hover:text-white',
+                )}
+              >
+                {r === 'all' ? 'All time' : `Last ${r} days`}
+              </button>
+            ))}
+            <div className="my-1 h-px bg-white/10" />
+            <button
+              onClick={exportCsv}
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </button>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );
+
 
   if (scoped.length === 0 || !stats) {
     return (
