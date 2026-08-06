@@ -463,46 +463,57 @@ export default function Psychology() {
     <div className="w-full space-y-4 p-6">
       {Header}
 
-      {/* ── KPI CARDS ── */}
+      {/* ── ROW 1 — 6 KPI CARDS (identical structure per spec) ── */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {/* 1. PSYCHOLOGY SCORE — Brain (Green), half ring green */}
         <KpiCard
-          label="Psychology Score" value={`${stats.psychScore}`} icon={Brain} color={C.green}
-          status={stats.psychScore >= 70 ? 'Strong mindset' : stats.psychScore >= 50 ? 'Developing' : 'Needs work'}
-          change={fmtDelta(deltas.score)} ringValue={stats.psychScore}
+          label="Psychology Score" value={`${stats.psychScore}`} suffix="/100" icon={Brain} color={C.green}
+          status={statusFor(stats.psychScore)}
+          change={changeText(deltas.score)} changeTone={changeTone(deltas.score)}
+          ringValue={stats.psychScore}
           tooltip="Composite score from discipline, focus, emotional stability and mistake rate."
         />
+        {/* 2. DISCIPLINE SCORE — Target (Purple) */}
         <KpiCard
-          label="Discipline Score" value={`${stats.avgDiscipline}/5`} icon={Target} color={C.purple}
-          status={`High-discipline win rate ${stats.highDiscWinRate}%`}
-          change={fmtDelta(deltas.disc)} ringValue={stats.disciplinePct}
-          tooltip="Average self-rated discipline score per trade (1-5)."
+          label="Discipline Score" value={`${stats.disciplinePct}`} suffix="/100" icon={Target} color={C.purple}
+          status={statusFor(stats.disciplinePct)}
+          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          ringValue={stats.disciplinePct}
+          tooltip="Average self-rated discipline score per trade, scaled to 100."
         />
+        {/* 3. FOCUS SCORE — Eye (Blue) */}
         <KpiCard
-          label="Focus Score" value={`${stats.avgFocus}/5`} icon={Eye} color={C.blue}
-          status={Number(stats.avgFocus) >= 4 ? 'Sharp execution' : 'Attention drifting'}
-          change={fmtDelta(deltas.focus)} ringValue={stats.focusPct}
-          tooltip="Average self-rated focus score per trade (1-5)."
+          label="Focus Score" value={`${stats.focusPct}`} suffix="/100" icon={Eye} color={C.blue}
+          status={statusFor(stats.focusPct)}
+          change={changeText(deltas.focus, 1)} changeTone={changeTone(deltas.focus)}
+          ringValue={stats.focusPct}
+          tooltip="Average self-rated focus score per trade, scaled to 100."
         />
+        {/* 4. EMOTIONAL STABILITY — Heart (Yellow/Amber) */}
         <KpiCard
-          label="Emotional Stability" value={`${stats.stability}%`} icon={HeartPulse} color={C.orange}
-          status={stats.stability >= 75 ? 'Consistent state' : 'Variable state'}
-          change={`Low-discipline win rate ${stats.lowDiscWinRate}%`} ringValue={stats.stability}
+          label="Emotional Stability" value={`${stats.stability}`} suffix="/100" icon={HeartPulse} color={C.orange}
+          status={statusFor(stats.stability)}
+          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          ringValue={stats.stability}
           tooltip="Consistency of discipline scores across trades — higher means less emotional swing."
         />
+        {/* 5. TOTAL MISTAKES — Warning Triangle (Red). Value red, no ring, no /100 */}
         <KpiCard
           label="Total Mistakes" value={`${stats.totalMistakes}`} icon={AlertTriangle} color={C.red}
-          status={`${stats.mistakesPerTrade.toFixed(2)} per trade`}
-          change={`${mistakeData.length} distinct mistake types`}
-          ringValue={Math.min(100, stats.mistakesPerTrade * 50)}
+          valueColor={C.red}
+          change={`${stats.mistakesPerTrade >= 0 ? '' : ''}${stats.mistakesPerTrade.toFixed(2)} per trade`}
+          changeTone="down"
           tooltip="Total number of trading mistakes logged in this range."
         />
+        {/* 6. BEST EMOTION — Smiley (Green). Value green, gray subtitle, no ring, no /100 */}
         <KpiCard
           label="Best Emotion" value={stats.topEmotion} icon={Smile} color={C.green}
-          status={`${stats.topEmotionWinRate}% win rate`}
-          change={`Across ${emotionData.length} emotional states`} ringValue={stats.topEmotionWinRate}
+          valueColor={C.green}
+          change="Your best state"
           tooltip="The emotional state that correlates with your best trading results."
         />
       </div>
+
 
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
