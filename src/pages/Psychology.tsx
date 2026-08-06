@@ -16,16 +16,17 @@ import {
   Lightbulb, ArrowRight, TrendingUp, TrendingDown, Activity, Sparkles, ShieldCheck,
 } from 'lucide-react';
 
-/* ── tokens ─────────────────────────────────────────────────────────── */
+/* ── tokens (spec: COLOR CODE REFERENCE) ────────────────────────────── */
 const C = {
-  green: '#22C55E',
-  purple: '#8B5CF6',
-  blue: '#3B82F6',
-  orange: '#F59E0B',
-  red: '#EF4444',
+  green: '#22C55E',   // Psychology
+  purple: '#8B5CF6',  // Discipline
+  blue: '#3B82F6',    // Focus
+  orange: '#F59E0B',  // Emotional (Yellow/Amber)
+  red: '#EF4444',     // Mistakes
+  track: '#1F1F1F',   // Dark Gray remaining track
   emerald: '#10B981',
   yellow: '#FACC15',
-  muted: '#8A8F98',
+  muted: '#9CA3AF',   // Gray (Subtitle)
 };
 
 const cardBase =
@@ -55,38 +56,106 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
   );
 }
 
+/**
+ * HALF PROGRESS RING (spec):
+ * ~180° arc on the right-hand side, starting at 2 o'clock and ending at 7 o'clock,
+ * thick stroke with rounded ends. Remaining track is dark gray.
+ */
+function HalfRing({ value, color, size = 62 }: { value: number; color: string; size?: number }) {
+  const stroke = 7;
+  const r = size / 2 - stroke / 2 - 1;
+  const cx = size / 2;
+  const cy = size / 2;
+  const pct = Math.max(0, Math.min(100, value)) / 100;
+  // 2 o'clock = -60° from 12 o'clock, 7 o'clock = +150° → 210° sweep clockwise.
+  const START = -60;
+  const SWEEP = 210;
+  const point = (deg: number) => {
+    const rad = ((deg - 90) * Math.PI) / 180;
+    return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+  };
+  const arc = (from: number, to: number) => {
+    const [x1, y1] = point(from);
+    const [x2, y2] = point(to);
+    const large = Math.abs(to - from) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
+  return (
+    <svg width={size} height={size} className="shrink-0 self-center" aria-hidden>
+      <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
+      {pct > 0 && (
+        <path
+          d={arc(START, START + SWEEP * pct)}
+          stroke={color} strokeWidth={stroke} strokeLinecap="round" fill="none"
+          style={{ transition: 'd 500ms ease' }}
+        />
+      )}
+    </svg>
+  );
+}
+
+/**
+ * KPI CARD (spec: COMMON CARD STRUCTURE)
+ * Icon top-left → Title to the right of icon (top aligned) → Score → Status → Change.
+ * Half progress ring on the right side, vertically centered.
+ */
 function KpiCard({
-  label, value, status, change, ringValue, color, icon: Icon, tooltip, valueColor,
+  label, value, suffix, status, change, changeTone, ringValue, color, icon: Icon, tooltip, valueColor,
 }: {
-  label: string; value: string; status: string; change: string; ringValue: number;
-  color: string; icon: any; tooltip: string; valueColor?: string;
+  label: string;
+  value: string;
+  /** e.g. "/100" — smaller, medium weight, white */
+  suffix?: string;
+  status?: string;
+  change: string;
+  changeTone?: 'up' | 'down';
+  /** omit to render no half ring */
+  ringValue?: number;
+  color: string;
+  icon: any;
+  tooltip: string;
+  valueColor?: string;
 }) {
   return (
     <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-4">
+        <span className="shrink-0" style={{ color }}>
+          <InfoTooltip text={tooltip}>
+            <Icon className="h-8 w-8" strokeWidth={1.9} />
+          </InfoTooltip>
+        </span>
+
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          {/* LEVEL 2 — Card title */}
+          <p className="truncate text-[12px] font-bold uppercase tracking-[0.08em] text-white">{label}</p>
+
+          {/* LEVEL 3 — Main value */}
+          <p className="mt-1.5 flex items-baseline gap-0.5 leading-none">
             <span
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
-              style={{ background: `${color}14`, color }}
+              className="font-mono font-bold tracking-tight text-white"
+              style={{ color: valueColor ?? '#FFFFFF', fontSize: value.length > 9 ? 22 : value.length > 6 ? 27 : 34 }}
             >
-              <Icon className="h-3.5 w-3.5" />
+              {value}
             </span>
-            <span className="truncate text-[11px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
-              {label}
-            </span>
-            <InfoTooltip text={tooltip} />
-          </div>
-          <p
-            className="mt-3 font-mono leading-none font-bold tracking-tight break-words"
-            style={{ color: valueColor ?? color, fontSize: value.length > 8 ? 22 : value.length > 6 ? 27 : 34 }}
-          >
-            {value}
+            {suffix && <span className="font-mono text-[16px] font-medium text-white">{suffix}</span>}
           </p>
-          <p className="mt-2 text-[12px] font-semibold" style={{ color }}>{status}</p>
-          <p className="mt-1 text-[11px]" style={{ color: C.muted }}>{change}</p>
+
+          {/* LEVEL 4 — Status */}
+          {status && (
+            <p className="mt-2 text-[13px] font-semibold" style={{ color }}>{status}</p>
+          )}
+
+          {/* LEVEL 5 — Monthly change */}
+          <p
+            className="mt-1 text-[11px] font-normal"
+            style={{ color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted }}
+          >
+            {change}
+          </p>
         </div>
-        <Ring value={ringValue} color={color} size={52} />
+
+        {/* LEVEL 6 — Half progress ring */}
+        {ringValue !== undefined && <HalfRing value={ringValue} color={color} />}
       </div>
     </div>
   );
