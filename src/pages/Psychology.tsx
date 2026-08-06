@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTrading } from '@/contexts/TradingContext';
 import { HeaderActions } from '@/components/layout/HeaderActions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
@@ -16,16 +18,17 @@ import {
   Lightbulb, ArrowRight, TrendingUp, TrendingDown, Activity, Sparkles, ShieldCheck,
 } from 'lucide-react';
 
-/* ── tokens ─────────────────────────────────────────────────────────── */
+/* ── tokens (spec: COLOR CODE REFERENCE) ────────────────────────────── */
 const C = {
-  green: '#22C55E',
-  purple: '#8B5CF6',
-  blue: '#3B82F6',
-  orange: '#F59E0B',
-  red: '#EF4444',
+  green: '#22C55E',   // Psychology
+  purple: '#8B5CF6',  // Discipline
+  blue: '#3B82F6',    // Focus
+  orange: '#F59E0B',  // Emotional (Yellow/Amber)
+  red: '#EF4444',     // Mistakes
+  track: '#1F1F1F',   // Dark Gray remaining track
   emerald: '#10B981',
   yellow: '#FACC15',
-  muted: '#8A8F98',
+  muted: '#9CA3AF',   // Gray (Subtitle)
 };
 
 const cardBase =
@@ -55,38 +58,106 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
   );
 }
 
+/**
+ * HALF PROGRESS RING (spec):
+ * ~180° arc on the right-hand side, starting at 2 o'clock and ending at 7 o'clock,
+ * thick stroke with rounded ends. Remaining track is dark gray.
+ */
+function HalfRing({ value, color, size = 54 }: { value: number; color: string; size?: number }) {
+  const stroke = 7;
+  const r = size / 2 - stroke / 2 - 1;
+  const cx = size / 2;
+  const cy = size / 2;
+  const pct = Math.max(0, Math.min(100, value)) / 100;
+  // 2 o'clock = -60° from 12 o'clock, 7 o'clock = +150° → 210° sweep clockwise.
+  const START = -60;
+  const SWEEP = 210;
+  const point = (deg: number) => {
+    const rad = ((deg - 90) * Math.PI) / 180;
+    return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+  };
+  const arc = (from: number, to: number) => {
+    const [x1, y1] = point(from);
+    const [x2, y2] = point(to);
+    const large = Math.abs(to - from) > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
+  return (
+    <svg width={size} height={size} className="shrink-0 self-center" aria-hidden>
+      <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
+      {pct > 0 && (
+        <path
+          d={arc(START, START + SWEEP * pct)}
+          stroke={color} strokeWidth={stroke} strokeLinecap="round" fill="none"
+          style={{ transition: 'd 500ms ease' }}
+        />
+      )}
+    </svg>
+  );
+}
+
+/**
+ * KPI CARD (spec: COMMON CARD STRUCTURE)
+ * Icon top-left → Title to the right of icon (top aligned) → Score → Status → Change.
+ * Half progress ring on the right side, vertically centered.
+ */
 function KpiCard({
-  label, value, status, change, ringValue, color, icon: Icon, tooltip, valueColor,
+  label, value, suffix, status, change, changeTone, ringValue, color, icon: Icon, tooltip, valueColor,
 }: {
-  label: string; value: string; status: string; change: string; ringValue: number;
-  color: string; icon: any; tooltip: string; valueColor?: string;
+  label: string;
+  value: string;
+  /** e.g. "/100" — smaller, medium weight, white */
+  suffix?: string;
+  status?: string;
+  change: string;
+  changeTone?: 'up' | 'down';
+  /** omit to render no half ring */
+  ringValue?: number;
+  color: string;
+  icon: any;
+  tooltip: string;
+  valueColor?: string;
 }) {
   return (
     <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-3">
+        <span className="shrink-0" style={{ color }}>
+          <InfoTooltip text={tooltip}>
+            <Icon className="h-8 w-8" strokeWidth={1.9} />
+          </InfoTooltip>
+        </span>
+
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          {/* LEVEL 2 — Card title */}
+          <p className="text-[11.5px] font-bold uppercase leading-tight tracking-[0.06em] text-white">{label}</p>
+
+          {/* LEVEL 3 — Main value */}
+          <p className="mt-1.5 flex items-baseline gap-0.5 leading-none">
             <span
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
-              style={{ background: `${color}14`, color }}
+              className="font-mono font-bold tracking-tight text-white"
+              style={{ color: valueColor ?? '#FFFFFF', fontSize: value.length > 9 ? 22 : value.length > 6 ? 27 : 34 }}
             >
-              <Icon className="h-3.5 w-3.5" />
+              {value}
             </span>
-            <span className="truncate text-[11px] font-medium uppercase tracking-[0.14em]" style={{ color: C.muted }}>
-              {label}
-            </span>
-            <InfoTooltip text={tooltip} />
-          </div>
-          <p
-            className="mt-3 font-mono leading-none font-bold tracking-tight break-words"
-            style={{ color: valueColor ?? color, fontSize: value.length > 8 ? 22 : value.length > 6 ? 27 : 34 }}
-          >
-            {value}
+            {suffix && <span className="font-mono text-[16px] font-medium text-white">{suffix}</span>}
           </p>
-          <p className="mt-2 text-[12px] font-semibold" style={{ color }}>{status}</p>
-          <p className="mt-1 text-[11px]" style={{ color: C.muted }}>{change}</p>
+
+          {/* LEVEL 4 — Status */}
+          {status && (
+            <p className="mt-2 text-[13px] font-semibold" style={{ color }}>{status}</p>
+          )}
+
+          {/* LEVEL 5 — Monthly change */}
+          <p
+            className="mt-1 text-[10.5px] font-normal leading-snug"
+            style={{ color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted }}
+          >
+            {change}
+          </p>
         </div>
-        <Ring value={ringValue} color={color} size={52} />
+
+        {/* LEVEL 6 — Half progress ring */}
+        {ringValue !== undefined && <HalfRing value={ringValue} color={color} />}
       </div>
     </div>
   );
@@ -130,6 +201,7 @@ const ChartTip = ({ active, payload, label }: any) => {
 /* ── page ───────────────────────────────────────────────────────────── */
 export default function Psychology() {
   const { trades } = useTrading();
+  const { openDrawer } = useAICoach();
   const [range, setRange] = useState<'30' | '90' | 'all'>('all');
   const [emotionFilter, setEmotionFilter] = useState<string>('all');
 
@@ -250,6 +322,30 @@ export default function Psychology() {
   const fmtDelta = (v: number | null, suffix = '') =>
     v === null ? 'Not enough data' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}${suffix} vs previous period`;
 
+  /* spec: STATUS = secondary information derived from the score band */
+  const statusFor = (score: number) =>
+    score >= 80 ? 'Strong' : score >= 65 ? 'Good' : score >= 50 ? 'Moderate' : 'At Risk';
+
+  /* spec: CHANGE = "+12 vs last month" (green positive / red negative) */
+  const periodLabel = range === '30' ? 'vs last month' : range === '90' ? 'vs last 90d' : 'vs prior';
+  const changeText = (v: number | null, digits = 0) =>
+    v === null ? 'Not enough data' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(digits)} ${periodLabel}`;
+  const changeTone = (v: number | null, invert = false): 'up' | 'down' | undefined =>
+    v === null ? undefined : (v >= 0) !== invert ? 'up' : 'down';
+
+  /* spec: header date-range label, e.g. "Jun 1 – Jul 1, 2026" */
+  const rangeLabel = useMemo(() => {
+    const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const dates = scoped.map(t => new Date(t.date).getTime()).filter(n => Number.isFinite(n));
+    const end = new Date();
+    const start = range === 'all'
+      ? new Date(dates.length ? Math.min(...dates) : end.getTime())
+      : new Date(end.getTime() - Number(range) * 86400_000);
+    return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`;
+  }, [scoped, range]);
+
+
+
   /* weekday heatmap */
   const heat = useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -296,43 +392,58 @@ export default function Psychology() {
     URL.revokeObjectURL(url);
   };
 
-  /* ---- header (shared) ---- */
+  /* ---- header (shared) — spec: title + subtitle left, AI COACH + date range right ---- */
   const Header = (
     <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
       <div>
-        <h1 className="font-heading text-[32px] font-bold uppercase tracking-[0.1em] text-white sm:text-[40px] xl:text-[48px] leading-[1.05]">
+        <h1 className="font-heading text-[32px] font-bold uppercase tracking-[0.02em] text-white sm:text-[40px] xl:text-[44px] leading-[1.05]">
           Psychology Dashboard
         </h1>
-        <p className="mt-2 text-[13px] sm:text-[15px]" style={{ color: C.muted }}>
+        <p className="mt-2 text-[13px] sm:text-[14px]" style={{ color: C.muted }}>
           Behavioral analysis • Emotional performance • Trading psychology insights
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <HeaderActions />
-        <div className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-[#121212] px-1.5 py-1">
-          <CalendarRange className="mx-1.5 h-3.5 w-3.5" style={{ color: C.muted }} />
-          {(['30', '90', 'all'] as const).map(r => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={cn(
-                'rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
-                range === r ? 'bg-white/10 text-white' : 'text-muted-foreground hover:text-white',
-              )}
-            >
-              {r === 'all' ? 'All' : `${r}D`}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center gap-3">
         <button
-          onClick={exportCsv}
-          className="flex h-8 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#121212] px-3.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-colors hover:border-white/20 hover:bg-white/5"
+          onClick={openDrawer}
+          className="flex h-11 items-center gap-2 rounded-[12px] border border-white/[0.12] bg-[#121212] px-5 text-[13px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:border-white/25 hover:bg-white/5"
         >
-          <Download className="h-3.5 w-3.5" /> Export
+          <Sparkles className="h-4 w-4" style={{ color: C.blue }} />
+          AI Coach
         </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex h-11 items-center gap-3 rounded-[12px] border border-white/[0.12] bg-[#121212] px-5 text-[13px] font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/5">
+              <span className="tabular-nums">{rangeLabel}</span>
+              <CalendarRange className="h-4 w-4" style={{ color: C.muted }} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-52 border-white/10 bg-[#121212] p-2">
+            {(['30', '90', 'all'] as const).map(r => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={cn(
+                  'flex w-full items-center rounded-md px-3 py-2 text-left text-[12px] font-semibold transition-colors',
+                  range === r ? 'bg-white/10 text-white' : 'text-muted-foreground hover:bg-white/5 hover:text-white',
+                )}
+              >
+                {r === 'all' ? 'All time' : `Last ${r} days`}
+              </button>
+            ))}
+            <div className="my-1 h-px bg-white/10" />
+            <button
+              onClick={exportCsv}
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </button>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );
+
 
   if (scoped.length === 0 || !stats) {
     return (
@@ -352,46 +463,57 @@ export default function Psychology() {
     <div className="w-full space-y-4 p-6">
       {Header}
 
-      {/* ── KPI CARDS ── */}
+      {/* ── ROW 1 — 6 KPI CARDS (identical structure per spec) ── */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {/* 1. PSYCHOLOGY SCORE — Brain (Green), half ring green */}
         <KpiCard
-          label="Psychology Score" value={`${stats.psychScore}`} icon={Brain} color={C.green}
-          status={stats.psychScore >= 70 ? 'Strong mindset' : stats.psychScore >= 50 ? 'Developing' : 'Needs work'}
-          change={fmtDelta(deltas.score)} ringValue={stats.psychScore}
+          label="Psychology Score" value={`${stats.psychScore}`} suffix="/100" icon={Brain} color={C.green}
+          status={statusFor(stats.psychScore)}
+          change={changeText(deltas.score)} changeTone={changeTone(deltas.score)}
+          ringValue={stats.psychScore}
           tooltip="Composite score from discipline, focus, emotional stability and mistake rate."
         />
+        {/* 2. DISCIPLINE SCORE — Target (Purple) */}
         <KpiCard
-          label="Discipline Score" value={`${stats.avgDiscipline}/5`} icon={Target} color={C.purple}
-          status={`High-discipline win rate ${stats.highDiscWinRate}%`}
-          change={fmtDelta(deltas.disc)} ringValue={stats.disciplinePct}
-          tooltip="Average self-rated discipline score per trade (1-5)."
+          label="Discipline Score" value={`${stats.disciplinePct}`} suffix="/100" icon={Target} color={C.purple}
+          status={statusFor(stats.disciplinePct)}
+          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          ringValue={stats.disciplinePct}
+          tooltip="Average self-rated discipline score per trade, scaled to 100."
         />
+        {/* 3. FOCUS SCORE — Eye (Blue) */}
         <KpiCard
-          label="Focus Score" value={`${stats.avgFocus}/5`} icon={Eye} color={C.blue}
-          status={Number(stats.avgFocus) >= 4 ? 'Sharp execution' : 'Attention drifting'}
-          change={fmtDelta(deltas.focus)} ringValue={stats.focusPct}
-          tooltip="Average self-rated focus score per trade (1-5)."
+          label="Focus Score" value={`${stats.focusPct}`} suffix="/100" icon={Eye} color={C.blue}
+          status={statusFor(stats.focusPct)}
+          change={changeText(deltas.focus, 1)} changeTone={changeTone(deltas.focus)}
+          ringValue={stats.focusPct}
+          tooltip="Average self-rated focus score per trade, scaled to 100."
         />
+        {/* 4. EMOTIONAL STABILITY — Heart (Yellow/Amber) */}
         <KpiCard
-          label="Emotional Stability" value={`${stats.stability}%`} icon={HeartPulse} color={C.orange}
-          status={stats.stability >= 75 ? 'Consistent state' : 'Variable state'}
-          change={`Low-discipline win rate ${stats.lowDiscWinRate}%`} ringValue={stats.stability}
+          label="Emotional Stability" value={`${stats.stability}`} suffix="/100" icon={HeartPulse} color={C.orange}
+          status={statusFor(stats.stability)}
+          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          ringValue={stats.stability}
           tooltip="Consistency of discipline scores across trades — higher means less emotional swing."
         />
+        {/* 5. TOTAL MISTAKES — Warning Triangle (Red). Value red, no ring, no /100 */}
         <KpiCard
           label="Total Mistakes" value={`${stats.totalMistakes}`} icon={AlertTriangle} color={C.red}
-          status={`${stats.mistakesPerTrade.toFixed(2)} per trade`}
-          change={`${mistakeData.length} distinct mistake types`}
-          ringValue={Math.min(100, stats.mistakesPerTrade * 50)}
+          valueColor={C.red}
+          change={`${stats.mistakesPerTrade >= 0 ? '' : ''}${stats.mistakesPerTrade.toFixed(2)} per trade`}
+          changeTone="down"
           tooltip="Total number of trading mistakes logged in this range."
         />
+        {/* 6. BEST EMOTION — Smiley (Green). Value green, gray subtitle, no ring, no /100 */}
         <KpiCard
           label="Best Emotion" value={stats.topEmotion} icon={Smile} color={C.green}
-          status={`${stats.topEmotionWinRate}% win rate`}
-          change={`Across ${emotionData.length} emotional states`} ringValue={stats.topEmotionWinRate}
+          valueColor={C.green}
+          change="Your best state"
           tooltip="The emotional state that correlates with your best trading results."
         />
       </div>
+
 
 
       {/* ── ANALYTICS ROW (4 cards) ── */}
