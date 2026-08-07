@@ -510,7 +510,7 @@ export default function Psychology() {
         <KpiCard
           label="Psychology Score" value={`${stats.psychScore}`} suffix="/ 100" icon={Brain} color={C.green}
           status={statusFor(stats.psychScore)}
-          change={changeText(deltas.score)} changeTone={changeTone(deltas.score)}
+          change={changeText(deltas.score)}
           ringValue={stats.psychScore}
           tooltip="Composite score from discipline, focus, emotional stability and mistake rate."
         />
@@ -518,7 +518,7 @@ export default function Psychology() {
         <KpiCard
           label="Discipline Score" value={`${stats.disciplinePct}`} suffix="/ 100" icon={Target} color={C.purple}
           status={statusFor(stats.disciplinePct)}
-          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          change={changeText(deltas.disc, 1)}
           ringValue={stats.disciplinePct}
           tooltip="Average self-rated discipline score per trade, scaled to 100."
         />
@@ -526,15 +526,15 @@ export default function Psychology() {
         <KpiCard
           label="Focus Score" value={`${stats.focusPct}`} suffix="/ 100" icon={Eye} color={C.blue}
           status={statusFor(stats.focusPct)}
-          change={changeText(deltas.focus, 1)} changeTone={changeTone(deltas.focus)}
+          change={changeText(deltas.focus, 1)}
           ringValue={stats.focusPct}
           tooltip="Average self-rated focus score per trade, scaled to 100."
         />
-        {/* 4. EMOTIONAL STABILITY — Heart (Yellow/Amber) */}
+        {/* 4. EMOTIONAL STABILITY — Heart (Amber/Yellow) */}
         <KpiCard
-          label="Emotional Stability" value={`${stats.stability}`} suffix="/ 100" icon={HeartPulse} color={C.orange}
+          label="Emotional Stability" value={`${stats.stability}`} suffix="/ 100" icon={HeartPulse} color={C.yellow}
           status={statusFor(stats.stability)}
-          change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
+          change={changeText(deltas.disc, 1)}
           ringValue={stats.stability}
           tooltip="Consistency of discipline scores across trades — higher means less emotional swing."
         />
@@ -542,8 +542,8 @@ export default function Psychology() {
         <KpiCard
           label="Total Mistakes" value={`${stats.totalMistakes}`} icon={AlertTriangle} color={C.red}
           valueColor={C.red}
-          change={`${stats.mistakesPerTrade >= 0 ? '' : ''}${stats.mistakesPerTrade.toFixed(2)} per trade`}
-          changeTone="down"
+          change={`${stats.mistakesPerTrade.toFixed(2)} per trade`}
+          changeColor={C.red}
           tooltip="Total number of trading mistakes logged in this range."
         />
         {/* 6. BEST EMOTION — Smiley (Green). Value green, gray subtitle, no ring, no /100 */}
@@ -551,8 +551,10 @@ export default function Psychology() {
           label="Best Emotion" value={stats.topEmotion} icon={Smile} color={C.green}
           valueColor={C.green}
           change="Your best state"
+          changeColor={C.muted}
           tooltip="The emotional state that correlates with your best trading results."
         />
+
       </div>
 
 
