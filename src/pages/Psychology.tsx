@@ -25,7 +25,7 @@ const C = {
   blue: '#3B82F6',    // Focus
   orange: '#F59E0B',  // Emotional (Yellow/Amber)
   red: '#EF4444',     // Mistakes
-  track: '#1F1F1F',   // Dark Gray remaining track
+  track: '#26283D',   // Dark Gray remaining track
   emerald: '#10B981',
   yellow: '#FACC15',
   muted: '#9CA3AF',   // Gray (Subtitle)
