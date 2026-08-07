@@ -59,17 +59,17 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
 }
 
 /**
- * HALF PROGRESS RING (spec):
- * ~180° arc on the right-hand side, starting at 2 o'clock and ending at 7 o'clock,
- * thick stroke with rounded ends. Remaining track is dark gray.
+ * HALF PROGRESS RING — pinned top-right of the KPI card.
+ * ~210° arc (2 o'clock → 7 o'clock), rounded caps, dark gray remaining track.
+ * Scales proportionally with viewport width (never reflows the card).
  */
-function HalfRing({ value, color, size = 54 }: { value: number; color: string; size?: number }) {
-  const stroke = 7;
-  const r = size / 2 - stroke / 2 - 1;
-  const cx = size / 2;
-  const cy = size / 2;
+function HalfRing({ value, color }: { value: number; color: string }) {
+  const BOX = 54;
+  const stroke = 6;
+  const r = BOX / 2 - stroke / 2 - 1;
+  const cx = BOX / 2;
+  const cy = BOX / 2;
   const pct = Math.max(0, Math.min(100, value)) / 100;
-  // 2 o'clock = -60° from 12 o'clock, 7 o'clock = +150° → 210° sweep clockwise.
   const START = -60;
   const SWEEP = 210;
   const point = (deg: number) => {
@@ -83,7 +83,12 @@ function HalfRing({ value, color, size = 54 }: { value: number; color: string; s
     return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
   };
   return (
-    <svg width={size} height={size} className="shrink-0 self-center" aria-hidden>
+    <svg
+      viewBox={`0 0 ${BOX} ${BOX}`}
+      className="shrink-0"
+      style={{ width: 'clamp(30px, 3vw, 44px)', height: 'clamp(30px, 3vw, 44px)' }}
+      aria-hidden
+    >
       <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
       {pct > 0 && (
         <path
@@ -96,17 +101,31 @@ function HalfRing({ value, color, size = 54 }: { value: number; color: string; s
   );
 }
 
+/** Status band → color (spec: Strong/Good = green, Moderate = yellow, At Risk = orange) */
+function statusColor(status?: string) {
+  if (!status) return C.muted;
+  const s = status.toLowerCase();
+  if (s.includes('strong') || s.includes('good')) return C.green;
+  if (s.includes('moderate')) return C.yellow;
+  if (s.includes('risk')) return C.orange;
+  return C.muted;
+}
+
 /**
- * KPI CARD (spec: COMMON CARD STRUCTURE)
- * Icon top-left → Title to the right of icon (top aligned) → Score → Status → Change.
- * Half progress ring on the right side, vertically centered.
+ * KPI CARD — fixed-slot layout built for six cards in one row.
+ * Slots never move regardless of text length:
+ *   [icon]                       [ring pinned top-right]
+ *   title (max 2 lines)
+ *   large value  ( / 100 )
+ *   status
+ *   comparison (1 line, 2 max)
  */
 function KpiCard({
   label, value, suffix, status, change, changeTone, ringValue, color, icon: Icon, tooltip, valueColor,
 }: {
   label: string;
   value: string;
-  /** e.g. "/100" — smaller, medium weight, white */
+  /** e.g. "/ 100" — rendered smaller than the main value */
   suffix?: string;
   status?: string;
   change: string;
@@ -119,49 +138,85 @@ function KpiCard({
   valueColor?: string;
 }) {
   return (
-    <div className={cardBase} style={{ boxShadow: `inset 0 0 0 1px ${color}12` }}>
-      <div className="flex items-start gap-3">
-        <span className="shrink-0" style={{ color }}>
-          <InfoTooltip text={tooltip}>
-            <Icon className="h-8 w-8" strokeWidth={1.9} />
-          </InfoTooltip>
-        </span>
-
-        <div className="min-w-0 flex-1">
-          {/* LEVEL 2 — Card title */}
-          <p className="text-[11.5px] font-bold uppercase leading-tight tracking-[0.06em] text-white">{label}</p>
-
-          {/* LEVEL 3 — Main value */}
-          <p className="mt-1.5 flex items-baseline gap-0.5 leading-none">
-            <span
-              className="font-mono font-bold tracking-tight text-white"
-              style={{ color: valueColor ?? '#FFFFFF', fontSize: value.length > 9 ? 22 : value.length > 6 ? 27 : 34 }}
-            >
-              {value}
-            </span>
-            {suffix && <span className="font-mono text-[16px] font-medium text-white">{suffix}</span>}
-          </p>
-
-          {/* LEVEL 4 — Status */}
-          {status && (
-            <p className="mt-2 text-[13px] font-semibold" style={{ color }}>{status}</p>
-          )}
-
-          {/* LEVEL 5 — Monthly change */}
-          <p
-            className="mt-1 text-[10.5px] font-normal leading-snug"
-            style={{ color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted }}
-          >
-            {change}
-          </p>
+    <div
+      className="relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-[#121212] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      style={{ padding: 'clamp(14px, 1.35vw, 20px)', boxShadow: `inset 0 0 0 1px ${color}12` }}
+    >
+      {/* ring — pinned top-right, never overlaps the value */}
+      {ringValue !== undefined && (
+        <div className="absolute right-[clamp(10px,1vw,16px)] top-[clamp(10px,1vw,16px)]">
+          <HalfRing value={ringValue} color={color} />
         </div>
+      )}
 
-        {/* LEVEL 6 — Half progress ring */}
-        {ringValue !== undefined && <HalfRing value={ringValue} color={color} />}
+      {/* LEVEL 1 — icon */}
+      <div style={{ color, paddingRight: ringValue !== undefined ? 'clamp(34px, 3.4vw, 50px)' : 0 }}>
+        <InfoTooltip text={tooltip}>
+          <Icon style={{ width: 'clamp(17px, 1.5vw, 22px)', height: 'clamp(17px, 1.5vw, 22px)' }} strokeWidth={1.9} />
+        </InfoTooltip>
       </div>
+
+      {/* LEVEL 2 — title (2 lines max, reserved height) */}
+      <p
+        className="mt-[clamp(8px,0.85vw,12px)] overflow-hidden font-bold uppercase text-white"
+        style={{
+          fontSize: 'clamp(8.5px, 0.72vw, 11px)',
+          letterSpacing: '0.06em',
+          lineHeight: 1.25,
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          minHeight: 'calc(2 * 1.25em)',
+          paddingRight: ringValue !== undefined ? 'clamp(30px, 3vw, 46px)' : 0,
+        }}
+      >
+        {label}
+      </p>
+
+      {/* LEVEL 3 — main value (white by default) */}
+      <p className="mt-[clamp(4px,0.5vw,7px)] flex items-baseline gap-[0.18em] whitespace-nowrap leading-none">
+        <span
+          className="font-mono font-bold tracking-tight"
+          style={{
+            color: valueColor ?? '#FFFFFF',
+            fontSize: value.length > 9 ? 'clamp(13px, 1.15vw, 18px)' : value.length > 6 ? 'clamp(15px, 1.4vw, 22px)' : 'clamp(19px, 1.85vw, 29px)',
+          }}
+        >
+          {value}
+        </span>
+        {suffix && (
+          <span className="font-mono font-medium text-white/70" style={{ fontSize: 'clamp(9px, 0.82vw, 13px)' }}>
+            {suffix}
+          </span>
+        )}
+      </p>
+
+      {/* LEVEL 4 — status */}
+      <p
+        className="mt-[clamp(5px,0.6vw,9px)] truncate font-semibold"
+        style={{ fontSize: 'clamp(9.5px, 0.82vw, 12.5px)', color: status ? statusColor(status) : color, minHeight: '1.2em' }}
+      >
+        {status ?? '\u00A0'}
+      </p>
+
+      {/* LEVEL 5 — comparison (1 line, 2 max) */}
+      <p
+        className="mt-[2px] overflow-hidden"
+        style={{
+          fontSize: 'clamp(8px, 0.66vw, 10.5px)',
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 2,
+          color: changeTone === 'up' ? C.green : changeTone === 'down' ? C.red : C.muted,
+        }}
+      >
+        {change}
+      </p>
     </div>
   );
 }
+
 
 
 function SectionCard({
