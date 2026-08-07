@@ -247,9 +247,10 @@ export default function Psychology() {
   const [emotionFilter, setEmotionFilter] = useState<string>('all');
 
   const valid = useMemo(
-    () => (trades.length ? trades : ([{ id: 'x', date: '2026-08-01', result: 'Win', profitLoss: 120, mistakes: [], psychology: { emotion: 'Confident', discipline: 8, focus: 7, checklist: { followPlan: true, riskRespected: true, waitedConfirmation: false, noRevenge: true, noFomo: true } } }] as any)).filter((t: any) => t.psychology && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'),
+    () => trades.filter(t => t.psychology && t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'),
     [trades],
   );
+
 
 
   const scoped = useMemo(() => {
