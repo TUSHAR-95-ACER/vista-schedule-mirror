@@ -519,10 +519,10 @@ export default function Psychology() {
       {Header}
 
       {/* ── ROW 1 — 6 KPI CARDS (identical structure per spec) ── */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-[clamp(10px,1vw,16px)] md:grid-cols-3 lg:grid-cols-6">
         {/* 1. PSYCHOLOGY SCORE — Brain (Green), half ring green */}
         <KpiCard
-          label="Psychology Score" value={`${stats.psychScore}`} suffix="/100" icon={Brain} color={C.green}
+          label="Psychology Score" value={`${stats.psychScore}`} suffix="/ 100" icon={Brain} color={C.green}
           status={statusFor(stats.psychScore)}
           change={changeText(deltas.score)} changeTone={changeTone(deltas.score)}
           ringValue={stats.psychScore}
@@ -530,7 +530,7 @@ export default function Psychology() {
         />
         {/* 2. DISCIPLINE SCORE — Target (Purple) */}
         <KpiCard
-          label="Discipline Score" value={`${stats.disciplinePct}`} suffix="/100" icon={Target} color={C.purple}
+          label="Discipline Score" value={`${stats.disciplinePct}`} suffix="/ 100" icon={Target} color={C.purple}
           status={statusFor(stats.disciplinePct)}
           change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
           ringValue={stats.disciplinePct}
@@ -538,7 +538,7 @@ export default function Psychology() {
         />
         {/* 3. FOCUS SCORE — Eye (Blue) */}
         <KpiCard
-          label="Focus Score" value={`${stats.focusPct}`} suffix="/100" icon={Eye} color={C.blue}
+          label="Focus Score" value={`${stats.focusPct}`} suffix="/ 100" icon={Eye} color={C.blue}
           status={statusFor(stats.focusPct)}
           change={changeText(deltas.focus, 1)} changeTone={changeTone(deltas.focus)}
           ringValue={stats.focusPct}
@@ -546,7 +546,7 @@ export default function Psychology() {
         />
         {/* 4. EMOTIONAL STABILITY — Heart (Yellow/Amber) */}
         <KpiCard
-          label="Emotional Stability" value={`${stats.stability}`} suffix="/100" icon={HeartPulse} color={C.orange}
+          label="Emotional Stability" value={`${stats.stability}`} suffix="/ 100" icon={HeartPulse} color={C.orange}
           status={statusFor(stats.stability)}
           change={changeText(deltas.disc, 1)} changeTone={changeTone(deltas.disc)}
           ringValue={stats.stability}
