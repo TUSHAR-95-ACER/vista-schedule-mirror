@@ -8,8 +8,9 @@ import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  AreaChart, Area, PieChart, Pie, Legend, LabelList,
+  AreaChart, Area, LineChart, Line, PieChart, Pie, Legend, LabelList, ReferenceLine,
 } from 'recharts';
+
 import { cn } from '@/lib/utils';
 import { generateInsights } from '@/lib/insightEngine';
 import { adaptPsychology } from '@/lib/aiInsightAdapters';
