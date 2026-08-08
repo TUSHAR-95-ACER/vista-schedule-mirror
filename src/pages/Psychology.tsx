@@ -63,8 +63,8 @@ function Ring({ value, color, size = 56 }: { value: number; color: string; size?
  * 180° arc (≈2 o'clock → ≈8 o'clock), 6px thickness, rounded caps, #26283D track.
  */
 function HalfRing({ value, color }: { value: number; color: string }) {
-  const BOX = 56;
-  const stroke = 6;
+  const BOX = 80;
+  const stroke = 7;
   const r = BOX / 2 - stroke / 2 - 1;
   const cx = BOX / 2;
   const cy = BOX / 2;
@@ -81,11 +81,15 @@ function HalfRing({ value, color }: { value: number; color: string }) {
     const large = Math.abs(to - from) > 180 ? 1 : 0;
     return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
   };
+  // Crop the viewBox to the right half so the semicircle hugs the card's right edge.
   return (
     <svg
-      viewBox={`0 0 ${BOX} ${BOX}`}
+      viewBox={`${cx - stroke / 2 - 1} 0 ${BOX / 2 + stroke / 2 + 1} ${BOX}`}
       className="shrink-0 self-center"
-      style={{ width: 'clamp(42px, 4.1vw, 62px)', height: 'clamp(42px, 4.1vw, 62px)' }}
+      style={{
+        width: 'clamp(26px, 2.6vw, 40px)',
+        height: 'clamp(52px, 5.2vw, 80px)',
+      }}
       aria-hidden
     >
       <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
