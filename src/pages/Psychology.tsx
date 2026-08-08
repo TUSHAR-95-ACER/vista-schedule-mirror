@@ -84,8 +84,8 @@ function HalfRing({ value, color }: { value: number; color: string }) {
   return (
     <svg
       viewBox={`0 0 ${BOX} ${BOX}`}
-      className="shrink-0"
-      style={{ width: 'clamp(32px, 3.1vw, 46px)', height: 'clamp(32px, 3.1vw, 46px)' }}
+      className="shrink-0 self-center"
+      style={{ width: 'clamp(42px, 4.1vw, 62px)', height: 'clamp(42px, 4.1vw, 62px)' }}
       aria-hidden
     >
       <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
