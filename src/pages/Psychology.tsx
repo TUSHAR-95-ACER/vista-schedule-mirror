@@ -69,7 +69,7 @@ function HalfRing({ value, color }: { value: number; color: string }) {
   const cx = BOX / 2;
   const cy = BOX / 2;
   const pct = Math.max(0, Math.min(100, value)) / 100;
-  const START = 60;
+  const START = 0;
   const SWEEP = 180;
   const point = (deg: number) => {
     const rad = ((deg - 90) * Math.PI) / 180;
