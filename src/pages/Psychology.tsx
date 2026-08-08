@@ -252,7 +252,112 @@ const ChartTip = ({ active, payload, label }: any) => {
   );
 };
 
+/* ══ PHASE 2 — SECOND ROW SPEC ══════════════════════════════════════ */
+const P2 = {
+  card: '#141B2D',
+  border: 'rgba(255,255,255,0.08)',
+  page: '#0B0E14',
+  inner: '#0F1422',
+  grid: '#262B3D',
+  zero: '#374151',
+  rowBorder: '#1F2433',
+  green: '#22C55E',
+  blue: '#3B82F6',
+  red: '#EF4444',
+  yellow: '#FACC15',
+  secondary: '#9CA3AF',
+  mutedText: '#6B7280',
+};
+
+/** Spec card container: #141B2D, 1px rgba(255,255,255,0.08), radius 16px */
+function P2Card({
+  title, children, className, padding = '20px 24px',
+}: { title: string; children: React.ReactNode; className?: string; padding?: string }) {
+  return (
+    <section
+      className={cn('flex flex-col rounded-[16px] border', className)}
+      style={{ background: P2.card, borderColor: P2.border, padding }}
+    >
+      <h2
+        className="font-sans uppercase"
+        style={{ fontSize: 14, fontWeight: 600, color: '#FFFFFF', marginBottom: 16, letterSpacing: '0.04em' }}
+      >
+        {title}
+      </h2>
+      <div className="flex-1">{children}</div>
+    </section>
+  );
+}
+
+/** Spec tooltip: bg #0F1422, 1px #262B3D, radius 8px, padding 8px 10px, Inter 12px */
+const P2Tip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      className="rounded-[8px] border"
+      style={{ background: P2.inner, borderColor: P2.grid, padding: '8px 10px' }}
+    >
+      <p style={{ fontSize: 12, color: '#FFFFFF', marginBottom: 2 }}>{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ fontSize: 12, color: p.color || p.stroke || p.fill }}>
+          {p.name}: {typeof p.value === 'number' ? p.value.toFixed(p.value % 1 === 0 ? 0 : 1) : p.value}
+        </p>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Spec gauge: 132px arc width, 14px thickness, radius 66px, semicircle.
+ * Color zones: 0-55% green, 55-75% yellow, 75-100% red (multi-colour arc).
+ * Track (background arc) #262B3D.
+ */
+function HealthGauge({ value }: { value: number }) {
+  const R = 66;
+  const T = 14;
+  const W = (R + T / 2) * 2;      // 160
+  const H = R + T / 2 + 2;        // 82
+  const cx = W / 2;
+  const cy = R + T / 2;
+  const pt = (deg: number) => {
+    const rad = (Math.PI * (180 - deg)) / 180;
+    return [cx + R * Math.cos(rad), cy - R * Math.sin(rad)] as const;
+  };
+  const arc = (a: number, b: number) => {
+    const [x1, y1] = pt(a);
+    const [x2, y2] = pt(b);
+    return `M ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2}`;
+  };
+  const v = Math.max(0, Math.min(100, value));
+  const zones: Array<[number, number, string]> = [
+    [0, 55, P2.green],
+    [55, 75, P2.yellow],
+    [75, 100, P2.red],
+  ];
+  const deg = (p: number) => (p / 100) * 180;
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
+      <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
+      {zones.map(([a, b, color]) => {
+        const end = Math.min(b, v);
+        if (end <= a) return null;
+        return (
+          <path
+            key={color}
+            d={arc(deg(a), deg(end))}
+            stroke={color}
+            strokeWidth={T}
+            fill="none"
+            strokeLinecap="butt"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
 /* ── page ───────────────────────────────────────────────────────────── */
+
 export default function Psychology() {
   const { trades } = useTrading();
   const { openDrawer } = useAICoach();
