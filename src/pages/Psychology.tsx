@@ -830,7 +830,7 @@ export default function Psychology() {
                 <PolarRadiusAxis
                   angle={90}
                   domain={[0, 100]}
-                  ticks={[0, 25, 50, 75, 100]}
+                  ticks={[0, 25, 50, 75, 100] as any}
                   tick={{ fontSize: 10, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
