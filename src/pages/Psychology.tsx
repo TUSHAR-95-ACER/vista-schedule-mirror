@@ -763,7 +763,7 @@ export default function Psychology() {
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? y - 6 : y + height + 15}
+                          y={up ? Math.min(y, y + height) - 6 : Math.max(y, y + height) + 15}
                           textAnchor="middle"
                           fontSize={12}
                           fontWeight={600}
