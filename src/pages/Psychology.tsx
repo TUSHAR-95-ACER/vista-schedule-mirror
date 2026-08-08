@@ -69,7 +69,7 @@ function HalfRing({ value, color }: { value: number; color: string }) {
   const cx = BOX / 2;
   const cy = BOX / 2;
   const pct = Math.max(0, Math.min(100, value)) / 100;
-  const START = 60;
+  const START = 0;
   const SWEEP = 180;
   const point = (deg: number) => {
     const rad = ((deg - 90) * Math.PI) / 180;
@@ -84,8 +84,8 @@ function HalfRing({ value, color }: { value: number; color: string }) {
   return (
     <svg
       viewBox={`0 0 ${BOX} ${BOX}`}
-      className="shrink-0"
-      style={{ width: 'clamp(32px, 3.1vw, 46px)', height: 'clamp(32px, 3.1vw, 46px)' }}
+      className="shrink-0 self-center"
+      style={{ width: 'clamp(42px, 4.1vw, 62px)', height: 'clamp(42px, 4.1vw, 62px)' }}
       aria-hidden
     >
       <path d={arc(START, START + SWEEP)} stroke={C.track} strokeWidth={stroke} strokeLinecap="round" fill="none" />
@@ -125,34 +125,34 @@ function KpiCard({
 }) {
   return (
     <div
-      className="relative flex items-center gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border bg-[#0A0F1A] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border bg-[#0A0F1A] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
       style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#1F2937' }}
     >
-      {/* LEFT BLOCK — all content left aligned */}
+      {/* LEFT — icon in its own column */}
+      <span style={{ color }} className="shrink-0 leading-none pt-[2px]">
+        <InfoTooltip text={tooltip}>
+          <Icon style={{ width: 'clamp(18px, 1.62vw, 24px)', height: 'clamp(18px, 1.62vw, 24px)' }} strokeWidth={1.9} />
+        </InfoTooltip>
+      </span>
+
+      {/* TEXT COLUMN — title, score, status, change all aligned left */}
       <div className="min-w-0 flex-1">
-        {/* icon + title on the same top line */}
-        <div className="flex items-start gap-[clamp(5px,0.55vw,8px)]">
-          <span style={{ color }} className="shrink-0 leading-none">
-            <InfoTooltip text={tooltip}>
-              <Icon style={{ width: 'clamp(15px, 1.35vw, 20px)', height: 'clamp(15px, 1.35vw, 20px)' }} strokeWidth={1.9} />
-            </InfoTooltip>
-          </span>
-          <p
-            className="overflow-hidden font-semibold uppercase"
-            style={{
-              color: '#E2E8F0',
-              fontSize: 'clamp(8.5px, 0.74vw, 13px)',
-              letterSpacing: '0.05em',
-              lineHeight: 1.25,
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 2,
-              minHeight: 'calc(2 * 1.25em)',
-            }}
-          >
-            {label}
-          </p>
-        </div>
+        <p
+          className="overflow-hidden font-semibold uppercase"
+          style={{
+            color: '#E2E8F0',
+            fontSize: 'clamp(8.5px, 0.74vw, 13px)',
+            letterSpacing: '0.05em',
+            lineHeight: 1.25,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            minHeight: 'calc(2 * 1.25em)',
+          }}
+        >
+          {label}
+        </p>
+
 
         {/* score */}
         <p className="mt-[clamp(5px,0.6vw,9px)] flex items-baseline gap-[0.2em] whitespace-nowrap leading-none">
