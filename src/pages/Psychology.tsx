@@ -198,6 +198,9 @@ function KpiCard({
             display: '-webkit-box',
             WebkitBoxOrient: 'vertical',
             WebkitLineClamp: 2,
+            overflowWrap: 'normal',
+            wordBreak: 'keep-all',
+            hyphens: 'none',
             color: changeColor ?? color,
           }}
         >
