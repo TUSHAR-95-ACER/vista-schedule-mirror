@@ -125,7 +125,7 @@ function KpiCard({
 }) {
   return (
     <div
-      className="relative flex items-center gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border bg-[#0A0F1A] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border bg-[#0A0F1A] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
       style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#1F2937' }}
     >
       {/* LEFT — icon in its own column */}
