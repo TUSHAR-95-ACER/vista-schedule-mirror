@@ -129,13 +129,13 @@ function KpiCard({
 }) {
   return (
     <div
-      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border bg-[#0A0F1A] transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
-      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#1F2937' }}
+      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#1F2937', backgroundColor: 'rgba(38, 38, 38, 0.5)' }}
     >
       {/* LEFT — icon in its own column */}
       <span style={{ color }} className="shrink-0 leading-none pt-[2px]">
         <InfoTooltip text={tooltip}>
-          <Icon style={{ width: 'clamp(18px, 1.62vw, 24px)', height: 'clamp(18px, 1.62vw, 24px)' }} strokeWidth={1.9} />
+          <Icon style={{ width: 'clamp(22px, 2.02vw, 30px)', height: 'clamp(22px, 2.02vw, 30px)' }} strokeWidth={1.9} />
         </InfoTooltip>
       </span>
 
@@ -152,10 +152,15 @@ function KpiCard({
             WebkitBoxOrient: 'vertical',
             WebkitLineClamp: 2,
             minHeight: 'calc(2 * 1.25em)',
+            overflowWrap: 'normal',
+            wordBreak: 'keep-all',
+            hyphens: 'none',
           }}
         >
           {label}
         </p>
+
+
 
 
         {/* score */}
