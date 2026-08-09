@@ -317,10 +317,10 @@ const P2Tip = ({ active, payload, label }: any) => {
  * Track (background arc) #262B3D.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 66;
-  const T = 14;
-  const W = (R + T / 2) * 2;      // 160
-  const H = R + T / 2 + 2;        // 82
+  const R = 52;
+  const T = 10;
+  const W = (R + T / 2) * 2;
+  const H = R + T / 2 + 2;
   const cx = W / 2;
   const cy = R + T / 2;
   const pt = (deg: number) => {
@@ -340,8 +340,8 @@ function HealthGauge({ value }: { value: number }) {
   ];
   const deg = (p: number) => (p / 100) * 180;
   return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: 220, display: 'block' }}>
-      {/* full three-zone track — always visible regardless of score */}
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: 150, display: 'block' }}>
+      {/* full three-zone track — always visible, vivid but dimmed */}
       <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
       {zones.map(([a, b, color]) => (
         <path
@@ -351,9 +351,10 @@ function HealthGauge({ value }: { value: number }) {
           strokeWidth={T}
           fill="none"
           strokeLinecap="butt"
-          opacity={0.22}
+          opacity={0.32}
         />
       ))}
+
       {/* active value arc */}
       {zones.map(([a, b, color]) => {
         const end = Math.min(b, v);
