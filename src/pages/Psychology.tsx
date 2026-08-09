@@ -742,31 +742,33 @@ export default function Psychology() {
         </P2Card>
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
-        <P2Card title="Emotion vs P/L">
-          <div className="h-[250px]">
+        <P2Card title="Emotion vs P/L" padding="18px 20px">
+          <div className="h-[212px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -10, bottom: 12 }} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeOpacity={0.6} strokeWidth={1} vertical={false} />
+              <BarChart data={emotionData} margin={{ top: 18, right: 6, left: -14, bottom: 4 }} barCategoryGap="34%">
+                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeOpacity={0.55} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
-                  tickMargin={10}
-                  height={emotionData.length > 4 ? 46 : 28}
-                  angle={emotionData.length > 4 ? -28 : 0}
-                  textAnchor={emotionData.length > 4 ? 'end' : 'middle'}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
+                  tickMargin={8}
+                  height={26}
+                  angle={0}
+                  textAnchor="middle"
                   axisLine={false}
                   tickLine={false}
                   interval={0}
+                  minTickGap={0}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: P2.mutedText }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={46}
+                  width={40}
                 />
                 <ReferenceLine y={0} stroke={P2.zero} strokeWidth={1} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={28} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={22} animationDuration={700}>
+
                   {emotionData.map((e, i) => {
                     const maxAbs = Math.max(...emotionData.map(d => Math.abs(d.pl)), 1);
                     const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
