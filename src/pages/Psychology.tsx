@@ -883,42 +883,46 @@ export default function Psychology() {
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
-        <P2Card title="Discipline &amp; Focus Trend">
-          <div className="h-[300px]">
+        <P2Card title="Discipline &amp; Focus Trend" padding="18px 20px">
+          <div className="h-[212px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 6, right: 10, left: -14, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
+              <LineChart data={trendData} margin={{ top: 4, right: 12, left: -18, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} strokeOpacity={0.7} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   tickFormatter={(d: string) =>
                     new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                   }
-                  tickMargin={10}
+                  tickMargin={8}
+                  height={22}
+                  angle={0}
+                  textAnchor="middle"
                   axisLine={false}
                   tickLine={false}
-                  minTickGap={32}
+                  minTickGap={38}
                   interval="preserveStartEnd"
                 />
                 <YAxis
                   domain={[0, 5]}
                   ticks={[0, 3, 5]}
-                  tick={{ fontSize: 12, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={40}
+                  width={34}
                 />
                 <Tooltip cursor={{ stroke: P2.grid, strokeWidth: 1 }} content={<P2Tip />} />
                 <Legend
                   verticalAlign="top"
                   align="left"
-                  height={28}
+                  height={20}
                   iconType="circle"
-                  iconSize={8}
+                  iconSize={7}
                   formatter={(v: string) => (
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginRight: 24 }}>{v}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: P2.secondary, marginRight: 16 }}>{v}</span>
                   )}
                 />
+
                 <Line
                   type="monotone"
                   dataKey="discipline"
