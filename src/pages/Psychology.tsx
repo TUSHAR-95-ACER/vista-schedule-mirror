@@ -808,44 +808,43 @@ export default function Psychology() {
 
 
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
-        <P2Card title="Mistake Frequency">
+        <P2Card title="Mistake Frequency" padding="18px 20px">
           {mistakeData.length > 0 ? (
-            <div className="flex flex-col gap-[18px]">
+            <div className="flex flex-col gap-[11px]">
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / Math.max(scoped.length, 1)) * 100);
                 return (
-                  <div key={m.name}>
-                    <p style={{ fontSize: 12.5, fontWeight: 500, color: '#FFFFFF', marginBottom: 7 }}>{m.name}</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 overflow-hidden rounded-full" style={{ height: 5, background: P2.grid }}>
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, background: P2.red }}
-                        />
-                      </div>
-                      <span
-                        className="flex shrink-0 items-center justify-center rounded-full"
-                        style={{ width: 19, height: 19, background: P2.red, fontSize: 11, fontWeight: 600, color: '#FFFFFF', lineHeight: 1 }}
-                      >
-                        {m.count}
-                      </span>
-                      <span
-                        className="shrink-0 text-right"
-                        style={{ width: 32, fontSize: 12, fontWeight: 500, color: P2.secondary }}
-                      >
-                        {pct}%
-                      </span>
+                  <div key={m.name} className="flex items-center gap-2.5">
+                    <p className="min-w-0 flex-1 truncate" style={{ fontSize: 11.5, fontWeight: 500, color: '#E5E7EB' }}>{m.name}</p>
+                    <div className="shrink-0 overflow-hidden rounded-full" style={{ width: '34%', maxWidth: 110, height: 4, background: P2.grid }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, background: P2.red }}
+                      />
                     </div>
+                    <span
+                      className="flex shrink-0 items-center justify-center rounded-full"
+                      style={{ width: 16, height: 16, background: P2.red, fontSize: 9.5, fontWeight: 600, color: '#FFFFFF', lineHeight: 1 }}
+                    >
+                      {m.count}
+                    </span>
+                    <span
+                      className="shrink-0 text-right"
+                      style={{ width: 30, fontSize: 11, fontWeight: 500, color: P2.mutedText }}
+                    >
+                      {pct}%
+                    </span>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex h-[240px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[180px] items-center justify-center" style={{ fontSize: 12, color: P2.mutedText }}>
               No mistakes recorded
             </div>
           )}
         </P2Card>
+
 
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
