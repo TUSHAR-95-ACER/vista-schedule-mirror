@@ -292,12 +292,16 @@ function P2Card({
 /** Spec tooltip: bg #0F1422, 1px #262B3D, radius 8px, padding 8px 10px, Inter 12px */
 const P2Tip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
+  const shown =
+    typeof label === 'string' && /^\d{4}-\d{2}-\d{2}/.test(label)
+      ? new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : label;
   return (
     <div
-      className="rounded-[8px] border"
+      className="p2-sans rounded-[8px] border"
       style={{ background: P2.inner, borderColor: P2.grid, padding: '8px 10px' }}
     >
-      <p style={{ fontSize: 12, color: '#FFFFFF', marginBottom: 2 }}>{label}</p>
+      <p style={{ fontSize: 12, color: '#FFFFFF', marginBottom: 2 }}>{shown}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} style={{ fontSize: 12, color: p.color || p.stroke || p.fill }}>
           {p.name}: {typeof p.value === 'number' ? p.value.toFixed(p.value % 1 === 0 ? 0 : 1) : p.value}
