@@ -945,24 +945,24 @@ export default function Psychology() {
         </P2Card>
 
         {/* 6. EMOTION PERFORMANCE BREAKDOWN — TABLE */}
-        <P2Card title="Emotion Performance Breakdown">
+        <P2Card title="Emotion Performance Breakdown" padding="18px 20px">
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P2.grid}` }}>
-                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Emotion</th>
-                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Trades</th>
-                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Win Rate</th>
-                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Total P/L</th>
+                  <th style={{ width: '40%', textAlign: 'left', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8, letterSpacing: '0.02em' }}>Emotion</th>
+                  <th style={{ width: '15%', textAlign: 'center', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Trades</th>
+                  <th style={{ width: '20%', textAlign: 'center', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Win Rate</th>
+                  <th style={{ width: '25%', textAlign: 'right', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Total P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} style={{ height: 40, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
-                    <td style={{ textAlign: 'left', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.name}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.count}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red }}>{row.winRate}%</td>
-                    <td style={{ textAlign: 'right', fontSize: 13, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red }}>
+                  <tr key={row.name} style={{ height: 32, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
+                    <td style={{ textAlign: 'left', fontSize: 12, fontWeight: 500, color: '#FFFFFF', padding: '6px 0' }}>{row.name}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: '#E5E7EB', padding: '6px 0' }}>{row.count}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red, padding: '6px 0' }}>{row.winRate}%</td>
+                    <td style={{ textAlign: 'right', fontSize: 12, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red, padding: '6px 0' }}>
                       {row.pl >= 0 ? '+' : ''}{row.pl.toFixed(2)}
                     </td>
                   </tr>
@@ -971,6 +971,7 @@ export default function Psychology() {
             </table>
           </div>
         </P2Card>
+
       </div>
 
 
