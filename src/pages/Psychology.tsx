@@ -776,7 +776,7 @@ export default function Psychology() {
                       <Cell
                         key={i}
                         fill={color}
-                        radius={(e.pl >= 0 ? [8, 8, 0, 0] : [0, 0, 8, 8]) as any}
+                        radius={(e.pl >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]) as any}
                       />
                     );
                   })}
