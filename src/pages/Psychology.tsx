@@ -336,8 +336,21 @@ function HealthGauge({ value }: { value: number }) {
   ];
   const deg = (p: number) => (p / 100) * 180;
   return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: 220, display: 'block' }}>
+      {/* full three-zone track — always visible regardless of score */}
       <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
+      {zones.map(([a, b, color]) => (
+        <path
+          key={`z-${color}`}
+          d={arc(deg(a), deg(b))}
+          stroke={color}
+          strokeWidth={T}
+          fill="none"
+          strokeLinecap="butt"
+          opacity={0.22}
+        />
+      ))}
+      {/* active value arc */}
       {zones.map(([a, b, color]) => {
         const end = Math.min(b, v);
         if (end <= a) return null;
