@@ -317,10 +317,10 @@ const P2Tip = ({ active, payload, label }: any) => {
  * Track (background arc) #262B3D.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 66;
-  const T = 14;
-  const W = (R + T / 2) * 2;      // 160
-  const H = R + T / 2 + 2;        // 82
+  const R = 52;
+  const T = 10;
+  const W = (R + T / 2) * 2;
+  const H = R + T / 2 + 2;
   const cx = W / 2;
   const cy = R + T / 2;
   const pt = (deg: number) => {
@@ -340,8 +340,8 @@ function HealthGauge({ value }: { value: number }) {
   ];
   const deg = (p: number) => (p / 100) * 180;
   return (
-    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: 220, display: 'block' }}>
-      {/* full three-zone track — always visible regardless of score */}
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: 150, display: 'block' }}>
+      {/* full three-zone track — always visible, vivid but dimmed */}
       <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
       {zones.map(([a, b, color]) => (
         <path
@@ -351,9 +351,10 @@ function HealthGauge({ value }: { value: number }) {
           strokeWidth={T}
           fill="none"
           strokeLinecap="butt"
-          opacity={0.22}
+          opacity={0.32}
         />
       ))}
+
       {/* active value arc */}
       {zones.map(([a, b, color]) => {
         const end = Math.min(b, v);
@@ -699,21 +700,21 @@ export default function Psychology() {
       {/* ══ PHASE 2 — SECOND ROW (4 cards) ══ */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="24px">
-          <div className="flex flex-col items-center" style={{ marginTop: 4 }}>
+        <P2Card title="Emotional Health Score" padding="18px 20px">
+          <div className="flex flex-col items-center justify-center" style={{ marginTop: 2 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 42, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -34 }}
+              style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -22 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 18,
+                fontSize: 13,
                 fontWeight: 600,
-                marginTop: 6,
+                marginTop: 4,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -721,17 +722,17 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 13, fontWeight: 500, marginTop: 6, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 11, fontWeight: 500, marginTop: 3, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
           </div>
           {/* Insight box */}
           <div
-            className="rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '20px 14px', marginTop: 16 }}
+            className="rounded-[8px] border text-center"
+            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 12px', marginTop: 12 }}
           >
-            <p style={{ fontSize: 13, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 11.5, fontWeight: 400, color: P2.secondary, lineHeight: 1.45 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -741,32 +742,35 @@ export default function Psychology() {
           </div>
         </P2Card>
 
+
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
-        <P2Card title="Emotion vs P/L">
-          <div className="h-[250px]">
+        <P2Card title="Emotion vs P/L" padding="18px 20px">
+          <div className="h-[212px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 22, right: 8, left: -10, bottom: 12 }} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeOpacity={0.6} strokeWidth={1} vertical={false} />
+              <BarChart data={emotionData} margin={{ top: 18, right: 6, left: -14, bottom: 4 }} barCategoryGap="34%">
+                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeOpacity={0.55} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
-                  tickMargin={10}
-                  height={emotionData.length > 4 ? 46 : 28}
-                  angle={emotionData.length > 4 ? -28 : 0}
-                  textAnchor={emotionData.length > 4 ? 'end' : 'middle'}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
+                  tickMargin={8}
+                  height={26}
+                  angle={0}
+                  textAnchor="middle"
                   axisLine={false}
                   tickLine={false}
                   interval={0}
+                  minTickGap={0}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: P2.mutedText }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={46}
+                  width={40}
                 />
                 <ReferenceLine y={0} stroke={P2.zero} strokeWidth={1} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={28} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={22} animationDuration={700}>
+
                   {emotionData.map((e, i) => {
                     const maxAbs = Math.max(...emotionData.map(d => Math.abs(d.pl)), 1);
                     const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
@@ -774,7 +778,7 @@ export default function Psychology() {
                       <Cell
                         key={i}
                         fill={color}
-                        radius={(e.pl >= 0 ? [8, 8, 0, 0] : [0, 0, 8, 8]) as any}
+                        radius={(e.pl >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]) as any}
                       />
                     );
                   })}
@@ -789,9 +793,10 @@ export default function Psychology() {
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? Math.min(y, y + height) - 8 : Math.max(y, y + height) + 15}
+                          y={up ? Math.min(y, y + height) - 6 : Math.max(y, y + height) + 12}
                           textAnchor="middle"
-                          fontSize={11}
+                          fontSize={10}
+
                           fontWeight={600}
                           fill={color}
                         >
@@ -808,53 +813,53 @@ export default function Psychology() {
 
 
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
-        <P2Card title="Mistake Frequency">
+        <P2Card title="Mistake Frequency" padding="18px 20px">
           {mistakeData.length > 0 ? (
-            <div className="flex flex-col gap-[18px]">
+            <div className="flex flex-col gap-[11px]">
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / Math.max(scoped.length, 1)) * 100);
                 return (
-                  <div key={m.name}>
-                    <p style={{ fontSize: 12.5, fontWeight: 500, color: '#FFFFFF', marginBottom: 7 }}>{m.name}</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 overflow-hidden rounded-full" style={{ height: 5, background: P2.grid }}>
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, background: P2.red }}
-                        />
-                      </div>
-                      <span
-                        className="flex shrink-0 items-center justify-center rounded-full"
-                        style={{ width: 19, height: 19, background: P2.red, fontSize: 11, fontWeight: 600, color: '#FFFFFF', lineHeight: 1 }}
-                      >
-                        {m.count}
-                      </span>
-                      <span
-                        className="shrink-0 text-right"
-                        style={{ width: 32, fontSize: 12, fontWeight: 500, color: P2.secondary }}
-                      >
-                        {pct}%
-                      </span>
+                  <div key={m.name} className="flex items-center gap-2.5">
+                    <p className="min-w-0 flex-1 truncate" style={{ fontSize: 11.5, fontWeight: 500, color: '#E5E7EB' }}>{m.name}</p>
+                    <div className="shrink-0 overflow-hidden rounded-full" style={{ width: '34%', maxWidth: 110, height: 4, background: P2.grid }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, background: P2.red }}
+                      />
                     </div>
+                    <span
+                      className="flex shrink-0 items-center justify-center rounded-full"
+                      style={{ width: 16, height: 16, background: P2.red, fontSize: 9.5, fontWeight: 600, color: '#FFFFFF', lineHeight: 1 }}
+                    >
+                      {m.count}
+                    </span>
+                    <span
+                      className="shrink-0 text-right"
+                      style={{ width: 30, fontSize: 11, fontWeight: 500, color: P2.mutedText }}
+                    >
+                      {pct}%
+                    </span>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="flex h-[240px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[180px] items-center justify-center" style={{ fontSize: 12, color: P2.mutedText }}>
               No mistakes recorded
             </div>
           )}
         </P2Card>
 
 
+
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
-        <P2Card title="Checklist Adherence" padding="20px 16px">
-          <div className="h-[262px]">
+        <P2Card title="Checklist Adherence" padding="18px 14px">
+          <div className="h-[212px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="72%" margin={{ top: 8, right: 46, left: 46, bottom: 8 }}>
-                <PolarGrid stroke={P2.grid} strokeWidth={1} />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: P2.secondary }} />
+              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="66%" margin={{ top: 6, right: 34, left: 34, bottom: 6 }}>
+                <PolarGrid stroke={P2.grid} strokeWidth={1} strokeOpacity={0.8} />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: P2.mutedText }} />
+
                 <PolarRadiusAxis
                   angle={90}
                   domain={[0, 100]}
@@ -883,42 +888,46 @@ export default function Psychology() {
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
-        <P2Card title="Discipline &amp; Focus Trend">
-          <div className="h-[300px]">
+        <P2Card title="Discipline &amp; Focus Trend" padding="18px 20px">
+          <div className="h-[212px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 6, right: 10, left: -14, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
+              <LineChart data={trendData} margin={{ top: 4, right: 12, left: -18, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} strokeOpacity={0.7} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   tickFormatter={(d: string) =>
                     new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                   }
-                  tickMargin={10}
+                  tickMargin={8}
+                  height={22}
+                  angle={0}
+                  textAnchor="middle"
                   axisLine={false}
                   tickLine={false}
-                  minTickGap={32}
+                  minTickGap={38}
                   interval="preserveStartEnd"
                 />
                 <YAxis
                   domain={[0, 5]}
                   ticks={[0, 3, 5]}
-                  tick={{ fontSize: 12, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={40}
+                  width={34}
                 />
                 <Tooltip cursor={{ stroke: P2.grid, strokeWidth: 1 }} content={<P2Tip />} />
                 <Legend
                   verticalAlign="top"
                   align="left"
-                  height={28}
+                  height={20}
                   iconType="circle"
-                  iconSize={8}
+                  iconSize={7}
                   formatter={(v: string) => (
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginRight: 24 }}>{v}</span>
+                    <span style={{ fontSize: 11, fontWeight: 500, color: P2.secondary, marginRight: 16 }}>{v}</span>
                   )}
                 />
+
                 <Line
                   type="monotone"
                   dataKey="discipline"
@@ -945,24 +954,24 @@ export default function Psychology() {
         </P2Card>
 
         {/* 6. EMOTION PERFORMANCE BREAKDOWN — TABLE */}
-        <P2Card title="Emotion Performance Breakdown">
+        <P2Card title="Emotion Performance Breakdown" padding="18px 20px">
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P2.grid}` }}>
-                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Emotion</th>
-                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Trades</th>
-                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Win Rate</th>
-                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Total P/L</th>
+                  <th style={{ width: '40%', textAlign: 'left', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8, letterSpacing: '0.02em' }}>Emotion</th>
+                  <th style={{ width: '15%', textAlign: 'center', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Trades</th>
+                  <th style={{ width: '20%', textAlign: 'center', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Win Rate</th>
+                  <th style={{ width: '25%', textAlign: 'right', fontSize: 11, fontWeight: 500, color: P2.mutedText, paddingBottom: 8 }}>Total P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} style={{ height: 40, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
-                    <td style={{ textAlign: 'left', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.name}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.count}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red }}>{row.winRate}%</td>
-                    <td style={{ textAlign: 'right', fontSize: 13, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red }}>
+                  <tr key={row.name} style={{ height: 32, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
+                    <td style={{ textAlign: 'left', fontSize: 12, fontWeight: 500, color: '#FFFFFF', padding: '6px 0' }}>{row.name}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: '#E5E7EB', padding: '6px 0' }}>{row.count}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red, padding: '6px 0' }}>{row.winRate}%</td>
+                    <td style={{ textAlign: 'right', fontSize: 12, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red, padding: '6px 0' }}>
                       {row.pl >= 0 ? '+' : ''}{row.pl.toFixed(2)}
                     </td>
                   </tr>
@@ -971,6 +980,7 @@ export default function Psychology() {
             </table>
           </div>
         </P2Card>
+
       </div>
 
 
