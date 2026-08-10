@@ -745,7 +745,7 @@ export default function Psychology() {
         <P2Card title="Emotion vs P/L">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 16, right: 6, left: -12, bottom: 0 }} barCategoryGap="28%">
+              <BarChart data={emotionData} margin={{ top: 20, right: 8, left: -12, bottom: 8 }} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
@@ -754,37 +754,45 @@ export default function Psychology() {
                   axisLine={false}
                   tickLine={false}
                   interval={0}
+                  angle={0}
+                  height={28}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: P2.mutedText }}
+                  tick={{ fontSize: 11, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={44}
+                  width={46}
                 />
                 <ReferenceLine y={0} stroke={P2.zero} strokeWidth={1} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={28} animationDuration={700}>
-                  {emotionData.map((e, i) => (
-                    <Cell
-                      key={i}
-                      fill={e.pl >= 0 ? P2.green : P2.red}
-                      radius={(e.pl >= 0 ? [8, 8, 0, 0] : [0, 0, 8, 8]) as any}
-                    />
-                  ))}
+                <Bar dataKey="pl" name="P/L" maxBarSize={30} animationDuration={700}>
+                  {emotionData.map((e, i) => {
+                    const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
+                    const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
+                    return (
+                      <Cell
+                        key={i}
+                        fill={color}
+                        radius={(e.pl >= 0 ? [6, 6, 0, 0] : [0, 0, 6, 6]) as any}
+                      />
+                    );
+                  })}
                   <LabelList
                     dataKey="pl"
                     content={(props: any) => {
                       const { x, y, width, height, value } = props;
                       const v = Number(value);
                       const up = v >= 0;
+                      const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
+                      const color = up ? P2.green : Math.abs(v) / maxAbs < 0.3 ? P2.yellow : P2.red;
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? Math.min(y, y + height) - 6 : Math.max(y, y + height) + 15}
+                          y={up ? Math.min(y, y + height) - 8 : Math.max(y, y + height) + 16}
                           textAnchor="middle"
-                          fontSize={12}
+                          fontSize={11}
                           fontWeight={600}
-                          fill={up ? P2.green : P2.red}
+                          fill={color}
                         >
                           {`${v > 0 ? '+' : ''}${v.toFixed(2)}`}
                         </text>
@@ -792,6 +800,7 @@ export default function Psychology() {
                     }}
                   />
                 </Bar>
+
               </BarChart>
             </ResponsiveContainer>
           </div>
