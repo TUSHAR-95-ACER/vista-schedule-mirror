@@ -254,13 +254,13 @@ const ChartTip = ({ active, payload, label }: any) => {
 
 /* ══ PHASE 2 — SECOND ROW SPEC ══════════════════════════════════════ */
 const P2 = {
-  card: '#141B2D',
-  border: 'rgba(255,255,255,0.08)',
-  page: '#0B0E14',
-  inner: '#0F1422',
-  grid: '#262B3D',
-  zero: '#374151',
-  rowBorder: '#1F2433',
+  card: '#0E0E0E',
+  border: '#242424',
+  page: '#000000',
+  inner: '#080808',
+  grid: '#232323',
+  zero: '#333333',
+  rowBorder: '#1C1C1C',
   green: '#22C55E',
   blue: '#3B82F6',
   red: '#EF4444',
@@ -268,6 +268,7 @@ const P2 = {
   secondary: '#9CA3AF',
   mutedText: '#6B7280',
 };
+
 
 /** Spec card container: #141B2D, 1px rgba(255,255,255,0.08), radius 16px */
 function P2Card({
