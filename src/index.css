@@ -445,3 +445,12 @@ rect.recharts-tooltip-cursor {
   stroke: none !important;
 }
 
+
+/* Phase 2 psychology cards: force Inter (never monospace journal font). */
+.p2-inter,
+.p2-inter *,
+html[data-journal-font] .p2-inter,
+html[data-journal-font] .p2-inter * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: normal;
+}
