@@ -745,18 +745,20 @@ export default function Psychology() {
         <P2Card title="Emotion vs P/L">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 20, right: 8, left: -12, bottom: 8 }} barCategoryGap="30%">
+              <BarChart data={emotionData} margin={{ top: 20, right: 8, left: -12, bottom: 20 }} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 12, fill: P2.secondary }}
-                  tickMargin={12}
+                  tick={{ fontSize: 10, fill: P2.secondary }}
+                  tickMargin={10}
                   axisLine={false}
                   tickLine={false}
                   interval={0}
                   angle={0}
-                  height={28}
+                  height={26}
+                  minTickGap={-20}
                 />
+
                 <YAxis
                   tick={{ fontSize: 11, fill: P2.mutedText }}
                   axisLine={false}
