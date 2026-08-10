@@ -276,7 +276,7 @@ function P2Card({
 }: { title: string; children: React.ReactNode; className?: string; padding?: string }) {
   return (
     <section
-      className={cn('flex flex-col rounded-[16px] border', className)}
+      className={cn('p2-inter flex flex-col rounded-[16px] border', className)}
       style={{ background: P2.card, borderColor: P2.border, padding }}
     >
       <h2
