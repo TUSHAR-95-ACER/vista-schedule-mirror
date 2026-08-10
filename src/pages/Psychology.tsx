@@ -336,9 +336,22 @@ function HealthGauge({ value }: { value: number }) {
     [75, 100, P2.red],
   ];
   const deg = (p: number) => (p / 100) * 180;
+  const needle = deg(v);
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
       <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
+      {/* all three zones always visible (dimmed), active portion at full colour */}
+      {zones.map(([a, b, color]) => (
+        <path
+          key={`z-${color}`}
+          d={arc(deg(a), deg(b))}
+          stroke={color}
+          strokeOpacity={0.22}
+          strokeWidth={T}
+          fill="none"
+          strokeLinecap="butt"
+        />
+      ))}
       {zones.map(([a, b, color]) => {
         const end = Math.min(b, v);
         if (end <= a) return null;
@@ -353,9 +366,12 @@ function HealthGauge({ value }: { value: number }) {
           />
         );
       })}
+      {/* value marker */}
+      <circle cx={pt(needle)[0]} cy={pt(needle)[1]} r={4} fill="#FFFFFF" />
     </svg>
   );
 }
+
 
 /* ── page ───────────────────────────────────────────────────────────── */
 
