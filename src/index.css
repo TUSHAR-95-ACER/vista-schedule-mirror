@@ -8,7 +8,7 @@
   :root {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
-    --card: 0 0% 4%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 2%;
     --popover-foreground: 0 0% 100%;
@@ -28,7 +28,7 @@
     --warning-foreground: 0 0% 100%;
     --gold: 42 80% 47%;
     --gold-foreground: 0 0% 100%;
-    --border: 0 0% 20%;
+    --border: 0 0% 10%;
     --input: 0 0% 10%;
     --ring: 160 84% 39%;
     --radius: 0.375rem;
@@ -55,7 +55,7 @@
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
-    --card: 0 0% 4%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 2%;
     --popover-foreground: 0 0% 100%;
@@ -75,7 +75,7 @@
     --warning-foreground: 0 0% 100%;
     --gold: 45 88% 58%;
     --gold-foreground: 0 0% 8%;
-    --border: 0 0% 20%;
+    --border: 0 0% 10%;
     --input: 0 0% 10%;
     --ring: 160 84% 39%;
     --sidebar-background: 0 0% 0%;
@@ -290,20 +290,6 @@
   html[data-journal-font] .text-xl       { font-size: 20px !important; }
   html[data-journal-font] .text-2xl      { font-size: 24px !important; }
   html[data-journal-font] .text-3xl      { font-size: 30px !important; }
-  /* Phase 2 analytics cards must always use clean sans typography (Inter),
-     overriding the global journal/monospace font system. */
-  html[data-journal-font] .p2-sans,
-  html[data-journal-font] .p2-sans *,
-  .p2-sans,
-  .p2-sans * {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
-    letter-spacing: 0 !important;
-  }
-  html[data-journal-font] .p2-sans svg text,
-  .p2-sans svg text {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-  }
-
   .text-profit {
     @apply text-success;
   }
