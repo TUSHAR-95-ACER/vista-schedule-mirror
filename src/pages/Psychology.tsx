@@ -314,8 +314,8 @@ const P2Tip = ({ active, payload, label }: any) => {
  * constant. No needle / marker / progress arc.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 62;
-  const T = 13;
+  const R = 70;
+  const T = 14.6;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
@@ -332,15 +332,16 @@ function HealthGauge({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, value));
   const t = v / 100;
   // smooth interpolation with visibility floors
-  const greenOpacity = 1 - 0.7 * t;   // 1.0 → 0.30
-  const yellowOpacity = 0.3 + 0.7 * t; // 0.30 → 1.0
-  const redOpacity = 0.55;             // fixed
+  const greenOpacity = 1 - 0.45 * t;    // 1.0 → 0.55 (brighter mid-range)
+  const yellowOpacity = 0.25 + 0.55 * t; // 0.25 → 0.80 (stays below green mid-range)
+  const redOpacity = 0.55;               // fixed
   const deg = (p: number) => (p / 100) * 180;
   const zones: Array<[number, number, string, number]> = [
     [0, 55, P2.green, greenOpacity],
     [55, 75, P2.yellow, yellowOpacity],
     [75, 100, P2.red, redOpacity],
   ];
+
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
       {zones.map(([a, b, color, op]) => (
