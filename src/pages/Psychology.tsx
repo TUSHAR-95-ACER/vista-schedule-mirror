@@ -718,10 +718,10 @@ export default function Psychology() {
           </div>
           {/* Insight box */}
           <div
-            className="rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12 }}
+            className="flex items-center justify-center rounded-[10px] border text-center"
+            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12, minHeight: 56 }}
           >
-            <p style={{ fontSize: 12.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
+            <p style={{ fontSize: 11.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -730,6 +730,7 @@ export default function Psychology() {
             </p>
           </div>
         </P2Card>
+
 
 
 
