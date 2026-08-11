@@ -694,7 +694,7 @@ export default function Psychology() {
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
+              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -36 }}
             >
               {gaugeValue}
             </p>
