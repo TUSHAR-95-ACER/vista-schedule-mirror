@@ -309,15 +309,15 @@ const P2Tip = ({ active, payload, label }: any) => {
 };
 
 /**
- * Spec gauge: 132px arc width, 14px thickness, radius 66px, semicircle.
- * Color zones: 0-55% green, 55-75% yellow, 75-100% red (multi-colour arc).
- * Track (background arc) #262B3D.
+ * Semicircular three-zone gauge. All zones (green → yellow → red) are ALWAYS
+ * visible. Green opacity fades out as the score rises, yellow fades in, red is
+ * constant. No needle / marker / progress arc.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 66;
-  const T = 14;
-  const W = (R + T / 2) * 2;      // 160
-  const H = R + T / 2 + 2;        // 82
+  const R = 62;
+  const T = 13;
+  const W = (R + T / 2) * 2;
+  const H = R + T / 2 + 2;
   const cx = W / 2;
   const cy = R + T / 2;
   const pt = (deg: number) => {
@@ -330,47 +330,34 @@ function HealthGauge({ value }: { value: number }) {
     return `M ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2}`;
   };
   const v = Math.max(0, Math.min(100, value));
-  const zones: Array<[number, number, string]> = [
-    [0, 55, P2.green],
-    [55, 75, P2.yellow],
-    [75, 100, P2.red],
-  ];
+  const t = v / 100;
+  // smooth interpolation with visibility floors
+  const greenOpacity = 1 - 0.7 * t;   // 1.0 → 0.30
+  const yellowOpacity = 0.3 + 0.7 * t; // 0.30 → 1.0
+  const redOpacity = 0.55;             // fixed
   const deg = (p: number) => (p / 100) * 180;
-  const needle = deg(v);
+  const zones: Array<[number, number, string, number]> = [
+    [0, 55, P2.green, greenOpacity],
+    [55, 75, P2.yellow, yellowOpacity],
+    [75, 100, P2.red, redOpacity],
+  ];
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
-      <path d={arc(0, 180)} stroke={P2.grid} strokeWidth={T} fill="none" strokeLinecap="butt" />
-      {/* all three zones always visible (dimmed), active portion at full colour */}
-      {zones.map(([a, b, color]) => (
+      {zones.map(([a, b, color, op]) => (
         <path
-          key={`z-${color}`}
+          key={color}
           d={arc(deg(a), deg(b))}
           stroke={color}
-          strokeOpacity={0.22}
+          strokeOpacity={op}
           strokeWidth={T}
           fill="none"
           strokeLinecap="butt"
         />
       ))}
-      {zones.map(([a, b, color]) => {
-        const end = Math.min(b, v);
-        if (end <= a) return null;
-        return (
-          <path
-            key={color}
-            d={arc(deg(a), deg(end))}
-            stroke={color}
-            strokeWidth={T}
-            fill="none"
-            strokeLinecap="butt"
-          />
-        );
-      })}
-      {/* value marker */}
-      <circle cx={pt(needle)[0]} cy={pt(needle)[1]} r={4} fill="#FFFFFF" />
     </svg>
   );
 }
+
 
 
 /* ── page ───────────────────────────────────────────────────────────── */
@@ -697,23 +684,23 @@ export default function Psychology() {
 
 
       {/* ══ PHASE 2 — SECOND ROW (4 cards) ══ */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="24px">
-          <div className="flex flex-col items-center" style={{ marginTop: 4 }}>
+        <P2Card title="Emotional Health Score" padding="18px 24px">
+          <div className="flex flex-col items-center" style={{ marginTop: 2 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 42, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -34 }}
+              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: 600,
-                marginTop: 6,
+                marginTop: 4,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -721,7 +708,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 13, fontWeight: 500, marginTop: 6, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 12.5, fontWeight: 500, marginTop: 3, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -729,9 +716,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '20px 14px', marginTop: 16 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12 }}
           >
-            <p style={{ fontSize: 13, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 12.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -740,6 +727,8 @@ export default function Psychology() {
             </p>
           </div>
         </P2Card>
+
+
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
