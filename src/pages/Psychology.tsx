@@ -314,8 +314,8 @@ const P2Tip = ({ active, payload, label }: any) => {
  * constant. No needle / marker / progress arc.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 62;
-  const T = 13;
+  const R = 70;
+  const T = 14.6;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
@@ -332,15 +332,16 @@ function HealthGauge({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, value));
   const t = v / 100;
   // smooth interpolation with visibility floors
-  const greenOpacity = 1 - 0.7 * t;   // 1.0 → 0.30
-  const yellowOpacity = 0.3 + 0.7 * t; // 0.30 → 1.0
-  const redOpacity = 0.55;             // fixed
+  const greenOpacity = 1 - 0.45 * t;    // 1.0 → 0.55 (brighter mid-range)
+  const yellowOpacity = 0.25 + 0.55 * t; // 0.25 → 0.80 (stays below green mid-range)
+  const redOpacity = 0.55;               // fixed
   const deg = (p: number) => (p / 100) * 180;
   const zones: Array<[number, number, string, number]> = [
     [0, 55, P2.green, greenOpacity],
     [55, 75, P2.yellow, yellowOpacity],
     [75, 100, P2.red, redOpacity],
   ];
+
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ maxWidth: W }}>
       {zones.map(([a, b, color, op]) => (
@@ -683,15 +684,17 @@ export default function Psychology() {
 
 
 
-      {/* ══ PHASE 2 — SECOND ROW (4 cards) ══ */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* ══ PHASE 2 — FIRST ROW (4 cards: 24 / 28 / 24 / 24) ══ */}
+      <div
+        className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:[grid-template-columns:24fr_28fr_24fr_24fr]"
+      >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
         <P2Card title="Emotional Health Score" padding="18px 24px">
           <div className="flex flex-col items-center" style={{ marginTop: 2 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
+              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -36 }}
             >
               {gaugeValue}
             </p>
@@ -715,10 +718,10 @@ export default function Psychology() {
           </div>
           {/* Insight box */}
           <div
-            className="rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12 }}
+            className="flex items-center justify-center rounded-[10px] border text-center"
+            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12, minHeight: 56 }}
           >
-            <p style={{ fontSize: 12.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
+            <p style={{ fontSize: 11.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -730,33 +733,39 @@ export default function Psychology() {
 
 
 
+
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 20, right: 8, left: -12, bottom: 20 }} barCategoryGap="30%">
+              <BarChart data={emotionData} margin={{ top: 22, right: 6, left: -14, bottom: 12 }} barCategoryGap="28%">
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 10, fill: P2.secondary }}
-                  tickMargin={10}
+                  tick={{ fontSize: 10.5, fill: P2.secondary }}
+                  tickMargin={12}
                   axisLine={false}
                   tickLine={false}
                   interval={0}
                   angle={0}
-                  height={26}
-                  minTickGap={-20}
+                  height={30}
+                  minTickGap={-40}
                 />
 
                 <YAxis
-                  tick={{ fontSize: 11, fill: P2.mutedText }}
+                  tick={{ fontSize: 10.5, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={46}
+                  width={44}
+                  domain={[
+                    (min: number) => (min >= 0 ? 0 : min * 1.25),
+                    (max: number) => (max <= 0 ? 0 : max * 1.25),
+                  ]}
                 />
-                <ReferenceLine y={0} stroke={P2.zero} strokeWidth={1} />
+                <ReferenceLine y={0} stroke="#3A3A3A" strokeWidth={1.25} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={30} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={26} animationDuration={700}>
+
                   {emotionData.map((e, i) => {
                     const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
                     const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
