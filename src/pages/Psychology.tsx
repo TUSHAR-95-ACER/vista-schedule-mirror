@@ -684,23 +684,23 @@ export default function Psychology() {
 
 
       {/* ══ PHASE 2 — SECOND ROW (4 cards) ══ */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="24px">
-          <div className="flex flex-col items-center" style={{ marginTop: 4 }}>
+        <P2Card title="Emotional Health Score" padding="18px 24px">
+          <div className="flex flex-col items-center" style={{ marginTop: 2 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 42, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -34 }}
+              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: 600,
-                marginTop: 6,
+                marginTop: 4,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -708,7 +708,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 13, fontWeight: 500, marginTop: 6, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 12.5, fontWeight: 500, marginTop: 3, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -716,9 +716,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '20px 14px', marginTop: 16 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12 }}
           >
-            <p style={{ fontSize: 13, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 12.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -727,6 +727,8 @@ export default function Psychology() {
             </p>
           </div>
         </P2Card>
+
+
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
