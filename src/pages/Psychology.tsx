@@ -738,29 +738,34 @@ export default function Psychology() {
         <P2Card title="Emotion vs P/L">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 20, right: 8, left: -12, bottom: 20 }} barCategoryGap="30%">
+              <BarChart data={emotionData} margin={{ top: 22, right: 6, left: -14, bottom: 12 }} barCategoryGap="28%">
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 10, fill: P2.secondary }}
-                  tickMargin={10}
+                  tick={{ fontSize: 10.5, fill: P2.secondary }}
+                  tickMargin={12}
                   axisLine={false}
                   tickLine={false}
                   interval={0}
                   angle={0}
-                  height={26}
-                  minTickGap={-20}
+                  height={30}
+                  minTickGap={-40}
                 />
 
                 <YAxis
-                  tick={{ fontSize: 11, fill: P2.mutedText }}
+                  tick={{ fontSize: 10.5, fill: P2.mutedText }}
                   axisLine={false}
                   tickLine={false}
-                  width={46}
+                  width={44}
+                  domain={[
+                    (min: number) => (min >= 0 ? 0 : min * 1.25),
+                    (max: number) => (max <= 0 ? 0 : max * 1.25),
+                  ]}
                 />
-                <ReferenceLine y={0} stroke={P2.zero} strokeWidth={1} />
+                <ReferenceLine y={0} stroke="#3A3A3A" strokeWidth={1.25} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={30} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={26} animationDuration={700}>
+
                   {emotionData.map((e, i) => {
                     const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
                     const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
