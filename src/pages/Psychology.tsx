@@ -719,20 +719,20 @@ export default function Psychology() {
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
         <P2Card title="Emotional Health Score" padding="10px 18px">
           <div className="flex h-full flex-col justify-end">
-          <div className="flex flex-col items-center" style={{ marginTop: 10 }}>
+          <div className="flex flex-col items-center" style={{ marginTop: 4 }}>
             <HealthGauge value={gaugeValue} size="compact" />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -26 }}
+              style={{ fontSize: 36, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -34 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 13,
+                fontSize: 15,
                 fontWeight: 600,
-                marginTop: 1,
+                marginTop: 2,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -740,7 +740,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 10.5, fontWeight: 500, marginTop: 1, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 12, fontWeight: 500, marginTop: 2, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -748,9 +748,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 8, minHeight: 36 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '8px 12px', marginTop: 10, minHeight: 42 }}
           >
-            <p style={{ fontSize: 10, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
+            <p style={{ fontSize: 11.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -836,28 +836,28 @@ export default function Psychology() {
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
         <P2Card title="Mistake Frequency" padding="14px 20px">
           {mistakeData.length > 0 ? (
-            <div className="space-y-2.5">
+            <div className="flex h-full flex-col justify-between" style={{ minHeight: 139, gap: 6 }}>
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
-                  <div key={m.name}>
-                    <p style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginBottom: 5 }}>{m.name}</p>
+                  <div key={m.name} className="flex flex-1 flex-col justify-center">
+                    <p style={{ fontSize: 12.5, fontWeight: 500, color: '#FFFFFF', marginBottom: 5 }}>{m.name}</p>
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 overflow-hidden rounded-[3px]" style={{ height: 5, background: P2.grid }}>
+                      <div className="flex-1 overflow-hidden rounded-[2px]" style={{ height: 6, background: P2.grid }}>
                         <div
-                          className="h-full rounded-[3px] transition-all duration-500"
+                          className="h-full rounded-[2px] transition-all duration-500"
                           style={{ width: `${pct}%`, background: P2.red }}
                         />
                       </div>
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full"
-                        style={{ width: 18, height: 18, background: P2.red, fontSize: 11, fontWeight: 600, color: '#FFFFFF' }}
+                        style={{ width: 20, height: 20, background: P2.red, fontSize: 11.5, fontWeight: 600, color: '#FFFFFF' }}
                       >
                         {m.count}
                       </span>
                       <span
-                        className="shrink-0 text-right"
-                        style={{ width: 28, fontSize: 12, fontWeight: 500, color: P2.secondary }}
+                        className="shrink-0 text-right tabular-nums"
+                        style={{ width: 32, fontSize: 12.5, fontWeight: 500, color: P2.secondary }}
                       >
                         {pct}%
                       </span>
@@ -874,12 +874,12 @@ export default function Psychology() {
         </P2Card>
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
-        <P2Card title="Checklist Adherence" padding="14px 12px 10px">
+        <P2Card title="Checklist Adherence" padding="14px 8px 8px">
           <div className="h-full min-h-[139px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="56%" outerRadius="86%" margin={{ top: 12, right: 44, left: 44, bottom: 8 }}>
+              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="98%" margin={{ top: 6, right: 34, left: 34, bottom: 4 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9.5, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }} />
 
 
                 <PolarRadiusAxis
