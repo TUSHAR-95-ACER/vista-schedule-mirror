@@ -903,10 +903,10 @@ export default function Psychology() {
       </div>
 
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
-      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:55fr_45fr]">
+      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:63fr_45fr]">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
-        <P2Card title="Discipline &amp; Focus Trend">
-          <div className="h-[165px]">
+        <P2Card title="Discipline &amp; Focus Trend" padding="14px 20px">
+          <div className="h-[149px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData} margin={{ top: 4, right: 12, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
