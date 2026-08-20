@@ -762,19 +762,19 @@ export default function Psychology() {
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
-          <div className="h-[192px]">
+          <div className="h-[154px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionChartData} margin={{ top: 24, right: 10, left: 0, bottom: 8 }} barCategoryGap="26%">
+              <BarChart data={emotionChartData} margin={{ top: 18, right: 8, left: 0, bottom: 6 }} barCategoryGap="26%">
                 <CartesianGrid strokeDasharray="4 4" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
-                  tickMargin={6}
+                  tickMargin={4}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
                   interval={0}
-                  height={28}
+                  height={24}
                   minTickGap={-80}
                 />
                 <YAxis
@@ -790,7 +790,7 @@ export default function Psychology() {
                 />
                 <ReferenceLine y={0} stroke="#4A4A4A" strokeWidth={1.5} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={24} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={22} animationDuration={700}>
                   {emotionChartData.map((e, i) => {
                     const color = e.pl >= 0
                       ? P2.green
@@ -810,10 +810,10 @@ export default function Psychology() {
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? Math.min(y, y + height) - 7 : Math.max(y, y + height) + 13}
+                          y={up ? Math.min(y, y + height) - 6 : Math.max(y, y + height) + 12}
                           textAnchor="middle"
                           fontFamily="Inter, sans-serif"
-                          fontSize={10.5}
+                          fontSize={10}
                           fontWeight={600}
                           fill={color}
                         >
