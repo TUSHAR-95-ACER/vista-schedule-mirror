@@ -33,7 +33,7 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[18px] border border-white/[0.06] bg-[#121212] p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[18px] border border-[#262626] bg-black/80 p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
 function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
@@ -131,7 +131,7 @@ function KpiCard({
   return (
     <div
       className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
-      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#1F2937', backgroundColor: 'rgba(38, 38, 38, 0.5)' }}
+      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#262626', backgroundColor: 'rgba(0,0,0,0.8)' }}
     >
       {/* LEFT — icon in its own column */}
       <span style={{ color }} className="shrink-0 leading-none pt-[2px]">
@@ -317,8 +317,8 @@ const P2Tip = ({ active, payload, label }: any) => {
  */
 function HealthGauge({ value, size = 'default' }: { value: number; size?: 'default' | 'compact' }) {
   const isCompact = size === 'compact';
-  const R = isCompact ? 46 : 58;
-  const T = isCompact ? 10 : 12.4;
+  const R = isCompact ? 58 : 66;
+  const T = isCompact ? 12 : 13.5;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
