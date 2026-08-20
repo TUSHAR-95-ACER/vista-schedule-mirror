@@ -718,16 +718,16 @@ export default function Psychology() {
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -36 }}
+              style={{ fontSize: 34, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 17,
+                fontSize: 15,
                 fontWeight: 600,
-                marginTop: 4,
+                marginTop: 2,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -735,7 +735,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 12.5, fontWeight: 500, marginTop: 3, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 11.5, fontWeight: 500, marginTop: 2, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -743,9 +743,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12, minHeight: 56 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '8px 12px', marginTop: 8, minHeight: 44 }}
           >
-            <p style={{ fontSize: 11.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
+            <p style={{ fontSize: 11, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
