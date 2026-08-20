@@ -708,9 +708,10 @@ export default function Psychology() {
 
 
 
-      {/* ══ PHASE 2 — FIRST ROW (4 cards: 24 / 28 / 24 / 24) ══ */}
+      {/* ══ PHASE 2 — FIRST ROW (4 cards: 21.7 / 35 / 21.7 / 21.7) ══ */}
       <div
         className="grid grid-cols-1 gap-4 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
+        style={{ alignItems: 'stretch' }}
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
         <P2Card title="Emotional Health Score" padding="14px 20px">
