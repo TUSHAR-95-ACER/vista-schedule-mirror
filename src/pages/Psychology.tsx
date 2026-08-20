@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   AreaChart, Area, LineChart, Line, PieChart, Pie, Legend, LabelList, ReferenceLine,
 } from 'recharts';
@@ -254,12 +254,13 @@ const ChartTip = ({ active, payload, label }: any) => {
 
 /* ══ PHASE 2 — SECOND ROW SPEC ══════════════════════════════════════ */
 const P2 = {
-  card: '#0E0E0E',
-  border: '#242424',
+  card: 'rgba(0,0,0,0.8)',
+  border: '#262626',
   page: '#000000',
-  inner: '#080808',
+  inner: 'rgba(0,0,0,0.8)',
   grid: '#232323',
   zero: '#333333',
+
   rowBorder: '#1C1C1C',
   green: '#22C55E',
   blue: '#3B82F6',
@@ -281,10 +282,11 @@ function P2Card({
     >
       <h2
         className="font-sans uppercase"
-        style={{ fontSize: 14, fontWeight: 600, color: '#FFFFFF', marginBottom: 16, letterSpacing: '0.04em' }}
+        style={{ fontSize: 11, fontWeight: 600, color: '#FFFFFF', marginBottom: 10, letterSpacing: '0.12em' }}
       >
         {title}
       </h2>
+
       <div className="flex-1">{children}</div>
     </section>
   );
@@ -762,10 +764,9 @@ export default function Psychology() {
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
-          <div className="h-[154px]">
+          <div className="h-[139px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={emotionChartData} margin={{ top: 18, right: 8, left: 0, bottom: 6 }} barCategoryGap="26%">
-                <CartesianGrid strokeDasharray="4 4" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
@@ -863,7 +864,7 @@ export default function Psychology() {
               })}
             </div>
           ) : (
-            <div className="flex h-[154px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[139px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
               No mistakes recorded
             </div>
           )}
@@ -871,18 +872,18 @@ export default function Psychology() {
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
         <P2Card title="Checklist Adherence" padding="14px 20px">
-          <div className="h-[154px]">
+          <div className="h-[139px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
+              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="78%" margin={{ top: 14, right: 52, left: 52, bottom: 12 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: P2.secondary }} />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }} />
 
 
                 <PolarRadiusAxis
-                  angle={90}
+                  angle={0}
                   domain={[0, 100]}
                   ticks={[0, 25, 50, 75, 100] as any}
-                  tick={{ fontSize: 10, fill: P2.mutedText }}
+                  tick={{ fontSize: 8.5, fill: P2.mutedText, fontFamily: 'Inter, sans-serif' }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -890,8 +891,8 @@ export default function Psychology() {
                   name="Adherence %"
                   dataKey="value"
                   stroke={P2.blue}
-                  strokeWidth={2}
-                  fill="rgba(59,130,246,0.15)"
+                  strokeWidth={1.4}
+                  fill="rgba(59,130,246,0.14)"
                   fillOpacity={1}
                   animationDuration={700}
                 />
@@ -906,13 +907,12 @@ export default function Psychology() {
       <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:63fr_45fr]">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
         <P2Card title="Discipline &amp; Focus Trend" padding="14px 20px">
-          <div className="h-[149px]">
+          <div className="h-[161px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData} margin={{ top: 4, right: 12, left: -8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
                   tickMargin={6}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
@@ -922,7 +922,7 @@ export default function Psychology() {
                 <YAxis
                   domain={[0, 5]}
                   ticks={[0, 3, 5]}
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
@@ -934,9 +934,10 @@ export default function Psychology() {
                   align="left"
                   height={28}
                   iconType="circle"
-                  iconSize={8}
+                  iconSize={7}
+                  wrapperStyle={{ paddingLeft: 34, fontFamily: 'Inter, sans-serif' }}
                   formatter={(v: string) => (
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginRight: 24 }}>{v}</span>
+                    <span style={{ fontSize: 10, fontWeight: 500, color: '#FFFFFF', marginRight: 18, fontFamily: 'Inter, sans-serif' }}>{v}</span>
                   )}
                 />
                 <Line
@@ -944,7 +945,7 @@ export default function Psychology() {
                   dataKey="discipline"
                   name="Discipline"
                   stroke={P2.green}
-                  strokeWidth={2}
+                  strokeWidth={1.3}
                   dot={false}
                   activeDot={{ r: 4, fill: '#FFFFFF', stroke: P2.green, strokeWidth: 2 }}
                   animationDuration={900}
@@ -954,7 +955,7 @@ export default function Psychology() {
                   dataKey="focus"
                   name="Focus"
                   stroke={P2.blue}
-                  strokeWidth={2}
+                  strokeWidth={1.3}
                   dot={false}
                   activeDot={{ r: 4, fill: '#FFFFFF', stroke: P2.blue, strokeWidth: 2 }}
                   animationDuration={900}
@@ -966,7 +967,7 @@ export default function Psychology() {
 
         {/* 6. EMOTION PERFORMANCE BREAKDOWN — TABLE */}
         <P2Card title="Emotion Performance Breakdown" padding="14px 20px">
-          <div className="h-[149px] overflow-x-auto">
+          <div className="h-[161px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P2.grid}` }}>
