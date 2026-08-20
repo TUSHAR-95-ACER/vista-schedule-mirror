@@ -762,59 +762,56 @@ export default function Psychology() {
         <P2Card title="Emotion vs P/L">
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionData} margin={{ top: 22, right: 6, left: -14, bottom: 12 }} barCategoryGap="28%">
-                <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
+              <BarChart data={emotionChartData} margin={{ top: 24, right: 10, left: 0, bottom: 8 }} barCategoryGap="26%">
+                <CartesianGrid strokeDasharray="4 4" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 10.5, fill: P2.secondary }}
-                  tickMargin={12}
-                  axisLine={false}
-                  tickLine={false}
+                  tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
+                  tickMargin={6}
+                  axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickSize={4}
                   interval={0}
-                  angle={0}
-                  height={30}
-                  minTickGap={-40}
+                  height={28}
+                  minTickGap={-80}
                 />
-
                 <YAxis
-                  tick={{ fontSize: 10.5, fill: P2.mutedText }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={44}
-                  domain={[
-                    (min: number) => (min >= 0 ? 0 : min * 1.25),
-                    (max: number) => (max <= 0 ? 0 : max * 1.25),
-                  ]}
+                  tick={{ fontSize: 10, fill: P2.mutedText, fontFamily: 'Inter, sans-serif' }}
+                  axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickSize={4}
+                  width={42}
+                  domain={emotionAxis.domain}
+                  ticks={emotionAxis.ticks}
+                  tickFormatter={(v: number) => `${v}`}
+                  allowDecimals={false}
                 />
-                <ReferenceLine y={0} stroke="#3A3A3A" strokeWidth={1.25} />
+                <ReferenceLine y={0} stroke="#4A4A4A" strokeWidth={1.5} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={26} animationDuration={700}>
-
-                  {emotionData.map((e, i) => {
-                    const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
-                    const color = e.pl >= 0 ? P2.green : Math.abs(e.pl) / maxAbs < 0.3 ? P2.yellow : P2.red;
-                    return (
-                      <Cell
-                        key={i}
-                        fill={color}
-                        radius={(e.pl >= 0 ? [6, 6, 0, 0] : [0, 0, 6, 6]) as any}
-                      />
-                    );
+                <Bar dataKey="pl" name="P/L" maxBarSize={24} animationDuration={700}>
+                  {emotionChartData.map((e, i) => {
+                    const color = e.pl >= 0
+                      ? P2.green
+                      : Math.abs(e.pl) / emotionAxis.maxAbs < 0.3 ? P2.yellow : P2.red;
+                    return <Cell key={i} fill={color} radius={0 as any} />;
                   })}
                   <LabelList
                     dataKey="pl"
                     content={(props: any) => {
                       const { x, y, width, height, value } = props;
                       const v = Number(value);
-                      const up = v >= 0;
-                      const maxAbs = Math.max(...emotionData.map((d) => Math.abs(d.pl)), 1);
-                      const color = up ? P2.green : Math.abs(v) / maxAbs < 0.3 ? P2.yellow : P2.red;
+                      if (!v) return null;
+                      const up = v > 0;
+                      const color = up
+                        ? P2.green
+                        : Math.abs(v) / emotionAxis.maxAbs < 0.3 ? P2.yellow : P2.red;
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? Math.min(y, y + height) - 8 : Math.max(y, y + height) + 16}
+                          y={up ? Math.min(y, y + height) - 7 : Math.max(y, y + height) + 13}
                           textAnchor="middle"
-                          fontSize={11}
+                          fontFamily="Inter, sans-serif"
+                          fontSize={10.5}
                           fontWeight={600}
                           fill={color}
                         >
@@ -824,10 +821,10 @@ export default function Psychology() {
                     }}
                   />
                 </Bar>
-
               </BarChart>
             </ResponsiveContainer>
           </div>
+
         </P2Card>
 
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
