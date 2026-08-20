@@ -718,7 +718,8 @@ export default function Psychology() {
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
         <P2Card title="Emotional Health Score" padding="10px 18px">
-          <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
+          <div className="flex h-full flex-col justify-end">
+          <div className="flex flex-col items-center" style={{ marginTop: 10 }}>
             <HealthGauge value={gaugeValue} size="compact" />
             <p
               className="font-sans text-center"
@@ -747,7 +748,7 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 6, minHeight: 36 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 8, minHeight: 36 }}
           >
             <p style={{ fontSize: 10, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
               {gaugeValue >= 70
@@ -757,16 +758,18 @@ export default function Psychology() {
                   : 'Emotional control is slipping. Reduce size and follow your checklist.'}
             </p>
           </div>
+          </div>
         </P2Card>
 
 
 
 
+
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
-        <P2Card title="Emotion vs P/L">
-          <div className="h-[139px]">
+        <P2Card title="Emotion vs P/L" padding="14px 18px 10px 22px">
+          <div className="h-full min-h-[139px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionChartData} margin={{ top: 18, right: 8, left: 0, bottom: 6 }} barCategoryGap="26%">
+              <BarChart data={emotionChartData} margin={{ top: 20, right: 4, left: -6, bottom: 2 }} barCategoryGap="24%">
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
@@ -783,7 +786,7 @@ export default function Psychology() {
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
-                  width={42}
+                  width={30}
                   domain={emotionAxis.domain}
                   ticks={emotionAxis.ticks}
                   tickFormatter={(v: number) => `${v}`}
@@ -871,10 +874,10 @@ export default function Psychology() {
         </P2Card>
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
-        <P2Card title="Checklist Adherence" padding="14px 20px">
-          <div className="h-[139px]">
+        <P2Card title="Checklist Adherence" padding="14px 12px 10px">
+          <div className="h-full min-h-[139px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="78%" margin={{ top: 14, right: 52, left: 52, bottom: 12 }}>
+              <RadarChart data={checklistData} cx="50%" cy="56%" outerRadius="86%" margin={{ top: 12, right: 44, left: 44, bottom: 8 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }} />
 
