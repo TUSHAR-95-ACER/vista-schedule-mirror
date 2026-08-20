@@ -874,13 +874,13 @@ export default function Psychology() {
         <P2Card title="Checklist Adherence" padding="14px 20px">
           <div className="h-[139px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="74%" margin={{ top: 14, right: 52, left: 52, bottom: 12 }}>
+              <RadarChart data={checklistData} cx="50%" cy="52%" outerRadius="78%" margin={{ top: 14, right: 52, left: 52, bottom: 12 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }} />
 
 
                 <PolarRadiusAxis
-                  angle={90}
+                  angle={0}
                   domain={[0, 100]}
                   ticks={[0, 25, 50, 75, 100] as any}
                   tick={{ fontSize: 8.5, fill: P2.mutedText, fontFamily: 'Inter, sans-serif' }}
