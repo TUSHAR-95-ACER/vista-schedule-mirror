@@ -710,11 +710,11 @@ export default function Psychology() {
 
       {/* ══ PHASE 2 — FIRST ROW (4 cards: 24 / 28 / 24 / 24) ══ */}
       <div
-        className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:[grid-template-columns:24fr_28fr_24fr_24fr]"
+        className="grid grid-cols-1 gap-4 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="18px 24px">
-          <div className="flex flex-col items-center" style={{ marginTop: 2 }}>
+        <P2Card title="Emotional Health Score" padding="14px 20px">
+          <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
