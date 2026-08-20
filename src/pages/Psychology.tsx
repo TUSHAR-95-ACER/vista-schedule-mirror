@@ -313,9 +313,10 @@ const P2Tip = ({ active, payload, label }: any) => {
  * visible. Green opacity fades out as the score rises, yellow fades in, red is
  * constant. No needle / marker / progress arc.
  */
-function HealthGauge({ value }: { value: number }) {
-  const R = 58;
-  const T = 12.4;
+function HealthGauge({ value, size = 'default' }: { value: number; size?: 'default' | 'compact' }) {
+  const isCompact = size === 'compact';
+  const R = isCompact ? 46 : 58;
+  const T = isCompact ? 10 : 12.4;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
@@ -708,26 +709,27 @@ export default function Psychology() {
 
 
 
-      {/* ══ PHASE 2 — FIRST ROW (4 cards: 24 / 28 / 24 / 24) ══ */}
+      {/* ══ PHASE 2 — FIRST ROW (4 cards: 21.7 / 35 / 21.7 / 21.7) ══ */}
       <div
         className="grid grid-cols-1 gap-4 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
+        style={{ alignItems: 'stretch' }}
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="14px 20px">
+        <P2Card title="Emotional Health Score" padding="10px 18px">
           <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
-            <HealthGauge value={gaugeValue} />
+            <HealthGauge value={gaugeValue} size="compact" />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 34, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
+              style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -26 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 600,
-                marginTop: 2,
+                marginTop: 1,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -735,7 +737,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 11.5, fontWeight: 500, marginTop: 2, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 10.5, fontWeight: 500, marginTop: 1, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -743,9 +745,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '8px 12px', marginTop: 8, minHeight: 44 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 6, minHeight: 36 }}
           >
-            <p style={{ fontSize: 11, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 10, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -760,19 +762,19 @@ export default function Psychology() {
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
-          <div className="h-[192px]">
+          <div className="h-[154px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={emotionChartData} margin={{ top: 24, right: 10, left: 0, bottom: 8 }} barCategoryGap="26%">
+              <BarChart data={emotionChartData} margin={{ top: 18, right: 8, left: 0, bottom: 6 }} barCategoryGap="26%">
                 <CartesianGrid strokeDasharray="4 4" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
-                  tickMargin={6}
+                  tickMargin={4}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
                   interval={0}
-                  height={28}
+                  height={24}
                   minTickGap={-80}
                 />
                 <YAxis
@@ -788,7 +790,7 @@ export default function Psychology() {
                 />
                 <ReferenceLine y={0} stroke="#4A4A4A" strokeWidth={1.5} />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<P2Tip />} />
-                <Bar dataKey="pl" name="P/L" maxBarSize={24} animationDuration={700}>
+                <Bar dataKey="pl" name="P/L" maxBarSize={22} animationDuration={700}>
                   {emotionChartData.map((e, i) => {
                     const color = e.pl >= 0
                       ? P2.green
@@ -808,10 +810,10 @@ export default function Psychology() {
                       return (
                         <text
                           x={x + width / 2}
-                          y={up ? Math.min(y, y + height) - 7 : Math.max(y, y + height) + 13}
+                          y={up ? Math.min(y, y + height) - 6 : Math.max(y, y + height) + 12}
                           textAnchor="middle"
                           fontFamily="Inter, sans-serif"
-                          fontSize={10.5}
+                          fontSize={10}
                           fontWeight={600}
                           fill={color}
                         >
@@ -828,16 +830,16 @@ export default function Psychology() {
         </P2Card>
 
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
-        <P2Card title="Mistake Frequency">
+        <P2Card title="Mistake Frequency" padding="14px 20px">
           {mistakeData.length > 0 ? (
-            <div className="space-y-3.5">
+            <div className="space-y-2.5">
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
                   <div key={m.name}>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', marginBottom: 8 }}>{m.name}</p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginBottom: 5 }}>{m.name}</p>
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 overflow-hidden rounded-[3px]" style={{ height: 6, background: P2.grid }}>
+                      <div className="flex-1 overflow-hidden rounded-[3px]" style={{ height: 5, background: P2.grid }}>
                         <div
                           className="h-full rounded-[3px] transition-all duration-500"
                           style={{ width: `${pct}%`, background: P2.red }}
@@ -845,13 +847,13 @@ export default function Psychology() {
                       </div>
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full"
-                        style={{ width: 20, height: 20, background: P2.red, fontSize: 12, fontWeight: 600, color: '#FFFFFF' }}
+                        style={{ width: 18, height: 18, background: P2.red, fontSize: 11, fontWeight: 600, color: '#FFFFFF' }}
                       >
                         {m.count}
                       </span>
                       <span
                         className="shrink-0 text-right"
-                        style={{ width: 30, fontSize: 13, fontWeight: 500, color: P2.secondary }}
+                        style={{ width: 28, fontSize: 12, fontWeight: 500, color: P2.secondary }}
                       >
                         {pct}%
                       </span>
@@ -861,17 +863,17 @@ export default function Psychology() {
               })}
             </div>
           ) : (
-            <div className="flex h-[192px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[154px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
               No mistakes recorded
             </div>
           )}
         </P2Card>
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
-        <P2Card title="Checklist Adherence" padding="20px 24px">
-          <div className="h-[192px]">
+        <P2Card title="Checklist Adherence" padding="14px 20px">
+          <div className="h-[154px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 10, right: 40, left: 40, bottom: 10 }}>
+              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: P2.secondary }} />
 
@@ -901,10 +903,10 @@ export default function Psychology() {
       </div>
 
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
-      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:55fr_45fr]">
+      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:63fr_45fr]">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
-        <P2Card title="Discipline &amp; Focus Trend">
-          <div className="h-[165px]">
+        <P2Card title="Discipline &amp; Focus Trend" padding="14px 20px">
+          <div className="h-[149px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData} margin={{ top: 4, right: 12, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
@@ -963,24 +965,24 @@ export default function Psychology() {
         </P2Card>
 
         {/* 6. EMOTION PERFORMANCE BREAKDOWN — TABLE */}
-        <P2Card title="Emotion Performance Breakdown">
-          <div className="overflow-x-auto">
+        <P2Card title="Emotion Performance Breakdown" padding="14px 20px">
+          <div className="h-[149px] overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P2.grid}` }}>
-                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Emotion</th>
-                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Trades</th>
-                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Win Rate</th>
-                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Total P/L</th>
+                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 6 }}>Emotion</th>
+                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 6 }}>Trades</th>
+                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 6 }}>Win Rate</th>
+                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 6 }}>Total P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} style={{ height: 30, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
-                    <td style={{ textAlign: 'left', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.name}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.count}</td>
-                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red }}>{row.winRate}%</td>
-                    <td style={{ textAlign: 'right', fontSize: 13, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red }}>
+                  <tr key={row.name} style={{ height: 26, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
+                    <td style={{ textAlign: 'left', fontSize: 12, fontWeight: 500, color: '#FFFFFF' }}>{row.name}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: '#FFFFFF' }}>{row.count}</td>
+                    <td style={{ textAlign: 'center', fontSize: 12, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red }}>{row.winRate}%</td>
+                    <td style={{ textAlign: 'right', fontSize: 12, fontWeight: 600, color: row.pl >= 0 ? P2.green : P2.red }}>
                       {row.pl >= 0 ? '+' : ''}{row.pl.toFixed(2)}
                     </td>
                   </tr>
