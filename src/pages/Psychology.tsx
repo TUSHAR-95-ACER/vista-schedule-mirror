@@ -718,7 +718,8 @@ export default function Psychology() {
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
         <P2Card title="Emotional Health Score" padding="10px 18px">
-          <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
+          <div className="flex h-full flex-col justify-end">
+          <div className="flex flex-col items-center" style={{ marginTop: 10 }}>
             <HealthGauge value={gaugeValue} size="compact" />
             <p
               className="font-sans text-center"
@@ -747,7 +748,7 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 6, minHeight: 36 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 8, minHeight: 36 }}
           >
             <p style={{ fontSize: 10, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
               {gaugeValue >= 70
@@ -757,7 +758,9 @@ export default function Psychology() {
                   : 'Emotional control is slipping. Reduce size and follow your checklist.'}
             </p>
           </div>
+          </div>
         </P2Card>
+
 
 
 
