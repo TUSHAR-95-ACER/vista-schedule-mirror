@@ -715,21 +715,21 @@ export default function Psychology() {
         style={{ alignItems: 'stretch' }}
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="14px 20px">
+        <P2Card title="Emotional Health Score" padding="10px 18px">
           <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
-            <HealthGauge value={gaugeValue} />
+            <HealthGauge value={gaugeValue} size="compact" />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 34, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
+              style={{ fontSize: 28, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -26 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 600,
-                marginTop: 2,
+                marginTop: 1,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -737,7 +737,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 11.5, fontWeight: 500, marginTop: 2, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 10.5, fontWeight: 500, marginTop: 1, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -745,9 +745,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '8px 12px', marginTop: 8, minHeight: 44 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '6px 10px', marginTop: 6, minHeight: 36 }}
           >
-            <p style={{ fontSize: 11, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
+            <p style={{ fontSize: 10, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.35 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
