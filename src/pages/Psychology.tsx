@@ -400,6 +400,30 @@ export default function Psychology() {
     }));
   }, [scoped]);
 
+  /* Emotion vs P/L chart series — always shows all six emotion categories */
+  const emotionChartData = useMemo(() => {
+    const ORDER = ['Confident', 'Calm', 'Neutral', 'Greedy', 'Fearful', 'Frustrated'];
+    const byName = new Map(emotionData.map(e => [e.name, e]));
+    const extras = emotionData.filter(e => !ORDER.includes(e.name)).map(e => e.name);
+    return [...ORDER, ...extras].map(name => ({
+      name,
+      pl: byName.get(name)?.pl ?? 0,
+      count: byName.get(name)?.count ?? 0,
+      winRate: byName.get(name)?.winRate ?? 0,
+    }));
+  }, [emotionData]);
+
+  /* Symmetric, human-readable Y domain + 5 ticks (e.g. 150/75/0/-75/-150) */
+  const emotionAxis = useMemo(() => {
+    const maxAbs = Math.max(...emotionChartData.map(d => Math.abs(d.pl)), 1);
+    const target = maxAbs * 1.25;
+    const steps = [25, 50, 75, 100, 150, 200, 250, 500, 750, 1000, 1500, 2000, 2500, 5000];
+    const half = steps.find(s => s * 2 >= target) ?? Math.ceil(target / 2);
+    const top = half * 2;
+    return { domain: [-top, top] as [number, number], ticks: [top, half, 0, -half, -top], maxAbs };
+  }, [emotionChartData]);
+
+
   const trendData = useMemo(() => {
     const sorted = [...scoped].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return sorted.map((t, i) => ({
