@@ -313,9 +313,10 @@ const P2Tip = ({ active, payload, label }: any) => {
  * visible. Green opacity fades out as the score rises, yellow fades in, red is
  * constant. No needle / marker / progress arc.
  */
-function HealthGauge({ value }: { value: number }) {
-  const R = 58;
-  const T = 12.4;
+function HealthGauge({ value, size = 'default' }: { value: number; size?: 'default' | 'compact' }) {
+  const isCompact = size === 'compact';
+  const R = isCompact ? 46 : 58;
+  const T = isCompact ? 10 : 12.4;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
