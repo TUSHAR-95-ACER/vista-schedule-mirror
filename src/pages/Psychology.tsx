@@ -314,8 +314,8 @@ const P2Tip = ({ active, payload, label }: any) => {
  * constant. No needle / marker / progress arc.
  */
 function HealthGauge({ value }: { value: number }) {
-  const R = 70;
-  const T = 14.6;
+  const R = 58;
+  const T = 12.4;
   const W = (R + T / 2) * 2;
   const H = R + T / 2 + 2;
   const cx = W / 2;
@@ -710,24 +710,24 @@ export default function Psychology() {
 
       {/* ══ PHASE 2 — FIRST ROW (4 cards: 24 / 28 / 24 / 24) ══ */}
       <div
-        className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:[grid-template-columns:24fr_28fr_24fr_24fr]"
+        className="grid grid-cols-1 gap-4 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
-        <P2Card title="Emotional Health Score" padding="18px 24px">
-          <div className="flex flex-col items-center" style={{ marginTop: 2 }}>
+        <P2Card title="Emotional Health Score" padding="14px 20px">
+          <div className="flex flex-col items-center" style={{ marginTop: 0 }}>
             <HealthGauge value={gaugeValue} />
             <p
               className="font-sans text-center"
-              style={{ fontSize: 40, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -36 }}
+              style={{ fontSize: 34, fontWeight: 700, color: '#FFFFFF', lineHeight: 1, marginTop: -32 }}
             >
               {gaugeValue}
             </p>
             <p
               className="text-center"
               style={{
-                fontSize: 17,
+                fontSize: 15,
                 fontWeight: 600,
-                marginTop: 4,
+                marginTop: 2,
                 color: gaugeValue >= 75 ? P2.red : gaugeValue >= 55 ? P2.yellow : P2.green,
               }}
             >
@@ -735,7 +735,7 @@ export default function Psychology() {
             </p>
             <p
               className="text-center"
-              style={{ fontSize: 12.5, fontWeight: 500, marginTop: 3, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
+              style={{ fontSize: 11.5, fontWeight: 500, marginTop: 2, color: (deltas.score ?? 0) >= 0 ? P2.green : P2.red }}
             >
               {fmtDelta(deltas.score)}
             </p>
@@ -743,9 +743,9 @@ export default function Psychology() {
           {/* Insight box */}
           <div
             className="flex items-center justify-center rounded-[10px] border text-center"
-            style={{ background: P2.inner, borderColor: P2.border, padding: '10px 14px', marginTop: 12, minHeight: 56 }}
+            style={{ background: P2.inner, borderColor: P2.border, padding: '8px 12px', marginTop: 8, minHeight: 44 }}
           >
-            <p style={{ fontSize: 11.5, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.45 }}>
+            <p style={{ fontSize: 11, fontWeight: 400, color: '#A1A1AA', lineHeight: 1.4 }}>
               {gaugeValue >= 70
                 ? 'You’re managing emotions well. Keep building consistency.'
                 : gaugeValue >= 50
@@ -760,7 +760,7 @@ export default function Psychology() {
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
         <P2Card title="Emotion vs P/L">
-          <div className="h-[240px]">
+          <div className="h-[192px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={emotionChartData} margin={{ top: 24, right: 10, left: 0, bottom: 8 }} barCategoryGap="26%">
                 <CartesianGrid strokeDasharray="4 4" stroke={P2.grid} strokeWidth={1} vertical={false} />
@@ -830,7 +830,7 @@ export default function Psychology() {
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
         <P2Card title="Mistake Frequency">
           {mistakeData.length > 0 ? (
-            <div className="space-y-5">
+            <div className="space-y-3.5">
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
@@ -861,7 +861,7 @@ export default function Psychology() {
               })}
             </div>
           ) : (
-            <div className="flex h-[240px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[192px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
               No mistakes recorded
             </div>
           )}
@@ -869,9 +869,9 @@ export default function Psychology() {
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
         <P2Card title="Checklist Adherence" padding="20px 24px">
-          <div className="h-[240px]">
+          <div className="h-[192px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="58%" margin={{ top: 10, right: 40, left: 40, bottom: 10 }}>
+              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 10, right: 40, left: 40, bottom: 10 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: P2.secondary }} />
 
@@ -901,28 +901,30 @@ export default function Psychology() {
       </div>
 
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:55fr_45fr]">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
         <P2Card title="Discipline &amp; Focus Trend">
-          <div className="h-[300px]">
+          <div className="h-[165px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 6, right: 10, left: -14, bottom: 0 }}>
+              <LineChart data={trendData} margin={{ top: 4, right: 12, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={P2.grid} strokeWidth={1} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12, fill: P2.secondary }}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickLine={false}
+                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tickMargin={6}
+                  axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickSize={4}
                   minTickGap={24}
                 />
                 <YAxis
                   domain={[0, 5]}
                   ticks={[0, 3, 5]}
-                  tick={{ fontSize: 12, fill: P2.secondary }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={40}
+                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
+                  tickSize={4}
+                  width={34}
                 />
                 <Tooltip cursor={{ stroke: P2.grid, strokeWidth: 1 }} content={<P2Tip />} />
                 <Legend
@@ -966,15 +968,15 @@ export default function Psychology() {
             <table className="w-full" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${P2.grid}` }}>
-                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Emotion</th>
-                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Trades</th>
-                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Win Rate</th>
-                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 12 }}>Total P/L</th>
+                  <th style={{ width: '40%', textAlign: 'left', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Emotion</th>
+                  <th style={{ width: '15%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Trades</th>
+                  <th style={{ width: '20%', textAlign: 'center', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Win Rate</th>
+                  <th style={{ width: '25%', textAlign: 'right', fontSize: 12, fontWeight: 500, color: P2.secondary, paddingBottom: 8 }}>Total P/L</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEmotionRows.map(row => (
-                  <tr key={row.name} style={{ height: 40, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
+                  <tr key={row.name} style={{ height: 30, borderBottom: `1px solid ${P2.rowBorder}`, background: 'transparent' }}>
                     <td style={{ textAlign: 'left', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.name}</td>
                     <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: '#FFFFFF' }}>{row.count}</td>
                     <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 500, color: row.winRate >= 50 ? P2.green : P2.red }}>{row.winRate}%</td>
