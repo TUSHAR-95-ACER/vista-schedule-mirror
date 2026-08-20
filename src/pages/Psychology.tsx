@@ -870,10 +870,10 @@ export default function Psychology() {
         </P2Card>
 
         {/* 4. CHECKLIST ADHERENCE — RADAR CHART */}
-        <P2Card title="Checklist Adherence" padding="20px 24px">
-          <div className="h-[192px]">
+        <P2Card title="Checklist Adherence" padding="14px 20px">
+          <div className="h-[154px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 10, right: 40, left: 40, bottom: 10 }}>
+              <RadarChart data={checklistData} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 8, right: 40, left: 40, bottom: 8 }}>
                 <PolarGrid stroke={P2.grid} strokeWidth={1} />
                 <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: P2.secondary }} />
 
