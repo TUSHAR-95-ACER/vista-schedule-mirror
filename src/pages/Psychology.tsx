@@ -254,12 +254,13 @@ const ChartTip = ({ active, payload, label }: any) => {
 
 /* ══ PHASE 2 — SECOND ROW SPEC ══════════════════════════════════════ */
 const P2 = {
-  card: '#0E0E0E',
-  border: '#242424',
+  card: 'rgba(0,0,0,0.8)',
+  border: '#262626',
   page: '#000000',
-  inner: '#080808',
+  inner: 'rgba(0,0,0,0.8)',
   grid: '#232323',
   zero: '#333333',
+
   rowBorder: '#1C1C1C',
   green: '#22C55E',
   blue: '#3B82F6',
