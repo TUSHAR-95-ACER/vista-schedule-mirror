@@ -282,10 +282,11 @@ function P2Card({
     >
       <h2
         className="font-sans uppercase"
-        style={{ fontSize: 14, fontWeight: 600, color: '#FFFFFF', marginBottom: 16, letterSpacing: '0.04em' }}
+        style={{ fontSize: 11, fontWeight: 600, color: '#FFFFFF', marginBottom: 10, letterSpacing: '0.12em' }}
       >
         {title}
       </h2>
+
       <div className="flex-1">{children}</div>
     </section>
   );
