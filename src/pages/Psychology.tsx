@@ -766,7 +766,7 @@ export default function Psychology() {
 
 
         {/* 2. EMOTION VS P/L — BAR CHART CARD */}
-        <P2Card title="Emotion vs P/L" padding="14px 14px 10px 10px">
+        <P2Card title="Emotion vs P/L" padding="14px 18px 10px 22px">
           <div className="h-full min-h-[139px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={emotionChartData} margin={{ top: 20, right: 4, left: -6, bottom: 2 }} barCategoryGap="24%">
