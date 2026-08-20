@@ -786,7 +786,7 @@ export default function Psychology() {
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
-                  width={42}
+                  width={30}
                   domain={emotionAxis.domain}
                   ticks={emotionAxis.ticks}
                   tickFormatter={(v: number) => `${v}`}
