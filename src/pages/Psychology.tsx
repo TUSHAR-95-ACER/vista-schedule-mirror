@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell,
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   AreaChart, Area, LineChart, Line, PieChart, Pie, Legend, LabelList, ReferenceLine,
 } from 'recharts';
@@ -912,7 +912,7 @@ export default function Psychology() {
               <LineChart data={trendData} margin={{ top: 4, right: 12, left: -8, bottom: 0 }}>
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
                   tickMargin={6}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
@@ -922,7 +922,7 @@ export default function Psychology() {
                 <YAxis
                   domain={[0, 5]}
                   ticks={[0, 3, 5]}
-                  tick={{ fontSize: 11, fill: P2.secondary }}
+                  tick={{ fontSize: 10, fill: P2.secondary, fontFamily: 'Inter, sans-serif' }}
                   axisLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickLine={{ stroke: '#3A3A3A', strokeWidth: 1 }}
                   tickSize={4}
