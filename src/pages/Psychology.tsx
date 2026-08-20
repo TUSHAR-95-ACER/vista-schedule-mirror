@@ -830,16 +830,16 @@ export default function Psychology() {
         </P2Card>
 
         {/* 3. MISTAKE FREQUENCY — PROGRESS LIST */}
-        <P2Card title="Mistake Frequency">
+        <P2Card title="Mistake Frequency" padding="14px 20px">
           {mistakeData.length > 0 ? (
-            <div className="space-y-3.5">
+            <div className="space-y-2.5">
               {mistakeData.slice(0, 4).map(m => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
                   <div key={m.name}>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: '#FFFFFF', marginBottom: 8 }}>{m.name}</p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: '#FFFFFF', marginBottom: 5 }}>{m.name}</p>
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 overflow-hidden rounded-[3px]" style={{ height: 6, background: P2.grid }}>
+                      <div className="flex-1 overflow-hidden rounded-[3px]" style={{ height: 5, background: P2.grid }}>
                         <div
                           className="h-full rounded-[3px] transition-all duration-500"
                           style={{ width: `${pct}%`, background: P2.red }}
@@ -847,13 +847,13 @@ export default function Psychology() {
                       </div>
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full"
-                        style={{ width: 20, height: 20, background: P2.red, fontSize: 12, fontWeight: 600, color: '#FFFFFF' }}
+                        style={{ width: 18, height: 18, background: P2.red, fontSize: 11, fontWeight: 600, color: '#FFFFFF' }}
                       >
                         {m.count}
                       </span>
                       <span
                         className="shrink-0 text-right"
-                        style={{ width: 30, fontSize: 13, fontWeight: 500, color: P2.secondary }}
+                        style={{ width: 28, fontSize: 12, fontWeight: 500, color: P2.secondary }}
                       >
                         {pct}%
                       </span>
@@ -863,7 +863,7 @@ export default function Psychology() {
               })}
             </div>
           ) : (
-            <div className="flex h-[192px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
+            <div className="flex h-[154px] items-center justify-center" style={{ fontSize: 13, color: P2.secondary }}>
               No mistakes recorded
             </div>
           )}
