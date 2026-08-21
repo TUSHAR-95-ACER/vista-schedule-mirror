@@ -226,7 +226,7 @@ function SectionCard({
       <header className="mb-5 flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-1.5">
-            <h2 className="font-heading text-[16px] font-semibold uppercase tracking-[0.08em] leading-tight text-white">{title}</h2>
+            <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] leading-tight text-white">{title}</h2>
             {tooltip && <InfoTooltip text={tooltip} />}
           </div>
           
