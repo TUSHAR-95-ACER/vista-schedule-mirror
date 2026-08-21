@@ -560,11 +560,92 @@ export default function Psychology() {
     return { rows, best, worst, consistent };
   }, [scoped]);
 
-  const donutData = useMemo(
-    () => emotionData.map(e => ({ name: e.name, value: Math.abs(e.pl), pl: e.pl })).filter(d => d.value > 0),
-    [emotionData],
+  /* 6-week × Mon–Fri psychology heatmap matrix (avg discipline 0–5 per cell) */
+  const heatMatrix = useMemo(() => {
+    const startOfWeek = (d: Date) => {
+      const x = new Date(d);
+      const day = (x.getDay() + 6) % 7; // Monday = 0
+      x.setHours(0, 0, 0, 0);
+      x.setDate(x.getDate() - day);
+      return x;
+    };
+    const thisWeek = startOfWeek(new Date());
+    const weeks = [...Array(6)].map((_, i) => {
+      const ws = new Date(thisWeek);
+      ws.setDate(ws.getDate() - (5 - i) * 7);
+      return { start: ws, label: i === 5 ? 'This Week' : `Week ${i + 1}` };
+    });
+    return weeks.map(w => ({
+      label: w.label,
+      cells: [...Array(5)].map((_, di) => {
+        const day = new Date(w.start);
+        day.setDate(day.getDate() + di);
+        const key = day.toDateString();
+        const list = scoped.filter(t => new Date(t.date).toDateString() === key);
+        const score = list.length ? list.reduce((s, t) => s + t.psychology!.discipline, 0) / list.length : null;
+        const pl = list.reduce((s, t) => s + t.profitLoss, 0);
+        return { score, count: list.length, pl, date: day.toISOString().slice(0, 10) };
+      }),
+    }));
+  }, [scoped]);
+
+  const heatBands = [
+    { label: 'Excellent (4–5)', color: C.emerald, min: 4 },
+    { label: 'Good (3–4)', color: C.green, min: 3 },
+    { label: 'Average (2–3)', color: C.yellow, min: 2 },
+    { label: 'Poor (1–2)', color: C.orange, min: 1 },
+    { label: 'Very Poor (0–1)', color: C.red, min: 0 },
+  ];
+  const heatColor = (score: number | null) =>
+    score === null ? 'rgba(255,255,255,0.05)' : (heatBands.find(b => score >= b.min)?.color ?? C.red);
+
+  /* Performance by emotion — always the six canonical emotions */
+  const EMOTION_ORDER = ['Confident', 'Calm', 'Neutral', 'Greedy', 'Fearful', 'Frustrated'];
+  const emotionColorMap: Record<string, string> = {
+    Confident: C.emerald,
+    Calm: C.blue,
+    Neutral: C.purple,
+    Greedy: C.yellow,
+    Fearful: C.orange,
+    Frustrated: C.red,
+  };
+  const emotionPerf = useMemo(() => {
+    const byName = new Map(emotionData.map(e => [e.name, e]));
+    const rows = EMOTION_ORDER.map(name => {
+      const e = byName.get(name);
+      return { name, pl: e?.pl ?? 0, count: e?.count ?? 0, winRate: e?.winRate ?? 0, color: emotionColorMap[name] };
+    });
+    const totalAbs = rows.reduce((s, r) => s + Math.abs(r.pl), 0) || 1;
+    const maxAbs = Math.max(...rows.map(r => Math.abs(r.pl)), 1);
+    const top = [...rows].filter(r => r.count > 0).sort((a, b) => b.pl - a.pl)[0] ?? null;
+    return {
+      rows: rows.map(r => ({ ...r, pct: Math.round((Math.abs(r.pl) / totalAbs) * 100), barPct: Math.round((Math.abs(r.pl) / maxAbs) * 100) })),
+      top,
+    };
+  }, [emotionData]);
+  const emotionDonut = useMemo(
+    () => emotionPerf.rows.filter(r => Math.abs(r.pl) > 0).map(r => ({ name: r.name, value: Math.abs(r.pl), pl: r.pl, color: r.color })),
+    [emotionPerf],
   );
-  const donutColors = [C.emerald, C.blue, C.purple, C.orange, C.red, C.yellow, C.green];
+
+  /* Top 5 mistakes — always the five canonical categories */
+  const MISTAKE_ORDER = ['Emotional Trading', 'FOMO Entries', 'Early Exit', 'Ignored Stop Loss', 'Overtrading'];
+  const topMistakes = useMemo(() => {
+    const byName = new Map(mistakeData.map(m => [m.name.toLowerCase(), m.count]));
+    const find = (label: string) => {
+      const l = label.toLowerCase();
+      for (const [k, v] of byName) if (k === l || k.includes(l.split(' ')[0])) return v;
+      return 0;
+    };
+    const base = MISTAKE_ORDER.map(name => ({ name, count: find(name) }));
+    const extras = mistakeData
+      .filter(m => !MISTAKE_ORDER.some(n => n.toLowerCase().includes(m.name.toLowerCase().split(' ')[0])))
+      .map(m => ({ name: m.name, count: m.count }));
+    return [...base, ...extras]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [mistakeData]);
+
 
   const insights = useMemo(() => generateInsights('Psychology', adaptPsychology(trades) as any), [trades]);
 
