@@ -1131,33 +1131,53 @@ export default function Psychology() {
 
       {/* ── BOTTOM GRID ── */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        {/* Heatmap */}
-        <SectionCard title="Psychology Heatmap" tooltip="Weekday view of trading psychology and profitability.">
-          <div className="grid grid-cols-5 gap-2">
-            {heat.rows.map(r => {
-              const intensity = r.count === 0 ? 0 : Math.min(1, Math.abs(r.pl) / (Math.max(...heat.rows.map(x => Math.abs(x.pl))) || 1));
-              const bg = r.count === 0
-                ? 'rgba(255,255,255,0.04)'
-                : `${r.pl >= 0 ? C.green : C.red}${Math.round(20 + intensity * 200).toString(16).padStart(2, '0')}`;
-              return (
-                <div key={r.day} className="text-center">
-                  <div className="flex h-12 items-center justify-center rounded-xl border border-white/[0.06]" style={{ background: bg }}>
-                    <span className="font-mono text-[12px] font-semibold text-white">{r.count}</span>
+        {/* Heatmap — 6 weeks × Mon–Fri matrix + legend + weekly summary */}
+        <SectionCard title="Psychology Heatmap" tooltip="Weekly discipline heatmap (Monday–Friday) with weekly summary.">
+          <div className="grid gap-x-1.5 gap-y-1" style={{ gridTemplateColumns: '62px repeat(5, minmax(0,1fr))' }}>
+            <span />
+            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(d => (
+              <span key={d} className="truncate text-center font-sans text-[9px] font-medium uppercase tracking-[0.06em]" style={{ color: C.muted }}>
+                {d}
+              </span>
+            ))}
+            {heatMatrix.map(week => (
+              <Fragment key={week.label}>
+                <span className="flex items-center font-sans text-[10px] font-medium" style={{ color: C.muted }}>{week.label}</span>
+                {week.cells.map(cell => (
+                  <div
+                    key={cell.date}
+                    title={cell.count ? `${cell.date} · ${cell.count} trades · ${cell.pl >= 0 ? '+' : ''}${cell.pl.toFixed(2)}` : `${cell.date} · no trades`}
+                    className="flex h-6 items-center justify-center rounded-[6px] border border-white/[0.05] font-sans text-[9px] font-semibold text-white"
+                    style={{ background: cell.score === null ? 'rgba(255,255,255,0.05)' : `${heatColor(cell.score)}59` }}
+                  >
+                    {cell.count ? cell.count : ''}
                   </div>
-                  <p className="mt-1.5 text-[11px]" style={{ color: C.muted }}>{r.day}</p>
-                </div>
-              );
-            })}
+                ))}
+              </Fragment>
+            ))}
           </div>
-          <div className="mt-4 space-y-2">
+
+          {/* Legend */}
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+            {[...heatBands, { label: 'No Data', color: 'rgba(255,255,255,0.18)' }].map(b => (
+              <span key={b.label} className="flex items-center gap-1.5 font-sans text-[9px]" style={{ color: C.muted }}>
+                <span className="h-2 w-2 rounded-full" style={{ background: b.color }} />
+                {b.label}
+              </span>
+            ))}
+          </div>
+
+          {/* Weekly summary */}
+          <p className="mt-3 font-sans text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: C.muted }}>Weekly Summary</p>
+          <div className="mt-1.5 space-y-1.5">
             {[
               { label: 'Best Day', v: heat.best, color: C.green },
               { label: 'Worst Day', v: heat.worst, color: C.red },
               { label: 'Most Consistent', v: heat.consistent, color: C.blue },
             ].map(row => (
-              <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                <span className="font-sans text-[12px]" style={{ color: C.muted }}>{row.label}</span>
-                <span className="font-mono text-[12px] font-semibold" style={{ color: row.color }}>
+              <div key={row.label} className="flex items-center justify-between rounded-lg border border-[#262626] bg-black/60 px-2.5 py-1.5">
+                <span className="font-sans text-[11px]" style={{ color: C.muted }}>{row.label}</span>
+                <span className="font-sans text-[11px] font-semibold" style={{ color: row.color }}>
                   {row.v ? `${row.v.day} · ${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
                 </span>
               </div>
@@ -1165,82 +1185,69 @@ export default function Psychology() {
           </div>
         </SectionCard>
 
-        {/* Donut */}
+        {/* Performance by Emotion — donut + six rows + highlight */}
         <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[160px]">
-            {donutData.length > 0 ? (
+          <div className="h-[124px]">
+            {emotionDonut.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={70} paddingAngle={3} stroke="none" animationDuration={800}>
-                    {donutData.map((d, i) => <Cell key={i} fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red} />)}
+                  <Pie data={emotionDonut} dataKey="value" nameKey="name" innerRadius={36} outerRadius={56} paddingAngle={3} stroke="none" animationDuration={800}>
+                    {emotionDonut.map(d => <Cell key={d.name} fill={d.color} />)}
                   </Pie>
                   <Tooltip content={<ChartTip />} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-[13px]" style={{ color: C.muted }}>No P/L data</div>
+              <div className="flex h-full items-center justify-center font-sans text-[12px]" style={{ color: C.muted }}>No P/L data</div>
             )}
           </div>
-          <div className="mt-3 space-y-2">
-            {(() => {
-              const total = donutData.reduce((s, d) => s + d.value, 0) || 1;
-              return donutData.map((d, i) => {
-                const pct = Math.round((d.value / total) * 100);
-                const color = d.pl >= 0 ? donutColors[i % donutColors.length] : C.red;
-                return (
-                  <div key={d.name} className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="flex min-w-0 items-center gap-2 text-[12px] text-white">
-                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
-                        <span className="truncate">{d.name}</span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-2 font-mono text-[11px]">
-                        <span style={{ color: d.pl >= 0 ? C.green : C.red }}>
-                          {d.pl >= 0 ? '+' : ''}{d.pl.toFixed(2)}
-                        </span>
-                        <span style={{ color: C.muted }}>{pct}%</span>
-                      </span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.05]">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-                    </div>
-                  </div>
-                );
-              });
-            })()}
+          <div className="mt-2 space-y-1">
+            {emotionPerf.rows.map(r => (
+              <div key={r.name} className="flex items-center gap-2">
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
+                <span className="w-[62px] shrink-0 truncate font-sans text-[11px] text-white">{r.name}</span>
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.05]">
+                  <span className="block h-full rounded-full" style={{ width: `${r.barPct}%`, background: r.pl >= 0 ? r.color : C.red }} />
+                </span>
+                <span className="w-[54px] shrink-0 text-right font-sans text-[10px] font-semibold" style={{ color: r.pl >= 0 ? C.green : C.red }}>
+                  {r.pl >= 0 ? '+' : ''}{r.pl.toFixed(2)}
+                </span>
+                <span className="w-[30px] shrink-0 text-right font-sans text-[10px]" style={{ color: C.muted }}>{r.pct}%</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 rounded-lg border px-2.5 py-1.5 font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
+            Your top performing emotion is{' '}
+            <span className="font-semibold" style={{ color: C.green }}>{emotionPerf.top?.name ?? '—'}</span>
           </div>
         </SectionCard>
 
-
-        {/* Top mistakes */}
+        {/* Top 5 Mistakes — always five ranked rows */}
         <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes.">
-          {mistakeData.length > 0 ? (
-            <div className="space-y-2">
-              {mistakeData.slice(0, 5).map((m, i) => {
-                const pct = Math.round((m.count / scoped.length) * 100);
-                return (
-                  <div key={m.name} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 transition-colors hover:bg-white/[0.04]">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
-                      {i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-white">{m.name}</span>
-                    <span className="font-mono text-[12px] text-white">{m.count}</span>
-                    <span className="font-mono text-[11px]" style={{ color: C.muted }}>{pct}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex h-[200px] items-center justify-center text-[13px]" style={{ color: C.muted }}>No mistakes recorded 🎉</div>
-          )}
+          <div className="space-y-1.5">
+            {topMistakes.map((m, i) => {
+              const pct = scoped.length ? Math.round((m.count / scoped.length) * 100) : 0;
+              return (
+                <div key={m.name} className="flex items-center gap-2.5 rounded-lg border border-[#262626] bg-black/60 px-2.5 py-1.5 transition-colors hover:border-white/20">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-sans text-[11px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate font-sans text-[12px] text-white">{m.name}</span>
+                  <span className="font-sans text-[12px] font-semibold text-white">{m.count}</span>
+                  <span className="w-[34px] text-right font-sans text-[10px]" style={{ color: C.muted }}>{pct}%</span>
+                </div>
+              );
+            })}
+          </div>
           <Link
             to="/mistakes"
-            className="mt-3 flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-[12px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/[0.05]"
-                      style={{ borderColor: `${C.green}40`, color: C.green }}
+            className="mt-2.5 flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-sans text-[11px] font-semibold uppercase tracking-wider transition-colors hover:bg-white/[0.05]"
+            style={{ borderColor: `${C.green}40`, color: C.green }}
           >
             View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </SectionCard>
+
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
