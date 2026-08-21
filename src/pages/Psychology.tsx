@@ -999,29 +999,29 @@ export default function Psychology() {
 
 
       {/* ── AI INSIGHTS ROW ── */}
-      <section className={cn(cardBase)}>
-        <div className="mb-5 flex items-center gap-2.5">
+      <section className={cn(cardBase, 'p-5')}>
+        <div className="mb-4 flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Sparkles className="h-4 w-4" />
           </span>
-          <h2 className="font-heading text-[16px] font-semibold uppercase tracking-[0.08em] text-white">AI Insights</h2>
+          <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">AI Insights</h2>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
             const icons = [TrendingUp, ShieldCheck, Activity, TrendingDown];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="flex items-start gap-3 rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
+              <div key={i} className="flex h-full items-start gap-2.5 rounded-[14px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-white">
+                  <p className="font-sans text-[12px] font-semibold text-white">
                     {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
                   </p>
-                  <p className="mt-1 text-[12px] leading-relaxed" style={{ color: C.muted }}>
+                  <p className="mt-1 font-sans text-[11px] leading-snug" style={{ color: C.muted }}>
                     {text ?? 'Not enough data yet to generate this observation.'}
                   </p>
                 </div>
@@ -1030,20 +1030,21 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex items-start gap-3 rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
+            className="group flex h-full items-start gap-2.5 rounded-[14px] border p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5"
             style={{ borderColor: `${C.green}33`, background: `${C.green}0D` }}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${C.green}1F`, color: C.green }}>
               <Brain className="h-4 w-4" />
             </span>
             <span className="min-w-0">
-              <span className="block text-[13px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1 flex items-center gap-1.5 text-[12px]" style={{ color: C.green }}>
+              <span className="block font-sans text-[12px] font-semibold text-white">View Full AI Report</span>
+              <span className="mt-1 flex items-center gap-1.5 font-sans text-[11px]" style={{ color: C.green }}>
                 Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </span>
             </span>
           </Link>
         </div>
+
 
       </section>
 
