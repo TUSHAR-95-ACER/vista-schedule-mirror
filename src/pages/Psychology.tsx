@@ -226,7 +226,7 @@ function SectionCard({
       <header className="mb-5 flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-1.5">
-            <h2 className="font-heading text-[16px] font-semibold uppercase tracking-[0.08em] leading-tight text-white">{title}</h2>
+            <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] leading-tight text-white">{title}</h2>
             {tooltip && <InfoTooltip text={tooltip} />}
           </div>
           
@@ -999,29 +999,29 @@ export default function Psychology() {
 
 
       {/* ── AI INSIGHTS ROW ── */}
-      <section className={cn(cardBase)}>
-        <div className="mb-5 flex items-center gap-2.5">
+      <section className={cn(cardBase, 'p-5')}>
+        <div className="mb-4 flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Sparkles className="h-4 w-4" />
           </span>
-          <h2 className="font-heading text-[16px] font-semibold uppercase tracking-[0.08em] text-white">AI Insights</h2>
+          <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">AI Insights</h2>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
             const icons = [TrendingUp, ShieldCheck, Activity, TrendingDown];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="flex items-start gap-3 rounded-[14px] border border-white/[0.06] bg-white/[0.015] p-4 transition-all duration-[180ms] hover:-translate-y-0.5 hover:bg-white/[0.035]">
+              <div key={i} className="flex h-full items-start gap-2.5 rounded-[14px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-white">
+                  <p className="font-sans text-[12px] font-semibold text-white">
                     {['Strength', 'Discipline', 'Pattern', 'Warning'][i]}
                   </p>
-                  <p className="mt-1 text-[12px] leading-relaxed" style={{ color: C.muted }}>
+                  <p className="mt-1 font-sans text-[11px] leading-snug" style={{ color: C.muted }}>
                     {text ?? 'Not enough data yet to generate this observation.'}
                   </p>
                 </div>
@@ -1030,20 +1030,21 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex items-start gap-3 rounded-[14px] border p-4 transition-all duration-[180ms] hover:-translate-y-0.5"
+            className="group flex h-full items-start gap-2.5 rounded-[14px] border p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5"
             style={{ borderColor: `${C.green}33`, background: `${C.green}0D` }}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${C.green}1F`, color: C.green }}>
               <Brain className="h-4 w-4" />
             </span>
             <span className="min-w-0">
-              <span className="block text-[13px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1 flex items-center gap-1.5 text-[12px]" style={{ color: C.green }}>
+              <span className="block font-sans text-[12px] font-semibold text-white">View Full AI Report</span>
+              <span className="mt-1 flex items-center gap-1.5 font-sans text-[11px]" style={{ color: C.green }}>
                 Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </span>
             </span>
           </Link>
         </div>
+
 
       </section>
 
@@ -1059,7 +1060,7 @@ export default function Psychology() {
                 : `${r.pl >= 0 ? C.green : C.red}${Math.round(20 + intensity * 200).toString(16).padStart(2, '0')}`;
               return (
                 <div key={r.day} className="text-center">
-                  <div className="flex h-16 items-center justify-center rounded-xl border border-white/[0.06]" style={{ background: bg }}>
+                  <div className="flex h-12 items-center justify-center rounded-xl border border-white/[0.06]" style={{ background: bg }}>
                     <span className="font-mono text-[12px] font-semibold text-white">{r.count}</span>
                   </div>
                   <p className="mt-1.5 text-[11px]" style={{ color: C.muted }}>{r.day}</p>
@@ -1067,14 +1068,14 @@ export default function Psychology() {
               );
             })}
           </div>
-          <div className="mt-5 space-y-2.5">
+          <div className="mt-4 space-y-2">
             {[
               { label: 'Best Day', v: heat.best, color: C.green },
               { label: 'Worst Day', v: heat.worst, color: C.red },
               { label: 'Most Consistent', v: heat.consistent, color: C.blue },
             ].map(row => (
-              <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
-                <span className="text-[12px]" style={{ color: C.muted }}>{row.label}</span>
+              <div key={row.label} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
+                <span className="font-sans text-[12px]" style={{ color: C.muted }}>{row.label}</span>
                 <span className="font-mono text-[12px] font-semibold" style={{ color: row.color }}>
                   {row.v ? `${row.v.day} · ${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
                 </span>
@@ -1085,11 +1086,11 @@ export default function Psychology() {
 
         {/* Donut */}
         <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[200px]">
+          <div className="h-[160px]">
             {donutData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={56} outerRadius={84} paddingAngle={3} stroke="none" animationDuration={800}>
+                  <Pie data={donutData} dataKey="value" nameKey="name" innerRadius={46} outerRadius={70} paddingAngle={3} stroke="none" animationDuration={800}>
                     {donutData.map((d, i) => <Cell key={i} fill={d.pl >= 0 ? donutColors[i % donutColors.length] : C.red} />)}
                   </Pie>
                   <Tooltip content={<ChartTip />} />
@@ -1099,7 +1100,7 @@ export default function Psychology() {
               <div className="flex h-full items-center justify-center text-[13px]" style={{ color: C.muted }}>No P/L data</div>
             )}
           </div>
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-3 space-y-2">
             {(() => {
               const total = donutData.reduce((s, d) => s + d.value, 0) || 1;
               return donutData.map((d, i) => {
@@ -1133,11 +1134,11 @@ export default function Psychology() {
         {/* Top mistakes */}
         <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes.">
           {mistakeData.length > 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {mistakeData.slice(0, 5).map((m, i) => {
                 const pct = Math.round((m.count / scoped.length) * 100);
                 return (
-                  <div key={m.name} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-3 transition-colors hover:bg-white/[0.04]">
+                  <div key={m.name} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 transition-colors hover:bg-white/[0.04]">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
                       {i + 1}
                     </span>
@@ -1153,7 +1154,8 @@ export default function Psychology() {
           )}
           <Link
             to="/mistakes"
-            className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/[0.05]"
+            className="mt-3 flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-[12px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-white/[0.05]"
+                      style={{ borderColor: `${C.green}40`, color: C.green }}
           >
             View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -1161,20 +1163,20 @@ export default function Psychology() {
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-4 rounded-[18px] border border-white/[0.06] bg-[#121212] p-6 lg:flex-row lg:items-center">
-        <div className="flex shrink-0 items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${C.yellow}14`, color: C.yellow }}>
-            <Lightbulb className="h-5 w-5" />
+      <section className="flex flex-col items-start gap-3 rounded-[18px] border border-[#262626] bg-black/80 px-5 py-3.5 lg:flex-row lg:items-center">
+        <div className="flex shrink-0 items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
+            <Lightbulb className="h-4 w-4" />
           </span>
-          <span className="font-heading text-[15px] font-semibold uppercase tracking-[0.14em] text-white">Coach Tip</span>
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">Coach Tip</span>
         </div>
-        <p className="flex-1 text-[14px] leading-relaxed" style={{ color: C.muted }}>
+        <p className="flex-1 font-sans text-[12px] leading-snug" style={{ color: C.muted }}>
           {insights[0] ??
             `Your discipline averages ${stats.avgDiscipline}/5. Trades rated 4+ win ${stats.highDiscWinRate}% of the time — protect that edge by skipping setups when focus drops below 4.`}
         </p>
         <Link
           to="/ai-insights"
-          className="flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-[12px] font-semibold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
+          className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 font-sans text-[11px] font-semibold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
           style={{ background: C.green }}
         >
           View Action Plan <ArrowRight className="h-3.5 w-3.5" />
