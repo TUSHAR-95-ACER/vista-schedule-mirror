@@ -965,13 +965,29 @@ export default function Psychology() {
 
 
                 <PolarRadiusAxis
-                  angle={0}
+                  angle={90}
                   domain={[0, 100]}
                   ticks={[0, 25, 50, 75, 100] as any}
-                  tick={{ fontSize: 8.5, fill: P2.mutedText, fontFamily: 'Inter, sans-serif' }}
+                  tick={(props: any) => {
+                    const { x, y, payload } = props;
+                    return (
+                      <text
+                        x={x}
+                        y={y}
+                        dx={6}
+                        dy={3}
+                        textAnchor="start"
+                        transform=""
+                        style={{ fontSize: 8.5, fill: P2.mutedText, fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {payload.value}
+                      </text>
+                    );
+                  }}
                   axisLine={false}
                   tickLine={false}
                 />
+
                 <Radar
                   name="Adherence %"
                   dataKey="value"
