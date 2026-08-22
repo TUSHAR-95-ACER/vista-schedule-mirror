@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTrading } from '@/contexts/TradingContext';
 import { HeaderActions } from '@/components/layout/HeaderActions';
