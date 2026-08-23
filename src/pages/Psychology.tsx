@@ -223,7 +223,7 @@ function SectionCard({
 }: { title: string; subtitle?: string; tooltip?: string; children: React.ReactNode; className?: string; action?: React.ReactNode }) {
   return (
     <section className={cn(cardBase, 'flex flex-col', className)}>
-      <header className="mb-5 flex items-start justify-between gap-3">
+      <header className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-1.5">
             <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] leading-tight text-white">{title}</h2>
@@ -1104,9 +1104,9 @@ export default function Psychology() {
           </span>
           <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">AI Insights</h2>
         </div>
-        <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
-            const icons = [TrendingUp, ShieldCheck, Activity, TrendingDown];
+            const icons = [TrendingUp, ShieldCheck, Target, Brain];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
@@ -1128,18 +1128,15 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex h-full items-start gap-2.5 rounded-[14px] border p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5"
-            style={{ borderColor: `${C.green}33`, background: `${C.green}0D` }}
+            className="group flex h-full items-center justify-between gap-3 rounded-[14px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-emerald-500/40"
           >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${C.green}1F`, color: C.green }}>
-              <Brain className="h-4 w-4" />
-            </span>
             <span className="min-w-0">
               <span className="block font-sans text-[12px] font-semibold text-white">View Full AI Report</span>
-              <span className="mt-1 flex items-center gap-1.5 font-sans text-[11px]" style={{ color: C.green }}>
-                Open AI Insights <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              <span className="mt-1 block font-sans text-[11px] leading-snug" style={{ color: C.muted }}>
+                Get personalized recommendations
               </span>
             </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-emerald-500 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
 
@@ -1147,118 +1144,122 @@ export default function Psychology() {
       </section>
 
       {/* ── BOTTOM GRID ── */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:[grid-template-columns:1.08fr_1.02fr_1.02fr]">
         {/* Heatmap — 6 weeks × Mon–Fri matrix + legend + weekly summary */}
-        <SectionCard title="Psychology Heatmap" tooltip="Weekly discipline heatmap (Monday–Friday) with weekly summary.">
-          <div className="grid gap-x-1.5 gap-y-1" style={{ gridTemplateColumns: '62px repeat(5, minmax(0,1fr))' }}>
-            <span />
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(d => (
-              <span key={d} className="truncate text-center font-sans text-[9px] font-medium uppercase tracking-[0.06em]" style={{ color: C.muted }}>
-                {d}
-              </span>
-            ))}
-            {heatMatrix.map(week => (
-              <Fragment key={week.label}>
-                <span className="flex items-center font-sans text-[10px] font-medium" style={{ color: C.muted }}>{week.label}</span>
-                {week.cells.map(cell => (
-                  <div
-                    key={cell.date}
-                    title={cell.count ? `${cell.date} · ${cell.count} trades · ${cell.pl >= 0 ? '+' : ''}${cell.pl.toFixed(2)}` : `${cell.date} · no trades`}
-                    className="flex h-6 items-center justify-center rounded-[6px] border border-white/[0.05] font-sans text-[9px] font-semibold text-white"
-                    style={{ background: cell.score === null ? 'rgba(255,255,255,0.05)' : `${heatColor(cell.score)}59` }}
-                  >
-                    {cell.count ? cell.count : ''}
-                  </div>
+        <SectionCard title="Psychology Heatmap" tooltip="Weekly discipline heatmap (Monday–Friday) with weekly summary." className="min-w-0 p-4">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_96px] gap-3">
+            <div className="grid gap-x-1.5 gap-y-1" style={{ gridTemplateColumns: '48px repeat(5, minmax(0,1fr))' }}>
+              <span />
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => (
+                <span key={d} className="text-center font-sans text-[9px] font-medium text-muted-foreground">{d}</span>
+              ))}
+              {heatMatrix.map(week => (
+                <Fragment key={week.label}>
+                  <span className="flex items-center whitespace-nowrap font-sans text-[9px] font-medium text-muted-foreground">{week.label}</span>
+                  {week.cells.map(cell => (
+                    <div
+                      key={cell.date}
+                      title={cell.count ? `${cell.date} · ${cell.count} trades · ${cell.pl >= 0 ? '+' : ''}${cell.pl.toFixed(2)}` : `${cell.date} · no trades`}
+                      className="h-5 rounded-[3px] border border-white/[0.05]"
+                      style={{ background: cell.score === null ? 'rgba(255,255,255,0.16)' : heatColor(cell.score) }}
+                    />
+                  ))}
+                </Fragment>
+              ))}
+            </div>
+            <div className="rounded-md border border-[#262626] p-2">
+              <p className="mb-2 whitespace-nowrap font-sans text-[8px] font-semibold uppercase text-white">Heatmap Legend</p>
+              <div className="space-y-1.5">
+                {[...heatBands, { label: 'No Data', color: 'rgba(255,255,255,0.28)' }].map(b => (
+                  <span key={b.label} className="flex items-center gap-1.5 whitespace-nowrap font-sans text-[8px] text-muted-foreground">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: b.color }} />{b.label}
+                  </span>
                 ))}
-              </Fragment>
-            ))}
+              </div>
+            </div>
           </div>
-
-          {/* Legend */}
-          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
-            {[...heatBands, { label: 'No Data', color: 'rgba(255,255,255,0.18)' }].map(b => (
-              <span key={b.label} className="flex items-center gap-1.5 font-sans text-[9px]" style={{ color: C.muted }}>
-                <span className="h-2 w-2 rounded-full" style={{ background: b.color }} />
-                {b.label}
-              </span>
-            ))}
-          </div>
-
-          {/* Weekly summary */}
-          <p className="mt-3 font-sans text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: C.muted }}>Weekly Summary</p>
-          <div className="mt-1.5 space-y-1.5">
+          <div className="my-3 h-px bg-[#262626]" />
+          <p className="font-sans text-[10px] font-semibold text-white">Weekly Summary</p>
+          <div className="mt-2 grid grid-cols-3 divide-x divide-[#262626]">
             {[
               { label: 'Best Day', v: heat.best, color: C.green },
               { label: 'Worst Day', v: heat.worst, color: C.red },
               { label: 'Most Consistent', v: heat.consistent, color: C.blue },
             ].map(row => (
-              <div key={row.label} className="flex items-center justify-between rounded-lg border border-[#262626] bg-black/60 px-2.5 py-1.5">
-                <span className="font-sans text-[11px]" style={{ color: C.muted }}>{row.label}</span>
-                <span className="font-sans text-[11px] font-semibold" style={{ color: row.color }}>
-                  {row.v ? `${row.v.day} · ${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
-                </span>
+              <div key={row.label} className="min-w-0 px-2 text-center first:pl-0 last:pr-0">
+                <p className="truncate font-sans text-[9px] text-muted-foreground">{row.label}</p>
+                <p className="mt-1 truncate font-sans text-[10px] font-semibold" style={{ color: row.color }}>{row.v?.day ?? '—'}</p>
+                <p className="font-sans text-[10px] font-semibold" style={{ color: row.color }}>
+                  {row.v ? `${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
+                </p>
               </div>
             ))}
           </div>
         </SectionCard>
 
         {/* Performance by Emotion — donut + six rows + highlight */}
-        <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state.">
-          <div className="h-[124px]">
-            {emotionDonut.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={emotionDonut} dataKey="value" nameKey="name" innerRadius={36} outerRadius={56} paddingAngle={3} stroke="none" animationDuration={800}>
-                    {emotionDonut.map(d => <Cell key={d.name} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip content={<ChartTip />} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full items-center justify-center font-sans text-[12px]" style={{ color: C.muted }}>No P/L data</div>
-            )}
-          </div>
-          <div className="mt-2 space-y-1">
+        <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state." className="min-w-0 p-4">
+          <div className="grid grid-cols-[112px_minmax(0,1fr)] items-center gap-2">
+            <div className="relative h-[132px] w-[112px]">
+              {emotionDonut.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={emotionDonut} dataKey="value" nameKey="name" innerRadius={39} outerRadius={54} paddingAngle={0} stroke="none" animationDuration={800}>
+                      {emotionDonut.map(d => <Cell key={d.name} fill={d.color} />)}
+                    </Pie>
+                    <Tooltip content={<ChartTip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : <div className="flex h-full items-center justify-center font-sans text-[10px] text-muted-foreground">No P/L data</div>}
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-sans text-[9px] text-muted-foreground">Total P/L</span>
+                <span className="font-sans text-[13px] font-bold text-emerald-500">
+                  {scoped.reduce((sum, trade) => sum + trade.profitLoss, 0) >= 0 ? '+' : ''}{scoped.reduce((sum, trade) => sum + trade.profitLoss, 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-1.5">
             {emotionPerf.rows.map(r => (
               <div key={r.name} className="flex items-center gap-2">
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
-                <span className="w-[62px] shrink-0 truncate font-sans text-[11px] text-white">{r.name}</span>
+                <span className="w-[54px] shrink-0 truncate font-sans text-[9px] text-white">{r.name}</span>
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.05]">
                   <span className="block h-full rounded-full" style={{ width: `${r.barPct}%`, background: r.pl >= 0 ? r.color : C.red }} />
                 </span>
-                <span className="w-[54px] shrink-0 text-right font-sans text-[10px] font-semibold" style={{ color: r.pl >= 0 ? C.green : C.red }}>
+                <span className="w-[48px] shrink-0 text-right font-sans text-[9px] font-semibold" style={{ color: r.pl >= 0 ? C.green : C.red }}>
                   {r.pl >= 0 ? '+' : ''}{r.pl.toFixed(2)}
                 </span>
-                <span className="w-[30px] shrink-0 text-right font-sans text-[10px]" style={{ color: C.muted }}>{r.pct}%</span>
+                <span className="w-[25px] shrink-0 text-right font-sans text-[9px]" style={{ color: C.muted }}>{r.pct}%</span>
               </div>
             ))}
+            </div>
           </div>
-          <div className="mt-2.5 rounded-lg border px-2.5 py-1.5 font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
+          <div className="mt-3 rounded-md border px-2.5 py-2 text-center font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
             Your top performing emotion is{' '}
             <span className="font-semibold" style={{ color: C.green }}>{emotionPerf.top?.name ?? '—'}</span>
           </div>
         </SectionCard>
 
         {/* Top 5 Mistakes — always five ranked rows */}
-        <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes.">
-          <div className="space-y-1.5">
+        <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes." className="min-w-0 p-4">
+          <div className="divide-y divide-[#262626] border-y border-[#262626]">
             {topMistakes.map((m, i) => {
               const pct = scoped.length ? Math.round((m.count / scoped.length) * 100) : 0;
               return (
-                <div key={m.name} className="flex items-center gap-2.5 rounded-lg border border-[#262626] bg-black/60 px-2.5 py-1.5 transition-colors hover:border-white/20">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-sans text-[11px] font-bold" style={{ background: `${C.red}14`, color: C.red }}>
+                <div key={m.name} className="flex h-[29px] items-center gap-2.5 px-0.5">
+                  <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-[#3A3A3A] font-sans text-[9px] font-semibold text-white">
                     {i + 1}
                   </span>
-                  <span className="min-w-0 flex-1 truncate font-sans text-[12px] text-white">{m.name}</span>
-                  <span className="font-sans text-[12px] font-semibold text-white">{m.count}</span>
-                  <span className="w-[34px] text-right font-sans text-[10px]" style={{ color: C.muted }}>{pct}%</span>
+                  <span className="min-w-0 flex-1 truncate font-sans text-[10px] text-white">{m.name}</span>
+                  <span className="font-sans text-[10px] font-semibold text-red-500">{m.count}</span>
+                  <span className="w-[30px] text-right font-sans text-[9px] text-muted-foreground">{pct}%</span>
                 </div>
               );
             })}
           </div>
           <Link
             to="/mistakes"
-            className="mt-2.5 flex items-center justify-center gap-2 rounded-lg border px-4 py-2 font-sans text-[11px] font-semibold uppercase tracking-wider transition-colors hover:bg-white/[0.05]"
+            className="mt-3 flex items-center justify-center gap-2 rounded-md border px-4 py-2 font-sans text-[10px] font-semibold transition-colors hover:bg-white/[0.05]"
             style={{ borderColor: `${C.green}40`, color: C.green }}
           >
             View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
