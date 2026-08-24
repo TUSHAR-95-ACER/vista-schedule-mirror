@@ -1200,7 +1200,7 @@ export default function Psychology() {
 
         {/* Performance by Emotion — donut + six rows + highlight */}
         <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state." className="min-w-0 p-4">
-          <div className="grid min-h-0 flex-1 grid-cols-[112px_minmax(0,1fr)] items-stretch gap-2">
+          <div className="mb-5 grid min-h-0 flex-1 grid-cols-[112px_minmax(0,1fr)] items-stretch gap-2">
             <div className="relative h-full min-h-[132px] w-[112px] self-center">
               {emotionDonut.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -1246,7 +1246,7 @@ export default function Psychology() {
 
         {/* Top 5 Mistakes — always five ranked rows */}
         <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes." className="min-w-0 p-4">
-          <div className="grid min-h-0 flex-1 grid-rows-5 divide-y divide-[#262626] border-y border-[#262626]">
+          <div className="mb-3.5 grid min-h-0 flex-1 grid-rows-5 divide-y divide-[#262626] border-y border-[#262626]">
             {topMistakes.map((m, i) => {
               const pct = scoped.length ? Math.round((m.count / scoped.length) * 100) : 0;
               return (
