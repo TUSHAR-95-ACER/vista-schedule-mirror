@@ -1147,7 +1147,7 @@ export default function Psychology() {
       <div className="grid grid-cols-1 gap-2 lg:[grid-template-columns:1.08fr_1.02fr_1.02fr]">
         {/* Heatmap — 6 weeks × Mon–Fri matrix + legend + weekly summary */}
         <SectionCard title="Psychology Heatmap" tooltip="Weekly discipline heatmap (Monday–Friday) with weekly summary." className="min-w-0 p-4">
-          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_96px] gap-3">
+          <div className="grid min-h-0 flex-1 min-w-0 grid-cols-[minmax(0,1fr)_96px] gap-3">
             <div className="grid gap-x-1.5 gap-y-1" style={{ gridTemplateColumns: '48px repeat(5, minmax(0,1fr))' }}>
               <span />
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => (
@@ -1178,29 +1178,30 @@ export default function Psychology() {
               </div>
             </div>
           </div>
-          <div className="mt-auto pt-3" /><div className="mb-3 h-px bg-[#262626]" />
-          <p className="font-sans text-[10px] font-semibold text-white">Weekly Summary</p>
-          <div className="mt-2 grid grid-cols-3 divide-x divide-[#262626]">
-            {[
-              { label: 'Best Day', v: heat.best, color: C.green },
-              { label: 'Worst Day', v: heat.worst, color: C.red },
-              { label: 'Most Consistent', v: heat.consistent, color: C.blue },
-            ].map(row => (
-              <div key={row.label} className="min-w-0 px-2 text-center first:pl-0 last:pr-0">
-                <p className="truncate font-sans text-[9px] text-muted-foreground">{row.label}</p>
-                <p className="mt-1 truncate font-sans text-[10px] font-semibold" style={{ color: row.color }}>{row.v?.day ?? '—'}</p>
-                <p className="font-sans text-[10px] font-semibold" style={{ color: row.color }}>
-                  {row.v ? `${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
-                </p>
-              </div>
-            ))}
+          <div className="mt-3 border-t border-[#262626] pt-2">
+            <p className="font-sans text-[10px] font-semibold text-white">Weekly Summary</p>
+            <div className="mt-2 grid grid-cols-3 divide-x divide-[#262626]">
+              {[
+                { label: 'Best Day', v: heat.best, color: C.green },
+                { label: 'Worst Day', v: heat.worst, color: C.red },
+                { label: 'Most Consistent', v: heat.consistent, color: C.blue },
+              ].map(row => (
+                <div key={row.label} className="min-w-0 px-2 text-center first:pl-0 last:pr-0">
+                  <p className="truncate font-sans text-[9px] text-muted-foreground">{row.label}</p>
+                  <p className="mt-1 truncate font-sans text-[10px] font-semibold" style={{ color: row.color }}>{row.v?.day ?? '—'}</p>
+                  <p className="font-sans text-[10px] font-semibold" style={{ color: row.color }}>
+                    {row.v ? `${row.v.pl >= 0 ? '+' : ''}${row.v.pl.toFixed(2)}` : '—'}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </SectionCard>
 
         {/* Performance by Emotion — donut + six rows + highlight */}
         <SectionCard title="Performance by Emotion" tooltip="Share of absolute P/L generated under each emotional state." className="min-w-0 p-4">
-          <div className="grid grid-cols-[112px_minmax(0,1fr)] items-center gap-2">
-            <div className="relative h-[132px] w-[112px]">
+          <div className="grid min-h-0 flex-1 grid-cols-[112px_minmax(0,1fr)] items-stretch gap-2">
+            <div className="relative h-full min-h-[132px] w-[112px] self-center">
               {emotionDonut.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -1218,7 +1219,7 @@ export default function Psychology() {
                 </span>
               </div>
             </div>
-            <div className="space-y-1.5">
+            <div className="flex min-h-0 flex-col justify-between py-0.5">
             {emotionPerf.rows.map(r => (
               <div key={r.name} className="flex items-center gap-2">
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
@@ -1234,19 +1235,22 @@ export default function Psychology() {
             ))}
             </div>
           </div>
-          <div className="mt-auto pt-3 rounded-md border px-2.5 py-2 text-center font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
-            Your top performing emotion is{' '}
-            <span className="font-semibold" style={{ color: C.green }}>{emotionPerf.top?.name ?? '—'}</span>
+          <div className="mt-3 border-t border-transparent pt-2">
+            <div className="h-[10px]" aria-hidden="true" />
+            <div className="mt-2 rounded-md border px-2.5 py-2 text-center font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
+              Your top performing emotion is{' '}
+              <span className="font-semibold" style={{ color: C.green }}>{emotionPerf.top?.name ?? '—'}</span>
+            </div>
           </div>
         </SectionCard>
 
         {/* Top 5 Mistakes — always five ranked rows */}
         <SectionCard title="Top 5 Mistakes" tooltip="Ranked list of your most common logged mistakes." className="min-w-0 p-4">
-          <div className="divide-y divide-[#262626] border-y border-[#262626]">
+          <div className="grid min-h-0 flex-1 grid-rows-5 divide-y divide-[#262626] border-y border-[#262626]">
             {topMistakes.map((m, i) => {
               const pct = scoped.length ? Math.round((m.count / scoped.length) * 100) : 0;
               return (
-                <div key={m.name} className="flex h-[29px] items-center gap-2.5 px-0.5">
+                <div key={m.name} className="flex min-h-[29px] items-center gap-2.5 px-0.5">
                   <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-[#3A3A3A] font-sans text-[9px] font-semibold text-white">
                     {i + 1}
                   </span>
@@ -1257,13 +1261,16 @@ export default function Psychology() {
               );
             })}
           </div>
-          <Link
-            to="/mistakes"
-            className="mt-auto flex items-center justify-center gap-2 rounded-md border px-4 py-2 font-sans text-[10px] font-semibold transition-colors hover:bg-white/[0.05]"
-            style={{ borderColor: `${C.green}40`, color: C.green }}
-          >
-            View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="mt-3 border-t border-transparent pt-2">
+            <div className="h-[10px]" aria-hidden="true" />
+            <Link
+              to="/mistakes"
+              className="mt-2 flex items-center justify-center gap-2 rounded-md border px-4 py-2 font-sans text-[10px] font-semibold transition-colors hover:bg-white/[0.05]"
+              style={{ borderColor: `${C.green}40`, color: C.green }}
+            >
+              View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </SectionCard>
 
       </div>
