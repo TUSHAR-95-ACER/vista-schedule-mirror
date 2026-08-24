@@ -241,35 +241,6 @@ export default function AIInsights() {
         </div>
       </div>
 
-      {/* Setup Performance Bar Chart */}
-      {setupData.length > 0 && (
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-gold" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.15em]">Setup Performance</h3>
-              <p className="text-[10px] text-muted-foreground">P/L by trade setup type</p>
-            </div>
-          </div>
-          <div className="h-[240px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={setupData} layout="vertical" margin={{ left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={v => `$${v}`} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--foreground))' }} width={100} />
-                <Tooltip content={<Tip />} />
-                <Bar dataKey="pl" name="P/L" radius={[0, 6, 6, 0]}>
-                  {setupData.map((entry, index) => (
-                    <Cell key={index} fill={entry.pl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
