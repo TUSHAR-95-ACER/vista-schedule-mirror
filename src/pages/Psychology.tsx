@@ -33,7 +33,7 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[18px] border border-[#262626] bg-black/80 p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[9px] border border-[#262626] bg-black/80 p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
 function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
@@ -130,7 +130,7 @@ function KpiCard({
 }) {
   return (
     <div
-      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[14px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[7px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
       style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#262626', backgroundColor: 'rgba(0,0,0,0.8)' }}
     >
       {/* LEFT — icon in its own column */}
@@ -233,7 +233,7 @@ function SectionCard({
         </div>
         {action}
       </header>
-      <div className="flex-1">{children}</div>
+      <div className="flex flex-1 flex-col">{children}</div>
     </section>
   );
 }
@@ -277,7 +277,7 @@ function P2Card({
 }: { title: string; children: React.ReactNode; className?: string; padding?: string }) {
   return (
     <section
-      className={cn('p2-inter flex flex-col rounded-[16px] border', className)}
+      className={cn('p2-inter flex flex-col rounded-[8px] border', className)}
       style={{ background: P2.card, borderColor: P2.border, padding }}
     >
       <h2
@@ -734,7 +734,7 @@ export default function Psychology() {
   const gaugeAngle = 180 - (gaugeValue / 100) * 180;
 
   return (
-    <div className="w-full space-y-4 p-6">
+    <div className="w-full space-y-2 p-3">
       {Header}
 
       {/* ── ROW 1 — 6 KPI CARDS (identical structure per spec) ── */}
@@ -794,7 +794,7 @@ export default function Psychology() {
 
       {/* ══ PHASE 2 — FIRST ROW (4 cards: 21.7 / 35 / 21.7 / 21.7) ══ */}
       <div
-        className="grid grid-cols-1 gap-4 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
+        className="grid grid-cols-1 gap-2 md:[grid-template-columns:21.7fr_35fr_21.7fr_21.7fr]"
         style={{ alignItems: 'stretch' }}
       >
         {/* 1. EMOTIONAL HEALTH SCORE — GAUGE CARD */}
@@ -1005,7 +1005,7 @@ export default function Psychology() {
       </div>
 
       {/* ══ PHASE 2 — CARDS 5 & 6 ══ */}
-      <div className="grid grid-cols-1 gap-4 md:[grid-template-columns:63fr_45fr]">
+      <div className="grid grid-cols-1 gap-2 md:[grid-template-columns:63fr_45fr]">
         {/* 5. DISCIPLINE & FOCUS TREND — LINE CHART */}
         <P2Card title="Discipline &amp; Focus Trend" padding="14px 20px">
           <div className="h-[161px]">
@@ -1104,14 +1104,14 @@ export default function Psychology() {
           </span>
           <h2 className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">AI Insights</h2>
         </div>
-        <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 items-stretch gap-1.5 sm:grid-cols-2 lg:grid-cols-5">
           {[0, 1, 2, 3].map(i => {
             const icons = [TrendingUp, ShieldCheck, Target, Brain];
             const colors = [C.green, C.purple, C.blue, C.orange];
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="flex h-full items-start gap-2.5 rounded-[14px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
+              <div key={i} className="flex h-full items-start gap-2.5 rounded-[7px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
                   <Icon className="h-4 w-4" />
                 </span>
@@ -1128,7 +1128,7 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex h-full items-center justify-between gap-3 rounded-[14px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-emerald-500/40"
+            className="group flex h-full items-center justify-between gap-3 rounded-[7px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-emerald-500/40"
           >
             <span className="min-w-0">
               <span className="block font-sans text-[12px] font-semibold text-white">View Full AI Report</span>
@@ -1144,7 +1144,7 @@ export default function Psychology() {
       </section>
 
       {/* ── BOTTOM GRID ── */}
-      <div className="grid grid-cols-1 gap-4 lg:[grid-template-columns:1.08fr_1.02fr_1.02fr]">
+      <div className="grid grid-cols-1 gap-2 lg:[grid-template-columns:1.08fr_1.02fr_1.02fr]">
         {/* Heatmap — 6 weeks × Mon–Fri matrix + legend + weekly summary */}
         <SectionCard title="Psychology Heatmap" tooltip="Weekly discipline heatmap (Monday–Friday) with weekly summary." className="min-w-0 p-4">
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_96px] gap-3">
@@ -1178,7 +1178,7 @@ export default function Psychology() {
               </div>
             </div>
           </div>
-          <div className="my-3 h-px bg-[#262626]" />
+          <div className="mt-auto pt-3" /><div className="mb-3 h-px bg-[#262626]" />
           <p className="font-sans text-[10px] font-semibold text-white">Weekly Summary</p>
           <div className="mt-2 grid grid-cols-3 divide-x divide-[#262626]">
             {[
@@ -1234,7 +1234,7 @@ export default function Psychology() {
             ))}
             </div>
           </div>
-          <div className="mt-3 rounded-md border px-2.5 py-2 text-center font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
+          <div className="mt-auto pt-3 rounded-md border px-2.5 py-2 text-center font-sans text-[10px]" style={{ borderColor: `${C.green}33`, background: `${C.green}0D`, color: C.muted }}>
             Your top performing emotion is{' '}
             <span className="font-semibold" style={{ color: C.green }}>{emotionPerf.top?.name ?? '—'}</span>
           </div>
@@ -1259,7 +1259,7 @@ export default function Psychology() {
           </div>
           <Link
             to="/mistakes"
-            className="mt-3 flex items-center justify-center gap-2 rounded-md border px-4 py-2 font-sans text-[10px] font-semibold transition-colors hover:bg-white/[0.05]"
+            className="mt-auto flex items-center justify-center gap-2 rounded-md border px-4 py-2 font-sans text-[10px] font-semibold transition-colors hover:bg-white/[0.05]"
             style={{ borderColor: `${C.green}40`, color: C.green }}
           >
             View Mistake Analysis <ArrowRight className="h-3.5 w-3.5" />
@@ -1269,7 +1269,7 @@ export default function Psychology() {
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-3 rounded-[18px] border border-[#262626] bg-black/80 px-5 py-3.5 lg:flex-row lg:items-center">
+      <section className="flex flex-col items-start gap-3 rounded-[9px] border border-[#262626] bg-black/80 px-5 py-3.5 lg:flex-row lg:items-center">
         <div className="flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Lightbulb className="h-4 w-4" />
