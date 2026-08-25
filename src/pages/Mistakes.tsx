@@ -695,7 +695,7 @@ export default function Mistakes() {
                 </SelectContent>
               </Select>
               <Select value={sessionFilter} onValueChange={setSessionFilter}>
-                <SelectTrigger className="h-7 w-[124px] rounded-[7px] border-[#262626] bg-black/60 text-[11px]"><SelectValue placeholder="All Sessions" /></SelectTrigger>
+                <SelectTrigger className="h-7 w-[138px] rounded-[7px] border-[#262626] bg-black/60 text-[11px]"><SelectValue placeholder="All Sessions" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Sessions</SelectItem>
                   {ALL_SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
