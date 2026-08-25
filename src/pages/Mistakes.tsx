@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTrading } from '@/contexts/TradingContext';
-import { PageHeader } from '@/components/shared/MetricCard';
+import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -9,13 +10,12 @@ import {
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { Mistake, Session, Trade } from '@/types/trading';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Calendar as CalendarIcon, Download, Brain, AlertOctagon, Clock, RotateCcw,
-  TrendingUp, ArrowRight, Target, Lightbulb, ShieldCheck,
+  CalendarRange, Download, Brain, AlertOctagon, Clock, RotateCcw,
+  TrendingUp, ArrowRight, Target, Lightbulb, ShieldCheck, Sparkles,
 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -26,22 +26,37 @@ import type { DateRange } from 'react-day-picker';
 const ALL_MISTAKES: Mistake[] = ['FOMO', 'Early Entry', 'Overtrading', 'Emotional', 'Ignored SL'];
 const ALL_SESSIONS: Session[] = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'];
 
-const MISTAKE_COLOR: Record<string, string> = {
-  'FOMO': 'hsl(0 84% 60%)',
-  'Emotional': 'hsl(38 92% 50%)',
-  'Ignored SL': 'hsl(270 70% 58%)',
-  'Early Entry': 'hsl(212 95% 58%)',
-  'Overtrading': 'hsl(152 60% 45%)',
+/* shared palette — same tokens as the Psychology dashboard */
+const C = {
+  green: '#22C55E',
+  purple: '#8B5CF6',
+  blue: '#3B82F6',
+  orange: '#F59E0B',
+  red: '#EF4444',
+  yellow: '#FACC15',
+  muted: '#9CA3AF',
+  border: '#262626',
+  card: 'rgba(0,0,0,0.8)',
+  grid: '#232323',
 };
-const fallbackColor = (i: number) =>
-  ['hsl(0 84% 60%)', 'hsl(38 92% 50%)', 'hsl(270 70% 58%)', 'hsl(212 95% 58%)', 'hsl(152 60% 45%)'][i % 5];
 
-const SEVERITY: Record<string, { level: string; cls: string }> = {
-  'FOMO': { level: 'Critical', cls: 'text-destructive border-destructive/40 bg-destructive/10' },
-  'Ignored SL': { level: 'Critical', cls: 'text-destructive border-destructive/40 bg-destructive/10' },
-  'Early Entry': { level: 'Medium', cls: 'text-warning border-warning/40 bg-warning/10' },
-  'Emotional': { level: 'High', cls: 'text-warning border-warning/40 bg-warning/10' },
-  'Overtrading': { level: 'Low', cls: 'text-success border-success/40 bg-success/10' },
+const cardBase = 'rounded-[9px] border border-[#262626] bg-black/80';
+
+const MISTAKE_COLOR: Record<string, string> = {
+  'FOMO': C.red,
+  'Emotional': C.orange,
+  'Ignored SL': C.purple,
+  'Early Entry': C.blue,
+  'Overtrading': C.green,
+};
+const fallbackColor = (i: number) => [C.red, C.orange, C.purple, C.blue, C.green][i % 5];
+
+const SEVERITY: Record<string, { level: string; color: string }> = {
+  'FOMO': { level: 'Critical', color: C.red },
+  'Ignored SL': { level: 'Critical', color: C.red },
+  'Early Entry': { level: 'Medium', color: C.yellow },
+  'Emotional': { level: 'High', color: C.orange },
+  'Overtrading': { level: 'Low', color: C.green },
 };
 
 const toISO = (d: Date) => d.toISOString().slice(0, 10);
@@ -49,115 +64,123 @@ const fmtDay = (d?: Date) =>
   d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
 /* ------------------------------------------------------------------ */
-/* Small presentational primitives                                     */
+/* Presentational primitives (Psychology design language)              */
 /* ------------------------------------------------------------------ */
 
-function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
+function SectionCard({
+  title, tooltip, right, children, className, bodyClass,
+}: {
+  title: string; tooltip?: string; right?: React.ReactNode;
+  children: React.ReactNode; className?: string; bodyClass?: string;
+}) {
   return (
-    <div className={cn(
-      'rounded-xl border border-border/70 bg-card/80 backdrop-blur-[2px]',
-      'shadow-[0_1px_0_0_hsl(var(--foreground)/0.04)_inset,0_18px_40px_-32px_hsl(0_0%_0%/0.9)]',
-      className,
-    )}>{children}</div>
-  );
-}
-
-function PanelTitle({ title, tooltip, right }: { title: string; tooltip?: string; right?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-2 px-4 pt-3.5 pb-2.5">
-      <div className="flex items-center gap-1.5 min-w-0">
-        <h3 className="font-heading text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] text-foreground/90 truncate">
-          {title}
-        </h3>
-        {tooltip && <InfoTooltip text={tooltip} />}
-      </div>
-      {right}
-    </div>
+    <section className={cn(cardBase, 'flex min-w-0 flex-col p-4', className)}>
+      <header className="mb-2.5 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="truncate font-sans text-[11px] font-semibold uppercase leading-tight tracking-[0.12em] text-white">
+            {title}
+          </h2>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
+        {right}
+      </header>
+      <div className={cn('flex min-h-0 flex-1 flex-col', bodyClass)}>{children}</div>
+    </section>
   );
 }
 
 function KpiCard({
-  label, value, valueClass, delta, deltaTone, sub, subClass, accent,
+  label, value, valueColor, sub, subColor, delta, deltaTone,
 }: {
-  label: string; value: string; valueClass?: string;
+  label: string; value: string; valueColor?: string;
+  sub?: string; subColor?: string;
   delta?: string; deltaTone?: 'up' | 'down' | 'flat';
-  sub?: string; subClass?: string; accent?: string;
 }) {
+  const deltaColor = deltaTone === 'up' ? C.green : deltaTone === 'down' ? C.red : C.muted;
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border/70 bg-card/80 px-3.5 py-3 animate-fade-in
-                    shadow-[0_18px_40px_-34px_hsl(0_0%_0%/0.95)]">
-      <span
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-px opacity-70"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent ?? 'hsl(var(--primary))'}, transparent)` }}
-      />
-      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground truncate">{label}</p>
-      <p className={cn('font-heading font-bold tracking-tight mt-1.5 text-[22px] leading-none truncate', valueClass)}>
+    <div
+      className="flex min-w-0 flex-col rounded-[7px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
+      style={{ padding: 'clamp(11px, 1.1vw, 16px)', borderColor: C.border, backgroundColor: C.card }}
+    >
+      <p
+        className="truncate font-sans font-semibold uppercase"
+        style={{ color: '#E2E8F0', fontSize: 'clamp(8.5px,0.7vw,11px)', letterSpacing: '0.08em' }}
+      >
+        {label}
+      </p>
+      <p
+        className="mt-[clamp(5px,0.6vw,9px)] truncate font-heading font-bold leading-none tracking-tight"
+        style={{
+          color: valueColor ?? '#FFFFFF',
+          fontSize: value.length > 9 ? 'clamp(14px,1.25vw,20px)' : value.length > 6 ? 'clamp(16px,1.5vw,24px)' : 'clamp(19px,1.9vw,30px)',
+        }}
+      >
         {value}
       </p>
-      {delta && (
-        <p className={cn(
-          'mt-2 text-[10px] font-medium tabular-nums truncate',
-          deltaTone === 'up' && 'text-success',
-          deltaTone === 'down' && 'text-destructive',
-          (!deltaTone || deltaTone === 'flat') && 'text-muted-foreground',
-        )}>
-          {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
-        </p>
-      )}
-      {sub && <p className={cn('mt-2 text-[10px] text-muted-foreground truncate', subClass)}>{sub}</p>}
+      <div className="mt-auto">
+        {sub && (
+          <p className="mt-[clamp(5px,0.6vw,9px)] truncate font-sans" style={{ fontSize: 'clamp(8px,0.68vw,11px)', color: subColor ?? C.muted }}>
+            {sub}
+          </p>
+        )}
+        {delta && (
+          <p className="mt-[3px] truncate font-sans tabular-nums" style={{ fontSize: 'clamp(8px,0.68vw,11px)', color: deltaColor }}>
+            {deltaTone === 'up' ? '↑' : deltaTone === 'down' ? '↓' : '·'} {delta}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
 function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2.5 min-w-0">
+    <div className="flex min-w-0 items-center gap-2.5">
       <span
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border"
+        className="grid h-7 w-7 shrink-0 place-items-center rounded-full border"
         style={{ borderColor: `${tone}55`, background: `${tone}18`, color: tone }}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-3.5 w-3.5" />
       </span>
-      <p className="text-[11px] leading-snug text-foreground/90">{children}</p>
+      <p className="min-w-0 font-sans text-[11px] leading-snug" style={{ color: '#E2E8F0' }}>{children}</p>
     </div>
   );
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const size = 108, stroke = 9, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const size = 96, stroke = 9, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
         <defs>
-          <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="hsl(0 84% 60%)" />
-            <stop offset="55%" stopColor="hsl(38 92% 50%)" />
-            <stop offset="100%" stopColor="hsl(152 60% 45%)" />
+          <linearGradient id="mistakeGaugeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={C.red} />
+            <stop offset="55%" stopColor={C.orange} />
+            <stop offset="100%" stopColor={C.green} />
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.35} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
         <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="url(#gaugeGrad)" strokeWidth={stroke}
+          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="url(#mistakeGaugeGrad)" strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
           className="transition-[stroke-dashoffset] duration-700 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 grid place-items-center">
-        <span className="font-heading text-2xl font-bold leading-none">{score}</span>
-        <span className="absolute bottom-6 text-[9px] uppercase tracking-wider text-muted-foreground">Impact Score</span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-heading text-[22px] font-bold leading-none text-white">{score}</span>
+        <span className="mt-1 font-sans text-[8px] uppercase tracking-[0.14em]" style={{ color: C.muted }}>Impact Score</span>
       </div>
     </div>
   );
 }
 
 function MiniRing({ pct }: { pct: number }) {
-  const size = 22, stroke = 3, r = (size - stroke) / 2, c = 2 * Math.PI * r;
-  const color = pct >= 50 ? 'hsl(var(--success))' : pct >= 25 ? 'hsl(38 92% 50%)' : 'hsl(var(--muted-foreground))';
+  const size = 18, stroke = 2.5, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const color = pct >= 50 ? C.green : pct >= 25 ? C.orange : C.muted;
   return (
     <svg width={size} height={size} className="-rotate-90 shrink-0">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={stroke} opacity={0.5} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth={stroke} />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
         strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, pct / 100))} />
     </svg>
@@ -167,10 +190,10 @@ function MiniRing({ pct }: { pct: number }) {
 const Tip = ({ active, payload, label, money }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-      <p className="mb-1 text-muted-foreground">{label}</p>
+    <div className="rounded-[8px] border px-2.5 py-2" style={{ background: C.card, borderColor: C.grid }}>
+      <p className="mb-1 font-sans text-[11px]" style={{ color: C.muted }}>{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="font-mono tabular-nums" style={{ color: p.color || p.payload?.fill }}>
+        <p key={i} className="font-sans text-[12px] tabular-nums" style={{ color: p.color || p.payload?.fill }}>
           {p.name}: {money ? formatCurrency(Number(p.value)) : p.value}
         </p>
       ))}
@@ -184,6 +207,7 @@ const Tip = ({ active, payload, label, money }: any) => {
 
 export default function Mistakes() {
   const { trades } = useTrading();
+  const { openDrawer } = useAICoach();
 
   const allValid = useMemo(
     () => trades.filter(t => t.result !== 'Untriggered Setup' && t.result !== 'Cancelled'),
@@ -362,331 +386,338 @@ export default function Mistakes() {
     .sort((a, b) => b.loss - a.loss);
 
   return (
-    <div className="p-4 sm:p-6 w-full space-y-4">
-      {/* ── Header ─────────────────────────────────────────────── */}
-      <PageHeader title="Mistakes Analytics" subtitle="Advanced behavioral analytics & mistake intelligence">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-2 rounded-lg text-[11px] font-medium">
-              <span className="tabular-nums">{rangeLabel}</span>
-              <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={2} className="pointer-events-auto" />
-            <div className="flex justify-end border-t border-border p-2">
-              <Button variant="ghost" size="sm" className="h-7 text-[11px]" onClick={() => setRange(undefined)}>
-                Reset to all time
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-        <Button size="sm" variant="outline" className="h-8 gap-1.5 rounded-lg text-[11px] font-medium" onClick={handleExport}>
-          <Download className="h-3.5 w-3.5" /> Export
-        </Button>
-      </PageHeader>
+    <div className="w-full space-y-2 p-3">
+      {/* ══ PHASE 1 — HEADER ══════════════════════════════════════ */}
+      <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.05] tracking-[0.02em] text-white sm:text-[34px] xl:text-[38px]">
+            Mistakes Analytics
+          </h1>
+          <p className="mt-1.5 font-sans text-[12px] sm:text-[13px]" style={{ color: C.muted }}>
+            Advanced behavioral analytics &amp; mistake intelligence
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={openDrawer}
+            className="flex h-9 items-center gap-2 rounded-[9px] border border-white/[0.12] bg-[#121212] px-4 font-sans text-[12px] font-bold uppercase tracking-[0.06em] text-white transition-colors hover:border-white/25 hover:bg-white/5"
+          >
+            <Sparkles className="h-3.5 w-3.5" style={{ color: C.green }} />
+            AI Coach
+          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex h-9 items-center gap-2.5 rounded-[9px] border border-white/[0.12] bg-[#121212] px-4 font-sans text-[12px] font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/5">
+                <span className="tabular-nums">{rangeLabel}</span>
+                <CalendarRange className="h-3.5 w-3.5" style={{ color: C.muted }} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={2} className="pointer-events-auto" />
+              <div className="flex justify-end border-t border-border p-2">
+                <button className="rounded-md px-3 py-1.5 text-[11px] text-muted-foreground hover:text-white" onClick={() => setRange(undefined)}>
+                  Reset to all time
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={handleExport}
+            className="flex h-9 items-center gap-2 rounded-[9px] border border-white/[0.12] bg-[#121212] px-4 font-sans text-[12px] font-semibold text-white transition-colors hover:border-white/25 hover:bg-white/5"
+          >
+            <Download className="h-3.5 w-3.5" style={{ color: C.muted }} /> Export
+          </button>
+        </div>
+      </div>
 
-      {/* ── KPI cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      {/* ══ PHASE 1 — SIX KPI CARDS (one row) ═════════════════════ */}
+      <div className="grid grid-cols-2 items-stretch gap-2 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard
-          label="Total Mistakes" value={String(totalMistakes)} valueClass="text-destructive"
-          accent="hsl(0 84% 60%)"
+          label="Total Mistakes" value={String(totalMistakes)} valueColor={C.red}
           delta={prevTotalMistakes ? `${mistakesDelta > 0 ? '+' : ''}${mistakesDelta} vs last period` : undefined}
           deltaTone={mistakesDelta > 0 ? 'down' : mistakesDelta < 0 ? 'up' : 'flat'}
         />
         <KpiCard
-          label="Loss from Mistakes" value={formatCurrency(totalMistakeLoss)} valueClass="text-destructive"
-          accent="hsl(0 84% 60%)"
+          label="Loss from Mistakes" value={formatCurrency(totalMistakeLoss)} valueColor={C.red}
           delta={lossDeltaPct !== null ? `${lossDeltaPct > 0 ? '+' : ''}${lossDeltaPct}% vs last period` : undefined}
           deltaTone={lossDeltaPct !== null && lossDeltaPct > 0 ? 'down' : 'up'}
         />
         <KpiCard
           label="Trades w/ Mistakes" value={`${tradesWithMistakes.length} / ${valid.length}`}
-          accent="hsl(38 92% 50%)"
           sub={`${rateNow}% of executed trades`}
           delta={prev.length ? `${rateNow - ratePrev > 0 ? '+' : ''}${rateNow - ratePrev}% vs last period` : undefined}
           deltaTone={rateNow > ratePrev ? 'down' : rateNow < ratePrev ? 'up' : 'flat'}
         />
         <KpiCard
           label="Impact Score" value={`${impactScore}/100`}
-          valueClass={impactScore >= 60 ? 'text-destructive' : impactScore >= 30 ? 'text-warning' : 'text-success'}
-          accent="hsl(152 60% 45%)"
+          valueColor={impactScore >= 60 ? C.red : impactScore >= 30 ? C.orange : C.green}
           sub={impactScore >= 60 ? 'Severe — mistakes drive most losses' : impactScore >= 30 ? 'Moderate impact' : 'Excellent control'}
+          subColor={impactScore >= 60 ? C.red : impactScore >= 30 ? C.orange : C.green}
         />
         <KpiCard
           label="Recovery Rate" value={`${recoveryRate}%`}
-          valueClass={recoveryRate >= 50 ? 'text-success' : 'text-warning'}
-          accent="hsl(38 92% 50%)"
+          valueColor={recoveryRate >= 50 ? C.green : C.yellow}
+          sub="Win on the next trade"
           delta={prevRecoveryRate ? `${recoveryRate - prevRecoveryRate > 0 ? '+' : ''}${recoveryRate - prevRecoveryRate}% vs last period` : undefined}
           deltaTone={recoveryRate >= prevRecoveryRate ? 'up' : 'down'}
-          sub="Win on the next trade"
         />
         <KpiCard
-          label="Most Common" value={topMistake?.name ?? '—'} valueClass="text-destructive"
-          accent="hsl(270 70% 58%)"
+          label="Most Common" value={topMistake?.name ?? '—'} valueColor={C.red}
           sub={topMistake ? `${topMistakePct}% of mistake losses` : 'No mistakes logged'}
         />
       </div>
 
-      {/* ── Smart insights ─────────────────────────────────────── */}
-      <Panel className="border-success/25 bg-[linear-gradient(90deg,hsl(var(--success)/0.07),transparent_45%)]">
-        <div className="grid grid-cols-1 lg:grid-cols-[190px_1fr] items-center gap-3 p-3.5">
-          <div className="flex items-center gap-2.5 lg:border-r lg:border-border/60 lg:pr-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full border border-success/40 bg-success/10 text-success">
-              <Brain className="h-4.5 w-4.5" />
+      {/* ══ PHASE 1 — SMART INSIGHTS (one row) ════════════════════ */}
+      <section className={cn(cardBase, 'px-4 py-3')}>
+        <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[168px_minmax(0,1fr)]">
+          <div className="flex items-center gap-2.5 lg:border-r lg:border-[#262626] lg:pr-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border" style={{ borderColor: `${C.green}55`, background: `${C.green}18`, color: C.green }}>
+              <Brain className="h-4 w-4" />
             </span>
-            <span className="font-heading text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-success">
+            <span className="font-sans text-[11px] font-semibold uppercase leading-tight tracking-[0.12em]" style={{ color: C.green }}>
               Smart<br />Insights
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            <InsightItem icon={AlertOctagon} tone="hsl(0 84% 60%)">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <InsightItem icon={AlertOctagon} tone={C.red}>
               {topMistake
-                ? <><span className="font-semibold text-destructive">{topMistake.name}</span> causes {topMistakePct}% of your mistake losses</>
+                ? <><span className="font-semibold" style={{ color: C.red }}>{topMistake.name}</span> causes {topMistakePct}% of your mistake losses</>
                 : 'No mistake losses recorded in this period'}
             </InsightItem>
-            <InsightItem icon={Clock} tone="hsl(38 92% 50%)">
+            <InsightItem icon={Clock} tone={C.orange}>
               {worstSession
-                ? <>Most mistakes happen in <span className="font-semibold text-warning">{worstSession.name}</span></>
+                ? <>Most mistakes happen in <span className="font-semibold" style={{ color: C.orange }}>{worstSession.name}</span></>
                 : 'No session concentration detected'}
             </InsightItem>
-            <InsightItem icon={RotateCcw} tone="hsl(152 60% 45%)">
-              Recovery rate after mistakes: <span className="font-semibold text-success">{recoveryRate}%</span>
+            <InsightItem icon={RotateCcw} tone={C.green}>
+              Recovery rate after mistakes: <span className="font-semibold" style={{ color: C.green }}>{recoveryRate}%</span>
             </InsightItem>
-            <InsightItem icon={TrendingUp} tone="hsl(212 95% 58%)">
+            <InsightItem icon={TrendingUp} tone={C.blue}>
               {repeatDelta > 0
-                ? <>You are <span className="font-semibold text-success">{repeatDelta}% better</span> at avoiding repeat mistakes</>
+                ? <>You are <span className="font-semibold" style={{ color: C.green }}>{repeatDelta}% better</span> at avoiding repeat mistakes</>
                 : repeatDelta < 0
-                  ? <>Repeat mistakes are up <span className="font-semibold text-destructive">{Math.abs(repeatDelta)}%</span> vs last period</>
+                  ? <>Repeat mistakes are up <span className="font-semibold" style={{ color: C.red }}>{Math.abs(repeatDelta)}%</span> vs last period</>
                   : <>Avg mistake loss {formatCurrency(avgMistakeLoss)} vs normal {formatCurrency(avgNormalLoss)}</>}
             </InsightItem>
           </div>
         </div>
-      </Panel>
+      </section>
 
-      {/* ── Row 1: donut / loss bar / session bar ──────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Panel>
-          <PanelTitle title="Mistakes by Type" tooltip="Share of each mistake type across the selected period" />
-          <div className="px-4 pb-3">
-            {distribution.length > 0 ? (
-              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-2">
-                <div className="relative h-[190px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={52} outerRadius={78} paddingAngle={2} strokeWidth={0} animationDuration={700}>
-                        {distribution.map((d, i) => (
-                          <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<Tip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                    <span className="font-heading text-2xl font-bold leading-none">{totalMistakes}</span>
-                    <span className="absolute mt-7 text-[9px] uppercase tracking-widest text-muted-foreground">Total</span>
-                  </div>
+      {/* ══ PHASE 2 — ROW 1: three equal cards ════════════════════ */}
+      <div className="grid grid-cols-1 items-stretch gap-2 lg:grid-cols-3">
+        {/* Mistakes by Type — donut + legend */}
+        <SectionCard title="Mistakes by Type" tooltip="Share of each mistake type across the selected period">
+          {distribution.length > 0 ? (
+            <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-center gap-2">
+              <div className="relative h-[168px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={distribution} dataKey="value" nameKey="name" cx="50%" cy="50%"
+                      innerRadius={46} outerRadius={70} paddingAngle={2} strokeWidth={0} animationDuration={700}>
+                      {distribution.map((d, i) => (
+                        <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<Tip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-heading text-[20px] font-bold leading-none text-white">{totalMistakes}</span>
+                  <span className="mt-1 font-sans text-[8px] uppercase tracking-[0.16em]" style={{ color: C.muted }}>Total</span>
                 </div>
-                <ul className="space-y-2">
-                  {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
-                    <li key={m.name} className="flex items-center gap-2 text-[11px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
-                      <span className="truncate text-foreground/90">{m.name}</span>
-                      <span className="ml-auto font-mono tabular-nums text-muted-foreground">
-                        {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
-                      </span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-            ) : (
-              <div className="grid h-[190px] place-items-center text-sm text-muted-foreground">No mistakes logged</div>
-            )}
-          </div>
-          {topMistake && (
-            <div className="flex items-center gap-2 border-t border-border/60 bg-destructive/[0.06] px-4 py-2.5">
-              <Target className="h-3.5 w-3.5 text-destructive" />
-              <p className="text-[11px] text-destructive/90">
-                <span className="font-semibold">{topMistake.name}</span> is your most expensive mistake
-              </p>
+              <ul className="space-y-1.5">
+                {mistakeData.slice().sort((a, b) => b.frequency - a.frequency).map((m, i) => (
+                  <li key={m.name} className="flex items-center gap-2 font-sans text-[10px]">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: MISTAKE_COLOR[m.name] ?? fallbackColor(i) }} />
+                    <span className="truncate text-white">{m.name}</span>
+                    <span className="ml-auto tabular-nums" style={{ color: C.muted }}>
+                      {m.frequency} ({totalMistakes ? Math.round((m.frequency / totalMistakes) * 100) : 0}%)
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
+          ) : (
+            <div className="grid h-[168px] shrink-0 place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No mistakes logged</div>
           )}
-        </Panel>
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
+            <Target className="h-3.5 w-3.5 shrink-0" style={{ color: C.red }} />
+            <p className="truncate font-sans text-[10px]" style={{ color: C.red }}>
+              {topMistake ? <><span className="font-semibold">{topMistake.name}</span> is your most expensive mistake</> : 'No mistake concentration detected'}
+            </p>
+          </div>
+        </SectionCard>
 
-        <Panel>
-          <PanelTitle title="Loss by Mistake Type" tooltip="Total realised loss attributable to each mistake"
-            right={<span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Loss</span>} />
-          <div className="h-[236px] px-3 pb-3">
+        {/* Loss by Mistake Type */}
+        <SectionCard
+          title="Loss by Mistake Type"
+          tooltip="Total realised loss attributable to each mistake"
+          right={<span className="shrink-0 font-sans text-[9px] uppercase tracking-[0.12em]" style={{ color: C.muted }}>Total Loss</span>}
+        >
+          <div className="h-[168px] shrink-0">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={lossByType} layout="vertical" margin={{ top: 4, right: 60, left: 4, bottom: 4 }} barSize={9}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(v) => `$${v}`} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={82} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip money />} />
-                  <Bar dataKey="loss" name="Loss" radius={[4, 4, 4, 4]} animationDuration={700}>
+                <BarChart data={lossByType} layout="vertical" margin={{ top: 4, right: 62, left: 0, bottom: 2 }} barSize={8}>
+                  <CartesianGrid horizontal={false} stroke={C.grid} />
+                  <XAxis type="number" tick={{ fontSize: 9, fill: C.muted }} tickFormatter={(v) => `$${v}`} axisLine={{ stroke: C.grid }} tickLine={false} />
+                  <YAxis dataKey="name" type="category" width={78} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#FFFFFF' }} />
+                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<Tip money />} />
+                  <Bar dataKey="loss" name="Loss" radius={[0, 0, 0, 0]} animationDuration={700}>
                     {lossByType.map((d, i) => (
-                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} fillOpacity={0.9} />
+                      <Cell key={d.name} fill={MISTAKE_COLOR[d.name] ?? fallbackColor(i)} />
                     ))}
                     <LabelList dataKey="loss" position="right" offset={8}
                       formatter={(v: number) => (v ? `-${formatCurrency(v)}` : formatCurrency(0))}
-                      style={{ fill: 'hsl(var(--destructive))', fontSize: 10, fontFamily: 'monospace' }} />
+                      style={{ fill: C.red, fontSize: 10 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">No losses from mistakes</div>
+              <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No losses from mistakes</div>
             )}
           </div>
-        </Panel>
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
+            <AlertOctagon className="h-3.5 w-3.5 shrink-0" style={{ color: C.orange }} />
+            <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
+              Total mistake loss <span className="font-semibold" style={{ color: C.red }}>{formatCurrency(totalMistakeLoss)}</span>
+            </p>
+          </div>
+        </SectionCard>
 
-        <Panel>
-          <PanelTitle title="Mistakes by Session" tooltip="Which trading session produces the most mistakes" />
-          <div className="h-[200px] px-3">
+        {/* Mistakes by Session */}
+        <SectionCard title="Mistakes by Session" tooltip="Which trading session produces the most mistakes">
+          <div className="h-[168px] shrink-0">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySession} margin={{ top: 18, right: 8, left: -14, bottom: 4 }} barSize={34}>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={0} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(38 92% 50%)" fillOpacity={0.9} radius={[4, 4, 0, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="top" style={{ fill: 'hsl(38 92% 55%)', fontSize: 10 }} />
+                <BarChart data={mistakeBySession} margin={{ top: 18, right: 8, left: -18, bottom: 2 }} barSize={30}>
+                  <CartesianGrid vertical={false} stroke={C.grid} />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} interval={0} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
+                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill={C.orange} radius={[0, 0, 0, 0]} animationDuration={700}>
+                    <LabelList dataKey="count" position="top" style={{ fill: C.orange, fontSize: 10 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
+              <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-[11px] text-muted-foreground">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
+            <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: C.orange }} />
+            <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
               {worstSession
-                ? <>Most mistakes during <span className="font-semibold text-destructive">{worstSession.name}</span></>
+                ? <>Most mistakes during <span className="font-semibold" style={{ color: C.red }}>{worstSession.name}</span></>
                 : 'No session data available'}
             </p>
           </div>
-        </Panel>
+        </SectionCard>
       </div>
 
-      {/* ── Row 2: trend + setup ───────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-4">
-        <Panel>
-          <PanelTitle title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks" />
-          <div className="h-[236px] px-3 pb-3">
+      {/* ══ PHASE 2 — ROW 2: 65 / 35 ══════════════════════════════ */}
+      <div className="grid grid-cols-1 items-stretch gap-2 lg:[grid-template-columns:65fr_35fr]">
+        <SectionCard title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks">
+          <div className="min-h-[196px] flex-1">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 18, right: 14, left: -14, bottom: 4 }}>
-                  <defs>
-                    <linearGradient id="trendGlow" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="hsl(38 92% 50%)" />
-                      <stop offset="100%" stopColor="hsl(0 84% 60%)" />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis dataKey="week" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.35 }}
+                <LineChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
+                  <CartesianGrid vertical={false} stroke={C.grid} />
+                  <XAxis dataKey="week" tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
+                  <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.18)' }}
                     content={({ active, payload, label }: any) => {
                       if (!active || !payload?.length) return null;
                       const d = payload[0].payload;
                       return (
-                        <div className="rounded-lg border border-border bg-popover/95 px-3 py-2 text-xs shadow-xl backdrop-blur">
-                          <p className="mb-1 text-muted-foreground">Week of {label}</p>
-                          <p className="font-mono text-warning">Mistakes: {d.count}</p>
-                          <p className="font-mono text-destructive">Loss: {formatCurrency(d.loss)}</p>
+                        <div className="rounded-[8px] border px-2.5 py-2" style={{ background: C.card, borderColor: C.grid }}>
+                          <p className="mb-1 font-sans text-[11px]" style={{ color: C.muted }}>Week of {label}</p>
+                          <p className="font-sans text-[12px]" style={{ color: C.orange }}>Mistakes: {d.count}</p>
+                          <p className="font-sans text-[12px]" style={{ color: C.red }}>Loss: {formatCurrency(d.loss)}</p>
                         </div>
                       );
                     }} />
-                  <Line type="monotone" dataKey="count" name="Mistakes" stroke="url(#trendGlow)" strokeWidth={2.5}
-                    dot={{ r: 3, fill: 'hsl(38 92% 50%)', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: 'hsl(0 84% 60%)' }} animationDuration={800}>
-                    <LabelList dataKey="count" position="top" offset={10}
-                      style={{ fill: 'hsl(38 92% 58%)', fontSize: 10 }} />
+                  <Line type="linear" dataKey="count" name="Mistakes" stroke={C.orange} strokeWidth={1.6}
+                    dot={{ r: 2.6, fill: C.orange, strokeWidth: 0 }}
+                    activeDot={{ r: 4, fill: C.red }} animationDuration={800}>
+                    <LabelList dataKey="count" position="top" offset={9} style={{ fill: C.orange, fontSize: 10 }} />
                   </Line>
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">No trend data</div>
+              <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No trend data</div>
             )}
           </div>
-        </Panel>
+        </SectionCard>
 
-        <Panel>
-          <PanelTitle title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around" />
-          <div className="h-[200px] px-3">
+        <SectionCard title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around">
+          <div className="h-[196px] shrink-0">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 6, right: 34, left: 4, bottom: 4 }} barSize={16}>
-                  <CartesianGrid horizontal={false} stroke="hsl(var(--border))" opacity={0.25} />
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" width={92} axisLine={false} tickLine={false}
-                    tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }} />
-                  <Tooltip cursor={{ fill: 'hsl(var(--muted)/0.25)' }} content={<Tip />} />
-                  <Bar dataKey="count" name="Mistakes" fill="hsl(152 60% 45%)" fillOpacity={0.85} radius={[0, 4, 4, 0]} animationDuration={700}>
-                    <LabelList dataKey="count" position="right" offset={8} style={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 4, right: 30, left: 0, bottom: 2 }} barSize={14}>
+                  <CartesianGrid horizontal={false} stroke={C.grid} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
+                  <YAxis dataKey="name" type="category" width={84} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#FFFFFF' }} />
+                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} content={<Tip />} />
+                  <Bar dataKey="count" name="Mistakes" fill={C.green} radius={[0, 0, 0, 0]} animationDuration={700}>
+                    <LabelList dataKey="count" position="right" offset={7} style={{ fill: C.muted, fontSize: 10 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">No data</div>
+              <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No data</div>
             )}
           </div>
-          <div className="flex items-center gap-2 border-t border-border/60 px-4 py-2.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-success" />
-            <p className="text-[11px] text-muted-foreground">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: C.green }} />
+            <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
               {topSetup
-                ? <><span className="font-semibold text-foreground">{topSetup.name}</span> setups lead to <span className="font-semibold text-success">{setupSharePct}%</span> of your mistakes</>
+                ? <><span className="font-semibold text-white">{topSetup.name}</span> setups lead to <span className="font-semibold" style={{ color: C.green }}>{setupSharePct}%</span> of your mistakes</>
                 : 'No setup concentration detected'}
             </p>
           </div>
-        </Panel>
+        </SectionCard>
       </div>
 
-      {/* ── Bottom: breakdown table + summary ──────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
-        <Panel className="overflow-hidden">
-          <PanelTitle
-            title="Mistakes Breakdown"
-            tooltip="Full detail per mistake type with impact, severity and recovery"
-            right={
-              <div className="flex flex-wrap items-center gap-2">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-7 w-[112px] text-[11px]"><SelectValue placeholder="All Types" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    {ALL_MISTAKES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={sessionFilter} onValueChange={setSessionFilter}>
-                  <SelectTrigger className="h-7 w-[130px] text-[11px]"><SelectValue placeholder="All Sessions" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sessions</SelectItem>
-                    {ALL_SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                  <SelectTrigger className="h-7 w-[140px] text-[11px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="impact">Sort: Impact</SelectItem>
-                    <SelectItem value="frequency">Sort: Frequency</SelectItem>
-                    <SelectItem value="loss">Sort: Loss</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            }
-          />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+      {/* ══ PHASE 3 — 75 / 25 ═════════════════════════════════════ */}
+      <div className="grid grid-cols-1 items-stretch gap-2 xl:[grid-template-columns:75fr_25fr]">
+        <SectionCard
+          title="Mistakes Breakdown"
+          tooltip="Full detail per mistake type with impact, severity and recovery"
+          className="overflow-hidden"
+          right={
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-7 w-[108px] rounded-[7px] border-[#262626] bg-black/60 text-[11px]"><SelectValue placeholder="All Types" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {ALL_MISTAKES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={sessionFilter} onValueChange={setSessionFilter}>
+                <SelectTrigger className="h-7 w-[138px] rounded-[7px] border-[#262626] bg-black/60 text-[11px]"><SelectValue placeholder="All Sessions" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sessions</SelectItem>
+                  {ALL_SESSIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                <SelectTrigger className="h-7 w-[132px] rounded-[7px] border-[#262626] bg-black/60 text-[11px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="impact">Sort: Impact</SelectItem>
+                  <SelectItem value="frequency">Sort: Frequency</SelectItem>
+                  <SelectItem value="loss">Sort: Loss</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          }
+        >
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            <table className="w-full font-sans">
               <thead>
-                <tr className="border-y border-border/60 text-left">
+                <tr className="border-y border-[#262626] text-left">
                   {['Mistake Type', 'Frequency', 'Total Loss', 'Avg Loss', 'Impact', 'Severity', 'Recovery Rate', 'Action'].map(h => (
-                    <th key={h} className="px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">{h}</th>
+                    <th key={h} className="whitespace-nowrap px-2.5 py-2 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ color: C.muted }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -695,35 +726,38 @@ export default function Mistakes() {
                   const sev = SEVERITY[m.name];
                   const color = MISTAKE_COLOR[m.name] ?? fallbackColor(i);
                   return (
-                    <tr key={m.name} className="border-b border-border/40 transition-colors hover:bg-accent/40">
-                      <td className="px-3 py-2.5 text-xs font-semibold whitespace-nowrap" style={{ color }}>{m.name}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums">{m.frequency}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.totalLoss)}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs tabular-nums text-destructive">{formatCurrency(m.avgLoss)}</td>
-                      <td className="px-3 py-2.5">
+                    <tr key={m.name} className="border-b border-[#1C1C1C] transition-colors last:border-0 hover:bg-white/[0.03]">
+                      <td className="whitespace-nowrap px-2.5 py-2 text-[11px] font-semibold" style={{ color }}>{m.name}</td>
+                      <td className="px-2.5 py-2 text-[11px] tabular-nums text-white">{m.frequency}</td>
+                      <td className="px-2.5 py-2 text-[11px] tabular-nums" style={{ color: C.red }}>{formatCurrency(m.totalLoss)}</td>
+                      <td className="px-2.5 py-2 text-[11px] tabular-nums" style={{ color: C.red }}>{formatCurrency(m.avgLoss)}</td>
+                      <td className="px-2.5 py-2">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                          <div className="h-1.5 w-14 overflow-hidden rounded-full bg-white/[0.07]">
                             <div className="h-full rounded-full transition-all duration-500"
                               style={{ width: `${Math.min(100, Math.abs(m.impactPct))}%`, background: color }} />
                           </div>
-                          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{Math.abs(m.impactPct)}%</span>
+                          <span className="text-[10px] tabular-nums" style={{ color: C.muted }}>{Math.abs(m.impactPct)}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', sev?.cls)}>
+                      <td className="px-2.5 py-2">
+                        <span
+                          className="rounded-[5px] border px-2 py-0.5 text-[9px] font-semibold"
+                          style={{ color: sev?.color, borderColor: `${sev?.color}55`, background: `${sev?.color}14` }}
+                        >
                           {sev?.level ?? '—'}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-2.5 py-2">
                         <div className="flex items-center gap-1.5">
                           <MiniRing pct={m.recovery} />
-                          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{m.recovery}%</span>
+                          <span className="text-[10px] tabular-nums" style={{ color: C.muted }}>{m.recovery}%</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-2.5 py-2">
                         <button
                           onClick={() => setTypeFilter(m.name)}
-                          className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[10px] font-medium text-foreground/90 transition-colors hover:border-primary/50 hover:bg-primary/10"
+                          className="flex items-center gap-1 rounded-[6px] border border-[#262626] px-2 py-1 text-[10px] font-medium text-white transition-colors hover:border-white/25 hover:bg-white/5"
                         >
                           Review <ArrowRight className="h-3 w-3" />
                         </button>
@@ -732,59 +766,62 @@ export default function Mistakes() {
                   );
                 })}
                 {tableRows.length === 0 && (
-                  <tr><td colSpan={8} className="px-3 py-8 text-center text-sm text-muted-foreground">No mistakes match these filters</td></tr>
+                  <tr><td colSpan={8} className="px-3 py-8 text-center font-sans text-[11px]" style={{ color: C.muted }}>No mistakes match these filters</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-        </Panel>
+        </SectionCard>
 
-        <Panel className="border-gold/30 p-4">
-          <h3 className="font-heading text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">Overall Summary</h3>
-          <div className="my-4"><ScoreGauge score={impactScore} /></div>
-          <dl className="space-y-2 text-[11px]">
+        <SectionCard title="Overall Summary" tooltip="Aggregate mistake impact for the selected range">
+          <div className="my-2 flex justify-center"><ScoreGauge score={impactScore} /></div>
+          <dl className="mt-1 flex-1 space-y-1.5 font-sans text-[10.5px]">
             {[
-              ['Total Mistakes', String(totalMistakes), ''],
-              ['Total Loss', formatCurrency(totalMistakeLoss), 'text-destructive'],
-              ['Avg Mistake Loss', formatCurrency(avgMistakeLoss), 'text-destructive'],
-              ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? 'text-success' : repeatDelta < 0 ? 'text-destructive' : ''],
-              ['Focus Area', topMistake ? `${topMistake.name} control` : '—', 'text-gold'],
+              ['Total Mistakes', String(totalMistakes), '#FFFFFF'],
+              ['Total Loss', formatCurrency(totalMistakeLoss), C.red],
+              ['Avg Mistake Loss', formatCurrency(avgMistakeLoss), C.red],
+              ['Best Improvement', repeatDelta > 0 ? `↑ Fewer repeats (${repeatDelta}%)` : repeatDelta < 0 ? `↓ More repeats (${Math.abs(repeatDelta)}%)` : '—', repeatDelta > 0 ? C.green : repeatDelta < 0 ? C.red : '#FFFFFF'],
+              ['Focus Area', topMistake ? `${topMistake.name} control` : '—', C.yellow],
             ].map(([k, v, c]) => (
-              <div key={k as string} className="flex items-center justify-between gap-2 border-b border-border/40 pb-2 last:border-0">
-                <dt className="text-muted-foreground">{k}</dt>
-                <dd className={cn('font-mono tabular-nums text-right', c as string)}>{v}</dd>
+              <div key={k} className="flex items-center justify-between gap-2 border-b border-[#1C1C1C] pb-1.5 last:border-0">
+                <dt style={{ color: C.muted }}>{k}</dt>
+                <dd className="truncate text-right tabular-nums font-semibold" style={{ color: c }}>{v}</dd>
               </div>
             ))}
           </dl>
-          <Button
-            className="mt-4 h-9 w-full gap-1.5 rounded-lg border border-gold/50 bg-gold/10 text-[11px] font-semibold uppercase tracking-wider text-gold hover:bg-gold/20"
-            variant="ghost"
-            onClick={() => document.querySelector<HTMLButtonElement>('button[title="Open AI Coach"]')?.click()}
+          <button
+            onClick={openDrawer}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-[7px] border px-4 py-2 font-sans text-[10px] font-semibold uppercase tracking-wider transition-colors hover:bg-white/[0.05]"
+            style={{ borderColor: `${C.yellow}55`, color: C.yellow }}
           >
             View AI Action Plan <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Panel>
+          </button>
+        </SectionCard>
       </div>
 
-      {/* ── Coach tip ──────────────────────────────────────────── */}
-      <Panel className="border-gold/25 bg-[linear-gradient(90deg,hsl(var(--gold)/0.07),transparent_40%)]">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gold/40 bg-gold/10 text-gold">
+      {/* ══ COACH TIP — full width strip ══════════════════════════ */}
+      <section className={cn(cardBase, 'flex flex-col items-start gap-3 px-5 py-3.5 lg:flex-row lg:items-center')}>
+        <div className="flex shrink-0 items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Lightbulb className="h-4 w-4" />
           </span>
-          <p className="text-[11px] leading-snug">
-            <span className="font-heading font-semibold uppercase tracking-[0.14em] text-gold">Coach Tip</span>
-            <span className="mx-2 text-border">|</span>
-            <span className="text-foreground/85">
-              {topMistake
-                ? <>Focus on <span className="font-semibold text-foreground">{topMistake.name}</span> control and wait for confirmation before entries.
-                  {worstSession && <> Review your <span className="font-semibold text-foreground">{worstSession.name}</span> trades carefully.</>}
-                  {' '}Cutting it in half would recover roughly {formatCurrency(Math.abs(topMistake.totalLoss) / 2)}.</>
-                : 'No mistakes logged in this period — keep protecting your process and journal every deviation.'}
-            </span>
-          </p>
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">Coach Tip</span>
         </div>
-      </Panel>
+        <p className="min-w-0 flex-1 font-sans text-[12px] leading-snug" style={{ color: C.muted }}>
+          {topMistake
+            ? <>Focus on <span className="font-semibold text-white">{topMistake.name}</span> control and wait for confirmation before entries.
+              {worstSession && <> Review your <span className="font-semibold text-white">{worstSession.name}</span> trades carefully.</>}
+              {' '}Cutting it in half would recover roughly {formatCurrency(Math.abs(topMistake.totalLoss) / 2)}.</>
+            : 'No mistakes logged in this period — keep protecting your process and journal every deviation.'}
+        </p>
+        <Link
+          to="/ai-insights"
+          className="flex shrink-0 items-center gap-2 rounded-lg px-4 py-2 font-sans text-[11px] font-semibold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
+          style={{ background: C.green }}
+        >
+          View Full Analysis <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </section>
     </div>
   );
 }
