@@ -539,7 +539,7 @@ export default function Mistakes() {
               </ul>
             </div>
           ) : (
-            <div className="grid h-[168px] flex-1 place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No mistakes logged</div>
+            <div className="grid h-[168px] shrink-0 place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No mistakes logged</div>
           )}
           <div className="mt-3 flex items-center gap-2 border-t border-[#262626] pt-2.5">
             <Target className="h-3.5 w-3.5 shrink-0" style={{ color: C.red }} />
@@ -555,7 +555,7 @@ export default function Mistakes() {
           tooltip="Total realised loss attributable to each mistake"
           right={<span className="shrink-0 font-sans text-[9px] uppercase tracking-[0.12em]" style={{ color: C.muted }}>Total Loss</span>}
         >
-          <div className="h-[168px] flex-1">
+          <div className="h-[168px] shrink-0">
             {lossByType.some(l => l.loss > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={lossByType} layout="vertical" margin={{ top: 4, right: 62, left: 0, bottom: 2 }} barSize={8}>
@@ -587,7 +587,7 @@ export default function Mistakes() {
 
         {/* Mistakes by Session */}
         <SectionCard title="Mistakes by Session" tooltip="Which trading session produces the most mistakes">
-          <div className="h-[168px] flex-1">
+          <div className="h-[168px] shrink-0">
             {mistakeBySession.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mistakeBySession} margin={{ top: 18, right: 8, left: -18, bottom: 2 }} barSize={30}>
@@ -618,7 +618,7 @@ export default function Mistakes() {
       {/* ══ PHASE 2 — ROW 2: 65 / 35 ══════════════════════════════ */}
       <div className="grid grid-cols-1 items-stretch gap-2 lg:[grid-template-columns:65fr_35fr]">
         <SectionCard title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks">
-          <div className="h-[196px] flex-1">
+          <div className="h-[196px] shrink-0">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
@@ -651,7 +651,7 @@ export default function Mistakes() {
         </SectionCard>
 
         <SectionCard title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around">
-          <div className="h-[196px] flex-1">
+          <div className="h-[196px] shrink-0">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 4, right: 30, left: 0, bottom: 2 }} barSize={14}>
