@@ -541,7 +541,7 @@ export default function Mistakes() {
           ) : (
             <div className="grid h-[168px] shrink-0 place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No mistakes logged</div>
           )}
-          <div className="mt-3 flex items-center gap-2 border-t border-[#262626] pt-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
             <Target className="h-3.5 w-3.5 shrink-0" style={{ color: C.red }} />
             <p className="truncate font-sans text-[10px]" style={{ color: C.red }}>
               {topMistake ? <><span className="font-semibold">{topMistake.name}</span> is your most expensive mistake</> : 'No mistake concentration detected'}
@@ -577,7 +577,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No losses from mistakes</div>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-2 border-t border-[#262626] pt-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
             <AlertOctagon className="h-3.5 w-3.5 shrink-0" style={{ color: C.orange }} />
             <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
               Total mistake loss <span className="font-semibold" style={{ color: C.red }}>{formatCurrency(totalMistakeLoss)}</span>
@@ -604,7 +604,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No data</div>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-2 border-t border-[#262626] pt-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
             <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: C.orange }} />
             <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
               {worstSession
@@ -618,7 +618,7 @@ export default function Mistakes() {
       {/* ══ PHASE 2 — ROW 2: 65 / 35 ══════════════════════════════ */}
       <div className="grid grid-cols-1 items-stretch gap-2 lg:[grid-template-columns:65fr_35fr]">
         <SectionCard title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks">
-          <div className="h-[196px] shrink-0">
+          <div className="min-h-[196px] flex-1">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
@@ -668,7 +668,7 @@ export default function Mistakes() {
               <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No data</div>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-2 border-t border-[#262626] pt-2.5">
+          <div className="mt-auto flex items-center gap-2 border-t border-[#262626] pt-2.5">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: C.green }} />
             <p className="truncate font-sans text-[10px]" style={{ color: C.muted }}>
               {topSetup
