@@ -5,7 +5,7 @@ import { useAICoach } from '@/contexts/AICoachContext';
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell, LineChart, Line, LabelList,
+  PieChart, Pie, Cell, ComposedChart, Area, Line, LabelList,
 } from 'recharts';
 import { formatCurrency } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
@@ -478,7 +478,7 @@ export default function Mistakes() {
               Smart<br />Insights
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-x-3 gap-y-2 md:grid-cols-2 lg:grid-cols-4">
             <InsightItem icon={AlertOctagon} tone={C.red}>
               {topMistake
                 ? <><span className="font-semibold" style={{ color: C.red }}>{topMistake.name}</span> causes {topMistakePct}% of your mistake losses</>
@@ -618,10 +618,17 @@ export default function Mistakes() {
       {/* ══ PHASE 2 — ROW 2: 65 / 35 ══════════════════════════════ */}
       <div className="grid grid-cols-1 items-stretch gap-2 lg:[grid-template-columns:65fr_35fr]">
         <SectionCard title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks">
-          <div className="min-h-[196px] flex-1">
+          <div className="h-[clamp(168px,17vw,214px)] w-full shrink-0">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
+                <ComposedChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
+                  <defs>
+                    <linearGradient id="mistakesTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.orange} stopOpacity={0.34} />
+                      <stop offset="55%" stopColor={C.orange} stopOpacity={0.13} />
+                      <stop offset="100%" stopColor={C.orange} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid vertical={false} stroke={C.grid} />
                   <XAxis dataKey="week" tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
@@ -637,12 +644,14 @@ export default function Mistakes() {
                         </div>
                       );
                     }} />
+                  <Area type="linear" dataKey="count" stroke="none" fill="url(#mistakesTrendFill)"
+                    baseValue={0} isAnimationActive={false} activeDot={false} legendType="none" />
                   <Line type="linear" dataKey="count" name="Mistakes" stroke={C.orange} strokeWidth={1.6}
                     dot={{ r: 2.6, fill: C.orange, strokeWidth: 0 }}
                     activeDot={{ r: 4, fill: C.red }} animationDuration={800}>
                     <LabelList dataKey="count" position="top" offset={9} style={{ fill: C.orange, fontSize: 10 }} />
                   </Line>
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No trend data</div>
@@ -651,7 +660,7 @@ export default function Mistakes() {
         </SectionCard>
 
         <SectionCard title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around">
-          <div className="h-[196px] shrink-0">
+          <div className="h-[clamp(140px,14.5vw,186px)] shrink-0">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 4, right: 30, left: 0, bottom: 2 }} barSize={14}>
@@ -680,7 +689,7 @@ export default function Mistakes() {
       </div>
 
       {/* ══ PHASE 3 — 75 / 25 ═════════════════════════════════════ */}
-      <div className="grid grid-cols-1 items-stretch gap-2 xl:[grid-template-columns:75fr_25fr]">
+      <div className="grid grid-cols-1 items-start gap-2 xl:[grid-template-columns:75fr_25fr]">
         <SectionCard
           title="Mistakes Breakdown"
           tooltip="Full detail per mistake type with impact, severity and recovery"
@@ -712,7 +721,7 @@ export default function Mistakes() {
             </div>
           }
         >
-          <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto">
             <table className="w-full font-sans">
               <thead>
                 <tr className="border-y border-[#262626] text-left">
@@ -775,7 +784,7 @@ export default function Mistakes() {
 
         <SectionCard title="Overall Summary" tooltip="Aggregate mistake impact for the selected range">
           <div className="my-2 flex justify-center"><ScoreGauge score={impactScore} /></div>
-          <dl className="mt-1 flex-1 space-y-1.5 font-sans text-[10.5px]">
+          <dl className="mt-1 space-y-1.5 font-sans text-[10.5px]">
             {[
               ['Total Mistakes', String(totalMistakes), '#FFFFFF'],
               ['Total Loss', formatCurrency(totalMistakeLoss), C.red],
