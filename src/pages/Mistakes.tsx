@@ -618,10 +618,17 @@ export default function Mistakes() {
       {/* ══ PHASE 2 — ROW 2: 65 / 35 ══════════════════════════════ */}
       <div className="grid grid-cols-1 items-stretch gap-2 lg:[grid-template-columns:65fr_35fr]">
         <SectionCard title="Mistakes Trend (Weekly)" tooltip="Weekly mistake count and the loss attached to those weeks">
-          <div className="min-h-[196px] flex-1">
+          <div className="h-[clamp(168px,17vw,214px)] w-full shrink-0">
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
+                <ComposedChart data={trendData} margin={{ top: 20, right: 16, left: -18, bottom: 2 }}>
+                  <defs>
+                    <linearGradient id="mistakesTrendFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.orange} stopOpacity={0.34} />
+                      <stop offset="55%" stopColor={C.orange} stopOpacity={0.13} />
+                      <stop offset="100%" stopColor={C.orange} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid vertical={false} stroke={C.grid} />
                   <XAxis dataKey="week" tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: C.muted }} axisLine={{ stroke: C.grid }} tickLine={false} />
@@ -637,12 +644,14 @@ export default function Mistakes() {
                         </div>
                       );
                     }} />
+                  <Area type="linear" dataKey="count" stroke="none" fill="url(#mistakesTrendFill)"
+                    baseValue={0} isAnimationActive={false} activeDot={false} legendType="none" />
                   <Line type="linear" dataKey="count" name="Mistakes" stroke={C.orange} strokeWidth={1.6}
                     dot={{ r: 2.6, fill: C.orange, strokeWidth: 0 }}
                     activeDot={{ r: 4, fill: C.red }} animationDuration={800}>
                     <LabelList dataKey="count" position="top" offset={9} style={{ fill: C.orange, fontSize: 10 }} />
                   </Line>
-                </LineChart>
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="grid h-full place-items-center font-sans text-[11px]" style={{ color: C.muted }}>No trend data</div>
