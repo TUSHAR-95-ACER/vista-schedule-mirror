@@ -1214,9 +1214,14 @@ export default function Psychology() {
               ) : <div className="flex h-full items-center justify-center font-sans text-[10px] text-muted-foreground">No P/L data</div>}
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
                 <span className="font-sans text-[9px] text-muted-foreground">Total P/L</span>
-                <span className="font-sans text-[13px] font-bold text-emerald-500">
-                  {scoped.reduce((sum, trade) => sum + trade.profitLoss, 0) >= 0 ? '+' : ''}{scoped.reduce((sum, trade) => sum + trade.profitLoss, 0).toFixed(2)}
-                </span>
+                {(() => {
+                  const totalPL = scoped.reduce((sum, trade) => sum + trade.profitLoss, 0);
+                  return (
+                    <span className="font-sans text-[13px] font-bold" style={{ color: totalPL >= 0 ? C.green : C.red }}>
+                      {totalPL >= 0 ? '+' : ''}{totalPL.toFixed(2)}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
             <div className="flex min-h-0 flex-col justify-between py-0.5">
