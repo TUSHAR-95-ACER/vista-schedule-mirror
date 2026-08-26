@@ -478,7 +478,7 @@ export default function Mistakes() {
               Smart<br />Insights
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-x-3 gap-y-2 md:grid-cols-2 lg:grid-cols-4">
             <InsightItem icon={AlertOctagon} tone={C.red}>
               {topMistake
                 ? <><span className="font-semibold" style={{ color: C.red }}>{topMistake.name}</span> causes {topMistakePct}% of your mistake losses</>
@@ -660,7 +660,7 @@ export default function Mistakes() {
         </SectionCard>
 
         <SectionCard title="Mistakes by Setup / Strategy" tooltip="Which setups your mistakes cluster around">
-          <div className="h-[196px] shrink-0">
+          <div className="h-[clamp(140px,14.5vw,186px)] shrink-0">
             {mistakeBySetup.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={mistakeBySetup.slice(0, 6)} layout="vertical" margin={{ top: 4, right: 30, left: 0, bottom: 2 }} barSize={14}>
@@ -689,7 +689,7 @@ export default function Mistakes() {
       </div>
 
       {/* ══ PHASE 3 — 75 / 25 ═════════════════════════════════════ */}
-      <div className="grid grid-cols-1 items-stretch gap-2 xl:[grid-template-columns:75fr_25fr]">
+      <div className="grid grid-cols-1 items-start gap-2 xl:[grid-template-columns:75fr_25fr]">
         <SectionCard
           title="Mistakes Breakdown"
           tooltip="Full detail per mistake type with impact, severity and recovery"
@@ -721,7 +721,7 @@ export default function Mistakes() {
             </div>
           }
         >
-          <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="min-w-0 overflow-x-auto">
             <table className="w-full font-sans">
               <thead>
                 <tr className="border-y border-[#262626] text-left">
@@ -784,7 +784,7 @@ export default function Mistakes() {
 
         <SectionCard title="Overall Summary" tooltip="Aggregate mistake impact for the selected range">
           <div className="my-2 flex justify-center"><ScoreGauge score={impactScore} /></div>
-          <dl className="mt-1 flex-1 space-y-1.5 font-sans text-[10.5px]">
+          <dl className="mt-1 space-y-1.5 font-sans text-[10.5px]">
             {[
               ['Total Mistakes', String(totalMistakes), '#FFFFFF'],
               ['Total Loss', formatCurrency(totalMistakeLoss), C.red],
