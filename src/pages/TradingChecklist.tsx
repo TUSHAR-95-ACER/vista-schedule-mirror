@@ -616,9 +616,9 @@ export default function TradingChecklist() {
       </div>
 
       {/* ============ MAIN GRID (tabs sit inside left col so sidebar aligns) ============ */}
-      <div className="grid grid-cols-1 gap-6" style={{ gridTemplateColumns: 'minmax(0,1fr) 360px' }}>
+      <div className="grid grid-cols-1 items-start gap-6 lg:[grid-template-columns:minmax(0,1fr)_340px] xl:[grid-template-columns:minmax(0,1fr)_360px]">
         {/* -------- LEFT COLUMN -------- */}
-        <div>
+        <div className="min-w-0">
           {/* Tabs + New Section */}
           <div className="flex items-center justify-between border-b border-white/[0.05] mb-6">
             <div className="flex items-center gap-7">
@@ -814,7 +814,7 @@ export default function TradingChecklist() {
 
         {/* -------- RIGHT SIDEBAR -------- */}
         {tab === 'checklist' && (
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
 
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
