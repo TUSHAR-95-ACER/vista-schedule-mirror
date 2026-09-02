@@ -814,7 +814,7 @@ export default function TradingChecklist() {
 
         {/* -------- RIGHT SIDEBAR -------- */}
         {tab === 'checklist' && (
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
 
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
