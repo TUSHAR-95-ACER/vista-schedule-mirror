@@ -689,7 +689,7 @@ export default function Mistakes() {
       </div>
 
       {/* ══ PHASE 3 — 75 / 25 ═════════════════════════════════════ */}
-      <div className="grid grid-cols-1 items-start gap-2 xl:[grid-template-columns:75fr_25fr]">
+      <div className="grid grid-cols-1 items-start gap-2 md:[grid-template-columns:minmax(0,1fr)_300px] xl:[grid-template-columns:minmax(0,1fr)_360px]">
         <SectionCard
           title="Mistakes Breakdown"
           tooltip="Full detail per mistake type with impact, severity and recovery"
