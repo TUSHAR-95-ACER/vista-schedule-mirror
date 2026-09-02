@@ -100,7 +100,7 @@ function KpiCard({
   return (
     <div
       className="flex min-w-0 flex-col rounded-[7px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
-      style={{ padding: 'clamp(11px, 1.1vw, 16px)', borderColor: C.border, backgroundColor: C.card }}
+      style={{ padding: 'clamp(11px, 1.1vw, 16px)', borderColor: '#404040', backgroundColor: '#000000' }}
     >
       <p
         className="truncate font-sans font-semibold uppercase"
