@@ -33,7 +33,7 @@ const C = {
 };
 
 const cardBase =
-  'rounded-[9px] border border-[#262626] bg-black/80 p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
+  'rounded-[9px] border border-[#404040] bg-black p-6 transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]';
 
 /* ── small building blocks ──────────────────────────────────────────── */
 function Ring({ value, color, size = 56 }: { value: number; color: string; size?: number }) {
@@ -131,7 +131,7 @@ function KpiCard({
   return (
     <div
       className="relative flex items-start gap-[clamp(6px,0.7vw,10px)] overflow-hidden rounded-[7px] border transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-[0_18px_44px_-28px_rgba(255,255,255,0.35)]"
-      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#262626', backgroundColor: 'rgba(0,0,0,0.8)' }}
+      style={{ padding: 'clamp(12px, 1.2vw, 18px)', borderColor: '#404040', backgroundColor: '#000000' }}
     >
       {/* LEFT — icon in its own column */}
       <span style={{ color }} className="shrink-0 leading-none pt-[2px]">
@@ -254,10 +254,10 @@ const ChartTip = ({ active, payload, label }: any) => {
 
 /* ══ PHASE 2 — SECOND ROW SPEC ══════════════════════════════════════ */
 const P2 = {
-  card: 'rgba(0,0,0,0.8)',
-  border: '#262626',
+  card: '#000000',
+  border: '#404040',
   page: '#000000',
-  inner: 'rgba(0,0,0,0.8)',
+  inner: '#000000',
   grid: '#232323',
   zero: '#333333',
 
@@ -1111,7 +1111,7 @@ export default function Psychology() {
             const Icon = icons[i];
             const text = insights[i];
             return (
-              <div key={i} className="flex h-full items-start gap-2.5 rounded-[7px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
+              <div key={i} className="flex h-full items-start gap-2.5 rounded-[7px] border border-[#404040] bg-black p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-white/20">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${colors[i]}14`, color: colors[i] }}>
                   <Icon className="h-4 w-4" />
                 </span>
@@ -1128,7 +1128,7 @@ export default function Psychology() {
           })}
           <Link
             to="/ai-insights"
-            className="group flex h-full items-center justify-between gap-3 rounded-[7px] border border-[#262626] bg-black/80 p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-emerald-500/40"
+            className="group flex h-full items-center justify-between gap-3 rounded-[7px] border border-[#404040] bg-black p-3.5 transition-all duration-[180ms] hover:-translate-y-0.5 hover:border-emerald-500/40"
           >
             <span className="min-w-0">
               <span className="block font-sans text-[12px] font-semibold text-white">View Full AI Report</span>
@@ -1281,7 +1281,7 @@ export default function Psychology() {
       </div>
 
       {/* ── COACH TIP FOOTER ── */}
-      <section className="flex flex-col items-start gap-3 rounded-[9px] border border-[#262626] bg-black/80 px-5 py-3.5 lg:flex-row lg:items-center">
+      <section className="flex flex-col items-start gap-3 rounded-[9px] border border-[#404040] bg-black px-5 py-3.5 lg:flex-row lg:items-center">
         <div className="flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Lightbulb className="h-4 w-4" />

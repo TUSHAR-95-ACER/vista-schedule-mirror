@@ -35,12 +35,12 @@ const C = {
   red: '#EF4444',
   yellow: '#FACC15',
   muted: '#9CA3AF',
-  border: '#262626',
-  card: 'rgba(0,0,0,0.8)',
+  border: '#404040',
+  card: '#000000',
   grid: '#232323',
 };
 
-const cardBase = 'rounded-[9px] border border-[#262626] bg-black/80';
+const cardBase = 'rounded-[9px] border border-[#404040] bg-black';
 
 const MISTAKE_COLOR: Record<string, string> = {
   'FOMO': C.red,
