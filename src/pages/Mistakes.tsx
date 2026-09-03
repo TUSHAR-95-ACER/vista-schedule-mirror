@@ -135,14 +135,14 @@ function KpiCard({
 
 function InsightItem({ icon: Icon, tone, children }: { icon: any; tone: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-w-0 items-center gap-2.5">
+    <div className="flex min-w-0 items-start gap-2.5">
       <span
         className="grid h-7 w-7 shrink-0 place-items-center rounded-full border"
         style={{ borderColor: `${tone}55`, background: `${tone}18`, color: tone }}
       >
         <Icon className="h-3.5 w-3.5" />
       </span>
-      <p className="min-w-0 truncate font-sans text-[10.5px] leading-snug" style={{ color: '#E2E8F0' }}>{children}</p>
+      <p className="min-w-0 font-sans text-[10.5px] leading-snug" style={{ color: '#E2E8F0' }}>{children}</p>
     </div>
   );
 }
@@ -808,14 +808,14 @@ export default function Mistakes() {
       </div>
 
       {/* ══ COACH TIP — full width strip ══════════════════════════ */}
-      <section className={cn(cardBase, 'flex flex-row items-center gap-3 px-5 py-3.5')}>
+      <section className={cn(cardBase, 'flex flex-col gap-3 px-5 py-3.5 lg:flex-row lg:items-center')}>
         <div className="flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `${C.yellow}14`, color: C.yellow }}>
             <Lightbulb className="h-4 w-4" />
           </span>
           <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.12em] text-white">Coach Tip</span>
         </div>
-        <p className="min-w-0 flex-1 truncate font-sans text-[12px] leading-snug" style={{ color: C.muted }}>
+        <p className="min-w-0 flex-1 font-sans text-[12px] leading-snug" style={{ color: C.muted }}>
           {topMistake
             ? <>Focus on <span className="font-semibold text-white">{topMistake.name}</span> control and wait for confirmation before entries.
               {worstSession && <> Review your <span className="font-semibold text-white">{worstSession.name}</span> trades carefully.</>}
