@@ -238,10 +238,10 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-[#404040] px-3 py-3.5',
+        'group relative overflow-hidden rounded-[16px] border border-[#404040] px-2.5 py-3 min-w-0',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
       )}
-      style={{ minHeight: 128, background: '#000000' }}
+      style={{ minHeight: 108, background: '#000000' }}
     >
       <div className="relative flex items-center gap-2.5 h-full">
         <div className="shrink-0">
