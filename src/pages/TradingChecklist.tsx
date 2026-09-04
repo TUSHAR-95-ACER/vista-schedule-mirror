@@ -238,10 +238,10 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-[16px] border border-[#404040] px-3 py-3.5',
+        'group relative overflow-hidden rounded-[16px] border border-[#404040] px-2.5 py-3 min-w-0',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
       )}
-      style={{ minHeight: 128, background: '#000000' }}
+      style={{ minHeight: 108, background: '#000000' }}
     >
       <div className="relative flex items-center gap-2.5 h-full">
         <div className="shrink-0">
@@ -652,7 +652,7 @@ export default function TradingChecklist() {
 
           {tab === 'checklist' && (<>
           {/* KPI grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+          <div className="grid grid-cols-2 [grid-template-columns:repeat(2,minmax(0,1fr))] md:[grid-template-columns:repeat(4,minmax(0,1fr))] gap-2.5 mb-4">
             <KpiCard
               icon={ListChecks}
               label="Overall Progress"
@@ -668,7 +668,8 @@ export default function TradingChecklist() {
           </div>
 
           {/* Sections */}
-          <div className="space-y-4">
+          <div className="space-y-2.5">
+
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
@@ -704,27 +705,27 @@ export default function TradingChecklist() {
                   />
 
                   {/* header — tighter */}
-                  <div className="relative flex items-center gap-3 px-5 pl-6 py-3.5">
+                  <div className="relative flex items-center gap-2.5 px-4 pl-5 py-2.5">
                     <GripVertical className="h-3.5 w-3.5 text-white/15 shrink-0 cursor-grab" />
                     <div
-                      className="h-[42px] w-[42px] rounded-[12px] flex items-center justify-center shrink-0 relative overflow-hidden"
+                      className="h-[34px] w-[34px] rounded-[10px] flex items-center justify-center shrink-0 relative overflow-hidden"
                       style={{
                         background: `linear-gradient(160deg, ${p.from} 0%, ${p.from} 40%, ${p.to} 100%)`,
                         boxShadow: `0 10px 22px -8px ${p.from}90, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.22)`,
                       }}
                     >
                       <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
-                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.4} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
+                      <Icon className="h-[17px] w-[17px] text-white relative" strokeWidth={2.4} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-1.5">
                         <span className="font-heading font-semibold text-[13px] text-white/30 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
-                        <h3 className="font-heading font-semibold text-[16px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
+                        <h3 className="font-heading font-semibold text-[15px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[11.5px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
+                      {s.description && <p className="text-[11px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={38} stroke={4} />
+                      <MiniRing value={pct} color={p.from} size={32} stroke={3.5} />
                       <span className="text-[12px] text-white/65 font-mono tabular-nums w-10 text-right">
                         {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
@@ -745,19 +746,17 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="relative px-5 pb-3.5 pl-6 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <div className="relative px-4 pb-2.5 pl-5 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
-                              i.done
-                                ? 'border-[#404040] bg-white/[0.015]'
-                                : 'border-[#404040] bg-black hover:bg-[#171717] hover:border-white/[0.08]'
+                              'group/item flex items-center gap-2.5 px-1 rounded-[7px] border-0 transition-all cursor-pointer',
+                              i.done ? 'bg-transparent' : 'bg-transparent hover:bg-white/[0.03]'
                             )}
-                            style={{ height: 38 }}
+                            style={{ height: 30 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
