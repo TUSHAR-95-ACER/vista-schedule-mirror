@@ -746,19 +746,17 @@ export default function TradingChecklist() {
 
                   {/* items */}
                   {!isCollapsed && (
-                    <div className="relative px-5 pb-3.5 pl-6 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <div className="relative px-4 pb-2.5 pl-5 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0.5">
                         {s.items.map((i) => (
                           <div
                             key={i.id}
                             onClick={() => toggleItem(s.id, i.id)}
                             className={cn(
-                              'group/item flex items-center gap-3 px-3 rounded-[9px] border transition-all cursor-pointer',
-                              i.done
-                                ? 'border-[#404040] bg-white/[0.015]'
-                                : 'border-[#404040] bg-black hover:bg-[#171717] hover:border-white/[0.08]'
+                              'group/item flex items-center gap-2.5 px-1 rounded-[7px] border-0 transition-all cursor-pointer',
+                              i.done ? 'bg-transparent' : 'bg-transparent hover:bg-white/[0.03]'
                             )}
-                            style={{ height: 38 }}
+                            style={{ height: 30 }}
                           >
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleItem(s.id, i.id); }}
