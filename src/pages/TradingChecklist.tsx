@@ -46,13 +46,15 @@ const ICON_KEYS = Object.keys(ICONS);
 // Per-section vivid tokens (matches reference gradient palette)
 type Palette = { key: string; from: string; to: string; ring: string; dot: string; soft: string };
 const PALETTES: Palette[] = [
-  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' },
-  { key: 'blue',    from: '#3B82F6', to: '#2563EB', ring: 'stroke-[#3B82F6]', dot: 'bg-[#3B82F6]', soft: 'from-[#3B82F6]/25 to-[#2563EB]/5' },
-  { key: 'emerald', from: '#10B981', to: '#059669', ring: 'stroke-[#10B981]', dot: 'bg-[#10B981]', soft: 'from-[#10B981]/25 to-[#059669]/5' },
-  { key: 'amber',   from: '#F59E0B', to: '#D97706', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#D97706]/5' },
-  { key: 'rose',    from: '#EC4899', to: '#DB2777', ring: 'stroke-[#EC4899]', dot: 'bg-[#EC4899]', soft: 'from-[#EC4899]/25 to-[#DB2777]/5' },
-  { key: 'indigo',  from: '#8B5CF6', to: '#6366F1', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#6366F1]/5' },
-  { key: 'teal',    from: '#14B8A6', to: '#0D9488', ring: 'stroke-[#14B8A6]', dot: 'bg-[#14B8A6]', soft: 'from-[#14B8A6]/25 to-[#0D9488]/5' },
+  // Reference palette — key order maps to the 7 reference sections.
+  { key: 'violet',  from: '#8B5CF6', to: '#7C3AED', ring: 'stroke-[#8B5CF6]', dot: 'bg-[#8B5CF6]', soft: 'from-[#8B5CF6]/25 to-[#7C3AED]/5' }, // Morning Routine — purple
+  { key: 'blue',    from: '#3B82F6', to: '#2563EB', ring: 'stroke-[#3B82F6]', dot: 'bg-[#3B82F6]', soft: 'from-[#3B82F6]/25 to-[#2563EB]/5' }, // Market Preparation — blue
+  { key: 'emerald', from: '#14B8A6', to: '#0D9488', ring: 'stroke-[#14B8A6]', dot: 'bg-[#14B8A6]', soft: 'from-[#14B8A6]/25 to-[#0D9488]/5' }, // Daily Planning — teal/green
+  { key: 'amber',   from: '#F59E0B', to: '#D97706', ring: 'stroke-[#F59E0B]', dot: 'bg-[#F59E0B]', soft: 'from-[#F59E0B]/25 to-[#D97706]/5' }, // Learning — amber
+  { key: 'rose',    from: '#EC4899', to: '#DB2777', ring: 'stroke-[#EC4899]', dot: 'bg-[#EC4899]', soft: 'from-[#EC4899]/25 to-[#DB2777]/5' }, // Health — pink
+  { key: 'indigo',  from: '#A855F7', to: '#7C3AED', ring: 'stroke-[#A855F7]', dot: 'bg-[#A855F7]', soft: 'from-[#A855F7]/25 to-[#7C3AED]/5' }, // End of Day — violet
+  { key: 'teal',    from: '#06B6D4', to: '#0891B2', ring: 'stroke-[#06B6D4]', dot: 'bg-[#06B6D4]', soft: 'from-[#06B6D4]/25 to-[#0891B2]/5' }, // Personal Development — cyan/teal
+
 ];
 const paletteFor = (key: string) => PALETTES.find(p => p.key === key) ?? PALETTES[0];
 
