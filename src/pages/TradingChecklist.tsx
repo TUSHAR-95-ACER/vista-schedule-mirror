@@ -613,7 +613,7 @@ export default function TradingChecklist() {
       </div>
 
       {/* ============ MAIN GRID (tabs sit inside left col so sidebar aligns) ============ */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:[grid-template-columns:minmax(0,1fr)_340px] xl:[grid-template-columns:minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:[grid-template-columns:minmax(0,1fr)_272px] xl:[grid-template-columns:minmax(0,1fr)_288px]">
         {/* -------- LEFT COLUMN -------- */}
         <div className="min-w-0">
           {/* Tabs + New Section */}
