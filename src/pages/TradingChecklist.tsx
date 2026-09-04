@@ -720,12 +720,12 @@ export default function TradingChecklist() {
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-1.5">
                         <span className="font-heading font-semibold text-[13px] text-white/30 tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
-                        <h3 className="font-heading font-semibold text-[16px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
+                        <h3 className="font-heading font-semibold text-[15px] text-white truncate tracking-[-0.015em] leading-tight">{s.title}</h3>
                       </div>
-                      {s.description && <p className="text-[11.5px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
+                      {s.description && <p className="text-[11px] text-[#6A7288] mt-0.5 truncate leading-tight">{s.description}</p>}
                     </button>
                     <div className="flex items-center gap-2.5 shrink-0">
-                      <MiniRing value={pct} color={p.from} size={38} stroke={4} />
+                      <MiniRing value={pct} color={p.from} size={32} stroke={3.5} />
                       <span className="text-[12px] text-white/65 font-mono tabular-nums w-10 text-right">
                         {s.items.filter(i => i.done).length}/{s.items.length}
                       </span>
