@@ -800,7 +800,7 @@ export default function TradingChecklist() {
             <button
               onClick={addSection}
               className="w-full flex items-center justify-center gap-2 rounded-[12px] border border-dashed border-[#8B5CF6]/35 bg-transparent text-[13px] font-medium text-[#A78BFA] hover:text-white hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/55 transition"
-              style={{ height: 42 }}
+              style={{ height: 36 }}
             >
               <Plus className="h-3.5 w-3.5" /> Add New Section
             </button>
@@ -810,7 +810,7 @@ export default function TradingChecklist() {
 
         {/* -------- RIGHT SIDEBAR -------- */}
         {tab === 'checklist' && (
-        <aside className="min-w-0 space-y-4">
+        <aside className="min-w-0 space-y-3">
 
           {/* Progress Overview */}
           <SidePanel title="Progress Overview">
@@ -819,7 +819,7 @@ export default function TradingChecklist() {
               <MultiRingProgress
                 overallPct={overall.pct}
                 rings={sections.map(s => ({ color: paletteFor(s.color).from, pct: computeSectionPct(s) }))}
-                size={160}
+                size={132}
               />
             </div>
             <div
@@ -857,7 +857,7 @@ export default function TradingChecklist() {
 
           {/* Today's Stats — 2x2 grid */}
           <SidePanel title="Today's Stats">
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               <MiniStat icon={CheckCircle2} label="Completed"  value={overall.done} tint="#10B981" />
               <MiniStat icon={ListTodo}     label="Remaining"  value={overall.total - overall.done} tint="#3B82F6" />
               <MiniStat icon={Clock}        label="Avg Time"   value="2h 15m" tint="#F59E0B" />
@@ -866,7 +866,7 @@ export default function TradingChecklist() {
           </SidePanel>
 
           {/* Quote Card */}
-          <div className="relative overflow-hidden rounded-[16px] border border-[#404040] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#000000' }}>
+          <div className="relative overflow-hidden rounded-[13px] border border-[#404040] p-3 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#000000' }}>
             <div
               className="absolute inset-0 pointer-events-none opacity-[0.10]"
               style={{ background: 'radial-gradient(120% 100% at 100% 0%, #8B5CF6 0%, transparent 45%), radial-gradient(120% 100% at 0% 100%, #EC4899 0%, transparent 45%)' }}
@@ -1025,7 +1025,7 @@ export default function TradingChecklist() {
 // ---------- Sidebar building blocks ----------
 function SidePanel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[16px] border border-[#404040] p-4 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#000000' }}>
+    <div className="relative rounded-[13px] border border-[#404040] p-3 shadow-[0_14px_40px_-14px_rgba(0,0,0,0.7)]" style={{ background: '#000000' }}>
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-heading font-semibold text-[11px] uppercase tracking-[0.11em] text-white/75">{title}</h3>
@@ -1044,7 +1044,7 @@ function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
     return `${i * 6},${y.toFixed(1)}`;
   }).join(' ');
   return (
-    <svg width={48} height={14} viewBox="0 0 48 14" className="shrink-0">
+    <svg width={34} height={13} viewBox="0 0 48 14" className="shrink-0">
       <polyline points={pts} fill="none" stroke={color} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
     </svg>
   );
@@ -1052,7 +1052,7 @@ function Sparkline({ color, seed = 6 }: { color: string; seed?: number }) {
 
 function StreakRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-3" style={{ height: 42 }}>
+    <div className="flex items-center gap-3" style={{ height: 36 }}>
       <div
         className="h-8 w-8 rounded-[10px] flex items-center justify-center shrink-0"
         style={{ background: `linear-gradient(135deg, ${color}2A, ${color}0D)`, boxShadow: `inset 0 0 0 1px ${color}2A, inset 0 1px 0 rgba(255,255,255,0.05)` }}
@@ -1070,7 +1070,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
   return (
     <div
       className="relative overflow-hidden rounded-[11px] border border-[#404040] px-3 py-2 flex flex-col justify-center"
-      style={{ height: 74, background: '#000000' }}
+      style={{ height: 62, background: '#000000' }}
     >
       <div className="flex items-center gap-1.5 mb-1">
         <Icon className="h-[13px] w-[13px]" style={{ color: tint }} />
@@ -1084,7 +1084,7 @@ function MiniStat({ icon: Icon, label, value, tint }: { icon: any; label: string
 
 function TypeChip({ icon: Icon, label, color }: { icon: any; label: string; color: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-[11px] border border-[#404040] px-3" style={{ height: 50, background: '#000000' }}>
+    <div className="flex items-center gap-2 rounded-[11px] border border-[#404040] px-3" style={{ height: 42, background: '#000000' }}>
       <Icon className="h-[15px] w-[15px]" style={{ color }} />
       <span className="text-[12px] text-white/85 truncate">{label}</span>
     </div>
@@ -1096,7 +1096,7 @@ function ActionBtn({ icon: Icon, label, onClick }: { icon: any; label: string; o
     <button
       onClick={onClick}
       className="w-full flex items-center gap-2.5 px-3 rounded-[11px] border border-[#404040] hover:border-white/[0.08] hover:bg-white/[0.02] transition-all text-left group"
-      style={{ height: 40, background: '#000000' }}
+      style={{ height: 34, background: '#000000' }}
     >
       <Icon className="h-[14px] w-[14px] text-[#A78BFA] transition-transform group-hover:scale-110" />
       <span className="text-[12.5px] text-white/85 flex-1 group-hover:text-white">{label}</span>
