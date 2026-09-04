@@ -705,17 +705,17 @@ export default function TradingChecklist() {
                   />
 
                   {/* header — tighter */}
-                  <div className="relative flex items-center gap-3 px-5 pl-6 py-3.5">
+                  <div className="relative flex items-center gap-2.5 px-4 pl-5 py-2.5">
                     <GripVertical className="h-3.5 w-3.5 text-white/15 shrink-0 cursor-grab" />
                     <div
-                      className="h-[42px] w-[42px] rounded-[12px] flex items-center justify-center shrink-0 relative overflow-hidden"
+                      className="h-[34px] w-[34px] rounded-[10px] flex items-center justify-center shrink-0 relative overflow-hidden"
                       style={{
                         background: `linear-gradient(160deg, ${p.from} 0%, ${p.from} 40%, ${p.to} 100%)`,
                         boxShadow: `0 10px 22px -8px ${p.from}90, 0 0 0 1px rgba(255,255,255,0.06) inset, inset 0 1px 0 rgba(255,255,255,0.30), inset 0 -1px 0 rgba(0,0,0,0.22)`,
                       }}
                     >
                       <span className="absolute inset-x-0 top-0 h-1/2 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.22), transparent)' }} />
-                      <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={2.4} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
+                      <Icon className="h-[17px] w-[17px] text-white relative" strokeWidth={2.4} style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(255,255,255,0.18))' }} />
                     </div>
                     <button onClick={() => setCollapsed(c => ({ ...c, [s.id]: !c[s.id] }))} className="min-w-0 flex-1 text-left">
                       <div className="flex items-baseline gap-1.5">
