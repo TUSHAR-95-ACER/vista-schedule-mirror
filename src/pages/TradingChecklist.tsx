@@ -652,7 +652,7 @@ export default function TradingChecklist() {
 
           {tab === 'checklist' && (<>
           {/* KPI grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+          <div className="grid grid-cols-2 [grid-template-columns:repeat(2,minmax(0,1fr))] md:[grid-template-columns:repeat(4,minmax(0,1fr))] gap-2.5 mb-4">
             <KpiCard
               icon={ListChecks}
               label="Overall Progress"
