@@ -240,14 +240,9 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
       className={cn(
         'group relative overflow-hidden rounded-[16px] border border-[#404040] px-3 py-3.5',
         'shadow-[0_18px_44px_-20px_rgba(0,0,0,0.9)] transition-all duration-200 ease-out hover:-translate-y-[2px] hover:border-white/[0.08]',
-        t.glow,
       )}
       style={{ minHeight: 128, background: '#000000' }}
     >
-      <div className="absolute inset-0 pointer-events-none" style={{ background: t.wash }} />
-      <div className="absolute inset-x-0 top-0 h-[55%] pointer-events-none"
-        style={{ background: 'radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.035), transparent 60%)' }} />
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${t.accent}30, transparent)` }} />
       <div className="relative flex items-center gap-2.5 h-full">
         <div className="shrink-0">
           {ring ? (
