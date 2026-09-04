@@ -668,7 +668,8 @@ export default function TradingChecklist() {
           </div>
 
           {/* Sections */}
-          <div className="space-y-4">
+          <div className="space-y-2.5">
+
             {sections.map((s, idx) => {
               const pct = computeSectionPct(s);
               const isCollapsed = !!collapsed[s.id];
