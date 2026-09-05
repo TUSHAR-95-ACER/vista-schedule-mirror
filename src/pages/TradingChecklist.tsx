@@ -145,9 +145,9 @@ function MultiRingProgress({
 }) {
   const cx = size / 2;
   const cy = size / 2;
-  const outerStroke = 17;
-  const innerStroke = 17;
-  const ringGap = 9;
+  const outerStroke = 10;
+  const innerStroke = 8;
+  const ringGap = 8;
   const outerR = size / 2 - outerStroke / 2 - 4;
   const innerR = outerR - outerStroke / 2 - ringGap - innerStroke / 2;
   const outerC = 2 * Math.PI * outerR;
