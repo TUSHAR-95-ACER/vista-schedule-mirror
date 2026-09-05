@@ -169,7 +169,7 @@ function MultiRingProgress({
             <stop offset="100%" stopColor="#8B5CF6" />
           </linearGradient>
           <filter id="mrp-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="b" />
+            <feGaussianBlur stdDeviation="2" result="b" />
             <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
@@ -202,7 +202,7 @@ function MultiRingProgress({
               strokeDashoffset={-(i * segmentSpan + segmentGap / 2)}
               style={{
                 transition: 'stroke-dasharray 700ms cubic-bezier(0.22,1,0.36,1)',
-                filter: `drop-shadow(0 0 3px ${ring.color}90)`,
+                filter: `drop-shadow(0 0 2px ${ring.color}80)`,
               }}
             />
           );
@@ -269,13 +269,13 @@ function KpiCard({ icon: Icon, label, value, sub, tint, trend, ring }: {
           )}
         </div>
         <div className="min-w-0 flex-1 flex flex-col justify-center">
-          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#8A93A6] break-words leading-tight" title={label}>{label}</p>
-          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] mt-1 break-words" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
-          {sub && <p className="text-[10.5px] text-[#6B7385] mt-1 break-words leading-tight" title={sub}>{sub}</p>}
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#8A93A6] truncate leading-tight" title={label}>{label}</p>
+          <p className="font-heading font-bold leading-none text-white tabular-nums tracking-[-0.02em] mt-1 truncate" style={{ fontSize: valueFontPx }} title={valueStr}>{value}</p>
+          {sub && <p className="text-[10.5px] text-[#6B7385] mt-1 truncate leading-tight" title={sub}>{sub}</p>}
           {trend && (
             <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-[#34D399]">
               <span className="inline-block h-1 w-1 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399] shrink-0" />
-              <span className="break-words">{trend}</span>
+              <span className="truncate">{trend}</span>
             </p>
           )}
         </div>
@@ -654,7 +654,7 @@ export default function TradingChecklist() {
 
           {tab === 'checklist' && (<>
           {/* KPI grid */}
-          <div className="grid grid-cols-2 [grid-template-columns:repeat(2,minmax(0,1fr))] md:[grid-template-columns:repeat(4,minmax(0,1fr))] gap-2.5 mb-4">
+          <div className="grid min-w-0 grid-cols-1 [grid-template-columns:minmax(0,1fr)] sm:[grid-template-columns:repeat(2,minmax(0,1fr))] lg:[grid-template-columns:repeat(4,minmax(0,1fr))] gap-2.5 mb-4">
             <KpiCard
               icon={ListChecks}
               label="Overall Progress"
