@@ -6,6 +6,7 @@ import { Strategy, ResearchTest, createStrategy } from '@/types/research';
 import { loadStrategies, saveStrategies, getSeedStrategies } from '@/lib/researchStorage';
 import { computeKPIs, riskMetrics, equityCurve, keyInsights } from '@/lib/researchAnalytics';
 import { StrategyDialog } from '@/components/research/StrategyDialog';
+import { AIInsightsPanel } from '@/components/shared/AIInsightsPanel';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -451,6 +452,12 @@ export default function ResearchLab() {
         </>
       )}
 
+      <AIInsightsPanel
+        page="Research Lab"
+        payload={{ total_strategies: active.length, archived: archived.length, strategies }}
+        className="border-[#262626] bg-black"
+      />
+
       <StrategyDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSave={handleSave} />
     </div>
   );
@@ -540,7 +547,7 @@ function StrategyRow({ strategy: s, onOpen, onResults, onEdit, onDuplicate, onAr
         {stat('Win Rate', `${kpi.winRate.toFixed(0)}%`, kpi.winRate >= 50 ? GREEN : kpi.winRate > 0 ? RED : '#E5E5E5')}
         {stat('Profit Factor', Number.isFinite(rm.profitFactor) && rm.profitFactor > 0 ? rm.profitFactor.toFixed(2) : '—', rm.profitFactor >= 1.5 ? GREEN : undefined)}
         {stat('Expectancy', `${rm.expectancy.toFixed(2)}R`, rm.expectancy > 0 ? GREEN : rm.expectancy < 0 ? RED : undefined)}
-        {stat('Max Drawdown', `${rm.maxDrawdown.toFixed(2)}%`, rm.maxDrawdown < 0 ? RED : undefined)}
+        {stat('Max Drawdown', `${rm.maxDrawdown.toFixed(2)}R`, rm.maxDrawdown < 0 ? RED : undefined)}
         {stat('Bias Acc.', `${kpi.biasAccuracy.toFixed(0)}%`, kpi.biasAccuracy >= 60 ? GREEN : undefined)}
         {stat('Validation', String(kpi.validationScore), GOLD)}
         <div className="ml-auto flex items-center gap-2">
