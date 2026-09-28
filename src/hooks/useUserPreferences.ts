@@ -17,7 +17,6 @@ export interface UserPreferences {
   autoSavePlans?: boolean;
   requireGrade?: boolean;
   requirePsychology?: boolean;
-  showEntryGate?: boolean;
   defaultMaxTrades?: number;
   defaultRiskLimit?: string;
   // Risk
@@ -61,7 +60,6 @@ const DEFAULT_PREFS: UserPreferences = {
   autoSavePlans: true,
   requireGrade: true,
   requirePsychology: true,
-  showEntryGate: true,
   defaultMaxTrades: 3,
   defaultRiskLimit: '1% per trade',
   maxConcurrentTrades: 2,
