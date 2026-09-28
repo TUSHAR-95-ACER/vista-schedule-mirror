@@ -98,6 +98,27 @@ function Panel({ title, action, children, className }: { title?: string; action?
   );
 }
 
+type StatusStep = {
+  key: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  color: string;
+  count: number;
+  pct: number;
+};
+
+function StatusCard({ status: s }: { status: StatusStep }) {
+  return (
+    <div className="min-w-0 rounded-[8px] border px-2.5 py-2" style={{ borderColor: BORDER, background: '#050505' }}>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
+        <span className="truncate text-[8.5px] font-bold uppercase tracking-wide text-neutral-500">{s.key}</span>
+      </div>
+      <div className="mt-1 text-[15px] font-bold text-white">{s.count}</div>
+      <div className="text-[9.5px]" style={{ color: s.color }}>{s.pct}%</div>
+    </div>
+  );
+}
+
 export default function ResearchLab() {
   const { user } = useAuth();
   const navigate = useNavigate();
