@@ -72,13 +72,13 @@ function Sparkline({ tests, color }: { tests: ResearchTest[]; color: string }) {
 // ---------- small pieces ----------
 function KpiCard({ icon: Icon, color, label, value }: { icon: any; color: string; label: string; value: string }) {
   return (
-    <div className="rounded-[10px] border min-w-0 flex items-center gap-3 px-3.5 py-3" style={{ background: '#000000', borderColor: BORDER }}>
-      <div className="h-9 w-9 shrink-0 rounded-[8px] flex items-center justify-center" style={{ background: `${color}1A`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
+    <div className="flex min-w-0 items-center gap-3 rounded-[10px] border px-3.5 py-3 lg:gap-1.5 lg:px-2 2xl:gap-3 2xl:px-3.5" style={{ background: '#000000', borderColor: BORDER }}>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] lg:h-8 lg:w-8 2xl:h-9 2xl:w-9" style={{ background: `${color}1A`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
         <Icon className="h-[17px] w-[17px]" style={{ color }} />
       </div>
-      <div className="min-w-0">
-        <div className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-neutral-500 truncate">{label}</div>
-        <div className="text-[17px] font-bold text-white leading-tight truncate">{value}</div>
+      <div className="min-w-0 flex-1 overflow-visible">
+        <div className="whitespace-normal text-[9.5px] font-semibold uppercase leading-[1.25] tracking-[0.08em] text-neutral-500 2xl:truncate 2xl:whitespace-nowrap">{label}</div>
+        <div className="truncate text-[17px] font-bold leading-tight text-white">{value}</div>
       </div>
     </div>
   );
@@ -108,10 +108,10 @@ type StatusStep = {
 
 function StatusCard({ status: s }: { status: StatusStep }) {
   return (
-    <div className="min-w-0 rounded-[8px] border px-2.5 py-2" style={{ borderColor: BORDER, background: '#050505' }}>
-      <div className="flex min-w-0 items-center gap-1.5">
+    <div className="min-w-0 overflow-visible rounded-[8px] border px-2.5 py-2 lg:px-2 2xl:px-2.5" style={{ borderColor: BORDER, background: '#050505' }}>
+      <div className="flex min-w-0 items-start gap-1.5 lg:gap-1 2xl:items-center 2xl:gap-1.5">
         <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
-        <span className="truncate text-[8.5px] font-bold uppercase tracking-wide text-neutral-500">{s.key}</span>
+        <span className="min-w-0 whitespace-normal text-[8.5px] font-bold uppercase leading-[1.25] tracking-wide text-neutral-500 2xl:truncate 2xl:whitespace-nowrap">{s.key}</span>
       </div>
       <div className="mt-1 text-[15px] font-bold text-white">{s.count}</div>
       <div className="text-[9.5px]" style={{ color: s.color }}>{s.pct}%</div>
