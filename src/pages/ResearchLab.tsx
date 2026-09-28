@@ -348,15 +348,15 @@ export default function ResearchLab() {
                   </div>
                   {/* progress line */}
                   <div className="mt-3 flex items-center">
-                    {statusSteps.slice(0, 7).map((s, i) => (
-                      <div key={s.key} className="flex items-center flex-1 last:flex-none min-w-0">
-                        <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
-                        {i < 6 && <span className="h-px flex-1 mx-1" style={{ background: `linear-gradient(90deg, ${s.color}, ${statusSteps[i + 1].color})` }} />}
+                    {statusSteps.map((s, i) => (
+                      <div key={s.key} className={cn('flex min-w-0 items-center', i === 0 ? 'shrink-0' : 'flex-1')}>
+                        {i > 0 && <span className="mx-1 h-px flex-1" style={{ background: s.color }} />}
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
                       </div>
                     ))}
                   </div>
-                  <div className="mt-1.5 flex justify-between text-[8.5px] text-neutral-500">
-                    <span>Not Started</span><span>Configured</span><span>Running</span><span>Completed</span><span>Analyzing</span><span>Validation</span><span>Approved / Rejected</span>
+                  <div className="mt-1.5 grid grid-cols-8 text-center text-[8.5px] text-neutral-500">
+                    {statusSteps.map((s) => <span key={s.key}>{s.key}</span>)}
                   </div>
                 </div>
               </Panel>
