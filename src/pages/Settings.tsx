@@ -171,9 +171,6 @@ function JournalBehaviorPanel({ prefs, update }: { prefs: any; update: (k: strin
         <SettingRow label="Require Psychology" description="Force emotion/focus/discipline entry">
           <Switch checked={prefs.requirePsychology ?? true} onCheckedChange={v => update('requirePsychology', v)} />
         </SettingRow>
-        <SettingRow label="Show Entry Gate" description="Show checklist confirmation before logging trades">
-          <Switch checked={prefs.showEntryGate ?? true} onCheckedChange={v => update('showEntryGate', v)} />
-        </SettingRow>
       </SettingCard>
       <SettingCard title="Plan Defaults" description="Default values for daily and weekly plans">
         <SettingRow label="Default Max Trades" description="Pre-filled max trades per day">
