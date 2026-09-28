@@ -347,11 +347,19 @@ export default function ResearchLab() {
                     {statusSteps[7] && <StatusCard status={statusSteps[7]} />}
                   </div>
                   {/* progress line */}
-                  <div className="mt-3 flex items-center">
+                  <div className="mt-3 grid min-w-0 grid-cols-8">
                     {statusSteps.map((s, i) => (
-                      <div key={s.key} className={cn('flex min-w-0 items-center', i === 0 ? 'shrink-0' : 'flex-1')}>
-                        {i > 0 && <span className="mx-1 h-px flex-1" style={{ background: s.color }} />}
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }} />
+                      <div key={s.key} className="relative flex h-1.5 min-w-0 items-center justify-center">
+                        {i > 0 && (
+                          <span
+                            className="absolute right-1/2 top-[2.5px] h-px w-full"
+                            style={{ backgroundColor: s.color, opacity: 0.48 }}
+                          />
+                        )}
+                        <span
+                          className="relative z-[1] h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: s.color, opacity: 0.7, boxShadow: `0 0 3px ${s.color}45` }}
+                        />
                       </div>
                     ))}
                   </div>
