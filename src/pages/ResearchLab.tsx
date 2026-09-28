@@ -98,6 +98,27 @@ function Panel({ title, action, children, className }: { title?: string; action?
   );
 }
 
+type StatusStep = {
+  key: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  color: string;
+  count: number;
+  pct: number;
+};
+
+function StatusCard({ status: s }: { status: StatusStep }) {
+  return (
+    <div className="min-w-0 rounded-[8px] border px-2.5 py-2" style={{ borderColor: BORDER, background: '#050505' }}>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
+        <span className="truncate text-[8.5px] font-bold uppercase tracking-wide text-neutral-500">{s.key}</span>
+      </div>
+      <div className="mt-1 text-[15px] font-bold text-white">{s.count}</div>
+      <div className="text-[9.5px]" style={{ color: s.color }}>{s.pct}%</div>
+    </div>
+  );
+}
+
 export default function ResearchLab() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -302,7 +323,7 @@ export default function ResearchLab() {
       ) : (
         <>
           {/* ===== KPI row ===== */}
-          <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+          <div className="grid min-w-0 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:[grid-template-columns:repeat(7,minmax(0,1fr))]">
             <KpiCard icon={FileText} color="#A855F7" label="Total Strategies" value={String(active.length)} />
             <KpiCard icon={FlaskConical} color="#3B82F6" label="Total Tests" value={String(allTests.length)} />
             <KpiCard icon={Target} color="#10B981" label="Win Rate" value={`${top.kpi.winRate.toFixed(0)}%`} />
@@ -319,17 +340,11 @@ export default function ResearchLab() {
               {/* Testing status overview */}
               <Panel title="Testing Status Overview">
                 <div className="px-3 pb-3">
-                  <div className="grid gap-2 grid-cols-4 xl:grid-cols-8">
-                    {statusSteps.map((s) => (
-                      <div key={s.key} className="rounded-[8px] border px-2.5 py-2 min-w-0" style={{ borderColor: BORDER, background: '#050505' }}>
-                        <div className="flex items-center gap-1.5">
-                          <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
-                          <span className="text-[8.5px] font-bold uppercase tracking-wide text-neutral-500 truncate">{s.key}</span>
-                        </div>
-                        <div className="text-[15px] font-bold text-white mt-1">{s.count}</div>
-                        <div className="text-[9.5px]" style={{ color: s.color }}>{s.pct}%</div>
-                      </div>
-                    ))}
+                  <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:[grid-template-columns:repeat(7,minmax(0,1fr))]">
+                    {statusSteps.slice(0, 7).map((s) => <StatusCard key={s.key} status={s} />)}
+                  </div>
+                  <div className="mt-2 grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:[grid-template-columns:repeat(7,minmax(0,1fr))]">
+                    {statusSteps[7] && <StatusCard status={statusSteps[7]} />}
                   </div>
                   {/* progress line */}
                   <div className="mt-3 flex items-center">
