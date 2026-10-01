@@ -90,7 +90,7 @@ function Panel({ title, action, children, className }: { title?: string; action?
     <div className={cn('min-w-0 rounded-[10px] border font-sans', className)} style={{ background: '#000000', borderColor: BORDER }}>
       {title && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-neutral-400">{title}</span>
+          <span className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-neutral-400">{title}</span>
           {action}
         </div>
       )}
@@ -349,18 +349,18 @@ export default function ResearchLab() {
                     {statusSteps.map((s) => (
                       <div key={s.key} className="relative h-1.5 min-w-0">
                         <span
-                          className="absolute left-2 right-0 top-[2.5px] h-px 2xl:left-2.5"
+                          className="absolute left-2.5 right-0 top-[2.5px] h-px lg:left-2 2xl:left-2.5"
                           style={{ backgroundColor: s.color, opacity: 0.38 }}
                         />
                         <span
-                          className="absolute left-2 top-0 z-[1] h-1.5 w-1.5 -translate-x-1/2 rounded-full 2xl:left-2.5"
+                          className="absolute left-2.5 top-0 z-[1] h-1.5 w-1.5 -translate-x-1/2 rounded-full lg:left-2 2xl:left-2.5"
                           style={{ backgroundColor: s.color, opacity: 0.68, boxShadow: `0 0 3px ${s.color}38` }}
                         />
                       </div>
                     ))}
                   </div>
                   <div className={cn(STATUS_GRID, 'mt-1.5 text-[8.5px] font-medium leading-tight text-neutral-500')}>
-                    {statusSteps.map((s) => <span key={s.key} className="min-w-0 truncate pl-2 2xl:pl-2.5">{s.key}</span>)}
+                    {statusSteps.map((s) => <span key={s.key} className="min-w-0 truncate pl-2.5 lg:pl-2 2xl:pl-2.5">{s.key}</span>)}
                   </div>
                 </div>
               </Panel>
@@ -415,7 +415,7 @@ export default function ResearchLab() {
               </Panel>
 
               {/* Recent tests */}
-              <Panel title="Recent Tests" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[10px] text-blue-400 hover:text-blue-300">View All</button>}>
+              <Panel title="Recent Tests" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[9.5px] font-semibold text-blue-400 hover:text-blue-300">View All</button>}>
                 <div className="px-4 pb-3 space-y-2">
                   {recentTests.length === 0 && <div className="text-[11px] text-neutral-500">No tests logged yet.</div>}
                   {recentTests.map(({ s, t }) => {
@@ -435,7 +435,7 @@ export default function ResearchLab() {
               </Panel>
 
               {/* Validation tracker */}
-              <Panel title="Validation Tracker" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[10px] text-blue-400 hover:text-blue-300">View All</button>}>
+              <Panel title="Validation Tracker" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[9.5px] font-semibold text-blue-400 hover:text-blue-300">View All</button>}>
                 <div className="px-4 pb-3 flex items-center gap-4">
                   <TrackerDonut count={tracker.inValidation} />
                   <div className="space-y-1.5 flex-1 text-[10.5px]">
@@ -612,7 +612,7 @@ function QuickAction({ icon: Icon, color, label, onClick }: { icon: any; color: 
   return (
     <button onClick={onClick} className="rounded-[8px] border py-2.5 px-1 flex flex-col items-center gap-1.5 hover:bg-white/[0.03] transition-colors" style={{ borderColor: BORDER, background: '#050505' }}>
       <Icon className="h-4 w-4" style={{ color }} />
-      <span className="text-[8px] text-neutral-400 leading-tight text-center">{label}</span>
+      <span className="text-center text-[9.5px] font-medium leading-tight text-neutral-400">{label}</span>
     </button>
   );
 }
