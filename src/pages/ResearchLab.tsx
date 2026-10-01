@@ -72,13 +72,13 @@ function Sparkline({ tests, color }: { tests: ResearchTest[]; color: string }) {
 // ---------- small pieces ----------
 function KpiCard({ icon: Icon, color, label, value }: { icon: any; color: string; label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[10px] border px-3.5 py-3" style={{ background: '#000000', borderColor: BORDER }}>
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px]" style={{ background: `${color}1A`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
+    <div className="flex min-w-0 items-center gap-3 rounded-[10px] border px-3.5 py-3 lg:max-2xl:relative lg:max-2xl:block lg:max-2xl:px-2 lg:max-2xl:py-2.5" style={{ background: '#000000', borderColor: BORDER }}>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] lg:max-2xl:absolute lg:max-2xl:bottom-2 lg:max-2xl:right-2 lg:max-2xl:h-7 lg:max-2xl:w-7" style={{ background: `${color}1A`, boxShadow: `inset 0 0 0 1px ${color}33` }}>
         <Icon className="h-[17px] w-[17px]" style={{ color }} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate whitespace-nowrap text-[9.5px] font-semibold uppercase leading-[1.25] tracking-[0.08em] text-neutral-500">{label}</div>
-        <div className="truncate text-[17px] font-bold leading-tight text-white">{value}</div>
+        <div className="whitespace-nowrap text-[9.5px] font-semibold uppercase leading-[1.25] tracking-[0.08em] text-neutral-500 lg:max-2xl:tracking-[0.04em]">{label}</div>
+        <div className="truncate text-[17px] font-bold leading-tight text-white lg:max-2xl:pr-8">{value}</div>
       </div>
     </div>
   );
