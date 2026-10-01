@@ -109,9 +109,9 @@ type StatusStep = {
 
 function StatusCard({ status: s }: { status: StatusStep }) {
   return (
-    <div className="min-w-0 overflow-visible rounded-[8px] border px-2.5 py-2 lg:px-2 2xl:px-2.5" style={{ borderColor: BORDER, background: '#050505' }}>
+    <div data-status-card={s.key} className="min-w-0 overflow-visible rounded-[8px] border px-2.5 py-2 lg:px-2 2xl:px-2.5" style={{ borderColor: BORDER, background: '#050505' }}>
       <div className="flex min-w-0 items-start gap-1.5 lg:gap-1 2xl:items-center 2xl:gap-1.5">
-        <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
+        <s.icon data-status-icon={s.key} className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
         <span className="min-w-0 whitespace-normal text-[8.5px] font-bold uppercase leading-[1.25] tracking-wide text-neutral-500 2xl:truncate 2xl:whitespace-nowrap">{s.key}</span>
       </div>
       <div className="mt-1 text-[15px] font-bold text-white">{s.count}</div>
@@ -353,6 +353,7 @@ export default function ResearchLab() {
                           style={{ backgroundColor: s.color, opacity: 0.38 }}
                         />
                         <span
+                          data-status-dot={s.key}
                           className="absolute left-2.5 top-0 z-[1] h-1.5 w-1.5 -translate-x-1/2 rounded-full lg:left-2 2xl:left-2.5"
                           style={{ backgroundColor: s.color, opacity: 0.68, boxShadow: `0 0 3px ${s.color}38` }}
                         />
