@@ -35,6 +35,7 @@ const RED = '#EF4444';
 const AMBER = '#F59E0B';
 const GOLD = '#D4AF37';
 const BORDER = '#1F1F1F';
+const STATUS_GRID = 'grid min-w-0 grid-cols-8 gap-2';
 
 function elapsed(from: string): string {
   const ms = Date.now() - new Date(from).getTime();
@@ -86,10 +87,10 @@ function KpiCard({ icon: Icon, color, label, value }: { icon: any; color: string
 
 function Panel({ title, action, children, className }: { title?: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-[10px] border min-w-0', className)} style={{ background: '#000000', borderColor: BORDER }}>
+    <div className={cn('min-w-0 rounded-[10px] border font-sans', className)} style={{ background: '#000000', borderColor: BORDER }}>
       {title && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-neutral-400">{title}</span>
+          <span className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-neutral-400">{title}</span>
           {action}
         </div>
       )}
@@ -108,9 +109,9 @@ type StatusStep = {
 
 function StatusCard({ status: s }: { status: StatusStep }) {
   return (
-    <div className="min-w-0 overflow-visible rounded-[8px] border px-2.5 py-2 lg:px-2 2xl:px-2.5" style={{ borderColor: BORDER, background: '#050505' }}>
+    <div data-status-card={s.key} className="min-w-0 overflow-visible rounded-[8px] border px-2.5 py-2 lg:px-2 2xl:px-2.5" style={{ borderColor: BORDER, background: '#050505' }}>
       <div className="flex min-w-0 items-start gap-1.5 lg:gap-1 2xl:items-center 2xl:gap-1.5">
-        <s.icon className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
+        <s.icon data-status-icon={s.key} className="h-3.5 w-3.5 shrink-0" style={{ color: s.color }} />
         <span className="min-w-0 whitespace-normal text-[8.5px] font-bold uppercase leading-[1.25] tracking-wide text-neutral-500 2xl:truncate 2xl:whitespace-nowrap">{s.key}</span>
       </div>
       <div className="mt-1 text-[15px] font-bold text-white">{s.count}</div>
@@ -340,28 +341,27 @@ export default function ResearchLab() {
               {/* Testing status overview */}
               <Panel title="Testing Status Overview">
                 <div className="px-3 pb-3">
-                  <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:[grid-template-columns:repeat(8,minmax(0,1fr))]">
+                  <div className={STATUS_GRID}>
                     {statusSteps.map((s) => <StatusCard key={s.key} status={s} />)}
                   </div>
                   {/* progress line */}
-                  <div className="mt-3 grid min-w-0 grid-cols-8">
-                    {statusSteps.map((s, i) => (
-                      <div key={s.key} className="relative flex h-1.5 min-w-0 items-center justify-center">
-                        {i > 0 && (
-                          <span
-                            className="absolute right-1/2 top-[2.5px] h-px w-full"
-                            style={{ backgroundColor: s.color, opacity: 0.48 }}
-                          />
-                        )}
+                  <div className={cn(STATUS_GRID, 'mt-3')}>
+                    {statusSteps.map((s) => (
+                      <div key={s.key} className="relative h-1.5 min-w-0">
                         <span
-                          className="relative z-[1] h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: s.color, opacity: 0.7, boxShadow: `0 0 3px ${s.color}45` }}
+                          className="absolute left-2.5 right-0 top-[2.5px] h-px lg:left-2 2xl:left-2.5"
+                          style={{ backgroundColor: s.color, opacity: 0.38 }}
+                        />
+                        <span
+                          data-status-dot={s.key}
+                          className="absolute left-2.5 top-0 z-[1] h-1.5 w-1.5 -translate-x-1/2 rounded-full lg:left-2 2xl:left-2.5"
+                          style={{ backgroundColor: s.color, opacity: 0.68, boxShadow: `0 0 3px ${s.color}38` }}
                         />
                       </div>
                     ))}
                   </div>
-                  <div className="mt-1.5 grid grid-cols-8 text-center text-[8.5px] text-neutral-500">
-                    {statusSteps.map((s) => <span key={s.key}>{s.key}</span>)}
+                  <div className={cn(STATUS_GRID, 'mt-1.5 text-[8.5px] font-medium leading-tight text-neutral-500')}>
+                    {statusSteps.map((s) => <span key={s.key} className="min-w-0 truncate pl-2.5 lg:pl-2 2xl:pl-2.5">{s.key}</span>)}
                   </div>
                 </div>
               </Panel>
@@ -416,7 +416,7 @@ export default function ResearchLab() {
               </Panel>
 
               {/* Recent tests */}
-              <Panel title="Recent Tests" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[10px] text-blue-400 hover:text-blue-300">View All</button>}>
+              <Panel title="Recent Tests" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[9.5px] font-semibold text-blue-400 hover:text-blue-300">View All</button>}>
                 <div className="px-4 pb-3 space-y-2">
                   {recentTests.length === 0 && <div className="text-[11px] text-neutral-500">No tests logged yet.</div>}
                   {recentTests.map(({ s, t }) => {
@@ -436,7 +436,7 @@ export default function ResearchLab() {
               </Panel>
 
               {/* Validation tracker */}
-              <Panel title="Validation Tracker" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[10px] text-blue-400 hover:text-blue-300">View All</button>}>
+              <Panel title="Validation Tracker" action={<button onClick={() => navigate('/research-lab/analytics')} className="text-[9.5px] font-semibold text-blue-400 hover:text-blue-300">View All</button>}>
                 <div className="px-4 pb-3 flex items-center gap-4">
                   <TrackerDonut count={tracker.inValidation} />
                   <div className="space-y-1.5 flex-1 text-[10.5px]">
@@ -613,7 +613,7 @@ function QuickAction({ icon: Icon, color, label, onClick }: { icon: any; color: 
   return (
     <button onClick={onClick} className="rounded-[8px] border py-2.5 px-1 flex flex-col items-center gap-1.5 hover:bg-white/[0.03] transition-colors" style={{ borderColor: BORDER, background: '#050505' }}>
       <Icon className="h-4 w-4" style={{ color }} />
-      <span className="text-[8px] text-neutral-400 leading-tight text-center">{label}</span>
+      <span className="text-center text-[9.5px] font-medium leading-tight text-neutral-400">{label}</span>
     </button>
   );
 }

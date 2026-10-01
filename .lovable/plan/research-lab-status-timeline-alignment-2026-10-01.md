@@ -1,0 +1,18 @@
+# Research Lab status timeline alignment
+
+## Scope
+
+- Preserve the existing eight Testing Status cards, their single-row layout, sizing, colors, data, and behavior.
+- Rebuild only the timeline beneath them with the same eight-column grid and the same gap as the cards.
+- Align every timeline dot to the exact left edge of its corresponding status icon; keep each line segment inside its own column.
+- Preserve the existing status color mapping with muted opacity and restrained glow.
+- Normalize typography within Testing Status Overview and the right-side Insights, Recent Tests, Validation Tracker, and Quick Actions panels to the Research Lab KPI hierarchy.
+- Leave the top seven KPI cards and all unrelated page content unchanged.
+
+## Technical details
+
+- Share explicit grid column and gap rules between the status-card row, timeline row, and timeline-label row.
+- Match the timeline dot offset to the status card’s horizontal padding, accounting for the dot radius so its center lands on the icon’s left-edge guide.
+- Draw each segment from its dot to the end of its own grid cell without crossing the inter-card gap.
+- Verify alignment and horizontal overflow at representative desktop and laptop widths, then confirm type and buil health.**Research Lab — Testing Status Timeline Alignment**
+  Preserve the existing eight Testing Status cards, their single-row desktop layout, sizing, colors, data, typography, and behavior. Rebuild **only the timeline beneath the cards** using the exact same eight-column grid structure and the exact same column gap as the status-card row. The timeline must share the same column boundaries as the cards above. For each status, position the timeline dot so that the **CENTER of the dot aligns exactly with the vertical guide passing through the LEFT EDGE of that status card's icon container**. In other words, if a vertical line is drawn downward from the left edge of the Not Started icon container, the center of the Not Started timeline dot must sit exactly on that line; apply the identical alignment rule to all eight statuses. Account for the dot radius when positioning it so the **dot center**, not the dot's outer edge, matches the icon-left-edge guide. Each timeline segment must begin at its corresponding dot and extend only through its own grid column toward that column's right boundary; it must never cross the inter-card gap. Preserve the exact same horizontal gap between timeline segments as exists between the eight KPI cards. Keep the timeline as one horizontal row even though all eight cards are already in one row. Preserve the existing status color mapping with restrained opacity and glow: Not Started muted gray, Configured/Running muted blue, Completed muted green, Analyzing muted purple, Validation muted amber, Approved muted teal/green, and Rejected muted red. Do not increase brightness or add strong neon glow. Normalize typography within Testing Status Overview and the right-side Insights, Recent Tests, Validation Tracker, and Quick Actions panels using the existing Research Lab KPI typography hierarchy so equivalent labels, values, and secondary text use consistent font sizes, weights, and font family. **Do not modify the seven top KPI cards or any unrelated page content.** Explicitly share/reuse the same grid column definitions and gap values between the status-card row, timeline row, and timeline-label row so their geometry cannot drift apart. Verify the result at representative desktop and laptop widths at 100% browser zoom, confirm there is no horizontal overflow, verify that every timeline dot remains aligned to its corresponding icon-left-edge guide, and run the project build/typecheck to confirm there are no errors or regressions.
