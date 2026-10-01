@@ -35,6 +35,7 @@ const RED = '#EF4444';
 const AMBER = '#F59E0B';
 const GOLD = '#D4AF37';
 const BORDER = '#1F1F1F';
+const STATUS_GRID = 'grid min-w-0 grid-cols-8 gap-2';
 
 function elapsed(from: string): string {
   const ms = Date.now() - new Date(from).getTime();
@@ -86,7 +87,7 @@ function KpiCard({ icon: Icon, color, label, value }: { icon: any; color: string
 
 function Panel({ title, action, children, className }: { title?: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-[10px] border min-w-0', className)} style={{ background: '#000000', borderColor: BORDER }}>
+    <div className={cn('min-w-0 rounded-[10px] border font-sans', className)} style={{ background: '#000000', borderColor: BORDER }}>
       {title && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-neutral-400">{title}</span>
@@ -340,28 +341,26 @@ export default function ResearchLab() {
               {/* Testing status overview */}
               <Panel title="Testing Status Overview">
                 <div className="px-3 pb-3">
-                  <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:[grid-template-columns:repeat(8,minmax(0,1fr))]">
+                  <div className={STATUS_GRID}>
                     {statusSteps.map((s) => <StatusCard key={s.key} status={s} />)}
                   </div>
                   {/* progress line */}
-                  <div className="mt-3 grid min-w-0 grid-cols-8">
-                    {statusSteps.map((s, i) => (
-                      <div key={s.key} className="relative flex h-1.5 min-w-0 items-center justify-center">
-                        {i > 0 && (
-                          <span
-                            className="absolute right-1/2 top-[2.5px] h-px w-full"
-                            style={{ backgroundColor: s.color, opacity: 0.48 }}
-                          />
-                        )}
+                  <div className={cn(STATUS_GRID, 'mt-3')}>
+                    {statusSteps.map((s) => (
+                      <div key={s.key} className="relative h-1.5 min-w-0">
                         <span
-                          className="relative z-[1] h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: s.color, opacity: 0.7, boxShadow: `0 0 3px ${s.color}45` }}
+                          className="absolute left-2 right-0 top-[2.5px] h-px 2xl:left-2.5"
+                          style={{ backgroundColor: s.color, opacity: 0.38 }}
+                        />
+                        <span
+                          className="absolute left-2 top-0 z-[1] h-1.5 w-1.5 -translate-x-1/2 rounded-full 2xl:left-2.5"
+                          style={{ backgroundColor: s.color, opacity: 0.68, boxShadow: `0 0 3px ${s.color}38` }}
                         />
                       </div>
                     ))}
                   </div>
-                  <div className="mt-1.5 grid grid-cols-8 text-center text-[8.5px] text-neutral-500">
-                    {statusSteps.map((s) => <span key={s.key}>{s.key}</span>)}
+                  <div className={cn(STATUS_GRID, 'mt-1.5 text-[8.5px] font-medium leading-tight text-neutral-500')}>
+                    {statusSteps.map((s) => <span key={s.key} className="min-w-0 truncate pl-2 2xl:pl-2.5">{s.key}</span>)}
                   </div>
                 </div>
               </Panel>
