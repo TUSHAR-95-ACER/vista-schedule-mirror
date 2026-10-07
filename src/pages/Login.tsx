@@ -13,6 +13,7 @@ import { savePostLoginNext } from '@/components/auth/PostLoginRedirect';
 function safeNext(raw: string | null): string {
   if (!raw) return '/';
   if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  if (new URL(raw, window.location.origin).origin !== window.location.origin) return '/';
   return raw;
 }
 
@@ -41,7 +42,7 @@ export default function Login() {
     setSubmitting(true);
     savePostLoginNext(nextPath);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(nextPath);
     } catch (err: any) {
       toast({ title: 'Google sign in failed', description: err?.message || 'Please try again', variant: 'destructive' });
     } finally {
@@ -72,7 +73,7 @@ export default function Login() {
     setSubmitting(true);
     savePostLoginNext(nextPath);
     try {
-      await signUpWithEmail(email, password, fullName);
+      await signUpWithEmail(email, password, fullName, nextPath);
       toast({ title: 'Check your email', description: 'We sent a confirmation link to verify your account.' });
     } catch (err: any) {
       toast({ title: 'Sign up failed', description: err?.message || 'Something went wrong', variant: 'destructive' });

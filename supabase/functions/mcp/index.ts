@@ -564,15 +564,8 @@ var get_period_stats_default = defineTool9({
 });
 
 // src/lib/mcp/tools/get-daily-plan.ts
-import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.100.1";
 import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.20.0";
 import { z as z9 } from "npm:zod@^3.25.76";
-function supabaseForUser2(ctx) {
-  return createClient2(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
-    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-    auth: { persistSession: false, autoRefreshToken: false }
-  });
-}
 var get_daily_plan_default = defineTool10({
   name: "get_daily_plan",
   title: "Get daily trading plan",
@@ -585,7 +578,7 @@ var get_daily_plan_default = defineTool10({
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Not authenticated." }], isError: true };
     const target = date ?? (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-    const sb = supabaseForUser2(ctx);
+    const sb = supabaseForUser(ctx);
     const { data, error } = await sb.from("daily_plans").select("*").eq("user_id", ctx.getUserId()).eq("date", target).maybeSingle();
     if (error)
       return { content: [{ type: "text", text: error.message }], isError: true };
