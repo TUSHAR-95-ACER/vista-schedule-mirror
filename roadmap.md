@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Make the MCP integration strictly read-only and validate its tool catalog and OAuth configuration.
+- [x] Make the MCP integration strictly read-only and validate its tool catalog and OAuth configuration.
 - [ ] Publish the read-only MCP revision and confirm the hosted integration state.
 
 - [x] Correct Research Lab desktop KPI and Testing Status layouts from the uploaded reference.
