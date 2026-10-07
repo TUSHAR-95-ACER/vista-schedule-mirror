@@ -21,14 +21,6 @@ import analyzePsychology from "./tools/analyze-psychology";
 import getConsistencyReport from "./tools/get-consistency-report";
 import getMonthlySummary from "./tools/get-monthly-summary";
 import getWeeklyReport from "./tools/get-weekly-report";
-// Phase 3 — write tools
-import createTrade from "./tools/create-trade";
-import updateTrade from "./tools/update-trade";
-import deleteTrade from "./tools/delete-trade";
-import upsertDailyPlan from "./tools/upsert-daily-plan";
-import upsertWeeklyPlan from "./tools/upsert-weekly-plan";
-import createNotebookEntry from "./tools/create-notebook-entry";
-import updateChecklist from "./tools/update-checklist";
 // Phase 4 — media
 import getMediaUrl from "./tools/get-media-url";
 import listMedia from "./tools/list-media";
@@ -39,9 +31,9 @@ import listMedia from "./tools/list-media";
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
-  name: "tg-master-journal-mcp",
-  title: "TG Master Journal",
-  version: "0.4.0",
+  name: "master-journal",
+  title: "Master Journal",
+  version: "1.0.0",
   instructions:
     "Tools for TG Master Journal, a professional trading operating system. " +
     "Dashboard & analytics: `get_dashboard_summary`, `get_performance_metrics` (win rate, profit factor, " +
@@ -55,10 +47,9 @@ export default defineMcp({
     "(recurring violations and their cost), `analyze_setups` (strongest/weakest setups, assets, sessions), " +
     "`analyze_psychology` (emotions, discipline, sentiment vs outcomes), `get_consistency_report`, " +
     "`get_monthly_summary`, `get_weekly_report`. " +
-    "Writes (always confirm with the user first): `create_trade`, `update_trade`, `delete_trade` (needs " +
-    "confirm: true), `upsert_daily_plan`, `upsert_weekly_plan`, `create_notebook_entry`, `update_checklist`. " +
+    "This integration is strictly read-only: no creation, updates, deletion, or trading execution. " +
     "Media: `list_media` and `get_media_url` return short-lived signed URLs for chart screenshots. " +
-    "All tools are scoped to the signed-in user and enforce row-level security; no tool can read or write " +
+    "All tools are scoped to the signed-in user and enforce row-level security; no tool can read " +
     "another user's data or execute SQL. Prefer filtered, paginated calls over fetching everything.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
@@ -86,13 +77,6 @@ export default defineMcp({
     getConsistencyReport,
     getMonthlySummary,
     getWeeklyReport,
-    createTrade,
-    updateTrade,
-    deleteTrade,
-    upsertDailyPlan,
-    upsertWeeklyPlan,
-    createNotebookEntry,
-    updateChecklist,
     getMediaUrl,
     listMedia,
   ],

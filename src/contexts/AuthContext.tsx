@@ -7,9 +7,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (nextPath?: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, fullName?: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, fullName?: string, nextPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -99,7 +99,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .forEach((key) => localStorage.removeItem(key));
   };
 
-  const signInWithGoogle = async () => {
+  const authReturnUrl = (nextPath?: string) => {
+    if (!nextPath) return window.location.origin;
+    const target = new URL(nextPath, window.location.origin);
+    if (!nextPath.startsWith('/') || nextPath.startsWith('//') || target.origin !== window.location.origin) {
+      return window.location.origin;
+    }
+    return target.href;
+  };
+
+  const signInWithGoogle = async (nextPath?: string) => {
     try {
       authDebug('google oauth redirect start', {
         callbackOrigin: window.location.origin,
@@ -107,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearLocalAuthCache();
       const { lovable } = await import('@/integrations/lovable');
       const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+        redirect_uri: authReturnUrl(nextPath),
       });
       authDebug('google provider response', {
         redirected: Boolean(result?.redirected),
@@ -169,13 +178,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUpWithEmail = async (email: string, password: string, fullName?: string) => {
+  const signUpWithEmail = async (email: string, password: string, fullName?: string, nextPath?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName || '' },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: authReturnUrl(nextPath),
       },
     });
     if (error) throw error;

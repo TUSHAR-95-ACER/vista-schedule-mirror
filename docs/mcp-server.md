@@ -1,9 +1,9 @@
 # TG Master Journal — MCP Server
 
-Version **0.4.0** · Phases 1–4 complete (auth + read-only, analysis, writes, media)
+Version **1.0.0** · Strictly read-only journal, analytics, planning and media
 
 The server exposes TG Master Journal as standard MCP tools so ChatGPT, Claude
-Desktop, VS Code / Copilot and any other MCP-compatible client can read the
+Desktop, Grok-compatible MCP clients, VS Code / Copilot and other MCP-compatible clients can read the
 signed-in user's journal.
 
 ## Endpoint
@@ -13,7 +13,7 @@ https://<project-ref>.supabase.co/functions/v1/mcp
 ```
 
 Transport: MCP Streamable HTTP. The exact URL is shown in the app under
-**Settings → AI**.
+**More → Agent integrations**. Republish after MCP changes before connecting an external client.
 
 ## Authentication
 
@@ -75,20 +75,11 @@ Transport: MCP Streamable HTTP. The exact URL is shown in the app under
 | `get_monthly_summary` | `month?` | Full month synthesis: metrics, equity, best/worst days, breakdowns, routine |
 | `get_weekly_report` | `week_start?` | Week synthesis with day-by-day P/L, breakdowns, weekly plan and notable trades |
 
-### Writes (Phase 3)
+### Read-only boundary
 
-| Tool | Input | Effect |
-| --- | --- | --- |
-| `create_trade` | `date`, `asset`, + optional trade fields | Inserts a trade and returns it |
-| `update_trade` | `id` + fields to change | Partial update; omitted fields untouched |
-| `delete_trade` | `id`, `confirm: true` | Permanently deletes a trade (destructive) |
-| `upsert_daily_plan` | `date` + plan fields | Creates or patches the daily plan |
-| `upsert_weekly_plan` | `week_start?` + plan fields | Creates or patches the weekly plan |
-| `create_notebook_entry` | `text`, `date?`, `pair?`, `category?`, `bias?`, `entry_id?` | Creates or updates a notebook entry |
-| `update_checklist` | `date?`, `items[]` (`match`, `done`, `section?`) | Ticks/unticks checklist items, returns progress |
-
-All writes run under the caller's token, so RLS scopes them to that user. Write
-tools never accept a `user_id` from input.
+No write, delete, or trading-execution tools are registered or shipped. Unknown
+tool calls cannot invoke removed operations. The application's own editing
+features remain unchanged. All 23 exposed tools have `readOnlyHint: true`.
 
 ### Media (Phase 4)
 
@@ -126,7 +117,7 @@ message:
 - All queries are typed client calls scoped to `user_id = token.sub` and
   additionally protected by row-level security.
 - Tokens are never logged or returned; secrets are never exposed to the model.
-- Read tools are marked `readOnlyHint: true`; write tools are explicitly annotated, and `delete_trade` is `destructiveHint: true` and requires `confirm: true`.
+- All tools are marked `readOnlyHint: true`; there are no mutation tools.
 
 ## Versioning
 
@@ -138,7 +129,7 @@ additive within a major version; removals or renames bump the major.
 - **Phase 1 (done)** — auth + read-only dashboard, trades, planning, checklist,
   notebook, analytics.
 - **Phase 2 (done)** — semantic journal search and analysis tools.
-- **Phase 3 (done)** — write tools for trades, plans, notebook and checklist.
+- **Read-only release** — removed all former write tools from source and catalog.
 - **Phase 4 (done)** — media access via short-lived signed URLs.
   caching.
 
@@ -147,4 +138,5 @@ additive within a major version; removals or renames bump the major.
 1. Create `src/lib/mcp/tools/<name>.ts` with `defineTool` (use the helpers in
    `src/lib/mcp/lib/client.ts`).
 2. Register it in `src/lib/mcp/index.ts`.
-3. Regenerate the manifest and deploy the `mcp` function.
+3. Regenerate the manifest and republish the application. Never deploy the generated `mcp` function separately.
+4. Only add read-only tools; do not add mutation or execution capabilities.

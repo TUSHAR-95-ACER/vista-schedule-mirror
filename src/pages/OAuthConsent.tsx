@@ -133,12 +133,12 @@ export default function OAuthConsent() {
         <div className="rounded-xl border border-border/60 bg-muted/30 p-4 text-sm space-y-2">
           <div className="font-semibold text-foreground">Tools it can use:</div>
           <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-            <li>Read your recent trades</li>
-            <li>Read your performance stats</li>
-            <li>Read your daily trading plans</li>
+            <li>Read and search your trading journal and notebook</li>
+            <li>Read your performance, mistakes, psychology and consistency analytics</li>
+            <li>Read your daily and weekly plans, checklist and journal attachments</li>
           </ul>
           <div className="text-xs text-muted-foreground pt-2">
-            These tools are read-only. You can revoke access at any time.
+            Read-only access: no changes, deletions or trade execution. You can revoke access at any time.
           </div>
         </div>
 

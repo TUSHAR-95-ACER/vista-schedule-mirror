@@ -1,13 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
+import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-
-function supabaseForUser(ctx: ToolContext) {
-  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+import { supabaseForUser, isWin, isLoss } from "../lib/client";
 
 export default defineTool({
   name: "get_trade_stats",
@@ -36,8 +29,8 @@ export default defineTool({
       return { content: [{ type: "text", text: error.message }], isError: true };
     const rows = data ?? [];
     const count = rows.length;
-    const wins = rows.filter((r: any) => r.result === "win").length;
-    const losses = rows.filter((r: any) => r.result === "loss").length;
+    const wins = rows.filter((r: any) => isWin(r.result)).length;
+    const losses = rows.filter((r: any) => isLoss(r.result)).length;
     const pnl = rows.reduce((s: number, r: any) => s + (Number(r.profit_loss) || 0), 0);
     const rValues = rows.map((r: any) => Number(r.actual_rr)).filter((v: number) => Number.isFinite(v));
     const avgR = rValues.length ? rValues.reduce((a, b) => a + b, 0) / rValues.length : 0;
