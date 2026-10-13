@@ -7,4 +7,6 @@
 - [x] Verify 7 KPI cards, 7 first-row status cards, Rejected placement, timeline, and overflow at desktop widths.
 - [x] Confirm the preview build and relevant type checks are clean.
 - [x] Align each Testing Status timeline dot to its icon's left edge using the shared eight-column geometry.
+- [x] Restore responsive Testing Status columns on small screens while retaining eight columns on desktop.
+- [x] Keep MCP tools read-only in accordance with the project's external-access policy.
 - [ ] Verify timeline alignment, typography, overflow, type checks, and build health at laptop and desktop widths.

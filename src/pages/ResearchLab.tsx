@@ -35,7 +35,7 @@ const RED = '#EF4444';
 const AMBER = '#F59E0B';
 const GOLD = '#D4AF37';
 const BORDER = '#1F1F1F';
-const STATUS_GRID = 'grid min-w-0 grid-cols-8 gap-2';
+const STATUS_GRID = 'grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8';
 
 function elapsed(from: string): string {
   const ms = Date.now() - new Date(from).getTime();
