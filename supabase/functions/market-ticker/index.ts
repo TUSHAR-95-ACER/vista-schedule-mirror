@@ -12,6 +12,7 @@ const PAIRS = [
   { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇', decimals: 2 },
   { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿', decimals: 2 },
   { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦', decimals: 5 },
+  { symbol: 'DXY', display: 'DXY', flag: '💵', decimals: 3 },
 ];
 
 // In-memory cache (survives within same instance)
