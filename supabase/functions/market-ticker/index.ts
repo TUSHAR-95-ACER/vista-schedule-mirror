@@ -12,6 +12,7 @@ const PAIRS = [
   { symbol: 'XAU/USD', display: 'XAUUSD', flag: '🥇', decimals: 2 },
   { symbol: 'BTC/USD', display: 'BTCUSD', flag: '₿', decimals: 2 },
   { symbol: 'USD/CAD', display: 'USDCAD', flag: '🇨🇦', decimals: 5 },
+  { symbol: 'DXY', display: 'DXY', flag: '💵', decimals: 3 },
 ];
 
 // In-memory cache (survives within same instance)
@@ -89,7 +90,7 @@ serve(async (req) => {
       });
     }
 
-    const results = PAIRS.map(p => {
+    let results = PAIRS.map(p => {
       const quote = rawData[p.symbol];
       if (!quote || typeof quote !== 'object' || quote.status === 'error') {
         return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
@@ -103,6 +104,31 @@ serve(async (req) => {
         decimals: p.decimals,
       };
     });
+
+    // Fallback: indices (e.g. DXY) may not resolve in a batched quote —
+    // retry the missing symbols one by one, then via the lighter /price endpoint.
+    const missing = results.filter(r => r.price <= 0);
+    for (const m of missing) {
+      const pair = PAIRS.find(p => p.display === m.symbol)!;
+      try {
+        const single = await fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(pair.symbol)}&apikey=${apiKey}`);
+        const q = await single.json();
+        const quote = q?.quote && typeof q.quote === 'object' ? q.quote : q;
+        if (quote && typeof quote === 'object' && quote.status !== 'error' && parseFloat(quote.close || '0') > 0) {
+          m.price = parseFloat(quote.close);
+          m.change = parseFloat(quote.change || '0');
+          m.changePercent = parseFloat(quote.percent_change || '0');
+          continue;
+        }
+        const priceRes = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(pair.symbol)}&apikey=${apiKey}`);
+        const pr = await priceRes.json();
+        if (pr?.price && parseFloat(pr.price) > 0) {
+          m.price = parseFloat(pr.price);
+        }
+      } catch (e) {
+        console.error(`Fallback quote failed for ${pair.symbol}:`, e);
+      }
+    }
 
     const hasData = results.some(r => r.price > 0);
     if (hasData) {

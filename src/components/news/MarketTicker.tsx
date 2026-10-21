@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { InstrumentIcon } from './InstrumentIcons';
 
 interface TickerItem {
   symbol: string;
@@ -11,8 +12,8 @@ interface TickerItem {
   decimals: number;
 }
 
-const CACHE_KEY = 'market-ticker-cache-v2';
-const CACHE_TS_KEY = 'market-ticker-cache-ts-v2';
+const CACHE_KEY = 'market-ticker-cache-v3';
+const CACHE_TS_KEY = 'market-ticker-cache-ts-v3';
 const POLL_MS = 6 * 60 * 60 * 1000;  // 6 hours
 const RETRY_MS = 5 * 60 * 1000;       // 5 min, only while data is missing
 const MIN_GAP_MS = 60_000;            // 1 min floor between requests
@@ -132,7 +133,7 @@ export function MarketTicker() {
               key={`${item.symbol}-${i}`}
               className="flex items-center gap-3 px-6 border-r border-border/30 last:border-r-0 cursor-default group transition-transform duration-200 hover:scale-105"
             >
-              <span className="text-lg">{item.flag}</span>
+              <InstrumentIcon symbol={item.symbol} flag={item.flag} />
               <span className="text-sm font-bold text-foreground tracking-wide">
                 {item.symbol}
               </span>
