@@ -15,10 +15,86 @@ const PAIRS = [
   { symbol: 'DXY', display: 'DXY', flag: '💵', decimals: 3 },
 ];
 
+// DXY (US Dollar Index) is computed from its six component pairs because
+// the index symbol itself is not available on the current data plan.
+const DXY_EXTRA_SYMBOLS = ['USD/JPY', 'USD/SEK', 'USD/CHF'];
+const DXY_DISPLAY = 'DXY';
+const DXY_FLAG = '💵';
+const DXY_DECIMALS = 3;
+
 // In-memory cache (survives within same instance)
 let cachedData: any = null;
 let cacheTime = 0;
 const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours cache
+
+const num = (v: unknown): number => {
+  const n = parseFloat(String(v ?? ''));
+  return Number.isFinite(n) ? n : 0;
+};
+
+// Classic USDX formula: composite of the six component pairs.
+// EUR/USD and GBP/USD are USD-quoted (negative exponents); the rest are USD-based.
+function computeDxy(prices: Record<string, number>): number {
+  const eur = prices['EUR/USD'];
+  const jpy = prices['USD/JPY'];
+  const gbp = prices['GBP/USD'];
+  const cad = prices['USD/CAD'];
+  const sek = prices['USD/SEK'];
+  const chf = prices['USD/CHF'];
+  if (!eur || !jpy || !gbp || !cad || !sek || !chf) return 0;
+  return (
+    50.14348112 *
+    Math.pow(eur, -0.576) *
+    Math.pow(jpy, 0.136) *
+    Math.pow(gbp, -0.119) *
+    Math.pow(cad, 0.091) *
+    Math.pow(sek, 0.042) *
+    Math.pow(chf, 0.036)
+  );
+}
+
+function componentChangeFactor(rates: Record<string, number>): number {
+  const eur = 1 + (rates['EUR/USD'] || 0);
+  const jpy = 1 + (rates['USD/JPY'] || 0);
+  const gbp = 1 + (rates['GBP/USD'] || 0);
+  const cad = 1 + (rates['USD/CAD'] || 0);
+  const sek = 1 + (rates['USD/SEK'] || 0);
+  const chf = 1 + (rates['USD/CHF'] || 0);
+  return (
+    Math.pow(eur, -0.576) *
+    Math.pow(jpy, 0.136) *
+    Math.pow(gbp, -0.119) *
+    Math.pow(cad, 0.091) *
+    Math.pow(sek, 0.042) *
+    Math.pow(chf, 0.036)
+  );
+}
+
+function buildDxyEntry(
+  current: Record<string, number>,
+  rates: Record<string, number>,
+) {
+  const price = computeDxy(current);
+  let change = 0;
+  let changePercent = 0;
+  if (price > 0) {
+    // DXY_now = DXY_prev * Π(1+r_i)^e_i — invert to recover the previous close.
+    const factor = componentChangeFactor(rates);
+    if (factor > 0) {
+      const prev = price / factor;
+      change = price - prev;
+      changePercent = (change / prev) * 100;
+    }
+  }
+  return {
+    symbol: DXY_DISPLAY,
+    flag: DXY_FLAG,
+    price: price > 0 ? price : 0,
+    change,
+    changePercent,
+    decimals: DXY_DECIMALS,
+  };
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -65,9 +141,15 @@ serve(async (req) => {
     });
   }
 
+  const placeholder = () =>
+    PAIRS.map(p => ({
+      symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals,
+    }));
+
   try {
-    // Use /price endpoint - lighter weight, fewer credits
-    const symbolStr = PAIRS.map(p => p.symbol).join(',');
+    // One batched quote for the display pairs plus the DXY component pairs.
+    const allSymbols = [...PAIRS.filter(p => p.symbol !== 'DXY').map(p => p.symbol), ...DXY_EXTRA_SYMBOLS];
+    const symbolStr = allSymbols.join(',');
     const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbolStr)}&apikey=${apiKey}`;
 
     const response = await fetch(url);
@@ -82,48 +164,64 @@ serve(async (req) => {
         });
       }
       // No cache available - return empty placeholder data instead of error
-      const placeholder = PAIRS.map(p => ({
-        symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals,
-      }));
-      return new Response(JSON.stringify({ data: placeholder, limited: true }), {
+      return new Response(JSON.stringify({ data: placeholder(), limited: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    let results = PAIRS.map(p => {
-      const quote = rawData[p.symbol];
-      if (!quote || typeof quote !== 'object' || quote.status === 'error') {
+    const current: Record<string, number> = {};
+    const rates: Record<string, number> = {}; // fractional daily change per symbol
+    for (const sym of allSymbols) {
+      const quote = rawData[sym];
+      if (quote && typeof quote === 'object' && quote.status !== 'error') {
+        const close = num(quote.close);
+        if (close > 0) {
+          current[sym] = close;
+          rates[sym] = num(quote.percent_change) / 100;
+        }
+      }
+    }
+
+    const results = PAIRS.map(p => {
+      if (p.symbol === 'DXY') {
+        return buildDxyEntry(current, rates);
+      }
+      const close = current[p.symbol] || 0;
+      if (close <= 0) {
         return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
       }
+      const r = rates[p.symbol] || 0;
+      const prev = close / (1 + r);
       return {
         symbol: p.display,
         flag: p.flag,
-        price: parseFloat(quote.close || '0'),
-        change: parseFloat(quote.change || '0'),
-        changePercent: parseFloat(quote.percent_change || '0'),
+        price: close,
+        change: close - prev,
+        changePercent: r * 100,
         decimals: p.decimals,
       };
     });
 
-    // Fallback: indices (e.g. DXY) may not resolve in a batched quote —
-    // retry the missing symbols one by one, then via the lighter /price endpoint.
-    const missing = results.filter(r => r.price <= 0);
-    for (const m of missing) {
+    // Fallback: retry any missing symbols one by one, then via the lighter /price endpoint.
+    for (const m of results) {
+      if (m.symbol === DXY_DISPLAY || m.price > 0) continue;
       const pair = PAIRS.find(p => p.display === m.symbol)!;
       try {
         const single = await fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(pair.symbol)}&apikey=${apiKey}`);
         const q = await single.json();
         const quote = q?.quote && typeof q.quote === 'object' ? q.quote : q;
-        if (quote && typeof quote === 'object' && quote.status !== 'error' && parseFloat(quote.close || '0') > 0) {
-          m.price = parseFloat(quote.close);
-          m.change = parseFloat(quote.change || '0');
-          m.changePercent = parseFloat(quote.percent_change || '0');
+        if (quote && typeof quote === 'object' && quote.status !== 'error' && num(quote.close) > 0) {
+          m.price = num(quote.close);
+          const prev = num(quote.prev_close) || m.price;
+          m.change = m.price - prev;
+          m.changePercent = prev > 0 ? (m.change / prev) * 100 : 0;
           continue;
         }
         const priceRes = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(pair.symbol)}&apikey=${apiKey}`);
         const pr = await priceRes.json();
-        if (pr?.price && parseFloat(pr.price) > 0) {
-          m.price = parseFloat(pr.price);
+        if (num(pr?.price) > 0) {
+          m.price = num(pr.price);
+          m.changePercent = m.changePercent || 0;
         }
       } catch (e) {
         console.error(`Fallback quote failed for ${pair.symbol}:`, e);
@@ -147,10 +245,7 @@ serve(async (req) => {
       });
     }
     // Return placeholder instead of error
-    const placeholder = PAIRS.map(p => ({
-      symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals,
-    }));
-    return new Response(JSON.stringify({ data: placeholder, error: true }), {
+    return new Response(JSON.stringify({ data: placeholder(), error: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
