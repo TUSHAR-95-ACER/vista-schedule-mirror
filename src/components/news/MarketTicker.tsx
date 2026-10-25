@@ -12,8 +12,8 @@ interface TickerItem {
   decimals: number;
 }
 
-const CACHE_KEY = 'market-ticker-cache-v3';
-const CACHE_TS_KEY = 'market-ticker-cache-ts-v3';
+const CACHE_KEY = 'market-ticker-cache-v4';
+const CACHE_TS_KEY = 'market-ticker-cache-ts-v4';
 const POLL_MS = 6 * 60 * 60 * 1000;  // 6 hours
 const RETRY_MS = 5 * 60 * 1000;       // 5 min, only while data is missing
 const MIN_GAP_MS = 60_000;            // 1 min floor between requests
