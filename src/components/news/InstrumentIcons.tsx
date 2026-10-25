@@ -108,21 +108,56 @@ const CadFlag = () => (
   </svg>
 );
 
-const DxyIcon = () => (
+const NiftyIcon = () => (
   <svg width={S} height={S} viewBox="0 0 24 24" className="shrink-0" aria-hidden="true">
-    <circle cx="12" cy="12" r="10" fill="#101010" stroke="#10B981" strokeWidth="2.4" />
+    <rect x="1" y="1" width="22" height="22" rx="5" fill="#0B0B0B" />
+    <rect x="2.4" y="2.4" width="19.2" height="19.2" rx="4" fill="none" stroke="#F9A825" strokeWidth="1.6" />
     <text
       x="12"
-      y="15.9"
+      y="16.6"
       textAnchor="middle"
-      fontSize="11.5"
-      fontWeight="700"
-      fill="#EDEDED"
-      opacity="0.95"
+      fontSize="12.5"
+      fontWeight="800"
+      fill="#F9A825"
       fontFamily="Inter, system-ui, sans-serif"
     >
-      $
+      N
     </text>
+  </svg>
+);
+
+const SensexIcon = () => (
+  <svg width={S} height={S} viewBox="0 0 24 24" className="shrink-0" aria-hidden="true">
+    <rect x="1" y="1" width="22" height="22" rx="5" fill="#5C0632" />
+    <text
+      x="12"
+      y="16.6"
+      textAnchor="middle"
+      fontSize="12.5"
+      fontWeight="800"
+      fill="#FFFFFF"
+      fontFamily="Inter, system-ui, sans-serif"
+    >
+      S
+    </text>
+  </svg>
+);
+
+const OilIcon = () => (
+  <svg width={S} height={S} viewBox="0 0 24 24" className="shrink-0" aria-hidden="true">
+    <defs>
+      <linearGradient id="oil-grad" x1="0" y1="0" x2="0.4" y2="1">
+        <stop offset="0%" stopColor="#8A6D3B" />
+        <stop offset="45%" stopColor="#5C4A2A" />
+        <stop offset="100%" stopColor="#2B2318" />
+      </linearGradient>
+    </defs>
+    <rect x="3" y="6.5" width="18" height="14" rx="2.6" fill="url(#oil-grad)" stroke="#0B0B0B" strokeWidth="1" />
+    <rect x="6.4" y="6.5" width="1.8" height="14" fill="#0B0B0B" opacity="0.35" />
+    <rect x="11.1" y="6.5" width="1.8" height="14" fill="#0B0B0B" opacity="0.35" />
+    <rect x="15.8" y="6.5" width="1.8" height="14" fill="#0B0B0B" opacity="0.35" />
+    <rect x="3" y="12.6" width="18" height="1.9" fill="#0B0B0B" opacity="0.4" />
+    <rect x="9.4" y="2.6" width="5.2" height="4.4" rx="1.2" fill="#8A6D3B" />
   </svg>
 );
 
@@ -132,7 +167,9 @@ const ICONS: Record<string, () => JSX.Element> = {
   XAUUSD: GoldIcon,
   BTCUSD: BitcoinIcon,
   USDCAD: CadFlag,
-  DXY: DxyIcon,
+  'NIFTY 50': NiftyIcon,
+  SENSEX: SensexIcon,
+  'WTI OIL': OilIcon,
 };
 
 /** Renders the SVG badge icon for a known symbol; falls back to the flag emoji. */
