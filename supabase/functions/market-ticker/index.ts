@@ -170,33 +170,34 @@ serve(async (req) => {
     }
 
     const current: Record<string, number> = {};
-    const prevClose: Record<string, number> = {};
+    const rates: Record<string, number> = {}; // fractional daily change per symbol
     for (const sym of allSymbols) {
       const quote = rawData[sym];
       if (quote && typeof quote === 'object' && quote.status !== 'error') {
         const close = num(quote.close);
         if (close > 0) {
           current[sym] = close;
-          prevClose[sym] = num(quote.prev_close) || close;
+          rates[sym] = num(quote.percent_change) / 100;
         }
       }
     }
 
     const results = PAIRS.map(p => {
       if (p.symbol === 'DXY') {
-        return buildDxyEntry(current, prevClose);
+        return buildDxyEntry(current, rates);
       }
       const close = current[p.symbol] || 0;
-      const prev = prevClose[p.symbol] || close;
       if (close <= 0) {
         return { symbol: p.display, flag: p.flag, price: 0, change: 0, changePercent: 0, decimals: p.decimals };
       }
+      const r = rates[p.symbol] || 0;
+      const prev = close / (1 + r);
       return {
         symbol: p.display,
         flag: p.flag,
         price: close,
         change: close - prev,
-        changePercent: prev > 0 ? ((close - prev) / prev) * 100 : 0,
+        changePercent: r * 100,
         decimals: p.decimals,
       };
     });
