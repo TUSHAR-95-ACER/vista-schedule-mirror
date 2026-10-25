@@ -53,17 +53,38 @@ function computeDxy(prices: Record<string, number>): number {
   );
 }
 
+function componentChangeFactor(rates: Record<string, number>): number {
+  const eur = 1 + (rates['EUR/USD'] || 0);
+  const jpy = 1 + (rates['USD/JPY'] || 0);
+  const gbp = 1 + (rates['GBP/USD'] || 0);
+  const cad = 1 + (rates['USD/CAD'] || 0);
+  const sek = 1 + (rates['USD/SEK'] || 0);
+  const chf = 1 + (rates['USD/CHF'] || 0);
+  return (
+    Math.pow(eur, -0.576) *
+    Math.pow(jpy, 0.136) *
+    Math.pow(gbp, -0.119) *
+    Math.pow(cad, 0.091) *
+    Math.pow(sek, 0.042) *
+    Math.pow(chf, 0.036)
+  );
+}
+
 function buildDxyEntry(
   current: Record<string, number>,
-  prevClose: Record<string, number>,
+  rates: Record<string, number>,
 ) {
   const price = computeDxy(current);
-  const prev = computeDxy(prevClose);
   let change = 0;
   let changePercent = 0;
-  if (price > 0 && prev > 0) {
-    change = price - prev;
-    changePercent = (change / prev) * 100;
+  if (price > 0) {
+    // DXY_now = DXY_prev * Π(1+r_i)^e_i — invert to recover the previous close.
+    const factor = componentChangeFactor(rates);
+    if (factor > 0) {
+      const prev = price / factor;
+      change = price - prev;
+      changePercent = (change / prev) * 100;
+    }
   }
   return {
     symbol: DXY_DISPLAY,
