@@ -26,7 +26,7 @@ import { adaptWeeklyPlan } from '@/lib/aiInsightAdapters';
 import { useAutosave } from '@/hooks/useAutosave';
 import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
-import { formatWeekLabel, toWeekStart } from '@/lib/weekUtils';
+import { formatWeekLabel, formatWeekRange, toWeekStart } from '@/lib/weekUtils';
 
 const emptyPairAnalysis = (): PairAnalysis => ({
   id: crypto.randomUUID(),

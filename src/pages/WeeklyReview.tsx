@@ -48,12 +48,8 @@ const Tip = ({ active, payload, label }: any) => {
   );
 };
 
-function getWeekName(dateStr: string): string {
-  const d = new Date(dateStr);
-  const day = d.getDate();
-  const month = d.toLocaleString('en', { month: 'short' });
-  const weekNum = Math.ceil(day / 7);
-  return `Week ${weekNum} ${month}`;
+function getWeekName(weekStartKey: string): string {
+  return formatWeekLabel(weekStartKey);
 }
 
 function calcExecutionScore(t: any): number {
