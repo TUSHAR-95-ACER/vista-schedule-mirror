@@ -53,9 +53,8 @@ interface HeatmapMonth {
 }
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-// Monday-first week convention (Mon 00:00 → Sun 23:59:59) across the whole app.
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const HEATMAP_WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const HEATMAP_WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const formatCompact = (value: number) => {
   const absValue = Math.abs(value);
@@ -168,8 +167,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
   }, new Map<string, { totalPl: number; tradeCount: number; trades: Trade[]; rrTotal: number; rrCount: number }>()), [filteredTrades]);
 
   const monthData = useMemo(() => {
-    // Monday-first grid: leading empties before the 1st = days from Monday to the 1st.
-    const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+    const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const leading = Array.from({ length: firstDay }, (_, index) => ({ type: 'empty' as const, key: `leading-${index}` }));
     const days = Array.from({ length: daysInMonth }, (_, index) => {
@@ -249,7 +247,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
     const months: HeatmapMonth[] = MONTHS.map((monthLabel, monthIndex) => {
       const firstDayOfMonth = new Date(year, monthIndex, 1);
       const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-      const leadingEmptyDays = (firstDayOfMonth.getDay() + 6) % 7; // Monday = 0
+      const leadingEmptyDays = firstDayOfMonth.getDay();
       const totalCells = leadingEmptyDays + daysInMonth;
       const totalColumns = Math.ceil(totalCells / 7);
       const columns = Array.from({ length: totalColumns }, () => Array<HeatCell>(7));
@@ -267,7 +265,7 @@ export function DashboardCalendar({ trades }: DashboardCalendarProps) {
 
       for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber += 1) {
         const date = new Date(year, monthIndex, dayNumber);
-        const weekdayIndex = (date.getDay() + 6) % 7; // Monday = 0
+        const weekdayIndex = date.getDay();
         const offset = leadingEmptyDays + dayNumber - 1;
         const columnIndex = Math.floor(offset / 7);
         const dateStr = toDateString(date);
