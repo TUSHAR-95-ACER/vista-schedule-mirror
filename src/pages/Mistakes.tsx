@@ -18,6 +18,7 @@ import {
   TrendingUp, ArrowRight, Target, Lightbulb, ShieldCheck, Sparkles,
 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
+import { toWeekStart, parseDateKey } from '@/lib/weekUtils';
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -306,7 +307,8 @@ export default function Mistakes() {
     return Array.from(weeks.entries())
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([week, v]) => ({
-        week: new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        // Label shows the week's Monday date (UTC-safe) — tooltip reads "Week of …".
+        week: parseDateKey(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
         count: v.count,
         loss: Math.round(v.loss * 100) / 100,
       }));
