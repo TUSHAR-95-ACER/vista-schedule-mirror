@@ -245,15 +245,17 @@ export function generateSampleWeeklyPlans(): WeeklyPlan[] {
   const now = new Date();
 
   for (let w = 0; w < 4; w++) {
-    const weekStart = new Date(now);
-    weekStart.setDate(weekStart.getDate() - (w * 7) - weekStart.getDay() + 1);
+    // Monday of the current week minus w weeks (Mon 00:00 → Sun 23:59:59).
+    const base = new Date(now);
+    base.setDate(base.getDate() - (w * 7));
+    const weekStartKey = toWeekStart(base);
     const isReviewed = w > 0;
 
     const pairAnalyses = samplePairs.slice(0, 3 + Math.floor(Math.random() * 2)).map(p => makePairAnalysis(p, isReviewed));
 
     plans.push({
       id: crypto.randomUUID(),
-      weekStart: weekStart.toISOString().split('T')[0],
+      weekStart: weekStartKey,
       bias: '',
       markets: ['EURUSD', 'XAUUSD', 'NAS100'],
       setups: [],
