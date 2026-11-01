@@ -1,5 +1,6 @@
 import { Trade, TradeGrade, WeeklyPlan, DailyPlan, PairAnalysis, DailyPairPlan } from '@/types/trading';
 import { calcProfitLoss, calcResult } from './calculations';
+import { toWeekStart } from './weekUtils';
 
 const pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD', 'AUDUSD', 'GBPJPY', 'BTCUSD', 'NAS100', 'US30', 'ETHUSD'];
 const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'] as const;
@@ -245,15 +246,17 @@ export function generateSampleWeeklyPlans(): WeeklyPlan[] {
   const now = new Date();
 
   for (let w = 0; w < 4; w++) {
-    const weekStart = new Date(now);
-    weekStart.setDate(weekStart.getDate() - (w * 7) - weekStart.getDay() + 1);
+    // Monday of the current week minus w weeks (Mon 00:00 → Sun 23:59:59).
+    const base = new Date(now);
+    base.setDate(base.getDate() - (w * 7));
+    const weekStartKey = toWeekStart(base);
     const isReviewed = w > 0;
 
     const pairAnalyses = samplePairs.slice(0, 3 + Math.floor(Math.random() * 2)).map(p => makePairAnalysis(p, isReviewed));
 
     plans.push({
       id: crypto.randomUUID(),
-      weekStart: weekStart.toISOString().split('T')[0],
+      weekStart: weekStartKey,
       bias: '',
       markets: ['EURUSD', 'XAUUSD', 'NAS100'],
       setups: [],
@@ -261,7 +264,7 @@ export function generateSampleWeeklyPlans(): WeeklyPlan[] {
       risk: 'Max 2% per trade, 5% daily drawdown',
       goals: '',
       pairAnalyses,
-      newsItems: [{ id: crypto.randomUUID(), date: weekStart.toISOString().split('T')[0], event: 'FOMC', currency: 'USD', impact: 'High', notes: 'Key rate decision this week. Expect volatility around Wednesday.' }],
+      newsItems: [{ id: crypto.randomUUID(), date: weekStartKey, event: 'FOMC', currency: 'USD', impact: 'High', notes: 'Key rate decision this week. Expect volatility around Wednesday.' }],
       newsResult: isReviewed ? 'FOMC caused expected USD volatility. Market reacted as anticipated.' : '',
       analysisVideoUrl: '',
       reviewed: isReviewed,

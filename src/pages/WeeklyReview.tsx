@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
 import type { DailyReviewVideo as DailyReviewVideoMeta } from '@/types/trading';
+import { formatWeekLabel, toWeekStart, toWeekEnd, parseDateKey } from '@/lib/weekUtils';
 
 type WeeklyReviewNotes = {
   weeklyNarrative: string;
@@ -48,12 +49,8 @@ const Tip = ({ active, payload, label }: any) => {
   );
 };
 
-function getWeekName(dateStr: string): string {
-  const d = new Date(dateStr);
-  const day = d.getDate();
-  const month = d.toLocaleString('en', { month: 'short' });
-  const weekNum = Math.ceil(day / 7);
-  return `Week ${weekNum} ${month}`;
+function getWeekName(weekStartKey: string): string {
+  return formatWeekLabel(weekStartKey);
 }
 
 function calcExecutionScore(t: any): number {
@@ -74,10 +71,8 @@ export default function WeeklyReview() {
   const weeklyData = useMemo(() => {
     const weeks = new Map<string, typeof valid>();
     valid.forEach(t => {
-      const d = new Date(t.date);
-      const weekStart = new Date(d);
-      weekStart.setDate(d.getDate() - d.getDay());
-      const key = weekStart.toISOString().split('T')[0];
+      // Monday-based week key (Mon 00:00 → Sun 23:59:59), UTC-safe.
+      const key = toWeekStart(t.date);
       const arr = weeks.get(key) || [];
       arr.push(t);
       weeks.set(key, arr);
@@ -113,16 +108,15 @@ export default function WeeklyReview() {
         const tradesPerDay = tradingDays > 0 ? Math.round(wt.length / tradingDays * 10) / 10 : 0;
         const overtrading = tradesPerDay > 3;
 
-        // Bias accuracy from weekly plans - match by date range
-        const weekEnd = new Date(week);
-        weekEnd.setDate(weekEnd.getDate() + 6);
+        // Bias accuracy from weekly plans — match by Mon–Sun week overlap.
+        // `week` is already the trade week's Monday key; compare date keys directly.
+        const weekEnd = toWeekEnd(week);
         const matchingPlan = weeklyPlans.find(wp => {
-          const wpStart = new Date(wp.weekStart);
-          const wpEnd = new Date(wpStart);
-          wpEnd.setDate(wpEnd.getDate() + 6);
-          const tradeWeekStart = new Date(week);
+          if (!wp.weekStart) return false;
+          const wpStart = wp.weekStart.slice(0, 10);
+          const wpEnd = toWeekEnd(wpStart);
           // Plans match if their weeks overlap
-          return Math.abs(tradeWeekStart.getTime() - wpStart.getTime()) <= 3 * 24 * 60 * 60 * 1000;
+          return wpStart <= weekEnd && wpEnd >= week;
         });
         let biasAccuracy = 0;
         if (matchingPlan) {

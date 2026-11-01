@@ -26,6 +26,7 @@ import { adaptWeeklyPlan } from '@/lib/aiInsightAdapters';
 import { useAutosave } from '@/hooks/useAutosave';
 import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
+import { formatWeekLabel, formatWeekRange, toWeekStart } from '@/lib/weekUtils';
 
 const emptyPairAnalysis = (): PairAnalysis => ({
   id: crypto.randomUUID(),
@@ -41,22 +42,9 @@ const emptyPairAnalysis = (): PairAnalysis => ({
   note: '',
 });
 
-function formatWeekLabel(weekStart: string): string {
-  const date = new Date(weekStart);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[date.getMonth()];
-  const day = date.getDate();
-  const weekNum = Math.ceil(day / 7);
-  return `Week ${weekNum} ${month}`;
-}
+// Week labels use the shared ISO-week convention (src/lib/weekUtils.ts):
+// Monday-based weeks, ISO week numbers across month/year transitions.
 
-function formatWeekRange(weekStart: string): string {
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}, ${start.getFullYear()}`;
-}
 
 function BiasTag({ bias }: { bias: string }) {
   return <BiasBadge bias={bias} hideNeutral />;
@@ -132,7 +120,8 @@ export default function WeeklyPlanPage() {
   const startNew = () => {
     const plan: WeeklyPlan = {
       id: crypto.randomUUID(),
-      weekStart: new Date().toISOString().split('T')[0],
+      // Snap a new plan to Monday of the current week (Mon–Sun convention).
+      weekStart: toWeekStart(new Date()),
       bias: '',
       markets: [],
       setups: [],
@@ -320,7 +309,7 @@ export default function WeeklyPlanPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Week Starting</Label>
-            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg h-9 text-sm" />
+            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: toWeekStart(e.target.value) })} className="rounded-lg h-9 text-sm" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Markets Focus</Label>
