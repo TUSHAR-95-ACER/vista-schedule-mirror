@@ -26,6 +26,7 @@ import { adaptWeeklyPlan } from '@/lib/aiInsightAdapters';
 import { useAutosave } from '@/hooks/useAutosave';
 import { SaveStatusIndicator } from '@/components/shared/SaveStatusIndicator';
 import { saveDraft, loadDraft, clearDraft } from '@/lib/draftStorage';
+import { formatWeekLabel, toWeekStart } from '@/lib/weekUtils';
 
 const emptyPairAnalysis = (): PairAnalysis => ({
   id: crypto.randomUUID(),
@@ -41,22 +42,9 @@ const emptyPairAnalysis = (): PairAnalysis => ({
   note: '',
 });
 
-function formatWeekLabel(weekStart: string): string {
-  const date = new Date(weekStart);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[date.getMonth()];
-  const day = date.getDate();
-  const weekNum = Math.ceil(day / 7);
-  return `Week ${weekNum} ${month}`;
-}
+// Week labels use the shared ISO-week convention (src/lib/weekUtils.ts):
+// Monday-based weeks, ISO week numbers across month/year transitions.
 
-function formatWeekRange(weekStart: string): string {
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}, ${start.getFullYear()}`;
-}
 
 function BiasTag({ bias }: { bias: string }) {
   return <BiasBadge bias={bias} hideNeutral />;
