@@ -1,5 +1,6 @@
 import { Trade, TradeGrade, WeeklyPlan, DailyPlan, PairAnalysis, DailyPairPlan } from '@/types/trading';
 import { calcProfitLoss, calcResult } from './calculations';
+import { toWeekStart } from './weekUtils';
 
 const pairs = ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD', 'AUDUSD', 'GBPJPY', 'BTCUSD', 'NAS100', 'US30', 'ETHUSD'];
 const sessions = ['Asia', 'London', 'New York', 'New York Kill Zone', 'London Close'] as const;
@@ -263,7 +264,7 @@ export function generateSampleWeeklyPlans(): WeeklyPlan[] {
       risk: 'Max 2% per trade, 5% daily drawdown',
       goals: '',
       pairAnalyses,
-      newsItems: [{ id: crypto.randomUUID(), date: weekStart.toISOString().split('T')[0], event: 'FOMC', currency: 'USD', impact: 'High', notes: 'Key rate decision this week. Expect volatility around Wednesday.' }],
+      newsItems: [{ id: crypto.randomUUID(), date: weekStartKey, event: 'FOMC', currency: 'USD', impact: 'High', notes: 'Key rate decision this week. Expect volatility around Wednesday.' }],
       newsResult: isReviewed ? 'FOMC caused expected USD volatility. Market reacted as anticipated.' : '',
       analysisVideoUrl: '',
       reviewed: isReviewed,
