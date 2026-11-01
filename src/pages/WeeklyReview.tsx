@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
 import type { DailyReviewVideo as DailyReviewVideoMeta } from '@/types/trading';
+import { formatWeekLabel, toWeekStart, toWeekEnd, parseDateKey } from '@/lib/weekUtils';
 
 type WeeklyReviewNotes = {
   weeklyNarrative: string;
@@ -70,10 +71,8 @@ export default function WeeklyReview() {
   const weeklyData = useMemo(() => {
     const weeks = new Map<string, typeof valid>();
     valid.forEach(t => {
-      const d = new Date(t.date);
-      const weekStart = new Date(d);
-      weekStart.setDate(d.getDate() - d.getDay());
-      const key = weekStart.toISOString().split('T')[0];
+      // Monday-based week key (Mon 00:00 → Sun 23:59:59), UTC-safe.
+      const key = toWeekStart(t.date);
       const arr = weeks.get(key) || [];
       arr.push(t);
       weeks.set(key, arr);
