@@ -296,10 +296,8 @@ export default function Mistakes() {
     const weeks = new Map<string, { count: number; loss: number }>();
     valid.forEach(t => {
       if (t.mistakes.length === 0) return;
-      const d = new Date(t.date);
-      const weekStart = new Date(d);
-      weekStart.setDate(d.getDate() - d.getDay());
-      const key = weekStart.toISOString().split('T')[0];
+      // Monday-based week key (Mon 00:00 → Sun 23:59:59), UTC-safe.
+      const key = toWeekStart(t.date);
       const cur = weeks.get(key) || { count: 0, loss: 0 };
       cur.count += t.mistakes.length;
       if (t.profitLoss < 0) cur.loss += t.profitLoss;

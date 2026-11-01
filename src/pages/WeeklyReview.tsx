@@ -108,16 +108,15 @@ export default function WeeklyReview() {
         const tradesPerDay = tradingDays > 0 ? Math.round(wt.length / tradingDays * 10) / 10 : 0;
         const overtrading = tradesPerDay > 3;
 
-        // Bias accuracy from weekly plans - match by date range
-        const weekEnd = new Date(week);
-        weekEnd.setDate(weekEnd.getDate() + 6);
+        // Bias accuracy from weekly plans — match by Mon–Sun week overlap.
+        // `week` is already the trade week's Monday key; compare date keys directly.
+        const weekEnd = toWeekEnd(week);
         const matchingPlan = weeklyPlans.find(wp => {
-          const wpStart = new Date(wp.weekStart);
-          const wpEnd = new Date(wpStart);
-          wpEnd.setDate(wpEnd.getDate() + 6);
-          const tradeWeekStart = new Date(week);
+          if (!wp.weekStart) return false;
+          const wpStart = wp.weekStart.slice(0, 10);
+          const wpEnd = toWeekEnd(wpStart);
           // Plans match if their weeks overlap
-          return Math.abs(tradeWeekStart.getTime() - wpStart.getTime()) <= 3 * 24 * 60 * 60 * 1000;
+          return wpStart <= weekEnd && wpEnd >= week;
         });
         let biasAccuracy = 0;
         if (matchingPlan) {
