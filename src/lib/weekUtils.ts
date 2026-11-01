@@ -75,3 +75,13 @@ export function formatWeekLabel(weekStartKey: string): string {
   const yearSuffix = crossesYear ? ` '${String(year).slice(2)}` : '';
   return `Week ${week}${yearSuffix} · ${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
+
+/** "Oct 26 – Nov 1, 2026" for a week-start key. */
+export function formatWeekRange(weekStartKey: string): string {
+  const start = parseDateKey(weekStartKey);
+  if (Number.isNaN(start.getTime())) return '';
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' };
+  return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}, ${start.getUTCFullYear()}`;
+}

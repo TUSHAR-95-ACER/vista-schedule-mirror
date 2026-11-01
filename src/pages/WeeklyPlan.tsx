@@ -120,7 +120,8 @@ export default function WeeklyPlanPage() {
   const startNew = () => {
     const plan: WeeklyPlan = {
       id: crypto.randomUUID(),
-      weekStart: new Date().toISOString().split('T')[0],
+      // Snap a new plan to Monday of the current week (Mon–Sun convention).
+      weekStart: toWeekStart(new Date()),
       bias: '',
       markets: [],
       setups: [],
@@ -308,7 +309,7 @@ export default function WeeklyPlanPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Week Starting</Label>
-            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: e.target.value })} className="rounded-lg h-9 text-sm" />
+            <Input type="date" value={localPlan.weekStart} onChange={e => update({ weekStart: toWeekStart(e.target.value) })} className="rounded-lg h-9 text-sm" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Markets Focus</Label>
