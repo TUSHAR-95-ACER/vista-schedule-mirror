@@ -25,6 +25,13 @@ const FALLBACK_SYMBOLS: Record<string, string[]> = {
   'XTI/USD': ['WTI/USD', 'CRUDEOIL'],
 };
 
+// Public chart symbols used only when Twelve Data cannot resolve these markets.
+const YAHOO_CHART_SYMBOLS: Record<string, string> = {
+  'NIFTY 50': '^NSEI',
+  'SENSEX': '^BSESN',
+  'XTI/USD': 'CL=F',
+};
+
 // In-memory cache (survives within same instance)
 let cachedData: any = null;
 let cacheTime = 0;
@@ -145,6 +152,39 @@ serve(async (req) => {
           if (q?.code === 429) break; // out of credits this minute — stop trying
         } catch (e) {
           console.error(`Fallback quote failed for ${alt}:`, e);
+        }
+      }
+
+      // Twelve Data does not consistently return the Indian indices or WTI
+      // on every plan. Fall back to their public chart quotes rather than
+      // leaving the ticker item in a permanent loading state.
+      if (m.price <= 0) {
+        const yahooSymbol = YAHOO_CHART_SYMBOLS[inst.symbol];
+        if (yahooSymbol) {
+          try {
+            const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?range=5d&interval=1d`;
+            const chartResponse = await fetch(chartUrl, {
+              headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+              signal: AbortSignal.timeout(8000),
+            });
+            if (chartResponse.ok) {
+              const chartData = await chartResponse.json();
+              const meta = chartData?.chart?.result?.[0]?.meta;
+              const price = num(meta?.regularMarketPrice);
+              const previousClose = num(meta?.chartPreviousClose ?? meta?.previousClose);
+              if (price > 0) {
+                m.price = price;
+                m.change = previousClose > 0 ? price - previousClose : 0;
+                m.changePercent = previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0;
+              } else {
+                console.warn(`Public chart quote unavailable for ${m.symbol} (HTTP ${chartResponse.status})`);
+              }
+            } else {
+              console.warn(`Public chart request failed for ${m.symbol} (HTTP ${chartResponse.status})`);
+            }
+          } catch (e) {
+            console.error(`Public chart fallback failed for ${m.symbol}:`, e);
+          }
         }
       }
     }
