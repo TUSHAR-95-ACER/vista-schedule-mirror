@@ -16,18 +16,24 @@ interface MarketSentimentSliderProps {
  */
 function BearIcon() {
   return (
-    <svg viewBox="0 0 32 20" aria-hidden="true" className="h-4 w-6 shrink-0 fill-current">
-      <path d="M2.2 10.3c1.3-.5 2.2-1.5 2.9-3 .7-1.4 2-2.1 3.5-1.9l2 .2c1.7-1 3.8-1.4 6-1.1l3.4.5c3.2.5 5.4 2.4 6.6 4.8l2.3 1.4c.5.3.8.8.8 1.4v.8c0 .5-.4.9-.9.9h-1.3l-.6 3h-2.6l-.4-3h-6.7l-.6 3h-2.6l-.2-3H9.5l-.7 3H6.2l-.3-3.5c-1.4-.3-2.4-.9-3.2-1.8l-1.1-1.2c-.5-.6-.2-1.4.6-1.7Zm6.4-3.5a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z" />
-      <path d="M26.1 10.7c1.3-.1 2.2.2 3 .9l1.2 1.1c.3.3.1.9-.4.9h-2.1l-1.7-1.1v-1.8Z" />
+    <svg viewBox="0 0 38 20" aria-hidden="true" className="h-5 w-9 shrink-0 fill-current">
+      <path d="M4.9 7.5c-1.1-.5-1.6-1.4-1.5-2.6l.1-1.2c0-.5-.5-.8-.9-.5L1.2 4.5c-.5.4-.6 1.1-.3 1.7l1.5 2 2.5-.3Z" />
+      <path d="M2.8 9.2c.2-2.5 2.2-4.4 4.7-4.4h1.6c2-2.2 4.8-3.4 8.2-3.4h5.1c4.6 0 8 2.5 9.8 6.2l2.8 1.7c.7.4 1.1 1.1 1.1 1.9v1.2h-3.3l-.7 5h-2.7l-.5-4.8h-5.3l-.7 4.8h-2.8l-.2-4.7h-5.2l-.6 4.7h-2.7l-.2-4.8H7.8c-1.7 0-3.2-1-3.9-2.6l-.9-1.7c-.3-.5.1-1.1.7-1.1h.4Z" />
+      <path d="M4 8.5c-1 .1-1.8.6-2.5 1.4l-.4.5c-.4.5-.2 1.2.4 1.5l2.2 1h3.2V8.5H4Z" />
+      <circle cx="8" cy="4.8" r="1.7" />
+      <circle cx="5.9" cy="8.5" r=".55" className="fill-background" />
     </svg>
   );
 }
 
 function BullIcon() {
   return (
-    <svg viewBox="0 0 36 20" aria-hidden="true" className="h-4 w-7 shrink-0 fill-current">
-      <path d="M8.1 6.4 4.3 2.2c-.4-.4-.1-1.1.5-1l5.7 1.2c1.2-.7 2.7-1 4.5-.9l4.1.3c3.4.3 6 2.3 7.5 5.2l2.2 1.4c.7.5 1.1 1.2 1.1 2v1.5c0 .5-.4.9-.9.9h-1.4l-.7 3.3h-2.7l-.4-3.3h-6.6l-.5 3.3h-2.8l-.2-3.3H8.4l-.7 3.3H5l-.3-3.7c-1.3-.3-2.3-1.1-3-2.2L.8 8.6c-.3-.5.1-1.2.7-1.2l3 .1 1.7-1.2 1.9.1Z" />
-      <path d="m27.7 8.9 3.1-2.8c.5-.4 1.1-.1 1 .5l-.6 2.3 3.5-.2c.6 0 .9.7.4 1.1l-3.1 2.7-3.2-.4-1.1-1.3V8.9Z" />
+    <svg viewBox="0 0 38 20" aria-hidden="true" className="h-5 w-9 shrink-0 fill-current">
+      <path d="M5.3 7.2c-1-.5-1.5-1.5-1.3-2.7l.2-1c.1-.5-.5-.8-.9-.5L1.7 4.7c-.4.4-.5 1.1-.2 1.6l1.3 1.8 2.5-.2Z" />
+      <path d="M28.1 7.2c-.8-1.2-1-2.6-.6-4.2.2-.6.9-.7 1.2-.2l1.4 2c.6-1.2 1.6-2 2.8-2.3.6-.2 1 .4.7.9l-1.5 2.5c-.5 1-1.5 1.6-2.8 1.7l-1.2-.4Z" />
+      <path d="M31.8 7.7c.4-1.5 1.4-2.6 2.8-3.1.6-.2 1 .4.7.9l-.8 1.5 1.3.3c.6.2.7.9.1 1.2l-2.2.8-1.5-.7-.4-.9Z" />
+      <path d="M4.1 8.8c1-2.1 3.2-3.4 5.7-3.4h1.3c2.1-2.1 5.1-3.2 8.6-3.2h5c4.1 0 7.1 2.1 8.7 5.5l2.2 1.4c.7.5 1.1 1.2 1.1 2v1.1h-3l-.7 5h-2.7l-.5-4.8h-5.2l-.7 4.8h-2.7l-.2-4.7h-5.2l-.6 4.7h-2.7l-.2-4.8H8.6c-1.7 0-3.2-.9-4-2.4l-.8-1.2Z" />
+      <circle cx="33.2" cy="9.2" r=".55" className="fill-background" />
     </svg>
   );
 }
@@ -44,8 +50,8 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
     const rect = el.getBoundingClientRect();
     const ratio = (clientX - rect.left) / rect.width;
     const next = Math.round(Math.max(0, Math.min(1, ratio)) * 100);
-    onChange(next);
-  }, [onChange]);
+    onChange(display === 'split-bar' ? 100 - next : next);
+  }, [display, onChange]);
 
   useEffect(() => {
     if (!dragging) return;
@@ -70,7 +76,9 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
     e.preventDefault();
-    onChange(Math.max(0, Math.min(100, longPct + (e.key === 'ArrowRight' ? 1 : -1))));
+    const rightwardStep = display === 'split-bar' ? -1 : 1;
+    const step = e.key === 'ArrowRight' ? rightwardStep : -rightwardStep;
+    onChange(Math.max(0, Math.min(100, longPct + step)));
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -103,7 +111,7 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
           aria-label="Market sentiment"
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-valuenow={longPct}
+          aria-valuenow={display === 'split-bar' ? shortPct : longPct}
           aria-valuetext={`${shortPct}% bearish, ${longPct}% bullish`}
           aria-disabled={disabled}
           tabIndex={disabled ? -1 : 0}
