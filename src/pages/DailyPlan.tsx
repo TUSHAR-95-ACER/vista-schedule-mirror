@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft, Video } from 'lucide-react';
+import { Plus, Trash2, Calendar, Shield, Target, TrendingUp, TrendingDown, FileText, Eye, Clock, Crosshair, StickyNote, BarChart3, Save, Newspaper, ArrowLeft, Video } from 'lucide-react';
 import { DailyReviewVideo } from '@/components/plans/DailyReviewVideo';
 
 import { DailyPlan, DailyPairPlan, ALL_ASSETS, MARKET_LOCATIONS, MarketLocation } from '@/types/trading';
@@ -426,8 +426,10 @@ export default function DailyPlanPage() {
               </div>
               {pp.pair !== 'DXY' && (
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Market Sentiment</Label>
-                  <MarketSentimentSlider value={pp.marketSentiment} onChange={v => updatePair(pp.id, { marketSentiment: v })} />
+                  <Label className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Market Sentiment <TrendingDown className="h-3 w-3 text-destructive" />
+                  </Label>
+                  <MarketSentimentSlider value={pp.marketSentiment} onChange={v => updatePair(pp.id, { marketSentiment: v })} display="split-bar" />
                 </div>
               )}
             </div>
