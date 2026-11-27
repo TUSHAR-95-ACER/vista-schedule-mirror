@@ -10,3 +10,7 @@
 - [x] Restore responsive Testing Status columns on small screens while retaining eight columns on desktop.
 - [x] Keep MCP tools read-only in accordance with the project's external-access policy.
 - [ ] Verify timeline alignment, typography, overflow, type checks, and build health at laptop and desktop widths.
+
+- [ ] Finish Daily Plan bear/bull sentiment drag behavior and replace unclear animal marks.
+- [ ] Stop Daily Plan news links from showing third-party webpage screenshots or access-denied captures.
+- [ ] Add regression tests and verify the updated Daily Plan interactions and link previews.

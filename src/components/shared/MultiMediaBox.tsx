@@ -14,9 +14,10 @@ interface MultiMediaBoxProps {
   maxPreviewHeight?: string;
   gridCols?: 1 | 2;
   forceAspect?: '16/9' | '4/3' | '1/1';
+  allowPageScreenshot?: boolean;
 }
 
-export function MultiMediaBox({ values, onChange, label, accept = ['image', 'video', 'url'], maxItems = 5, maxPreviewHeight = '300px', gridCols = 1, forceAspect }: MultiMediaBoxProps) {
+export function MultiMediaBox({ values, onChange, label, accept = ['image', 'video', 'url'], maxItems = 5, maxPreviewHeight = '300px', gridCols = 1, forceAspect, allowPageScreenshot }: MultiMediaBoxProps) {
   // Track number of slots separately so empty slots persist
   const [slotCount, setSlotCount] = useState(Math.max(1, values.length));
 
@@ -92,6 +93,7 @@ export function MultiMediaBox({ values, onChange, label, accept = ['image', 'vid
               accept={accept}
               maxPreviewHeight={maxPreviewHeight}
               forceAspect={forceAspect}
+              allowPageScreenshot={allowPageScreenshot}
             />
           </div>
         ))}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface MarketSentimentSliderProps {
@@ -10,30 +10,36 @@ interface MarketSentimentSliderProps {
   display?: 'slider' | 'split-bar';
 }
 
+export function longPercentAtPointer(clientX: number, left: number, width: number, display: 'slider' | 'split-bar') {
+  const ratio = width > 0 ? Math.max(0, Math.min(1, (clientX - left) / width)) : 0.5;
+  const position = Math.round(ratio * 100);
+  return display === 'split-bar' ? 100 - position : position;
+}
+
 /**
  * Horizontal draggable sentiment slider.
  * Far left = 100% short / 0% long. Far right = 0% short / 100% long. Center = 50/50.
  */
 function BearIcon() {
   return (
-    <svg viewBox="0 0 38 20" aria-hidden="true" className="h-5 w-9 shrink-0 fill-current">
-      <path d="M4.9 7.5c-1.1-.5-1.6-1.4-1.5-2.6l.1-1.2c0-.5-.5-.8-.9-.5L1.2 4.5c-.5.4-.6 1.1-.3 1.7l1.5 2 2.5-.3Z" />
-      <path d="M2.8 9.2c.2-2.5 2.2-4.4 4.7-4.4h1.6c2-2.2 4.8-3.4 8.2-3.4h5.1c4.6 0 8 2.5 9.8 6.2l2.8 1.7c.7.4 1.1 1.1 1.1 1.9v1.2h-3.3l-.7 5h-2.7l-.5-4.8h-5.3l-.7 4.8h-2.8l-.2-4.7h-5.2l-.6 4.7h-2.7l-.2-4.8H7.8c-1.7 0-3.2-1-3.9-2.6l-.9-1.7c-.3-.5.1-1.1.7-1.1h.4Z" />
-      <path d="M4 8.5c-1 .1-1.8.6-2.5 1.4l-.4.5c-.4.5-.2 1.2.4 1.5l2.2 1h3.2V8.5H4Z" />
-      <circle cx="8" cy="4.8" r="1.7" />
-      <circle cx="5.9" cy="8.5" r=".55" className="fill-background" />
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 shrink-0 fill-current">
+      <path d="M6.1 7.2a3 3 0 0 1-2.5-2.9 2.4 2.4 0 0 1 4.7-.7c1-.4 2.2-.6 3.7-.6s2.7.2 3.7.6a2.4 2.4 0 0 1 4.7.7 3 3 0 0 1-2.5 2.9c.7 1.1 1.1 2.5 1.1 4 0 4.8-3.1 8.2-7 8.2s-7-3.4-7-8.2c0-1.5.4-2.9 1.1-4Z" />
+      <circle cx="8.8" cy="10.1" r=".7" className="fill-background" />
+      <circle cx="15.2" cy="10.1" r=".7" className="fill-background" />
+      <path d="M8.2 13c0-1.1.8-1.8 1.8-1.8h4c1 0 1.8.7 1.8 1.8 0 1.5-1.7 2.7-3.8 2.7S8.2 14.5 8.2 13Z" className="fill-background" />
+      <path d="M10.8 12.8h2.4a.8.8 0 0 1 .8.8v.2a2 2 0 0 1-4 0v-.2a.8.8 0 0 1 .8-.8Z" />
     </svg>
   );
 }
 
 function BullIcon() {
   return (
-    <svg viewBox="0 0 38 20" aria-hidden="true" className="h-5 w-9 shrink-0 fill-current">
-      <path d="M5.3 7.2c-1-.5-1.5-1.5-1.3-2.7l.2-1c.1-.5-.5-.8-.9-.5L1.7 4.7c-.4.4-.5 1.1-.2 1.6l1.3 1.8 2.5-.2Z" />
-      <path d="M28.1 7.2c-.8-1.2-1-2.6-.6-4.2.2-.6.9-.7 1.2-.2l1.4 2c.6-1.2 1.6-2 2.8-2.3.6-.2 1 .4.7.9l-1.5 2.5c-.5 1-1.5 1.6-2.8 1.7l-1.2-.4Z" />
-      <path d="M31.8 7.7c.4-1.5 1.4-2.6 2.8-3.1.6-.2 1 .4.7.9l-.8 1.5 1.3.3c.6.2.7.9.1 1.2l-2.2.8-1.5-.7-.4-.9Z" />
-      <path d="M4.1 8.8c1-2.1 3.2-3.4 5.7-3.4h1.3c2.1-2.1 5.1-3.2 8.6-3.2h5c4.1 0 7.1 2.1 8.7 5.5l2.2 1.4c.7.5 1.1 1.2 1.1 2v1.1h-3l-.7 5h-2.7l-.5-4.8h-5.2l-.7 4.8h-2.7l-.2-4.7h-5.2l-.6 4.7h-2.7l-.2-4.8H8.6c-1.7 0-3.2-.9-4-2.4l-.8-1.2Z" />
-      <circle cx="33.2" cy="9.2" r=".55" className="fill-background" />
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 shrink-0 fill-current">
+      <path d="M6.1 7.3C3.6 6.6 2.1 4.2 2.4 2.1c2.3.3 4.2 1.6 5.2 3.5h8.8c1-1.9 2.9-3.2 5.2-3.5.3 2.1-1.2 4.5-3.7 5.2.5 1 .8 2.2.8 3.5 0 5-3 8.5-6.7 8.5s-6.7-3.5-6.7-8.5c0-1.3.3-2.5.8-3.5Z" />
+      <circle cx="9" cy="10.2" r=".7" className="fill-background" />
+      <circle cx="15" cy="10.2" r=".7" className="fill-background" />
+      <path d="M8.1 13.1c0-1.1.8-1.8 1.9-1.8h4c1.1 0 1.9.7 1.9 1.8 0 1.7-1.7 2.8-3.9 2.8s-3.9-1.1-3.9-2.8Z" className="fill-background" />
+      <path d="M10.8 12.8h2.4a.8.8 0 0 1 .8.8v.3a2 2 0 0 1-4 0v-.3a.8.8 0 0 1 .8-.8Z" />
     </svg>
   );
 }
@@ -44,34 +50,28 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
   const longPct = Math.max(0, Math.min(100, value ?? 50));
   const shortPct = 100 - longPct;
 
-  const updateFromClientX = useCallback((clientX: number) => {
+  const updateFromClientX = (clientX: number) => {
     const el = trackRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const ratio = (clientX - rect.left) / rect.width;
-    const next = Math.round(Math.max(0, Math.min(1, ratio)) * 100);
-    onChange(display === 'split-bar' ? 100 - next : next);
-  }, [display, onChange]);
+    onChange(longPercentAtPointer(clientX, rect.left, rect.width, display));
+  };
 
-  useEffect(() => {
-    if (!dragging) return;
-    const onMove = (e: PointerEvent) => updateFromClientX(e.clientX);
-    const onUp = () => setDragging(false);
-    window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-    };
-  }, [dragging, updateFromClientX]);
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (disabled) return;
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    e.preventDefault();
+    if (typeof e.currentTarget.setPointerCapture === 'function') {
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* pointer already ended */ }
+    }
     setDragging(true);
     updateFromClientX(e.clientX);
   };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragging && !disabled) updateFromClientX(e.clientX);
+  };
+
+  const handlePointerUp = () => setDragging(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
@@ -105,6 +105,10 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
         <div
           ref={trackRef}
           onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onLostPointerCapture={handlePointerUp}
           onWheel={handleWheel}
           onKeyDown={handleKeyDown}
           role="slider"
@@ -134,6 +138,10 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
       <div
         ref={trackRef}
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onLostPointerCapture={handlePointerUp}
         onWheel={handleWheel}
         className={cn(
           'relative h-10 rounded-xl border border-border bg-background overflow-hidden cursor-ew-resize',

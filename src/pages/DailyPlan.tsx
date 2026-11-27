@@ -380,6 +380,7 @@ export default function DailyPlanPage() {
           maxItems={4}
           gridCols={2}
           forceAspect="16/9"
+          allowPageScreenshot={false}
         />
       </SectionCard>
 

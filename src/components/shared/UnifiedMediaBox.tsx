@@ -28,6 +28,8 @@ interface UnifiedMediaBoxProps {
   maxPreviewHeight?: string;
   /** Force a fixed aspect ratio on the image preview (uses object-cover) */
   forceAspect?: '16/9' | '4/3' | '1/1';
+  /** Show a third-party webpage screenshot when a link has no usable preview image. */
+  allowPageScreenshot?: boolean;
 }
 
 function getYouTubeId(url: string): string | null {
@@ -43,7 +45,27 @@ function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov)(\?|$)/i.test(url) || url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
 }
 
-export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px', forceAspect }: UnifiedMediaBoxProps) {
+function getArticlePreviewTitle(meta: LinkMeta): string {
+  const title = meta.title?.trim();
+  if (title && !/^(?:\d{3}\s*)?(?:forbidden|access denied|not found|bad gateway|service unavailable|request blocked)(?:\b|$)/i.test(title)) {
+    return title;
+  }
+
+  try {
+    const url = new URL(meta.url);
+    const slug = url.pathname.split('/').filter(Boolean).pop() || '';
+    const derived = decodeURIComponent(slug)
+      .replace(/[-_]+/g, ' ')
+      .replace(/\.(html?|php|aspx?)$/i, '')
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+      .trim();
+    if (derived) return derived;
+  } catch { /* fall through to the site name */ }
+
+  return `Article on ${meta.siteName || meta.domain || 'this site'}`;
+}
+
+export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'video', 'url'], maxPreviewHeight = '336px', forceAspect, allowPageScreenshot = true }: UnifiedMediaBoxProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -243,7 +265,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
 
   // Decide what image to show in the news card hero area.
   // Priority: real OG image (if not failed) -> page screenshot (if not failed/blocked) -> none.
-  const screenshotUrl = urlMeta ? screenshotFor(urlMeta.url) : '';
+  const screenshotUrl = urlMeta && allowPageScreenshot ? screenshotFor(urlMeta.url) : '';
   const heroImage = urlMeta
     ? (urlMeta.image && !ogImageFailed
         ? urlMeta.image
@@ -252,7 +274,7 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
   const hasHero = !!heroImage;
   // Show explicit "Screenshot unavailable" state when we have no OG image AND
   // screenshot is either blocked (anti-bot domain) or has failed to load.
-  const showUnavailable = !!urlMeta && !urlMeta.image && !heroImage &&
+  const showUnavailable = allowPageScreenshot && !!urlMeta && !urlMeta.image && !heroImage &&
     (isScreenshotBlocked(urlMeta.url) || screenshotFailed);
 
   // Validate loaded image is not microscopic (e.g. NYTimes generic placeholder)
@@ -344,26 +366,9 @@ export function UnifiedMediaBox({ value, onChange, label, accept = ['image', 'vi
                     </>
                   )}
                 </div>
-                {urlMeta.title ? (
-                  <p className="text-base font-bold text-foreground leading-snug line-clamp-3">{urlMeta.title}</p>
-                ) : (() => {
-                  // Derive a human title from the URL slug when scraping returned nothing.
-                  let derived = '';
-                  try {
-                    const u = new URL(urlMeta.url);
-                    const seg = u.pathname.split('/').filter(Boolean).pop() || '';
-                    derived = decodeURIComponent(seg)
-                      .replace(/[-_]+/g, ' ')
-                      .replace(/\.(html?|php|aspx?)$/i, '')
-                      .replace(/\b\w/g, (c) => c.toUpperCase())
-                      .trim();
-                  } catch { /* noop */ }
-                  return (
-                    <p className="text-base font-bold text-foreground leading-snug line-clamp-3">
-                      {derived || `Article on ${urlMeta.siteName || urlMeta.domain || 'this site'}`}
-                    </p>
-                  );
-                })()}
+                <p className="text-base font-bold text-foreground leading-snug line-clamp-3">
+                  {getArticlePreviewTitle(urlMeta)}
+                </p>
                 {urlMeta.description && (
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{urlMeta.description}</p>
                 )}
