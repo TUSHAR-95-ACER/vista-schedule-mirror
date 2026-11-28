@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { MarketSentimentSlider } from '@/components/shared/MarketSentimentSlider';
@@ -26,9 +26,9 @@ describe('Daily Plan market sentiment slider', () => {
       slider.dispatchEvent(event);
     };
 
-    dispatchPointer('pointerdown', 90);
+    act(() => dispatchPointer('pointerdown', 90));
     expect(slider).toHaveAttribute('aria-valuetext', '90% bearish, 10% bullish');
-    dispatchPointer('pointermove', 10);
+    act(() => dispatchPointer('pointermove', 10));
     expect(slider).toHaveAttribute('aria-valuetext', '10% bearish, 90% bullish');
   });
 });

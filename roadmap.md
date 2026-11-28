@@ -11,6 +11,6 @@
 - [x] Keep MCP tools read-only in accordance with the project's external-access policy.
 - [ ] Verify timeline alignment, typography, overflow, type checks, and build health at laptop and desktop widths.
 
-- [ ] Finish Daily Plan bear/bull sentiment drag behavior and replace unclear animal marks.
+- [ ] Finish Daily Plan sentiment mapping and replace animal marks with SELL/BUY labels.
 - [ ] Stop Daily Plan news links from showing third-party webpage screenshots or access-denied captures.
 - [ ] Add regression tests and verify the updated Daily Plan interactions and link previews.

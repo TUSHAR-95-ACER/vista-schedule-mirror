@@ -18,31 +18,8 @@ export function longPercentAtPointer(clientX: number, left: number, width: numbe
 
 /**
  * Horizontal draggable sentiment slider.
- * Far left = 100% short / 0% long. Far right = 0% short / 100% long. Center = 50/50.
+ * For the split bar, moving right increases SELL and moving left increases BUY.
  */
-function BearIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 shrink-0 fill-current">
-      <path d="M6.1 7.2a3 3 0 0 1-2.5-2.9 2.4 2.4 0 0 1 4.7-.7c1-.4 2.2-.6 3.7-.6s2.7.2 3.7.6a2.4 2.4 0 0 1 4.7.7 3 3 0 0 1-2.5 2.9c.7 1.1 1.1 2.5 1.1 4 0 4.8-3.1 8.2-7 8.2s-7-3.4-7-8.2c0-1.5.4-2.9 1.1-4Z" />
-      <circle cx="8.8" cy="10.1" r=".7" className="fill-background" />
-      <circle cx="15.2" cy="10.1" r=".7" className="fill-background" />
-      <path d="M8.2 13c0-1.1.8-1.8 1.8-1.8h4c1 0 1.8.7 1.8 1.8 0 1.5-1.7 2.7-3.8 2.7S8.2 14.5 8.2 13Z" className="fill-background" />
-      <path d="M10.8 12.8h2.4a.8.8 0 0 1 .8.8v.2a2 2 0 0 1-4 0v-.2a.8.8 0 0 1 .8-.8Z" />
-    </svg>
-  );
-}
-
-function BullIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 shrink-0 fill-current">
-      <path d="M6.1 7.3C3.6 6.6 2.1 4.2 2.4 2.1c2.3.3 4.2 1.6 5.2 3.5h8.8c1-1.9 2.9-3.2 5.2-3.5.3 2.1-1.2 4.5-3.7 5.2.5 1 .8 2.2.8 3.5 0 5-3 8.5-6.7 8.5s-6.7-3.5-6.7-8.5c0-1.3.3-2.5.8-3.5Z" />
-      <circle cx="9" cy="10.2" r=".7" className="fill-background" />
-      <circle cx="15" cy="10.2" r=".7" className="fill-background" />
-      <path d="M8.1 13.1c0-1.1.8-1.8 1.9-1.8h4c1.1 0 1.9.7 1.9 1.8 0 1.7-1.7 2.8-3.9 2.8s-3.9-1.1-3.9-2.8Z" className="fill-background" />
-      <path d="M10.8 12.8h2.4a.8.8 0 0 1 .8.8v.3a2 2 0 0 1-4 0v-.3a.8.8 0 0 1 .8-.8Z" />
-    </svg>
-  );
-}
 
 export function MarketSentimentSlider({ value, onChange, className, disabled, display = 'slider' }: MarketSentimentSliderProps) {
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -94,12 +71,12 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
       <div className={cn('w-full select-none', className)}>
         <div className="mb-1 flex items-center justify-between gap-3 font-mono text-xs font-semibold tabular-nums">
           <div className="flex min-w-0 items-center gap-1.5 text-destructive">
-            <BearIcon />
+            <span className="font-sans text-[10px] font-bold tracking-wider">SELL</span>
             <span>{shortPct}%</span>
           </div>
           <div className="flex min-w-0 items-center gap-1.5 text-success">
             <span>{longPct}%</span>
-            <BullIcon />
+            <span className="font-sans text-[10px] font-bold tracking-wider">BUY</span>
           </div>
         </div>
         <div
@@ -120,14 +97,14 @@ export function MarketSentimentSlider({ value, onChange, className, disabled, di
           aria-disabled={disabled}
           tabIndex={disabled ? -1 : 0}
           className={cn(
-            'relative flex h-1.5 w-full overflow-hidden rounded-full bg-muted touch-none',
+            'relative h-1.5 w-full overflow-hidden rounded-full bg-muted touch-none',
             disabled ? 'cursor-not-allowed opacity-60' : 'cursor-ew-resize',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             dragging && 'opacity-90',
           )}
         >
-          <div className="h-full bg-destructive transition-[width] duration-150" style={{ width: `${shortPct}%` }} />
-          <div className="h-full bg-success transition-[width] duration-150" style={{ width: `${longPct}%` }} />
+          <div className="absolute inset-y-0 left-0 bg-destructive transition-[width] duration-150" style={{ width: `${shortPct}%` }} />
+          <div className="absolute inset-y-0 right-0 bg-success transition-[width] duration-150" style={{ width: `${longPct}%` }} />
         </div>
       </div>
     );
